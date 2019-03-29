@@ -1,0 +1,17 @@
+sa-key.json
+
+# Local plan files
+tfplan.*
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+
+# Inventory
+inventory*.json
