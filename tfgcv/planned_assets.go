@@ -16,6 +16,7 @@ package tfgcv
 
 import (
 	"os"
+	"strings"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
@@ -38,10 +39,14 @@ func ReadPlannedAssets(path, project string) ([]google.Asset, error) {
 		return nil, errors.Wrap(err, "reading terraform plan")
 	}
 
-	// TODO: Pull project from tfplan instead.
-	// i.e. terraform.Plan.Module.Config().ProviderConfigs[].RawConfig
-	// The complication with pulling from the above config is with uninterpolated
-	// terraform variables/locals/etc.
+	// Attempt to pull the project from the provider.
+	if project == "" {
+		project, err = parseProviderProject(plan)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	converter, err := google.NewConverter(project, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
@@ -58,4 +63,31 @@ func ReadPlannedAssets(path, project string) ([]google.Asset, error) {
 	}
 
 	return converter.Assets(), nil
+}
+
+var ErrParsingProviderProject = errors.New("unable to parse provider project")
+
+// parseProviderProject attempts to parse hardcoded "project" configuration
+// from the "google" provider block. It is lazy and fails if the job involves
+// interpolation.
+// TODO: Replicate/incorporate terraform interpolation (or is that a good idea?).
+func parseProviderProject(plan *terraform.Plan) (string, error) {
+	for _, cfg := range plan.Module.Config().ProviderConfigs {
+		if cfg.Name == "google" {
+			inf, ok := cfg.RawConfig.Raw["project"]
+			if !ok {
+				continue
+			}
+			prj := inf.(string)
+
+			// If the provider has a hardcoded project string, return it.
+			if !strings.Contains(prj, "${") {
+				return prj, nil
+			}
+
+			return "", ErrParsingProviderProject
+		}
+	}
+
+	return "", nil
 }

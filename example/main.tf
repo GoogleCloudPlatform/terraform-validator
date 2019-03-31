@@ -20,14 +20,15 @@ locals {
 
 provider "google" {
   version = "~> 1.20"
-  project = "${local.project}"
 }
 
 resource "google_compute_disk" "my-disk" {
-  name  = "my-disk"
-  type  = "pd-ssd"
-  zone  = "us-central1-a"
-  image = "debian-8-jessie-v20170523"
+  name    = "my-disk"
+  project = "${local.project}"
+  type    = "pd-ssd"
+  zone    = "us-central1-a"
+  image   = "debian-8-jessie-v20170523"
+
   labels = {
     foo = "bar"
   }
@@ -39,14 +40,18 @@ resource "random_id" "bucket" {
 
 resource "google_storage_bucket" "my-bucket" {
   name     = "my-bucket-${random_id.bucket.hex}"
+  project  = "${local.project}"
   location = "US"
+
   labels = {
     foo = "bar"
   }
+
   website = {
     main_page_suffix = "index.html"
     not_found_page   = "404.html"
   }
+
   cors = {
     origin = ["*"]
     method = ["POST"]
@@ -81,3 +86,4 @@ resource "google_project_iam_binding" "editors" {
   ]
 }
 */
+

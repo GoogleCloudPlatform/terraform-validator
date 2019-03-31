@@ -47,6 +47,9 @@ Example:
 	RunE: func(c *cobra.Command, args []string) error {
 		assets, err := tfgcv.ReadPlannedAssets(args[0], flags.convert.project)
 		if err != nil {
+			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
+				return errors.New("unable to parse provider project, please use --project flag")
+			}
 			return errors.Wrap(err, "converting tfplan to CAI assets")
 		}
 

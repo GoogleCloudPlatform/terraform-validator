@@ -27,11 +27,9 @@ func init() {
 
 	validateCmd.Flags().StringVar(&flags.validate.policyPath, "policy-path", "", "Path to directory containing validation policies")
 	validateCmd.MarkFlagRequired("policy-path")
-	validateCmd.Flags().StringVar(&flags.validate.project, "project", "", "Provider project")
-	validateCmd.MarkFlagRequired("project")
+	validateCmd.Flags().StringVar(&flags.validate.project, "project", "", "Provider project override")
 
-	convertCmd.Flags().StringVar(&flags.convert.project, "project", "", "Provider project")
-	convertCmd.MarkFlagRequired("project")
+	convertCmd.Flags().StringVar(&flags.convert.project, "project", "", "Provider project override")
 
 	validateCmd.Flags().BoolVar(&flags.validate.outputJSON, "output-json", false, "Print violations as JSON")
 
