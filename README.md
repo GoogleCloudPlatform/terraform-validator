@@ -40,7 +40,8 @@ terraform apply ./terraform.tfplan
 make test
 
 # Integration
-make test-e2e PROJECT=my-project CREDENTIALS=./my-credentials.json
+cp <my-google-credentials-file> ./credentials.json
+make test-e2e PROJECT=my-project
 ```
 
 ## Disclaimer
