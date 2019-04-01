@@ -12,6 +12,7 @@ import (
 	computev1 "google.golang.org/api/compute/v1"
 )
 
+// TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
 	data, cfg := setup(t)
 
@@ -33,9 +34,14 @@ func TestConvert(t *testing.T) {
 		t.Fatalf("unmarshaling: %v", err)
 	}
 
+	assetsByType := make(map[string][]google.Asset)
+	for _, a := range assets {
+		assetsByType[a.Type] = append(assetsByType[a.Type], a)
+	}
+
 	t.Run("Disk", func(t *testing.T) {
 		var converted computev1.Disk
-		jsonify(t, assets[0].Resource.Data, &converted)
+		jsonify(t, assetsByType["compute.googleapis.com/Disk"][0].Resource.Data, &converted)
 		require.Equal(t, data.Disk, converted)
 	})
 }

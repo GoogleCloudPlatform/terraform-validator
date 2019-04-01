@@ -17,6 +17,12 @@ const (
 
 var planPath = filepath.Join(generateDir, "test.tfplan")
 
+// setup an end-to-end test.
+// Pull in env vars (config).
+// Build Google API resource values (data).
+// Generate terraform files from templates using above data.
+// Run terraform fmt/init/plan to create a .tfplan file.
+// Return data and config.
 func setup(t *testing.T) (data, config) {
 	cfg := configure(t)
 
@@ -67,15 +73,10 @@ func run(t *testing.T, name string, args ...string) {
 
 func generateTFConfigs(t *testing.T, data data) {
 	tmpls := template.Must(
-		template.New("").Funcs(template.FuncMap{
-			"pastLastSlash": func(s string) string {
-				split := strings.Split(s, "/")
-				return split[len(split)-1]
-			},
-		}).ParseGlob(
-			filepath.Join(templateDir, "*.tf"),
-		),
-	)
+		template.New("").
+			Funcs(templateFuncs()).
+			ParseGlob(filepath.Join(templateDir, "*.tf")))
+
 	for _, tmpl := range tmpls.Templates() {
 		if tmpl.Name() == "" {
 			continue // Skip base template.
@@ -94,6 +95,15 @@ func generateTFConfigs(t *testing.T, data data) {
 		if err := f.Close(); err != nil {
 			t.Fatalf("closing file %v: %v", path, err)
 		}
+	}
+}
+
+func templateFuncs() template.FuncMap {
+	return template.FuncMap{
+		"pastLastSlash": func(s string) string {
+			split := strings.Split(s, "/")
+			return split[len(split)-1]
+		},
 	}
 }
 

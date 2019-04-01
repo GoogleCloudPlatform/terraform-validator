@@ -4,6 +4,9 @@ import (
 	computev1 "google.golang.org/api/compute/v1"
 )
 
+// data represents the full dataset that is used for templating terraform
+// configs. It contains Google API resources that are expected to be returned
+// after converting the terraform plan.
 type data struct {
 	Provider map[string]string
 	computev1.Disk
