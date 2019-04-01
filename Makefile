@@ -8,8 +8,18 @@ test:
 	# Skip integration tests in ./test/
 	GO111MODULE=on go test `go list ./... | grep -v terraform-validator/test`
 
+abc:
+	TMP=$$(echo 123) ;\
+	echo $$TMP ;\
+
 test-e2e: build-docker
-	docker run --env TEST_PROJECT=${PROJECT} --env TEST_CREDENTIALS=${CREDENTIALS} terraform-validator go test -v ./test
+	# Hardcode credentials to "./credentials.json" to discourage other non-accounted-for
+	# filenames that could be compiled into docker images / committed to repo.
+	set -e ;\
+	CONTAINER=$$(docker create --env TEST_PROJECT=${PROJECT} --env TEST_CREDENTIALS=./credentials.json terraform-validator go test -v ./test) ;\
+	echo $$CONTAINER ;\
+	docker cp ./credentials.json $$CONTAINER:/terraform-validator ;\
+	docker start --attach $$CONTAINER ;\
 
 build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .
@@ -28,4 +38,4 @@ $(PLATFORMS):
 clean:
 	rm bin/${NAME}*
 
-.PHONY: test build release $(PLATFORMS) clean publish
+.PHONY: test test-e2e build build-docker release $(PLATFORMS) clean publish

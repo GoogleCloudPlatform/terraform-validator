@@ -1,0 +1,4 @@
+credentials.json
+.git/
+.terraform
+*.tfplan
