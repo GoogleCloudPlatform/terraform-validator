@@ -36,7 +36,11 @@ terraform apply ./terraform.tfplan
 ## Testing
 
 ```
-go test ./...
+# Unit
+make test
+
+# Integration
+make test-e2e PROJECT=my-project CREDENTIALS=./my-credentials.json
 ```
 
 ## Disclaimer

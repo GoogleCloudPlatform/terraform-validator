@@ -1,4 +1,7 @@
 terraform-validator
+credentials.json
+converted.json
+.terraform
+
 bin/terraform-validator*
 *.tfplan
-credentials.json

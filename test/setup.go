@@ -1,0 +1,110 @@
+package test
+
+import (
+	"encoding/json"
+	"html/template"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+const (
+	templateDir = "tf_templates"
+	generateDir = "tf_generated"
+)
+
+var planPath = filepath.Join(generateDir, "test.tfplan")
+
+func setup(t *testing.T) (data, config) {
+	cfg := configure(t)
+
+	data := newData(cfg.project, cfg.credentials)
+
+	generateTFConfigs(t, data)
+
+	run(t, "terraform", "fmt", generateDir)
+	run(t, "terraform", "init", generateDir)
+	run(t, "terraform", "plan",
+		"--out", planPath,
+		generateDir,
+	)
+
+	return data, cfg
+}
+
+type config struct {
+	project     string
+	credentials string
+}
+
+func configure(t *testing.T) config {
+	var cfg config
+	var ok bool
+
+	cfg.project, ok = os.LookupEnv("TEST_PROJECT")
+	if !ok {
+		t.Fatal("missing required env var TEST_PROJECT")
+	}
+	cfg.credentials, ok = os.LookupEnv("TEST_CREDENTIALS")
+	if !ok {
+		t.Fatal("missing required env var TEST_CREDENTIALS")
+	}
+	// Make credentials path relative to repo root.
+	cfg.credentials = filepath.Join("..", cfg.credentials)
+	return cfg
+}
+
+// run a command and call t.Fatal on non-zero exit.
+func run(t *testing.T, name string, args ...string) {
+	c := exec.Command(name, args...)
+	c.Stderr = os.Stderr
+	if err := c.Run(); err != nil {
+		t.Fatalf("%s %s: %v", name, strings.Join(args, " "), err)
+	}
+}
+
+func generateTFConfigs(t *testing.T, data data) {
+	tmpls := template.Must(
+		template.New("").Funcs(template.FuncMap{
+			"pastLastSlash": func(s string) string {
+				split := strings.Split(s, "/")
+				return split[len(split)-1]
+			},
+		}).ParseGlob(
+			filepath.Join(templateDir, "*.tf"),
+		),
+	)
+	for _, tmpl := range tmpls.Templates() {
+		if tmpl.Name() == "" {
+			continue // Skip base template.
+		}
+		path := filepath.Join(generateDir, tmpl.Name())
+
+		f, err := os.Create(path)
+		if err != nil {
+			t.Fatalf("creating terraform file %v: %v", path, err)
+		}
+
+		if err := tmpl.Execute(f, data); err != nil {
+			t.Fatalf("templating terraform file %v: %v", path, err)
+		}
+
+		if err := f.Close(); err != nil {
+			t.Fatalf("closing file %v: %v", path, err)
+		}
+	}
+}
+
+// jsonify converts a value into another via JSON as an intermediary
+// serialization.
+func jsonify(t *testing.T, from, to interface{}) {
+	btys, err := json.Marshal(from)
+	if err != nil {
+		t.Fatalf("marshaling: %v", err)
+	}
+	if err := json.Unmarshal(btys, to); err != nil {
+		t.Fatalf("unmarshaling: %v", err)
+	}
+}

@@ -17,6 +17,7 @@ package google
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -202,13 +203,19 @@ func (c *Converter) AddResource(r TerraformResource) error {
 	return nil
 }
 
+type byName []Asset
+
+func (s byName) Len() int           { return len(s) }
+func (s byName) Less(i, j int) bool { return s[i].Name < s[j].Name }
+func (s byName) Swap(i, j int)      { s[i].Name, s[j].Name = s[j].Name, s[i].Name }
+
 // Assets lists all converted assets previously added by calls to AddResource.
 func (c *Converter) Assets() []Asset {
 	list := make([]Asset, 0, len(c.assets))
 	for _, a := range c.assets {
 		list = append(list, a)
 	}
-	// TODO: Sort assets.
+	sort.Sort(byName(list))
 	return list
 }
 
