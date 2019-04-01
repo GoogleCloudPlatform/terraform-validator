@@ -8,10 +8,6 @@ test:
 	# Skip integration tests in ./test/
 	GO111MODULE=on go test `go list ./... | grep -v terraform-validator/test`
 
-abc:
-	TMP=$$(echo 123) ;\
-	echo $$TMP ;\
-
 test-e2e: build-docker
 	# Hardcode credentials to "./credentials.json" to discourage other non-accounted-for
 	# filenames that could be compiled into docker images / committed to repo.
