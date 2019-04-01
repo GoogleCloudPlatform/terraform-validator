@@ -9,12 +9,10 @@ test:
 	GO111MODULE=on go test `go list ./... | grep -v terraform-validator/test`
 
 test-e2e: build-docker
-	# Hardcode credentials to "./credentials.json" to discourage other non-accounted-for
-	# filenames that could be compiled into docker images / committed to repo.
 	set -e ;\
 	CONTAINER=$$(docker create --env TEST_PROJECT=${PROJECT} --env TEST_CREDENTIALS=./credentials.json terraform-validator go test -v ./test) ;\
 	echo $$CONTAINER ;\
-	docker cp ./credentials.json $$CONTAINER:/terraform-validator ;\
+	docker cp ${CREDENTIALS} $$CONTAINER:/terraform-validator ;\
 	docker start --attach $$CONTAINER ;\
 
 build-docker:
