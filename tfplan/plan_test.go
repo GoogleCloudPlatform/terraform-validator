@@ -31,6 +31,7 @@ func TestComposeResources(t *testing.T) {
 					Resources: map[string]*terraform.ResourceState{
 						"google_test_resource.test": &terraform.ResourceState{
 							Primary: &terraform.InstanceState{
+								ID: "my-id",
 								Attributes: map[string]string{
 									"my_number": "42",
 								},
@@ -71,4 +72,5 @@ func TestComposeResources(t *testing.T) {
 	resources := ComposeResources(plan, schemas)
 	require.Len(t, resources, 1)
 	require.Equal(t, 42, resources[0].Get("my_number"))
+	require.Equal(t, "my-id", resources[0].Id())
 }
