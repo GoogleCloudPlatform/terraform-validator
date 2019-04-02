@@ -29,7 +29,7 @@ export POLICY_PATH=/path/to/your/forseti-config-policies/repo
 terraform plan --out=terraform.tfplan
 
 # Validate the google resources the plan would create.
-terraform-validator validate --project=${TF_VAR_project_id} --policy-path=${POLICY_PATH} ./terraform.tfplan
+terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan
 
 # Apply the validated plan.
 terraform apply ./terraform.tfplan
