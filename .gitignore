@@ -1,4 +1,12 @@
+# Binaries
 terraform-validator
 bin/terraform-validator*
-*.tfplan
+
+# Sensitive
 credentials.json
+
+# Terraform (possibly sensitive)
+.terraform/
+*.tfplan
+*.tfstate*
+

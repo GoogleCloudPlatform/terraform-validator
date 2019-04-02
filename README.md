@@ -10,6 +10,8 @@ go install .
 
 ## Example Usage
 
+See the [Auth](#Auth) section first.
+
 ```
 # The example/ directory contains a basic Terraform config for testing the validator.
 cd example/
@@ -35,9 +37,28 @@ terraform apply ./terraform.tfplan
 
 ## Testing
 
+### Unit
+
 ```
-go test ./...
+make test
 ```
 
+### Integration
+
+See the [Auth](#Auth) section for obtaining a credentials file.
+
+```
+make test-e2e PROJECT=my-project-id CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+```
+
+## Auth
+
+The `terraform` and the `terraform-validator` commands need to be able to authenticate to Google Cloud APIs. This can be done by generating a `credentials.json` file:
+
+https://cloud.google.com/docs/authentication/production
+
+Once you have a credentials file on your local machine, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to the credentials file.
+
 ## Disclaimer
+
 This is not an officially supported Google product.
