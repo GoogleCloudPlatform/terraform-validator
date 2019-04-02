@@ -89,5 +89,8 @@ func parseProviderProject(plan *terraform.Plan) (string, error) {
 		}
 	}
 
+	// If we have reached this point, there was no provider-level project that
+	// was specified in this plan. This means the plan should be viable based
+	// on resource-level project fields being set.
 	return "", nil
 }
