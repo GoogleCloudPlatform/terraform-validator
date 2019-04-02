@@ -57,7 +57,7 @@ func mappers() map[string][]mapper {
 			{convert: converter.GetProjectBillingInfoCaiObject},
 		},
 
-		// Terraform IAM policy resources have a N:1 replationship with CAI assets.
+		// Terraform IAM policy resources have a N:1 relationship with CAI assets.
 		"google_organization_iam_policy": {
 			{
 				convert: converter.GetOrganizationIamPolicyCaiObject,

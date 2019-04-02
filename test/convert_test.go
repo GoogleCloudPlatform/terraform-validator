@@ -58,9 +58,9 @@ func TestConvert(t *testing.T) {
 		requireEqualJSONValues(t,
 			// Expected:
 			data.Disk,
-			// Recieved:
+			// Received:
 			assetsByType["compute.googleapis.com/Disk"][0].Resource.Data,
-			// Type of recieved data:
+			// Type of received data:
 			&computev1.Disk{},
 		)
 	})
