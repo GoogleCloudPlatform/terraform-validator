@@ -33,6 +33,7 @@ var ErrDuplicateAsset = errors.New("duplicate asset")
 // TerraformResource represents the required methods needed to convert a terraform
 // resource into an Asset type.
 type TerraformResource interface {
+	Id() string
 	Kind() string
 	Get(string) interface{}
 	GetOk(string) (interface{}, bool)
@@ -47,7 +48,6 @@ type nonImplementedResourceData struct{}
 func (nonImplementedResourceData) HasChange(string) bool         { return false }
 func (nonImplementedResourceData) Set(string, interface{}) error { return nil }
 func (nonImplementedResourceData) SetId(string)                  {}
-func (nonImplementedResourceData) Id() string                    { return "" }
 
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).

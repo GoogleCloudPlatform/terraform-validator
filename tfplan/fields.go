@@ -55,6 +55,7 @@ func newFieldGetter(sch map[string]*schema.Schema, state *terraform.InstanceStat
 	return &fieldGetter{
 		rdr:    rdr,
 		schema: sch,
+		state:  state,
 	}
 }
 
@@ -63,6 +64,15 @@ func newFieldGetter(sch map[string]*schema.Schema, state *terraform.InstanceStat
 type fieldGetter struct {
 	rdr    schema.FieldReader
 	schema map[string]*schema.Schema
+	state  *terraform.InstanceState
+}
+
+// Id returns the ID of the resource from state.
+func (g *fieldGetter) Id() string {
+	if g.state != nil {
+		return g.state.ID
+	}
+	return ""
 }
 
 // Get reads a single field by key.
