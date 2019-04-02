@@ -22,6 +22,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -124,6 +126,16 @@ func templateFuncs() template.FuncMap {
 			return split[len(split)-1]
 		},
 	}
+}
+
+// assertEqualJSON asserts that two values have an equal JSON representation.
+// It will convert the `from` type into the `to` type using JSON
+// as an intermediary serialization. The resulting `to` value is asserted for
+// equality against the `expected` value.
+// NOTE: `to` must be a pointer.
+func requireEqualJSONValues(t *testing.T, expected, from, to interface{}) {
+	jsonify(t, from, to)
+	require.EqualValues(t, expected, to)
 }
 
 // jsonify converts a value into another via JSON as an intermediary

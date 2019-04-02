@@ -113,8 +113,7 @@ func NewConverter(project, credentials string) (*Converter, error) {
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
 		schema:          p,
-		conversions:     conversionFuncs(),
-		mergers:         mergeFuncs(),
+		mapperFuncs:     mappers(),
 		cfg:             cfg,
 		resourceManager: resourceManager,
 		ancestryCache:   make(map[string]string),
@@ -129,8 +128,7 @@ type Converter struct {
 
 	// Map terraform resource kinds (i.e. "google_compute_instance")
 	// to their mapping/merging functions.
-	conversions map[string]convertFunc
-	mergers     map[string]mergeFunc
+	mapperFuncs map[string][]mapper
 
 	cfg *converter.Config
 
@@ -144,18 +142,11 @@ type Converter struct {
 	assets map[string]Asset
 }
 
-type convertFunc func(d converter.TerraformResourceData, config *converter.Config) (converter.Asset, error)
-
-// mergeFunc combines terraform resources have a many-to-one relationship
-// with CAI assets, i.e:
-// google_project_iam_member -> google.cloud.resourcemanager/Project
-type mergeFunc func(existing, incoming converter.Asset) converter.Asset
-
 // Schemas exposes the schemas of resources this converter knows about.
 func (c *Converter) Schemas() map[string]*schema.Resource {
 	supported := make(map[string]*schema.Resource)
 	for k := range c.schema.ResourcesMap {
-		if _, ok := c.conversions[k]; ok {
+		if _, ok := c.mapperFuncs[k]; ok {
 			supported[k] = c.schema.ResourcesMap[k]
 		}
 	}
@@ -164,41 +155,41 @@ func (c *Converter) Schemas() map[string]*schema.Resource {
 
 // AddResource converts a terraform resource and stores the converted asset.
 func (c *Converter) AddResource(r TerraformResource) error {
-	convert, ok := c.conversions[r.Kind()]
-	if !ok {
-		return fmt.Errorf("unsupported resource kind %v", r.Kind())
-	}
+	for _, mapper := range c.mapperFuncs[r.Kind()] {
+		data := struct {
+			TerraformResource
+			nonImplementedResourceData
+		}{TerraformResource: r}
 
-	var data struct {
-		TerraformResource
-		nonImplementedResourceData
-	}
-	data.TerraformResource = r
-	converted, err := convert(data, c.cfg)
-	if err != nil {
-		return errors.Wrap(err, "converting asset")
-	}
-
-	key := converted.Type + converted.Name
-
-	if existing, exists := c.assets[key]; exists {
-		// The existance of a merge function signals that this tf resource maps to a
-		// patching operation on an API resource.
-		if merge, ok := c.mergers[r.Kind()]; ok {
-			converted = merge(existing.converterAsset, converted)
-		} else {
-			// If a merge function does not exist ignore the asset and return
-			// a checkable error.
-			return errors.Wrapf(ErrDuplicateAsset, "asset type %s: asset name %s",
-				converted.Type, converted.Name)
+		converted, err := mapper.convert(data, c.cfg)
+		if err != nil {
+			if errors.Cause(err) == converter.ErrNoConversion {
+				continue
+			}
+			return errors.Wrap(err, "converting asset")
 		}
-	}
 
-	augmented, err := c.augmentAsset(data, c.cfg, converted)
-	if err != nil {
-		return errors.Wrap(err, "augmenting asset")
+		key := converted.Type + converted.Name
+
+		if existing, exists := c.assets[key]; exists {
+			// The existance of a merge function signals that this tf resource maps to a
+			// patching operation on an API resource.
+			if mapper.merge != nil {
+				converted = mapper.merge(existing.converterAsset, converted)
+			} else {
+				// If a merge function does not exist ignore the asset and return
+				// a checkable error.
+				return errors.Wrapf(ErrDuplicateAsset, "asset type %s: asset name %s",
+					converted.Type, converted.Name)
+			}
+		}
+
+		augmented, err := c.augmentAsset(data, c.cfg, converted)
+		if err != nil {
+			return errors.Wrap(err, "augmenting asset")
+		}
+		c.assets[key] = augmented
 	}
-	c.assets[key] = augmented
 
 	return nil
 }
