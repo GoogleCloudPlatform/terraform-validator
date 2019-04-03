@@ -15,8 +15,10 @@
 package google
 
 import (
+	"sort"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
 
@@ -57,6 +59,33 @@ func TestAncestryPath(t *testing.T) {
 			if output != c.expectedOutput {
 				t.Errorf("expected output %q, got %q", c.expectedOutput, output)
 			}
+		})
+	}
+}
+
+func TestSortByName(t *testing.T) {
+	cases := []struct {
+		name           string
+		unsorted       []Asset
+		expectedSorted []Asset
+	}{
+		{
+			name:           "Empty",
+			unsorted:       []Asset{},
+			expectedSorted: []Asset{},
+		},
+		{
+			name:           "BCAtoABC",
+			unsorted:       []Asset{{Name: "b", Type: "b-type"}, {Name: "c", Type: "c-type"}, {Name: "a", Type: "a-type"}},
+			expectedSorted: []Asset{{Name: "a", Type: "a-type"}, {Name: "b", Type: "b-type"}, {Name: "c", Type: "c-type"}},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assets := c.unsorted
+			sort.Sort(byName(assets))
+			assert.EqualValues(t, c.expectedSorted, assets)
 		})
 	}
 }
