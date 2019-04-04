@@ -15,19 +15,16 @@
 package google
 
 import (
-	"context"
-	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	provider "github.com/terraform-providers/terraform-provider-google/google"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/cloudresourcemanager/v1"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 )
+
+type Asset = converter.Asset
 
 var ErrDuplicateAsset = errors.New("duplicate asset")
 
@@ -50,58 +47,8 @@ func (nonImplementedResourceData) HasChange(string) bool         { return false 
 func (nonImplementedResourceData) Set(string, interface{}) error { return nil }
 func (nonImplementedResourceData) SetId(string)                  {}
 
-// Asset contains the resource data and metadata in the same format as
-// Google CAI (Cloud Asset Inventory).
-type Asset struct {
-	Name      string         `json:"name"`
-	Type      string         `json:"asset_type"`
-	Ancestry  string         `json:"ancestry_path"`
-	Resource  *AssetResource `json:"resource,omitempty"`
-	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
-
-	project string
-
-	// Store the converter's version of the asset to allow for merges which
-	// operate on this type. When matching json tags land in the conversions
-	// library, this could be nested to avoid the duplication of fields.
-	converterAsset converter.Asset
-}
-
-// IAMPolicy is the representation of a Cloud IAM policy set on a cloud resource.
-type IAMPolicy struct {
-	Bindings []IAMBinding `json:"bindings"`
-}
-
-// IAMBinding binds a role to a set of members.
-type IAMBinding struct {
-	Role    string   `json:"role"`
-	Members []string `json:"members"`
-}
-
-// AssetResource is nested within the Asset type.
-type AssetResource struct {
-	Version              string                 `json:"version"`
-	DiscoveryDocumentURI string                 `json:"discovery_document_uri"`
-	DiscoveryName        string                 `json:"discovery_name"`
-	Parent               string                 `json:"parent"`
-	Data                 map[string]interface{} `json:"data"`
-}
-
 // NewConverter is a factory function for Converter.
 func NewConverter(project, credentials string) (*Converter, error) {
-	// TODO: Use credentials for resourceManager client.
-	client, err := google.DefaultClient(context.Background(), []string{
-		"https://www.googleapis.com/auth/cloud-platform",
-	}...)
-	if err != nil {
-		return nil, errors.Wrap(err, "building default client")
-	}
-
-	resourceManager, err := cloudresourcemanager.New(client)
-	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
-	}
-
 	cfg := &converter.Config{
 		Project:     project,
 		Credentials: credentials,
@@ -112,12 +59,10 @@ func NewConverter(project, credentials string) (*Converter, error) {
 
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
-		schema:          p,
-		mapperFuncs:     mappers(),
-		cfg:             cfg,
-		resourceManager: resourceManager,
-		ancestryCache:   make(map[string]string),
-		assets:          make(map[string]Asset),
+		schema:      p,
+		mapperFuncs: mappers(),
+		cfg:         cfg,
+		assets:      make(map[string]Asset),
 	}, nil
 }
 
@@ -131,12 +76,6 @@ type Converter struct {
 	mapperFuncs map[string][]mapper
 
 	cfg *converter.Config
-
-	resourceManager *cloudresourcemanager.Service
-
-	// Cache to prevent multiple network calls for looking up the same project's ancestry
-	// map[project]ancestryPath
-	ancestryCache map[string]string
 
 	// Map of converted assets (key = asset.Type + asset.Name)
 	assets map[string]Asset
@@ -175,7 +114,7 @@ func (c *Converter) AddResource(r TerraformResource) error {
 			// The existance of a merge function signals that this tf resource maps to a
 			// patching operation on an API resource.
 			if mapper.merge != nil {
-				converted = mapper.merge(existing.converterAsset, converted)
+				converted = mapper.merge(existing, converted)
 			} else {
 				// If a merge function does not exist ignore the asset and return
 				// a checkable error.
@@ -184,11 +123,7 @@ func (c *Converter) AddResource(r TerraformResource) error {
 			}
 		}
 
-		augmented, err := c.augmentAsset(data, c.cfg, converted)
-		if err != nil {
-			return errors.Wrap(err, "augmenting asset")
-		}
-		c.assets[key] = augmented
+		c.assets[key] = converted
 	}
 
 	return nil
@@ -208,78 +143,4 @@ func (c *Converter) Assets() []Asset {
 	}
 	sort.Sort(byName(list))
 	return list
-}
-
-// augmentAsset adds data to an asset that is not set by the conversion library.
-func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *converter.Config, cai converter.Asset) (Asset, error) {
-	project, err := getProject(tfData, cfg)
-	if err != nil {
-		return Asset{}, err
-	}
-
-	ancestry, err := c.getAncestry(project)
-	if err != nil {
-		return Asset{}, errors.Wrapf(err, "getting resource ancestry: project %v", project)
-	}
-
-	var resource *AssetResource
-	if cai.Resource != nil {
-		resource = &AssetResource{
-			Version:              cai.Resource.Version,
-			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
-			DiscoveryName:        cai.Resource.DiscoveryName,
-			Parent:               fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/%v", project),
-			Data:                 cai.Resource.Data,
-		}
-	}
-
-	var policy *IAMPolicy
-	if cai.IAMPolicy != nil {
-		policy = &IAMPolicy{}
-		for _, b := range cai.IAMPolicy.Bindings {
-			policy.Bindings = append(policy.Bindings, IAMBinding{
-				Role:    b.Role,
-				Members: b.Members,
-			})
-		}
-	}
-
-	return Asset{
-		Name:           cai.Name,
-		Type:           cai.Type,
-		Ancestry:       ancestry,
-		Resource:       resource,
-		IAMPolicy:      policy,
-		project:        project,
-		converterAsset: cai,
-	}, nil
-}
-
-// getAncestry uses the resource manager API to get ancestry paths for
-// projects. It implements a cache because many resources share the same
-// project.
-func (c *Converter) getAncestry(project string) (string, error) {
-	if path, ok := c.ancestryCache[project]; ok {
-		return path, nil
-	}
-
-	ancestry, err := c.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
-	if err != nil {
-		return "", err
-	}
-
-	path := ancestryPath(ancestry.Ancestor)
-	c.ancestryCache[project] = path
-
-	return path, nil
-}
-
-// ancestryPath composes a path containing organization/folder/project
-// (i.e. "organization/my-org/project/my-prj").
-func ancestryPath(as []*cloudresourcemanager.Ancestor) string {
-	var path []string
-	for i := len(as) - 1; i >= 0; i-- {
-		path = append(path, as[i].ResourceId.Type, as[i].ResourceId.Id)
-	}
-	return strings.Join(path, "/")
 }
