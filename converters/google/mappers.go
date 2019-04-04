@@ -53,7 +53,10 @@ func mappers() map[string][]mapper {
 
 		// Terraform resources of type "google_project" have a 1:N relationship with CAI assets.
 		"google_project": {
-			{convert: converter.GetProjectCaiObject},
+			{
+				convert: converter.GetProjectCaiObject,
+				merge:   mergeProject,
+			},
 			{convert: converter.GetProjectBillingInfoCaiObject},
 		},
 
