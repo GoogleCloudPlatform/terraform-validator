@@ -17,7 +17,7 @@ package google
 import "reflect"
 
 func GetAppEngineFirewallRuleCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//appengine.googleapis.com/apps/{{project}}/firewall/ingressRules/{{priority}}")
+	name, err := assetName(d, config, "//appengine.googleapis.com/apps/{{project}}/firewall/ingressRules/{{priority}}")
 	if err != nil {
 		return Asset{}, err
 	}

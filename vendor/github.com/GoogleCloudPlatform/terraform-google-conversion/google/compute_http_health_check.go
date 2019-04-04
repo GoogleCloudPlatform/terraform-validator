@@ -17,7 +17,7 @@ package google
 import "reflect"
 
 func GetComputeHttpHealthCheckCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//compute.googleapis.com/projects/{{project}}/global/httpHealthChecks/{{name}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/httpHealthChecks/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

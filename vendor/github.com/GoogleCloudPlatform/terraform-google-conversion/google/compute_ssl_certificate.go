@@ -21,7 +21,7 @@ import (
 )
 
 func GetComputeSslCertificateCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//compute.googleapis.com/projects/{{project}}/global/sslCertificates/{{name}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/sslCertificates/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

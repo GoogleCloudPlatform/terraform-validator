@@ -1,7 +1,7 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
 require (
-	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190325171836-c132dda4b40e
+	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538-710bfbc3d74a
 	github.com/forseti-security/config-validator v0.0.0-20190329215106-675a967a6af4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.1

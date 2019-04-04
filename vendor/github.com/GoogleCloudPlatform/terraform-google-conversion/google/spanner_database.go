@@ -20,7 +20,7 @@ import (
 )
 
 func GetSpannerDatabaseCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//spanner.googleapis.com/projects/{{project}}/instances/{{instance}}/databases/{{name}}")
+	name, err := assetName(d, config, "//spanner.googleapis.com/projects/{{project}}/instances/{{instance}}/databases/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

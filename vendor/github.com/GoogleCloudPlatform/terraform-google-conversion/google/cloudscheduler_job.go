@@ -20,7 +20,7 @@ import (
 )
 
 func GetCloudSchedulerJobCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//cloudscheduler.googleapis.com/projects/{{project}}/locations/{{region}}/jobs/{{name}}")
+	name, err := assetName(d, config, "//cloudscheduler.googleapis.com/projects/{{project}}/locations/{{region}}/jobs/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

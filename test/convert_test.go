@@ -22,7 +22,8 @@ import (
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	"github.com/stretchr/testify/require"
+	cloudbillingv1 "google.golang.org/api/cloudbilling/v1"
+	cloudresourcemanagerv1 "google.golang.org/api/cloudresourcemanager/v1"
 	computev1 "google.golang.org/api/compute/v1"
 )
 
@@ -54,8 +55,29 @@ func TestConvert(t *testing.T) {
 	}
 
 	t.Run("Disk", func(t *testing.T) {
-		var converted computev1.Disk
-		jsonify(t, assetsByType["compute.googleapis.com/Disk"][0].Resource.Data, &converted)
-		require.Equal(t, data.Disk, converted)
+		requireEqualJSONValues(t,
+			// Expected:
+			data.Disk,
+			// Received:
+			assetsByType["compute.googleapis.com/Disk"][0].Resource.Data,
+			// Type of received data:
+			&computev1.Disk{},
+		)
+	})
+
+	t.Run("Project", func(t *testing.T) {
+		requireEqualJSONValues(t,
+			data.Project,
+			assetsByType["cloudresourcemanager.googleapis.com/Project"][0].Resource.Data,
+			&cloudresourcemanagerv1.Project{},
+		)
+	})
+
+	t.Run("ProjectBillingInfo", func(t *testing.T) {
+		requireEqualJSONValues(t,
+			data.ProjectBillingInfo,
+			assetsByType["cloudbilling.googleapis.com/ProjectBillingInfo"][0].Resource.Data,
+			&cloudbillingv1.ProjectBillingInfo{},
+		)
 	})
 }

@@ -20,7 +20,7 @@ import (
 )
 
 func GetComputeHealthCheckCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//compute.googleapis.com/projects/{{project}}/global/healthChecks/{{name}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/healthChecks/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

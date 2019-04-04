@@ -17,7 +17,7 @@ package google
 import "reflect"
 
 func GetSourceRepoRepositoryCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//sourcerepo.googleapis.com/projects/{{project}}/repos/{{name}}")
+	name, err := assetName(d, config, "//sourcerepo.googleapis.com/projects/{{project}}/repos/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
