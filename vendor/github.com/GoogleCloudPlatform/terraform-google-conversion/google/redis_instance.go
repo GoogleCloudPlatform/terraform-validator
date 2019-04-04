@@ -20,7 +20,7 @@ import (
 )
 
 func GetRedisInstanceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//redis.googleapis.com/projects/{{project}}/locations/{{region}}/instances/{{name}}")
+	name, err := assetName(d, config, "//redis.googleapis.com/projects/{{project}}/locations/{{region}}/instances/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

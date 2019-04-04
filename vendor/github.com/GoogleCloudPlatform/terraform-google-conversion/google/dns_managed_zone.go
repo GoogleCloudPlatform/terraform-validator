@@ -14,10 +14,14 @@
 
 package google
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/hashicorp/terraform/helper/schema"
+)
 
 func GetDnsManagedZoneCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//dns.googleapis.com/projects/{{project}}/managedZones/{{name}}")
+	name, err := assetName(d, config, "//dns.googleapis.com/projects/{{project}}/managedZones/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
@@ -63,6 +67,18 @@ func GetDnsManagedZoneApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
 		obj["labels"] = labelsProp
 	}
+	visibilityProp, err := expandDnsManagedZoneVisibility(d.Get("visibility"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("visibility"); !isEmptyValue(reflect.ValueOf(visibilityProp)) && (ok || !reflect.DeepEqual(v, visibilityProp)) {
+		obj["visibility"] = visibilityProp
+	}
+	privateVisibilityConfigProp, err := expandDnsManagedZonePrivateVisibilityConfig(d.Get("private_visibility_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("private_visibility_config"); !isEmptyValue(reflect.ValueOf(privateVisibilityConfigProp)) && (ok || !reflect.DeepEqual(v, privateVisibilityConfigProp)) {
+		obj["privateVisibilityConfig"] = privateVisibilityConfigProp
+	}
 
 	return obj, nil
 }
@@ -88,4 +104,54 @@ func expandDnsManagedZoneLabels(v interface{}, d TerraformResourceData, config *
 		m[k] = val.(string)
 	}
 	return m, nil
+}
+
+func expandDnsManagedZoneVisibility(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDnsManagedZonePrivateVisibilityConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedNetworks, err := expandDnsManagedZonePrivateVisibilityConfigNetworks(original["networks"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedNetworks); val.IsValid() && !isEmptyValue(val) {
+		transformed["networks"] = transformedNetworks
+	}
+
+	return transformed, nil
+}
+
+func expandDnsManagedZonePrivateVisibilityConfigNetworks(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	v = v.(*schema.Set).List()
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedNetworkUrl, err := expandDnsManagedZonePrivateVisibilityConfigNetworksNetworkUrl(original["network_url"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedNetworkUrl); val.IsValid() && !isEmptyValue(val) {
+			transformed["networkUrl"] = transformedNetworkUrl
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandDnsManagedZonePrivateVisibilityConfigNetworksNetworkUrl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }

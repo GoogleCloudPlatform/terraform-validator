@@ -56,7 +56,7 @@ func validateHttpHeaders() schema.SchemaValidateFunc {
 }
 
 func GetTpuNodeCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//tpu.googleapis.com/projects/{{project}}/locations/{{zone}}/nodes/{{name}}")
+	name, err := assetName(d, config, "//tpu.googleapis.com/projects/{{project}}/locations/{{zone}}/nodes/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

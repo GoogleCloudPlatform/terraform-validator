@@ -17,7 +17,7 @@ package google
 import "reflect"
 
 func GetResourceManagerLienCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//resourcemanager.googleapis.com/liens?parent={{parent}}")
+	name, err := assetName(d, config, "//resourcemanager.googleapis.com/liens?parent={{parent}}")
 	if err != nil {
 		return Asset{}, err
 	}

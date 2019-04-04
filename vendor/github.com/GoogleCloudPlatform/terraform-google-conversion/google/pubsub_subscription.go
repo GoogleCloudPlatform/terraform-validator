@@ -21,7 +21,7 @@ import (
 )
 
 func GetPubsubSubscriptionCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//pubsub.googleapis.com/projects/{{project}}/subscriptions/{{name}}")
+	name, err := assetName(d, config, "//pubsub.googleapis.com/projects/{{project}}/subscriptions/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

@@ -21,6 +21,8 @@ github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190325171836
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190325171836-c132dda4b40e/go.mod h1:h6B4mW5ReeQWi4BLswuDHcRe8oRH1RdmwSEpbd1iKt0=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190327232551-57edfa38874c h1:y1SJ2UPs8QfaLxYr+LDFeo5Sdpiy37kUYzHhKqhJGnA=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190327232551-57edfa38874c/go.mod h1:h6B4mW5ReeQWi4BLswuDHcRe8oRH1RdmwSEpbd1iKt0=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538-710bfbc3d74a h1:Ysh42UmWZT/Ygnd2+bdvl0vO81E4/Lh73C7Uiz1wMsw=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538-710bfbc3d74a/go.mod h1:h6B4mW5ReeQWi4BLswuDHcRe8oRH1RdmwSEpbd1iKt0=
 github.com/OneOfOne/xxhash v1.2.5 h1:zl/OfRA6nftbBK9qTohYBJ5xvw6C/oNKizR7cZGl3cI=
 github.com/OneOfOne/xxhash v1.2.5/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=

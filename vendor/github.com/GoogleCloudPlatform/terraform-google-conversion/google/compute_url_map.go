@@ -21,7 +21,7 @@ import (
 )
 
 func GetComputeUrlMapCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//compute.googleapis.com/projects/{{project}}/global/urlMaps/{{name}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/urlMaps/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

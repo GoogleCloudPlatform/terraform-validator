@@ -20,7 +20,7 @@ import (
 )
 
 func GetComputeTargetHttpsProxyCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//compute.googleapis.com/projects/{{project}}/global/targetHttpsProxies/{{name}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/targetHttpsProxies/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}

@@ -51,7 +51,7 @@ func splitSubnetID(id string) (region string, name string) {
 }
 
 func GetComputeSubnetworkCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := replaceVars(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/subnetworks/{{name}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/subnetworks/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
