@@ -23,7 +23,7 @@ import (
 )
 
 func init() {
-	validateCmd.PersistentFlags().BoolVar(&flags.verbose, "verbose", false, "Log output to stderr")
+	rootCmd.PersistentFlags().BoolVar(&flags.verbose, "verbose", false, "Log output to stderr")
 
 	validateCmd.Flags().StringVar(&flags.validate.policyPath, "policy-path", "", "Path to directory containing validation policies")
 	validateCmd.MarkFlagRequired("policy-path")
