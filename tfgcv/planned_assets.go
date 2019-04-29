@@ -26,8 +26,10 @@ import (
 )
 
 // ReadPlannedAssets extracts CAI assets from a terraform plan file.
+// If ancestry path is provided, it assumes the project is in that path rather
+// than fetching the ancestry information using Google API.
 // It ignores non-supported resources.
-func ReadPlannedAssets(path, project string) ([]google.Asset, error) {
+func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "opening plan file")
@@ -47,7 +49,7 @@ func ReadPlannedAssets(path, project string) ([]google.Asset, error) {
 		}
 	}
 
-	converter, err := google.NewConverter(project, "")
+	converter, err := google.NewConverter(project, ancestry, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

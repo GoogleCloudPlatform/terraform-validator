@@ -28,8 +28,10 @@ func init() {
 	validateCmd.Flags().StringVar(&flags.validate.policyPath, "policy-path", "", "Path to directory containing validation policies")
 	validateCmd.MarkFlagRequired("policy-path")
 	validateCmd.Flags().StringVar(&flags.validate.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when validating resources)")
+	validateCmd.Flags().StringVar(&flags.validate.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
 
 	convertCmd.Flags().StringVar(&flags.convert.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when converting resources)")
+	convertCmd.Flags().StringVar(&flags.convert.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
 
 	validateCmd.Flags().BoolVar(&flags.validate.outputJSON, "output-json", false, "Print violations as JSON")
 
@@ -47,10 +49,12 @@ var flags struct {
 
 	// flags that correspond to subcommands:
 	convert struct {
-		project string
+		project  string
+		ancestry string
 	}
 	validate struct {
 		project    string
+		ancestry   string
 		policyPath string
 		outputJSON bool
 	}
