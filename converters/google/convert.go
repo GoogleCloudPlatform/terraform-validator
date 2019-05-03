@@ -88,7 +88,7 @@ type AssetResource struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(project, credentials string) (*Converter, error) {
+func NewConverter(project, ancestry, credentials string) (*Converter, error) {
 	// TODO: Use credentials for resourceManager client.
 	client, err := google.DefaultClient(context.Background(), []string{
 		"https://www.googleapis.com/auth/cloud-platform",
@@ -110,13 +110,18 @@ func NewConverter(project, credentials string) (*Converter, error) {
 		return nil, errors.Wrap(err, "configuring")
 	}
 
+	ancestryCache := make(map[string]string)
+	if ancestry != "" {
+		ancestryCache[project] = fmt.Sprintf("%s/project/%s", ancestry, project)
+	}
+
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
 		schema:          p,
 		mapperFuncs:     mappers(),
 		cfg:             cfg,
 		resourceManager: resourceManager,
-		ancestryCache:   make(map[string]string),
+		ancestryCache:   ancestryCache,
 		assets:          make(map[string]Asset),
 	}, nil
 }
@@ -275,7 +280,7 @@ func (c *Converter) getAncestry(project string) (string, error) {
 }
 
 // ancestryPath composes a path containing organization/folder/project
-// (i.e. "organization/my-org/project/my-prj").
+// (i.e. "organization/my-org/folder/my-folder/project/my-prj").
 func ancestryPath(as []*cloudresourcemanager.Ancestor) string {
 	var path []string
 	for i := len(as) - 1; i >= 0; i-- {

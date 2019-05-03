@@ -36,7 +36,8 @@ Note:
   resources.
 
 Example:
-  terraform-validator convert ./example/terraform.tfplan --project my-project
+  terraform-validator convert ./example/terraform.tfplan --project my-project \
+    --ancestry organization/my-org/folder/my-folder
 `,
 	PreRunE: func(c *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -45,7 +46,7 @@ Example:
 		return nil
 	},
 	RunE: func(c *cobra.Command, args []string) error {
-		assets, err := tfgcv.ReadPlannedAssets(args[0], flags.convert.project)
+		assets, err := tfgcv.ReadPlannedAssets(args[0], flags.convert.project, flags.convert.ancestry)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 				return errors.New("unable to parse provider project, please use --project flag")

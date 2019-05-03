@@ -36,6 +36,7 @@ is set.
 Example:
   terraform-validator validate ./example/terraform.tfplan \
     --project my-project \
+    --ancestry organization/my-org/folder/my-folder \
     --policy-path ./path/to/my/gcv/policies
 `,
 	PreRunE: func(c *cobra.Command, args []string) error {
@@ -45,7 +46,7 @@ Example:
 		return nil
 	},
 	RunE: func(c *cobra.Command, args []string) error {
-		assets, err := tfgcv.ReadPlannedAssets(args[0], flags.validate.project)
+		assets, err := tfgcv.ReadPlannedAssets(args[0], flags.validate.project, flags.validate.ancestry)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 				return errors.New("unable to parse provider project, please use --project flag")
