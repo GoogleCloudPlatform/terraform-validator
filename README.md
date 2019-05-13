@@ -35,6 +35,24 @@ terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan
 terraform apply ./terraform.tfplan
 ```
 
+## Resources
+The follow Terraform resources are supported for running validation checks:
+
+- `google_compute_disk`
+- `google_compute_instance`
+- `google_storage_bucket`
+- `google_sql_database_instance`
+- `google_project`
+- `google_organization_iam_policy`
+- `google_organization_iam_binding`
+- `google_organization_iam_member`
+- `google_folder_iam_policy`
+- `google_folder_iam_binding`
+- `google_folder_iam_member`
+- `google_project_iam_policy`
+- `google_project_iam_binding`
+- `google_project_iam_member`
+
 ## Testing
 
 ### Unit
