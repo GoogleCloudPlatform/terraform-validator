@@ -18,7 +18,22 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func comparePubsubSubscriptionExpirationPolicy(_, old, new string, _ *schema.ResourceData) bool {
+	trimmedNew := strings.TrimLeft(new, "0")
+	trimmedOld := strings.TrimLeft(old, "0")
+	if strings.Contains(trimmedNew, ".") {
+		trimmedNew = strings.TrimRight(strings.TrimSuffix(trimmedNew, "s"), "0") + "s"
+	}
+	if strings.Contains(trimmedOld, ".") {
+		trimmedOld = strings.TrimRight(strings.TrimSuffix(trimmedOld, "s"), "0") + "s"
+	}
+	return trimmedNew == trimmedOld
+}
 
 func GetPubsubSubscriptionCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//pubsub.googleapis.com/projects/{{project}}/subscriptions/{{name}}")
@@ -84,6 +99,12 @@ func GetPubsubSubscriptionApiObject(d TerraformResourceData, config *Config) (ma
 		return nil, err
 	} else if v, ok := d.GetOkExists("retain_acked_messages"); !isEmptyValue(reflect.ValueOf(retainAckedMessagesProp)) && (ok || !reflect.DeepEqual(v, retainAckedMessagesProp)) {
 		obj["retainAckedMessages"] = retainAckedMessagesProp
+	}
+	expirationPolicyProp, err := expandPubsubSubscriptionExpirationPolicy(d.Get("expiration_policy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("expiration_policy"); !isEmptyValue(reflect.ValueOf(expirationPolicyProp)) && (ok || !reflect.DeepEqual(v, expirationPolicyProp)) {
+		obj["expirationPolicy"] = expirationPolicyProp
 	}
 
 	return obj, nil
@@ -193,5 +214,28 @@ func expandPubsubSubscriptionMessageRetentionDuration(v interface{}, d Terraform
 }
 
 func expandPubsubSubscriptionRetainAckedMessages(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPubsubSubscriptionExpirationPolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedTtl, err := expandPubsubSubscriptionExpirationPolicyTtl(original["ttl"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTtl); val.IsValid() && !isEmptyValue(val) {
+		transformed["ttl"] = transformedTtl
+	}
+
+	return transformed, nil
+}
+
+func expandPubsubSubscriptionExpirationPolicyTtl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

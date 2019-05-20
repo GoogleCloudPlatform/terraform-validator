@@ -112,7 +112,7 @@ func GetComputeSubnetworkApiObject(d TerraformResourceData, config *Config) (map
 	secondaryIpRangesProp, err := expandComputeSubnetworkSecondaryIpRange(d.Get("secondary_ip_range"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("secondary_ip_range"); !isEmptyValue(reflect.ValueOf(secondaryIpRangesProp)) && (ok || !reflect.DeepEqual(v, secondaryIpRangesProp)) {
+	} else if v, ok := d.GetOkExists("secondary_ip_range"); ok || !reflect.DeepEqual(v, secondaryIpRangesProp) {
 		obj["secondaryIpRanges"] = secondaryIpRangesProp
 	}
 	privateIpGoogleAccessProp, err := expandComputeSubnetworkPrivateIpGoogleAccess(d.Get("private_ip_google_access"), d, config)

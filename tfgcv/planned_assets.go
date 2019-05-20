@@ -15,8 +15,13 @@
 package tfgcv
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"strings"
+
+	"google.golang.org/api/cloudresourcemanager/v1"
+	"google.golang.org/api/option"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
@@ -49,7 +54,15 @@ func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
 		}
 	}
 
-	converter, err := google.NewConverter(project, ancestry, "")
+	// Add User Agent string to indicate Terraform Validator usage.
+	// Do *NOT* change the "terraform-validator/" prefix, or else it will
+	// break usage tracking.
+	ua := option.WithUserAgent(fmt.Sprintf("terraform-validator/%s", BuildVersion()))
+	resourceManager, err := cloudresourcemanager.NewService(context.Background(), ua)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing resource manager client")
+	}
+	converter, err := google.NewConverter(resourceManager, project, ancestry, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

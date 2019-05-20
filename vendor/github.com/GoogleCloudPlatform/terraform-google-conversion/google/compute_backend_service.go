@@ -15,11 +15,101 @@
 package google
 
 import (
+	"bytes"
 	"fmt"
+	"log"
 	"reflect"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceGoogleComputeBackendServiceBackendHash(v interface{}) int {
+	if v == nil {
+		return 0
+	}
+
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	log.Printf("[DEBUG] hashing %v", m)
+
+	if group, err := getRelativePath(m["group"].(string)); err != nil {
+		log.Printf("[WARN] Error on retrieving relative path of instance group: %s", err)
+		buf.WriteString(fmt.Sprintf("%s-", m["group"].(string)))
+	} else {
+		buf.WriteString(fmt.Sprintf("%s-", group))
+	}
+
+	if v, ok := m["balancing_mode"]; ok {
+		if v == nil {
+			v = ""
+		}
+
+		buf.WriteString(fmt.Sprintf("%v-", v))
+	}
+	if v, ok := m["capacity_scaler"]; ok {
+		if v == nil {
+			v = 0.0
+		}
+
+		// floats can't be added to the hash with %v as the other values are because
+		// %v and %f are not equivalent strings so this must remain as a float so that
+		// the hash function doesn't return something else.
+		buf.WriteString(fmt.Sprintf("%f-", v.(float64)))
+	}
+	if v, ok := m["description"]; ok {
+		if v == nil {
+			v = ""
+		}
+
+		log.Printf("[DEBUG] writing description %s", v)
+		buf.WriteString(fmt.Sprintf("%v-", v))
+	}
+	if v, ok := m["max_rate"]; ok {
+		if v == nil {
+			v = 0
+		}
+
+		buf.WriteString(fmt.Sprintf("%v-", v))
+	}
+	if v, ok := m["max_rate_per_instance"]; ok {
+		if v == nil {
+			v = 0.0
+		}
+
+		// floats can't be added to the hash with %v as the other values are because
+		// %v and %f are not equivalent strings so this must remain as a float so that
+		// the hash function doesn't return something else.
+		buf.WriteString(fmt.Sprintf("%f-", v.(float64)))
+	}
+	if v, ok := m["max_connections"]; ok {
+		if v == nil {
+			v = 0
+		}
+
+		buf.WriteString(fmt.Sprintf("%v-", v))
+	}
+	if v, ok := m["max_connections_per_instance"]; ok {
+		if v == nil {
+			v = 0
+		}
+
+		buf.WriteString(fmt.Sprintf("%v-", v))
+	}
+	if v, ok := m["max_rate_per_instance"]; ok {
+		if v == nil {
+			v = 0.0
+		}
+
+		// floats can't be added to the hash with %v as the other values are because
+		// %v and %f are not equivalent strings so this must remain as a float so that
+		// the hash function doesn't return something else.
+		buf.WriteString(fmt.Sprintf("%f-", v.(float64)))
+	}
+
+	log.Printf("[DEBUG] computed hash value of %v from %v", hashcode.String(buf.String()), buf.String())
+	return hashcode.String(buf.String())
+}
 
 func GetComputeBackendServiceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/backendServices/{{name}}")
@@ -97,6 +187,12 @@ func GetComputeBackendServiceApiObject(d TerraformResourceData, config *Config) 
 		return nil, err
 	} else if v, ok := d.GetOkExists("iap"); ok || !reflect.DeepEqual(v, iapProp) {
 		obj["iap"] = iapProp
+	}
+	loadBalancingSchemeProp, err := expandComputeBackendServiceLoadBalancingScheme(d.Get("load_balancing_scheme"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("load_balancing_scheme"); !isEmptyValue(reflect.ValueOf(loadBalancingSchemeProp)) && (ok || !reflect.DeepEqual(v, loadBalancingSchemeProp)) {
+		obj["loadBalancingScheme"] = loadBalancingSchemeProp
 	}
 	nameProp, err := expandComputeBackendServiceName(d.Get("name"), d, config)
 	if err != nil {
@@ -258,11 +354,7 @@ func expandComputeBackendServiceBackendDescription(v interface{}, d TerraformRes
 }
 
 func expandComputeBackendServiceBackendGroup(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	f, err := parseZonalFieldValue("instanceGroups", v.(string), "project", "zone", d, config, true)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid value for group: %s", err)
-	}
-	return f.RelativeLink(), nil
+	return v, nil
 }
 
 func expandComputeBackendServiceBackendMaxConnections(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
@@ -299,6 +391,13 @@ func expandComputeBackendServiceCdnPolicy(v interface{}, d TerraformResourceData
 		return nil, err
 	} else if val := reflect.ValueOf(transformedCacheKeyPolicy); val.IsValid() && !isEmptyValue(val) {
 		transformed["cacheKeyPolicy"] = transformedCacheKeyPolicy
+	}
+
+	transformedSignedUrlCacheMaxAgeSec, err := expandComputeBackendServiceCdnPolicySignedUrlCacheMaxAgeSec(original["signed_url_cache_max_age_sec"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedSignedUrlCacheMaxAgeSec); val.IsValid() && !isEmptyValue(val) {
+		transformed["signedUrlCacheMaxAgeSec"] = transformedSignedUrlCacheMaxAgeSec
 	}
 
 	return transformed, nil
@@ -370,6 +469,10 @@ func expandComputeBackendServiceCdnPolicyCacheKeyPolicyQueryStringBlacklist(v in
 
 func expandComputeBackendServiceCdnPolicyCacheKeyPolicyQueryStringWhitelist(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	v = v.(*schema.Set).List()
+	return v, nil
+}
+
+func expandComputeBackendServiceCdnPolicySignedUrlCacheMaxAgeSec(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -449,6 +552,10 @@ func expandComputeBackendServiceIapOauth2ClientSecret(v interface{}, d Terraform
 }
 
 func expandComputeBackendServiceIapOauth2ClientSecretSha256(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeBackendServiceLoadBalancingScheme(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

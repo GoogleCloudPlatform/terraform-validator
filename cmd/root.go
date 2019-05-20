@@ -36,8 +36,9 @@ func init() {
 	validateCmd.Flags().BoolVar(&flags.validate.outputJSON, "output-json", false, "Print violations as JSON")
 
 	rootCmd.AddCommand(convertCmd)
-	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(listSupportedResourcesCmd)
+	rootCmd.AddCommand(validateCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 // NOTE: We use a pkg-level var here instead of github.com/spf13/viper

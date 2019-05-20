@@ -15,7 +15,6 @@
 package google
 
 import (
-	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -23,7 +22,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	provider "github.com/terraform-providers/terraform-provider-google/google"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
@@ -88,20 +86,7 @@ type AssetResource struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(project, ancestry, credentials string) (*Converter, error) {
-	// TODO: Use credentials for resourceManager client.
-	client, err := google.DefaultClient(context.Background(), []string{
-		"https://www.googleapis.com/auth/cloud-platform",
-	}...)
-	if err != nil {
-		return nil, errors.Wrap(err, "building default client")
-	}
-
-	resourceManager, err := cloudresourcemanager.New(client)
-	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
-	}
-
+func NewConverter(resourceManager *cloudresourcemanager.Service, project, ancestry, credentials string) (*Converter, error) {
 	cfg := &converter.Config{
 		Project:     project,
 		Credentials: credentials,
