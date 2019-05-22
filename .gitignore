@@ -10,3 +10,5 @@ credentials.json
 *.tfplan
 *.tfstate*
 
+# Visual Studio Code
+.vscode/
