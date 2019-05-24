@@ -69,11 +69,11 @@ func GetMonitoringAlertPolicyApiObject(d TerraformResourceData, config *Config) 
 	} else if v, ok := d.GetOkExists("notification_channels"); !isEmptyValue(reflect.ValueOf(notificationChannelsProp)) && (ok || !reflect.DeepEqual(v, notificationChannelsProp)) {
 		obj["notificationChannels"] = notificationChannelsProp
 	}
-	labelsProp, err := expandMonitoringAlertPolicyLabels(d.Get("labels"), d, config)
+	userLabelsProp, err := expandMonitoringAlertPolicyUserLabels(d.Get("user_labels"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
-		obj["labels"] = labelsProp
+	} else if v, ok := d.GetOkExists("user_labels"); !isEmptyValue(reflect.ValueOf(userLabelsProp)) && (ok || !reflect.DeepEqual(v, userLabelsProp)) {
+		obj["userLabels"] = userLabelsProp
 	}
 	documentationProp, err := expandMonitoringAlertPolicyDocumentation(d.Get("documentation"), d, config)
 	if err != nil {
@@ -533,8 +533,15 @@ func expandMonitoringAlertPolicyNotificationChannels(v interface{}, d TerraformR
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyLabels(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
+func expandMonitoringAlertPolicyUserLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+	if v == nil {
+		return map[string]string{}, nil
+	}
+	m := make(map[string]string)
+	for k, val := range v.(map[string]interface{}) {
+		m[k] = val.(string)
+	}
+	return m, nil
 }
 
 func expandMonitoringAlertPolicyDocumentation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

@@ -24,6 +24,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// To be set by Go build tools.
+var buildVersion string
+
+// BuildVersion returns the build version of Terraform Validator.
+func BuildVersion() string {
+	return buildVersion
+}
+
 // ValidateAssets instantiates GCV and audits CAI assets.
 func ValidateAssets(assets []google.Asset, policyPath string) (*validator.AuditResponse, error) {
 	valid, err := gcv.NewValidator(

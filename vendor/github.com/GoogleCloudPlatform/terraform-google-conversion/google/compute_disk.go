@@ -18,18 +18,9 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
-)
-
-const (
-	computeDiskUserRegexString = "^(?:https://www.googleapis.com/compute/v1/projects/)?(" + ProjectRegex + ")/zones/([-_a-zA-Z0-9]*)/instances/([-_a-zA-Z0-9]*)$"
-)
-
-var (
-	computeDiskUserRegex = regexp.MustCompile(computeDiskUserRegexString)
 )
 
 // Is the new disk size smaller than the old one?

@@ -19,7 +19,7 @@ build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .
 
 build:
-	GO111MODULE=on go build -mod=vendor -o ${BUILD_DIR}/${NAME}
+	GO111MODULE=on go build -ldflags "-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=${DATE}" -mod=vendor -o ${BUILD_DIR}/${NAME}
 
 release: $(PLATFORMS)
 
