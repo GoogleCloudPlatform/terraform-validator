@@ -25,11 +25,11 @@ func cleanProtoValue(v *structpb.Value) {
 		v.Kind = &structpb.Value_NullValue{}
 	}
 }
-func cleanStructValue(strct *structpb.Struct) {
-	if strct == nil {
+func cleanStructValue(s *structpb.Struct) {
+	if s == nil {
 		return
 	}
-	for k := range strct.Fields {
-		cleanProtoValue(strct.Fields[k])
+	for k := range s.Fields {
+		cleanProtoValue(s.Fields[k])
 	}
 }

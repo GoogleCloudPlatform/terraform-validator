@@ -26,7 +26,8 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // Asset contains GCP resource metadata and additional metadata set on a resource, such as Cloud IAM policy.
-// WARNING: these field names are used to structure data.
+// WARNING: these field names are directly used to structure data passed to templates.
+// Changes in field names will result in changes to the data provided to the templates.
 type Asset struct {
 	// GCP resource name as defined by Cloud Asset Inventory.
 	// See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/resource-name-format for the format.
