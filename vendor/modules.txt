@@ -68,7 +68,7 @@ github.com/blang/semver
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/forseti-security/config-validator v0.0.0-20190329215106-675a967a6af4
+# github.com/forseti-security/config-validator v0.0.0-20190523225728-e72cda39a68d
 github.com/forseti-security/config-validator/pkg/api/validator
 github.com/forseti-security/config-validator/pkg/gcv
 github.com/forseti-security/config-validator/pkg/gcv/cf
@@ -225,17 +225,17 @@ github.com/mitchellh/hashstructure
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.0
 github.com/mitchellh/reflectwalk
-# github.com/open-policy-agent/opa v0.10.6
+# github.com/open-policy-agent/opa v0.11.0
 github.com/open-policy-agent/opa/ast
 github.com/open-policy-agent/opa/rego
 github.com/open-policy-agent/opa/storage/inmem
+github.com/open-policy-agent/opa/metrics
 github.com/open-policy-agent/opa/types
 github.com/open-policy-agent/opa/util
 github.com/open-policy-agent/opa/internal/compiler/wasm
 github.com/open-policy-agent/opa/internal/ir
 github.com/open-policy-agent/opa/internal/planner
 github.com/open-policy-agent/opa/internal/wasm/encoding
-github.com/open-policy-agent/opa/metrics
 github.com/open-policy-agent/opa/storage
 github.com/open-policy-agent/opa/topdown
 github.com/open-policy-agent/opa/internal/compiler/wasm/opa
@@ -263,7 +263,7 @@ github.com/posener/complete/match
 github.com/rcrowley/go-metrics
 # github.com/smallfish/simpleyaml v0.0.0-20170911015856-a32031077861
 github.com/smallfish/simpleyaml
-# github.com/spf13/cobra v0.0.3
+# github.com/spf13/cobra v0.0.4
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
@@ -335,7 +335,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/jwt
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
-# golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a
+# golang.org/x/sys v0.0.0-20190422165155-953cdadca894
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2
 golang.org/x/text/unicode/norm

@@ -81,6 +81,8 @@ func WalkBeforeAndAfter(v BeforeAndAfterVisitor, x interface{}) {
 		}
 	case *Expr:
 		switch ts := x.Terms.(type) {
+		case *SomeDecl:
+			Walk(w, ts)
 		case []*Term:
 			for _, t := range ts {
 				Walk(w, t)

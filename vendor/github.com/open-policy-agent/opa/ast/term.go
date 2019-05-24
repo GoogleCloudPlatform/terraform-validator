@@ -1160,6 +1160,7 @@ type Set interface {
 	Map(func(*Term) (*Term, error)) (Set, error)
 	Reduce(*Term, func(*Term, *Term) (*Term, error)) (*Term, error)
 	Sorted() Array
+	Slice() []*Term
 }
 
 // NewSet returns a new Set containing t.
@@ -1172,8 +1173,13 @@ func NewSet(t ...*Term) Set {
 }
 
 func newset(n int) *set {
+	var keys []*Term
+	if n > 0 {
+		keys = make([]*Term, 0, n)
+	}
 	return &set{
 		elems: make(map[int]*Term, n),
+		keys:  keys,
 	}
 }
 
@@ -1194,7 +1200,7 @@ type set struct {
 func (s *set) Copy() Set {
 	cpy := NewSet()
 	s.Foreach(func(x *Term) {
-		cpy.Add(x)
+		cpy.Add(x.Copy())
 	})
 	return cpy
 }
@@ -1394,6 +1400,11 @@ func (s *set) Sorted() Array {
 	return cpy
 }
 
+// Slice returns a slice of terms contained in the set.
+func (s *set) Slice() []*Term {
+	return s.keys
+}
+
 func (s *set) insert(x *Term) {
 	hash := x.Hash()
 	for curr, ok := s.elems[hash]; ok; {
@@ -1460,8 +1471,13 @@ type object struct {
 }
 
 func newobject(n int) *object {
+	var keys []*Term
+	if n > 0 {
+		keys = make([]*Term, 0, n)
+	}
 	return &object{
 		elems:  make(map[int]*objectElem, n),
+		keys:   keys,
 		ground: true,
 	}
 }

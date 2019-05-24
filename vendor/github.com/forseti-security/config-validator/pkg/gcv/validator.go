@@ -190,10 +190,13 @@ func (v *Validator) AddData(request *validator.AddDataRequest) error {
 }
 
 func convertResourceViaJSONToInterface(asset *validator.Asset) (interface{}, error) {
+	if asset == nil {
+		return nil, nil
+	}
 	m := &jsonpb.Marshaler{
 		OrigName: true,
 	}
-	if asset != nil && asset.Resource != nil {
+	if asset.Resource != nil {
 		cleanStructValue(asset.Resource.Data)
 	}
 	glog.V(logRequestsVerboseLevel).Infof("converting asset to golang interface: %v", asset)

@@ -34,7 +34,7 @@ type ConstraintFramework struct {
 	dependencyCode map[string]string
 	// map[kind]template
 	templates map[string]*configs.ConstraintTemplate
-	// map[kind]map[metadataname]constraint
+	// map[kind]map[metadataName]constraint
 	constraints map[string]map[string]*configs.Constraint
 	auditScript string
 }
@@ -149,7 +149,7 @@ func (cf *ConstraintFramework) Reset() {
 // constraintAsInputData prepares the constraint data for providing to rego.
 // The rego libraries require the data to be formatted as golang objects to be parsed.
 // Our audit script expects these constraints to be in a flat array.
-// Input: map[kind][metadataname]constraint
+// Input: map[kind][metadataName]constraint
 // Returns: []golangNestedObject
 func constraintAsInputData(constraintMap map[string]map[string]*configs.Constraint) ([]interface{}, error) {
 	// mimic the same type as the input, but have a string to store the raw constraint data
