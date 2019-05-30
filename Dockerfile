@@ -11,3 +11,5 @@ ENV GOFLAGS=-mod=vendor
 WORKDIR /terraform-validator
 COPY . .
 RUN make build
+
+ENTRYPOINT ["/terraform-validator/bin/terraform-validator"]
