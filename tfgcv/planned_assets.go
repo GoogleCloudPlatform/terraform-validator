@@ -31,10 +31,11 @@ import (
 )
 
 // ReadPlannedAssets extracts CAI assets from a terraform plan file.
-// If ancestry path is provided, it assumes the project is in that path rather
-// than fetching the ancestry information using Google API.
+// If ancestry path is provided, the ancestry cache will be prewarmed for the
+// project provided. If offline is set as true, it will avoid fetching resource
+// using Google API.
 // It ignores non-supported resources.
-func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
+func ReadPlannedAssets(path, project, ancestry string, offline bool) ([]google.Asset, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "opening plan file")
@@ -54,15 +55,17 @@ func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
 		}
 	}
 
-	// Add User Agent string to indicate Terraform Validator usage.
-	// Do *NOT* change the "config-validator-tf/" prefix, or else it will
-	// break usage tracking.
-	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
-	resourceManager, err := cloudresourcemanager.NewService(context.Background(), ua)
-	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
+	var resourceManager *cloudresourcemanager.Service
+	if !offline {
+		// Add User Agent string to indicate Terraform Validator usage.
+		// Do *NOT* change the "config-validator-tf/" prefix, or else it will
+		// break usage tracking.
+		ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
+		if resourceManager, err = cloudresourcemanager.NewService(context.Background(), ua); err != nil {
+			return nil, errors.Wrap(err, "constructing resource manager client")
+		}
 	}
-	converter, err := google.NewConverter(resourceManager, project, ancestry, "")
+	converter, err := google.NewConverter(resourceManager, project, ancestry, "", offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

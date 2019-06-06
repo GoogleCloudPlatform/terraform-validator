@@ -16,6 +16,7 @@ package google
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
@@ -86,13 +87,16 @@ type AssetResource struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(resourceManager *cloudresourcemanager.Service, project, ancestry, credentials string) (*Converter, error) {
+func NewConverter(resourceManager *cloudresourcemanager.Service, project, ancestry, credentials string, offline bool) (*Converter, error) {
 	cfg := &converter.Config{
 		Project:     project,
 		Credentials: credentials,
 	}
-	if err := cfg.LoadAndValidate(); err != nil {
-		return nil, errors.Wrap(err, "configuring")
+
+	if !offline {
+		if err := cfg.LoadAndValidate(); err != nil {
+			return nil, errors.Wrap(err, "configuring")
+		}
 	}
 
 	ancestryCache := make(map[string]string)
@@ -249,8 +253,13 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 // projects. It implements a cache because many resources share the same
 // project.
 func (c *Converter) getAncestry(project string) (string, error) {
+	log.Printf("getAncestry: project=%s", project)
 	if path, ok := c.ancestryCache[project]; ok {
 		return path, nil
+	}
+
+	if c.resourceManager == nil {
+		return "", fmt.Errorf("cannot fetch ancestry in offline mode for project %s", project)
 	}
 
 	ancestry, err := c.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()

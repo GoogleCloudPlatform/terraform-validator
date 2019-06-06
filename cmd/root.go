@@ -29,9 +29,11 @@ func init() {
 	validateCmd.MarkFlagRequired("policy-path")
 	validateCmd.Flags().StringVar(&flags.validate.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when validating resources)")
 	validateCmd.Flags().StringVar(&flags.validate.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
+	validateCmd.Flags().BoolVar(&flags.validate.offline, "offline", false, "Do not connect to GCP API")
 
 	convertCmd.Flags().StringVar(&flags.convert.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when converting resources)")
 	convertCmd.Flags().StringVar(&flags.convert.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
+	convertCmd.Flags().BoolVar(&flags.convert.offline, "offline", false, "Do not connect to GCP API")
 
 	validateCmd.Flags().BoolVar(&flags.validate.outputJSON, "output-json", false, "Print violations as JSON")
 
@@ -52,10 +54,12 @@ var flags struct {
 	convert struct {
 		project  string
 		ancestry string
+		offline  bool
 	}
 	validate struct {
 		project    string
 		ancestry   string
+		offline    bool
 		policyPath string
 		outputJSON bool
 	}
