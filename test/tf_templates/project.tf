@@ -17,13 +17,11 @@
 resource "google_project" "my-project-resource" {
   name       = "{{.Project.Name}}"
   project_id = "{{.Project.ProjectId}}"
-  org_id     = "{{.Project.Parent.Id}}"
+  org_id     = "my-org"
 
-  billing_account = "{{.ProjectBillingInfo.BillingAccountName | pastLastSlash}}"
+  billing_account = "{{.Project.BillingAccountName}}"
 
   labels  = {
-  {{range $key, $val := .Project.Labels}}
-    {{$key}} = "{{$val}}"
-  {{end}}
+    "project-label-key-a" = "project-label-val-a"
   }
 }

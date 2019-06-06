@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-resource "google_compute_disk" "my-disk-resource" {
-  project = "{{.Provider.project}}"
-  name    = "my-disk"
-  type    = "pd-ssd"
-  zone    = "projects/{{.Provider.project}}/global/zones/us-central1-a"
-  image   = "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
-  labels  = {
-    "disk-label-key-a" = "disk-label-val-a"
+resource "google_compute_firewall" "my-test-firewall" {
+  name    = "my-test-firewall"
+  network = "default"
+
+  allow {
+    protocol = "icmp"
   }
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8080", "1000-2000"]
+  }
+
+  source_tags = ["web"]
 }

@@ -17,19 +17,18 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	cloudbillingv1 "google.golang.org/api/cloudbilling/v1"
-	cloudresourcemanagerv1 "google.golang.org/api/cloudresourcemanager/v1"
-	computev1 "google.golang.org/api/compute/v1"
 )
 
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
-	data, cfg := setup(t)
+	_, cfg := setup(t)
 
 	cmd := exec.Command(filepath.Join("..", "bin", "terraform-validator"),
 		"convert",
@@ -54,30 +53,46 @@ func TestConvert(t *testing.T) {
 		assetsByType[a.Type] = append(assetsByType[a.Type], a)
 	}
 
+	jsonFixtures := make(map[string][]byte)
+
+	matches, _ := filepath.Glob(filepath.Join(jsonGenerateDir, "*.json"))
+	for _, fixturePath := range matches {
+		fixtureFileName := strings.TrimPrefix(fixturePath, jsonGenerateDir+"/")
+		fixtureName := strings.TrimSuffix(fixtureFileName, ".json")
+
+		fixtureData, err := ioutil.ReadFile(fixturePath)
+		if err != nil {
+			t.Fatalf("Reading: %v", err)
+		}
+
+		jsonFixtures[fixtureName] = fixtureData
+	}
+
 	t.Run("Disk", func(t *testing.T) {
-		requireEqualJSONValues(t,
-			// Expected:
-			data.Disk,
-			// Received:
+		requireEqualJSON(t,
+			jsonFixtures["disk"],
 			assetsByType["compute.googleapis.com/Disk"][0].Resource.Data,
-			// Type of received data:
-			&computev1.Disk{},
 		)
 	})
 
 	t.Run("Project", func(t *testing.T) {
-		requireEqualJSONValues(t,
-			data.Project,
+		requireEqualJSON(t,
+			jsonFixtures["project"],
 			assetsByType["cloudresourcemanager.googleapis.com/Project"][0].Resource.Data,
-			&cloudresourcemanagerv1.Project{},
 		)
 	})
 
 	t.Run("ProjectBillingInfo", func(t *testing.T) {
-		requireEqualJSONValues(t,
-			data.ProjectBillingInfo,
+		requireEqualJSON(t,
+			jsonFixtures["project_billing_info"],
 			assetsByType["cloudbilling.googleapis.com/ProjectBillingInfo"][0].Resource.Data,
-			&cloudbillingv1.ProjectBillingInfo{},
+		)
+	})
+
+	t.Run("Firewall", func(t *testing.T) {
+		requireEqualJSON(t,
+			jsonFixtures["firewall"],
+			assetsByType["compute.googleapis.com/Firewall"][0].Resource.Data,
 		)
 	})
 }

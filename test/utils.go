@@ -27,8 +27,10 @@ import (
 )
 
 const (
-	templateDir = "tf_templates"
-	generateDir = "tf_generated"
+	templateDir     = "tf_templates"
+	generateDir     = "tf_generated"
+	jsonTemplateDir = "json_templates"
+	jsonGenerateDir = "json_generated"
 )
 
 var planPath = filepath.Join(generateDir, "test.tfplan")
@@ -44,7 +46,8 @@ func setup(t *testing.T) (data, config) {
 
 	data := newData(cfg.project, cfg.credentials)
 
-	generateTFConfigs(t, data)
+	generateConfigs(t, data, templateDir, generateDir, "*.tf")
+	generateConfigs(t, data, jsonTemplateDir, jsonGenerateDir, "*.json")
 
 	run(t, "terraform", "fmt", generateDir)
 	run(t, "terraform", "init", generateDir)
@@ -92,17 +95,17 @@ func run(t *testing.T, name string, args ...string) {
 	}
 }
 
-func generateTFConfigs(t *testing.T, data data) {
+func generateConfigs(t *testing.T, data data, sourceDir string, targetDir string, selector string) {
 	tmpls := template.Must(
 		template.New("").
 			Funcs(templateFuncs()).
-			ParseGlob(filepath.Join(templateDir, "*.tf")))
+			ParseGlob(filepath.Join(sourceDir, selector)))
 
 	for _, tmpl := range tmpls.Templates() {
 		if tmpl.Name() == "" {
 			continue // Skip base template.
 		}
-		path := filepath.Join(generateDir, tmpl.Name())
+		path := filepath.Join(targetDir, tmpl.Name())
 
 		f, err := os.Create(path)
 		if err != nil {
@@ -128,24 +131,11 @@ func templateFuncs() template.FuncMap {
 	}
 }
 
-// assertEqualJSON asserts that two values have an equal JSON representation.
-// It will convert the `from` type into the `to` type using JSON
-// as an intermediary serialization. The resulting `to` value is asserted for
-// equality against the `expected` value.
-// NOTE: `to` must be a pointer.
-func requireEqualJSONValues(t *testing.T, expected, from, to interface{}) {
-	jsonify(t, from, to)
-	require.EqualValues(t, expected, to)
-}
-
-// jsonify converts a value into another via JSON as an intermediary
-// serialization.
-func jsonify(t *testing.T, from, to interface{}) {
-	btys, err := json.Marshal(from)
+func requireEqualJSON(t *testing.T, expected []byte, provided interface{}) {
+	providedJSON, err := json.Marshal(provided)
 	if err != nil {
 		t.Fatalf("marshaling: %v", err)
 	}
-	if err := json.Unmarshal(btys, to); err != nil {
-		t.Fatalf("unmarshaling: %v", err)
-	}
+
+	require.JSONEq(t, string(expected), string(providedJSON))
 }
