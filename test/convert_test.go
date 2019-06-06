@@ -79,7 +79,6 @@ func TestConvert(t *testing.T) {
 	}
 
 	for _, tt := range conversionTests {
-		// actual := assetsByType[tt.assetType][0].Resource.Data
 		t.Run(tt.name, func(t *testing.T) {
 			requireEqualJSON(t,
 				jsonFixtures[tt.name],
