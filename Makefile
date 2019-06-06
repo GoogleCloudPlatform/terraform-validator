@@ -8,12 +8,11 @@ test:
 	# Skip integration tests in ./test/
 	GO111MODULE=on go test `go list ./... | grep -v terraform-validator/test`
 
-test-e2e: build-docker
-	set -e ;\
-	CONTAINER=$$(docker create --env TEST_PROJECT=${PROJECT} --env TEST_CREDENTIALS=./credentials.json terraform-validator go test -v ./test) ;\
-	echo $$CONTAINER ;\
-	docker cp ${CREDENTIALS} $$CONTAINER:/terraform-validator ;\
-	docker start --attach $$CONTAINER ;\
+run-docker:
+	docker run -it -v `pwd`:/terraform-validator -v ${GOOGLE_APPLICATION_CREDENTIALS}:/terraform-validator/credentials.json --entrypoint=/bin/bash --env TEST_PROJECT=${PROJECT_ID} --env TEST_CREDENTIALS=./credentials.json terraform-validator;
+
+test-integration:
+	go test -v ./test
 
 build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .

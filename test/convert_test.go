@@ -17,19 +17,28 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	cloudbillingv1 "google.golang.org/api/cloudbilling/v1"
-	cloudresourcemanagerv1 "google.golang.org/api/cloudresourcemanager/v1"
-	computev1 "google.golang.org/api/compute/v1"
 )
+
+var conversionTests = []struct {
+	name      string
+	assetType string
+}{
+	{"disk", "compute.googleapis.com/Disk"},
+	{"project", "cloudresourcemanager.googleapis.com/Project"},
+	{"project_billing_info", "cloudbilling.googleapis.com/ProjectBillingInfo"},
+	{"firewall", "compute.googleapis.com/Firewall"},
+}
 
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
-	data, cfg := setup(t)
+	_, cfg := setup(t)
 
 	cmd := exec.Command(filepath.Join("..", "bin", "terraform-validator"),
 		"convert",
@@ -54,30 +63,27 @@ func TestConvert(t *testing.T) {
 		assetsByType[a.Type] = append(assetsByType[a.Type], a)
 	}
 
-	t.Run("Disk", func(t *testing.T) {
-		requireEqualJSONValues(t,
-			// Expected:
-			data.Disk,
-			// Received:
-			assetsByType["compute.googleapis.com/Disk"][0].Resource.Data,
-			// Type of received data:
-			&computev1.Disk{},
-		)
-	})
+	jsonFixtures := make(map[string][]byte)
 
-	t.Run("Project", func(t *testing.T) {
-		requireEqualJSONValues(t,
-			data.Project,
-			assetsByType["cloudresourcemanager.googleapis.com/Project"][0].Resource.Data,
-			&cloudresourcemanagerv1.Project{},
-		)
-	})
+	matches, _ := filepath.Glob(filepath.Join(jsonGenerateDir, "*.json"))
+	for _, fixturePath := range matches {
+		fixtureFileName := strings.TrimPrefix(fixturePath, jsonGenerateDir+"/")
+		fixtureName := strings.TrimSuffix(fixtureFileName, ".json")
 
-	t.Run("ProjectBillingInfo", func(t *testing.T) {
-		requireEqualJSONValues(t,
-			data.ProjectBillingInfo,
-			assetsByType["cloudbilling.googleapis.com/ProjectBillingInfo"][0].Resource.Data,
-			&cloudbillingv1.ProjectBillingInfo{},
-		)
-	})
+		fixtureData, err := ioutil.ReadFile(fixturePath)
+		if err != nil {
+			t.Fatalf("Error reading %v: %v", fixturePath, err)
+		}
+
+		jsonFixtures[fixtureName] = fixtureData
+	}
+
+	for _, tt := range conversionTests {
+		t.Run(tt.name, func(t *testing.T) {
+			requireEqualJSON(t,
+				jsonFixtures[tt.name],
+				assetsByType[tt.assetType][0].Resource.Data,
+			)
+		})
+	}
 }

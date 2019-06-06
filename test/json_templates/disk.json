@@ -1,0 +1,12 @@
+{
+    "diskEncryptionKey": null,
+    "labels": {
+        "disk-label-key-a": "disk-label-val-a"
+    },
+    "name": "my-disk",
+    "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+    "sourceImageEncryptionKey": null,
+    "sourceSnapshotEncryptionKey": null,
+    "type": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/pd-ssd",
+    "zone": "projects/{{.Provider.project}}/global/zones/us-central1-a"
+}

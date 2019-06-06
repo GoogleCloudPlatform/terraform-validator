@@ -64,11 +64,23 @@ make test
 
 ### Integration
 
-See the [Auth](#Auth) section for obtaining a credentials file.
+First, build the Docker container:
+```
+make build-docker
+```
+
+See the [Auth](#Auth) section for obtaining a credentials file, then start the Docker container:
 
 ```
-make test-e2e PROJECT=my-project-id CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+export PROJECT_ID=my-project-id
+export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/credentials.json
+make run-docker
 ```
+
+Finally, run the integration tests inside the container:
+```
+make test-integration
+````
 
 ## Auth
 
