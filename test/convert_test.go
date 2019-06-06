@@ -26,6 +26,16 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 )
 
+var conversionTests = []struct {
+	name      string
+	assetType string
+}{
+	{"disk", "compute.googleapis.com/Disk"},
+	{"project", "cloudresourcemanager.googleapis.com/Project"},
+	{"project_billing_info", "cloudbilling.googleapis.com/ProjectBillingInfo"},
+	{"firewall", "compute.googleapis.com/Firewall"},
+}
+
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
 	_, cfg := setup(t)
@@ -68,31 +78,13 @@ func TestConvert(t *testing.T) {
 		jsonFixtures[fixtureName] = fixtureData
 	}
 
-	t.Run("Disk", func(t *testing.T) {
-		requireEqualJSON(t,
-			jsonFixtures["disk"],
-			assetsByType["compute.googleapis.com/Disk"][0].Resource.Data,
-		)
-	})
-
-	t.Run("Project", func(t *testing.T) {
-		requireEqualJSON(t,
-			jsonFixtures["project"],
-			assetsByType["cloudresourcemanager.googleapis.com/Project"][0].Resource.Data,
-		)
-	})
-
-	t.Run("ProjectBillingInfo", func(t *testing.T) {
-		requireEqualJSON(t,
-			jsonFixtures["project_billing_info"],
-			assetsByType["cloudbilling.googleapis.com/ProjectBillingInfo"][0].Resource.Data,
-		)
-	})
-
-	t.Run("Firewall", func(t *testing.T) {
-		requireEqualJSON(t,
-			jsonFixtures["firewall"],
-			assetsByType["compute.googleapis.com/Firewall"][0].Resource.Data,
-		)
-	})
+	for _, tt := range conversionTests {
+		// actual := assetsByType[tt.assetType][0].Resource.Data
+		t.Run(tt.name, func(t *testing.T) {
+			requireEqualJSON(t,
+				jsonFixtures[tt.name],
+				assetsByType[tt.assetType][0].Resource.Data,
+			)
+		})
+	}
 }
