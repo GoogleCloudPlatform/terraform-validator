@@ -40,6 +40,7 @@ The follow Terraform resources are supported for running validation checks:
 
 - `google_compute_disk`
 - `google_compute_instance`
+- `google_compute_firewall`
 - `google_storage_bucket`
 - `google_sql_database_instance`
 - `google_project`

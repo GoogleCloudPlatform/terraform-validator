@@ -34,6 +34,22 @@ resource "google_compute_disk" "my-disk" {
   }
 }
 
+resource "google_compute_firewall" "my-test-firewall" {
+  name    = "my-test-firewall"
+  network = "default"
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8080", "1000-2000"]
+  }
+
+  source_tags = ["web"]
+}
+
 resource "random_id" "bucket" {
   byte_length = 8
 }
