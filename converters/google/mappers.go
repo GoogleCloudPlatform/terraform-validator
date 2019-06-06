@@ -46,6 +46,7 @@ type mapper struct {
 func mappers() map[string][]mapper {
 	return map[string][]mapper{
 		// TODO: Use a generated mapping once it lands in the conversion library.
+		"google_compute_firewall":      {{convert: converter.GetComputeFirewallCaiObject}},
 		"google_compute_disk":          {{convert: converter.GetComputeDiskCaiObject}},
 		"google_compute_instance":      {{convert: converter.GetComputeInstanceCaiObject}},
 		"google_storage_bucket":        {{convert: converter.GetStorageBucketCaiObject}},
