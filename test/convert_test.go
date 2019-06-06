@@ -62,7 +62,7 @@ func TestConvert(t *testing.T) {
 
 		fixtureData, err := ioutil.ReadFile(fixturePath)
 		if err != nil {
-			t.Fatalf("Reading: %v", err)
+			t.Fatalf("Error reading %v: %v", fixturePath, err)
 		}
 
 		jsonFixtures[fixtureName] = fixtureData
