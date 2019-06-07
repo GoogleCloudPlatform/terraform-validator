@@ -15,16 +15,18 @@
 package test
 
 import (
-	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 )
+
+const samplePolicyPath = "sample_policies"
 
 var conversionTests = []struct {
 	name      string
@@ -40,21 +42,19 @@ var conversionTests = []struct {
 func TestConvert(t *testing.T) {
 	_, cfg := setup(t)
 
-	cmd := exec.Command(filepath.Join("..", "bin", "terraform-validator"),
+	err, stdOutput, errOutput := runWithCred(t, cfg.credentials,
+		filepath.Join("..", "bin", "terraform-validator"),
 		"convert",
 		"--project", cfg.project,
 		planPath,
 	)
-	cmd.Env = []string{"GOOGLE_APPLICATION_CREDENTIALS=" + cfg.credentials}
-	var stderr, stdout bytes.Buffer
-	cmd.Stderr, cmd.Stdout = &stderr, &stdout
 
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("%v:\n%v", err, stderr.String())
+	if err != nil {
+		t.Fatalf("%v:\n%v", err, errOutput)
 	}
 
 	var assets []google.Asset
-	if err := json.Unmarshal(stdout.Bytes(), &assets); err != nil {
+	if err := json.Unmarshal(stdOutput, &assets); err != nil {
 		t.Fatalf("unmarshaling: %v", err)
 	}
 
@@ -84,6 +84,37 @@ func TestConvert(t *testing.T) {
 				jsonFixtures[tt.name],
 				assetsByType[tt.assetType][0].Resource.Data,
 			)
+		})
+	}
+
+	validationTests := []struct {
+		name            string
+		wantError       bool
+		wantOutputRegex string
+	}{
+		{
+			name:            "always_violate",
+			wantError:       true,
+			wantOutputRegex: "Constraint always_violates_all on resource",
+		},
+	}
+	for _, tt := range validationTests {
+		t.Run(fmt.Sprintf("validate/%s", tt.name), func(t *testing.T) {
+			wantRe := regexp.MustCompile(tt.wantOutputRegex)
+			err, stdOutput, errOutput := runWithCred(t, cfg.credentials,
+				filepath.Join("..", "bin", "terraform-validator"),
+				"validate",
+				"--project", cfg.project,
+				"--ancestry", "/organization/test",
+				"--policy-path", filepath.Join(samplePolicyPath, tt.name),
+				planPath,
+			)
+			if gotError := (err != nil); gotError != tt.wantError {
+				t.Fatalf("binary return %v with stderr=%s, got %v, want %v", err, errOutput, gotError, tt.wantError)
+			}
+			if tt.wantOutputRegex != "" && !wantRe.Match(stdOutput) {
+				t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", stdOutput, tt.wantOutputRegex)
+			}
 		})
 	}
 }

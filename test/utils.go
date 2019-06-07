@@ -15,6 +15,7 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
 	"html/template"
 	"os"
@@ -93,6 +94,14 @@ func run(t *testing.T, name string, args ...string) {
 	if err := c.Run(); err != nil {
 		t.Fatalf("%s %s: %v", name, strings.Join(args, " "), err)
 	}
+}
+
+func runWithCred(t *testing.T, credFile string, name string, args ...string) (error, []byte, []byte) {
+	cmd := exec.Command(name, args...)
+	cmd.Env = []string{"GOOGLE_APPLICATION_CREDENTIALS=" + credFile}
+	var stderr, stdout bytes.Buffer
+	cmd.Stderr, cmd.Stdout = &stderr, &stdout
+	return cmd.Run(), stdout.Bytes(), stderr.Bytes()
 }
 
 func generateConfigs(t *testing.T, data data, sourceDir string, targetDir string, selector string) {
