@@ -91,9 +91,6 @@ func NewConverter(resourceManager *cloudresourcemanager.Service, project, ancest
 		Project:     project,
 		Credentials: credentials,
 	}
-	if err := cfg.LoadAndValidate(); err != nil {
-		return nil, errors.Wrap(err, "configuring")
-	}
 
 	ancestryCache := make(map[string]string)
 	if ancestry != "" {
