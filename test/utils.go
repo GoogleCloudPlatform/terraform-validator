@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"fmt"
 
 	"github.com/stretchr/testify/require"
 )
@@ -45,14 +46,14 @@ var planPath = filepath.Join(generateDir, "test.tfplan")
 func setup(t *testing.T) (data, config) {
 	cfg := configure(t)
 
-	data := newData(cfg.project, cfg.credentials)
+	data := newData(cfg.project)
 
 	generateConfigs(t, data, templateDir, generateDir, "*.tf")
 	generateConfigs(t, data, jsonTemplateDir, jsonGenerateDir, "*.json")
 
-	run(t, "terraform", "fmt", generateDir)
-	run(t, "terraform", "init", generateDir)
-	run(t, "terraform", "plan",
+	runOrFail(t, "terraform", "fmt", generateDir)
+	runOrFail(t, "terraform", "init", generateDir)
+	runOrFail(t, "terraform", "plan",
 		"--out", planPath,
 		generateDir,
 	)
@@ -62,7 +63,6 @@ func setup(t *testing.T) (data, config) {
 
 type config struct {
 	project     string
-	credentials string
 }
 
 func configure(t *testing.T) config {
@@ -74,34 +74,26 @@ func configure(t *testing.T) config {
 		t.Fatal("missing required env var TEST_PROJECT")
 	}
 
-	cfg.credentials, ok = os.LookupEnv("TEST_CREDENTIALS")
-	if !ok {
-		t.Fatal("missing required env var TEST_CREDENTIALS")
-	}
-	// Make credentials path relative to repo root rather than
-	// test/ dir if it is a relative path.
-	if !filepath.IsAbs(cfg.credentials) {
-		cfg.credentials = filepath.Join("..", cfg.credentials)
-	}
-
 	return cfg
 }
 
 // run a command and call t.Fatal on non-zero exit.
-func run(t *testing.T, name string, args ...string) {
-	c := exec.Command(name, args...)
-	c.Stderr = os.Stderr
-	if err := c.Run(); err != nil {
+func runOrFail(t *testing.T, name string, args ...string) ([]byte) {
+	stdout, stderr, err := run(t, name, args...)
+	if err != nil {
+		fmt.Printf(string(stderr))
 		t.Fatalf("%s %s: %v", name, strings.Join(args, " "), err)
 	}
+	return stdout
 }
 
-func runWithCred(t *testing.T, credFile string, name string, args ...string) (error, []byte, []byte) {
+// run a command and capture error
+func run(t *testing.T, name string, args ...string) ([]byte, []byte, error) {
 	cmd := exec.Command(name, args...)
-	cmd.Env = []string{"GOOGLE_APPLICATION_CREDENTIALS=" + credFile}
 	var stderr, stdout bytes.Buffer
 	cmd.Stderr, cmd.Stdout = &stderr, &stdout
-	return cmd.Run(), stdout.Bytes(), stderr.Bytes()
+	err := cmd.Run()
+	return stdout.Bytes(), stderr.Bytes(), err
 }
 
 func generateConfigs(t *testing.T, data data, sourceDir string, targetDir string, selector string) {

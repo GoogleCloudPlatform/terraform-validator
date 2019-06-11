@@ -42,16 +42,12 @@ var conversionTests = []struct {
 func TestConvert(t *testing.T) {
 	_, cfg := setup(t)
 
-	err, stdOutput, errOutput := runWithCred(t, cfg.credentials,
+	stdOutput := runOrFail(t,
 		filepath.Join("..", "bin", "terraform-validator"),
 		"convert",
 		"--project", cfg.project,
 		planPath,
 	)
-
-	if err != nil {
-		t.Fatalf("%v:\n%v", err, errOutput)
-	}
 
 	var assets []google.Asset
 	if err := json.Unmarshal(stdOutput, &assets); err != nil {
@@ -101,7 +97,7 @@ func TestConvert(t *testing.T) {
 	for _, tt := range validationTests {
 		t.Run(fmt.Sprintf("validate/%s", tt.name), func(t *testing.T) {
 			wantRe := regexp.MustCompile(tt.wantOutputRegex)
-			err, stdOutput, errOutput := runWithCred(t, cfg.credentials,
+			stdOutput, errOutput, err := run(t,
 				filepath.Join("..", "bin", "terraform-validator"),
 				"validate",
 				"--project", cfg.project,

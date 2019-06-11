@@ -23,11 +23,10 @@ type data struct {
 	Project  map[string]string
 }
 
-func newData(project, credentials string) data {
+func newData(project string) data {
 	return data{
 		Provider: map[string]string{
 			"project":     project,
-			"credentials": credentials,
 		},
 		Project: map[string]string{
 			"Name":               "My Project Name",

@@ -12,4 +12,5 @@ WORKDIR /terraform-validator
 COPY . .
 RUN make build
 
-ENTRYPOINT ["/terraform-validator/bin/terraform-validator"]
+# ENTRYPOINT ["/bin/bash"]
+CMD ["/terraform-validator/bin/terraform-validator"]
