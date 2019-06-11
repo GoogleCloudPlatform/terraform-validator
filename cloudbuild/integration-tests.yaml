@@ -1,0 +1,8 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'terraform-validator-build', '.' ]
+- name: 'terraform-validator-build'
+  dir: '/terraform-validator'
+  args: [ 'make', 'test-integration' ]
+  env:
+  - 'TEST_PROJECT=$PROJECT_ID'
