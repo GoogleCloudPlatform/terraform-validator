@@ -68,7 +68,7 @@ github.com/blang/semver
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/forseti-security/config-validator v0.0.0-20190529210622-8b3f2cbca678
+# github.com/forseti-security/config-validator v0.0.0-20190618201444-f2dec9a496d3
 github.com/forseti-security/config-validator/pkg/api/validator
 github.com/forseti-security/config-validator/pkg/gcv
 github.com/forseti-security/config-validator/pkg/gcv/cf
