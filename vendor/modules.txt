@@ -68,7 +68,7 @@ github.com/blang/semver
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/forseti-security/config-validator v0.0.0-20190611184209-ce0fa1c12514
+# github.com/forseti-security/config-validator v0.0.0-20190618201444-f2dec9a496d3
 github.com/forseti-security/config-validator/pkg/api/validator
 github.com/forseti-security/config-validator/pkg/gcv
 github.com/forseti-security/config-validator/pkg/gcv/cf
@@ -344,11 +344,10 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/unicode/bidi
 # google.golang.org/api v0.4.0
 google.golang.org/api/cloudresourcemanager/v1
-google.golang.org/api/cloudbilling/v1
-google.golang.org/api/compute/v1
 google.golang.org/api/option
 google.golang.org/api/appengine/v1
 google.golang.org/api/bigquery/v2
+google.golang.org/api/cloudbilling/v1
 google.golang.org/api/cloudbuild/v1
 google.golang.org/api/cloudfunctions/v1
 google.golang.org/api/cloudiot/v1
@@ -356,6 +355,7 @@ google.golang.org/api/cloudkms/v1
 google.golang.org/api/cloudresourcemanager/v2beta1
 google.golang.org/api/composer/v1beta1
 google.golang.org/api/compute/v0.beta
+google.golang.org/api/compute/v1
 google.golang.org/api/container/v1
 google.golang.org/api/container/v1beta1
 google.golang.org/api/dataflow/v1b3
