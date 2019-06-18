@@ -27,7 +27,7 @@ publish:
 	gsutil cp ${BUILD_DIR}/*-amd64 gs://${RELEASE_BUCKET}/releases/${DATE}
 
 $(PLATFORMS):
-	GO111MODULE=on GOOS=$@ GOARCH=amd64 CGO_ENABLED=0 go build -mod=vendor -o "${BUILD_DIR}/${NAME}-$@-amd64" .
+	GO111MODULE=on GOOS=$@ GOARCH=amd64 CGO_ENABLED=0 go build -mod=vendor -ldflags "-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=${DATE}" -o "${BUILD_DIR}/${NAME}-$@-amd64" .
 
 clean:
 	rm bin/${NAME}*
