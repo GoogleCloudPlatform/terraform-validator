@@ -14,6 +14,8 @@
 
 package cf
 
+// AuditRego contains the Rego snippet that implements matching logic
+// and applies constraints to assets.
 const AuditRego = `
 package validator.gcp.lib
 
