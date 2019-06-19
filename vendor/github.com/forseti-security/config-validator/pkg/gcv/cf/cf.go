@@ -27,7 +27,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Constraint model framework organizes constraints/templates/data and handles evaluation.
+// ConstraintFramework organizes constraints/templates/data and handles evaluation.
 type ConstraintFramework struct {
 	userInputData []interface{}
 	// map[userDefined]regoCode
