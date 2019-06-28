@@ -10,7 +10,14 @@ test:
 	GO111MODULE=on go test `go list ./... | grep -v terraform-validator/test`
 
 run-docker:
-	docker run -it -v `pwd`:/terraform-validator -v ${GOOGLE_APPLICATION_CREDENTIALS}:/terraform-validator/credentials.json --entrypoint=/bin/bash --env TEST_PROJECT=${PROJECT_ID} --env TEST_CREDENTIALS=./credentials.json terraform-validator;
+	docker run -it \
+    -v `pwd`:/terraform-validator \
+    -v ${GOOGLE_APPLICATION_CREDENTIALS}:/terraform-validator/credentials.json \
+    --entrypoint=/bin/bash \
+    --env TEST_PROJECT=${PROJECT_ID} \
+    --env TEST_CREDENTIALS=./credentials.json \
+    --env TEST_POLICY=/terraform-validator/test/sample_policies/always_violate \
+    terraform-validator;
 
 test-integration:
 	go test -v ./test

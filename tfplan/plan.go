@@ -40,6 +40,14 @@ func (r *Resource) Provider() string {
 	return strings.Split(r.Kind(), "_")[0]
 }
 
+// ComposeResource returns a resource based on the path, schema, state and diff provided.
+func ComposeResource(path Fullpath, schema map[string]*schema.Schema, state *terraform.InstanceState, diff *terraform.InstanceDiff) Resource {
+	return Resource{
+		Path:        path,
+		fieldGetter: newFieldGetter(schema, state, diff),
+	}
+}
+
 // ComposeResources inspects a plan and returns the planned resources that match
 // the provided resource schema map.
 func ComposeResources(plan *terraform.Plan, schemas map[string]*schema.Resource) []Resource {
@@ -50,13 +58,8 @@ func ComposeResources(plan *terraform.Plan, schemas map[string]*schema.Resource)
 			// Unsupported in given provider schema.
 			continue
 		}
-
-		instances = append(instances, Resource{
-			Path:        path,
-			fieldGetter: newFieldGetter(schema.Schema, sd.State, sd.Diff),
-		})
+		instances = append(instances, ComposeResource(path, schema.Schema, sd.State, sd.Diff))
 	}
-
 	return instances
 }
 

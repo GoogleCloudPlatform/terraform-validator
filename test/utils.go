@@ -63,6 +63,7 @@ func setup(t *testing.T) (data, config) {
 type config struct {
 	project     string
 	credentials string
+	policy      string
 }
 
 func configure(t *testing.T) config {
@@ -78,6 +79,12 @@ func configure(t *testing.T) config {
 	if !ok {
 		t.Fatal("missing required env var TEST_CREDENTIALS")
 	}
+
+	cfg.policy, ok = os.LookupEnv("TEST_POLICY")
+	if !ok {
+		t.Fatal("missing required env var TEST_POLICY to specify the path to the policy library")
+	}
+
 	// Make credentials path relative to repo root rather than
 	// test/ dir if it is a relative path.
 	if !filepath.IsAbs(cfg.credentials) {
