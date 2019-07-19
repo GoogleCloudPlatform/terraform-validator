@@ -2,11 +2,9 @@
 
 This tool is used to validate terraform plans before they are applied. Validations are ran using Forseti Config Validator.
 
-## Installation
+## Getting Started
 
-```
-go install .
-```
+To get started with Terraform Validator, please follow the [user guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-use-terraform-validator).
 
 ## Example Usage
 
