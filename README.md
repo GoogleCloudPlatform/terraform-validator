@@ -12,6 +12,9 @@ go install .
 
 See the [Auth](#Auth) section first.
 
+
+### Steps similar both for Terraform v0.11 and v0.12 versions
+
 ```
 # The example/ directory contains a basic Terraform config for testing the validator.
 cd example/
@@ -28,9 +31,33 @@ export POLICY_PATH=/path/to/your/forseti-config-policies/repo
 # Generate a terraform plan.
 terraform plan --out=terraform.tfplan
 
+```
+
+### Terraform v0.11
+
+```
 # Validate the google resources the plan would create.
 terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan
 
+# Apply the validated plan.
+terraform apply ./terraform.tfplan
+```
+
+### Terraform v0.12
+
+For 0.12 Terraform release validator required plan exported in JSON format
+
+```
+# Plan JSON representation. 
+terraform show -json ./terraform.tfplan > ./terraform.tfplan.json
+
+# Validate the google resources the plan would create.
+terraform-validator validate --tf-version 0.12 --policy-path=${POLICY_PATH} ./terraform.tfplan.json
+```
+
+### Apply validated plan
+
+```
 # Apply the validated plan.
 terraform apply ./terraform.tfplan
 ```

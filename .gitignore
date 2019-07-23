@@ -12,3 +12,5 @@ credentials.json
 
 # Visual Studio Code
 .vscode/
+# Intellij Golang
+.idea/

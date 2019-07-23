@@ -50,7 +50,7 @@ func TestConvert(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Fatalf("%v:\n%v", err, errOutput)
+		t.Fatalf("%v:\n%v", err, string(errOutput))
 	}
 
 	var assets []google.Asset
@@ -113,7 +113,7 @@ func TestConvert(t *testing.T) {
 				t.Fatalf("binary return %v with stderr=%s, got %v, want %v", err, errOutput, gotError, tt.wantError)
 			}
 			if tt.wantOutputRegex != "" && !wantRe.Match(stdOutput) {
-				t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", stdOutput, tt.wantOutputRegex)
+				t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", string(stdOutput), tt.wantOutputRegex)
 			}
 		})
 	}

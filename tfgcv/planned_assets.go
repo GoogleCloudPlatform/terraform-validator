@@ -17,7 +17,9 @@ package tfgcv
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/api/cloudresourcemanager/v1"
@@ -34,25 +36,7 @@ import (
 // If ancestry path is provided, it assumes the project is in that path rather
 // than fetching the ancestry information using Google API.
 // It ignores non-supported resources.
-func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, errors.Wrap(err, "opening plan file")
-	}
-	defer f.Close()
-
-	plan, err := terraform.ReadPlan(f)
-	if err != nil {
-		return nil, errors.Wrap(err, "reading terraform plan")
-	}
-
-	// Attempt to pull the project from the provider.
-	if project == "" {
-		project, err = parseProviderProject(plan)
-		if err != nil {
-			return nil, err
-		}
-	}
+func ReadPlannedAssets(path, project, ancestry, tfVersion string) ([]google.Asset, error) {
 
 	// Add User Agent string to indicate Terraform Validator usage.
 	// Do *NOT* change the "config-validator-tf/" prefix, or else it will
@@ -67,7 +51,49 @@ func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
 		return nil, errors.Wrap(err, "building google converter")
 	}
 
-	for _, r := range tfplan.ComposeResources(plan, converter.Schemas()) {
+	var resources []tfplan.Resource
+
+	switch tfVersion {
+	case tfplan.TF12:
+		if ".json" != filepath.Ext(path) {
+			return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
+		}
+		// JSON format means Terraform 12
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil, errors.Wrap(err, "opening JSON plan file")
+		}
+
+		resources, err = tfplan.ComposeTF12Resources(data, converter.Schemas())
+		if err != nil {
+			return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
+		}
+	case tfplan.TF11:
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, errors.Wrap(err, "opening plan file")
+		}
+		defer f.Close()
+
+		plan, err := terraform.ReadPlan(f)
+		if err != nil {
+			return nil, errors.Wrap(err, "reading terraform plan")
+		}
+
+		// Attempt to pull the project from the provider.
+		if project == "" {
+			project, err = parseProviderProject(plan)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		resources = tfplan.ComposeResources(plan, converter.Schemas())
+	default:
+		return nil, errors.New(fmt.Sprintf("Possible values for --tf-version flag are [%s, %s], got: %s", tfplan.TF11, tfplan.TF12, tfVersion))
+	}
+
+	for _, r := range resources {
 		if err := converter.AddResource(&r); err != nil {
 			if errors.Cause(err) == google.ErrDuplicateAsset {
 				glog.Warningf("converting resource: %v", err)

@@ -15,15 +15,23 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 )
+
+// LoggerStdErr used by commands to print errors and warnings
+var LoggerStdErr = log.New(os.Stderr, "", log.LstdFlags)
 
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&flags.verbose, "verbose", false, "Log output to stderr")
+	rootCmd.PersistentFlags().StringVar(&flags.tfVersion, "tf-version", "", fmt.Sprintf("Terraform version (required), possible values are [%s, %s]", tfplan.TF11, tfplan.TF12))
 
 	validateCmd.Flags().StringVar(&flags.validate.policyPath, "policy-path", "", "Path to directory containing validation policies")
 	validateCmd.MarkFlagRequired("policy-path")
@@ -46,7 +54,8 @@ func init() {
 // globally.
 var flags struct {
 	// Common flags
-	verbose bool
+	verbose   bool
+	tfVersion string
 
 	// flags that correspond to subcommands:
 	convert struct {
@@ -75,10 +84,21 @@ var rootCmd = &cobra.Command{
 	Long: `Validate terraform plans by converting terraform resources
 to their Google CAI (Cloud Asset Inventory) format and passing them through
 Forseti Config Validator.`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if !flags.verbose {
 			// Suppress chatty packages.
 			log.SetOutput(ioutil.Discard)
+		}
+		// validate tfVersion flag
+		switch flags.tfVersion {
+		case tfplan.TF11, tfplan.TF12:
+			return nil
+		case "":
+			flags.tfVersion = tfplan.TF11
+			LoggerStdErr.Printf("Warning: --tf-version flag not defined, using default value: %s", flags.tfVersion)
+			return nil
+		default:
+			return errors.New(fmt.Sprintf("Possible values for --tf-version flag are [%s, %s], got: %s", tfplan.TF11, tfplan.TF12, flags.tfVersion))
 		}
 	},
 }
