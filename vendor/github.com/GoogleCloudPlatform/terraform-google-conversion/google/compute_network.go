@@ -63,10 +63,10 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("auto_create_subnetworks"); !isEmptyValue(reflect.ValueOf(autoCreateSubnetworksProp)) && (ok || !reflect.DeepEqual(v, autoCreateSubnetworksProp)) {
 		obj["autoCreateSubnetworks"] = autoCreateSubnetworksProp
 	}
-	routingConfigProp, err := expandComputeNetworkRoutingConfig(d, config)
+	routingConfigProp, err := expandComputeNetworkRoutingConfig(nil, d, config)
 	if err != nil {
 		return nil, err
-	} else if !isEmptyValue(reflect.ValueOf(routingConfigProp)) {
+	} else if v, ok := d.GetOkExists("routing_config"); !isEmptyValue(reflect.ValueOf(routingConfigProp)) && (ok || !reflect.DeepEqual(v, routingConfigProp)) {
 		obj["routingConfig"] = routingConfigProp
 	}
 
@@ -97,9 +97,8 @@ func expandComputeNetworkAutoCreateSubnetworks(v interface{}, d TerraformResourc
 	return v, nil
 }
 
-func expandComputeNetworkRoutingConfig(d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeNetworkRoutingConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	transformed := make(map[string]interface{})
-	// Note that nesting flattened objects won't work because we don't handle them properly here.
 	transformedRoutingMode, err := expandComputeNetworkRoutingConfigRoutingMode(d.Get("routing_mode"), d, config)
 	if err != nil {
 		return nil, err

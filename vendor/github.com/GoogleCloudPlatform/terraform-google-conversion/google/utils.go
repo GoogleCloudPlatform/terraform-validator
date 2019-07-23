@@ -27,6 +27,11 @@ type TerraformResourceData interface {
 	Id() string
 }
 
+type TerraformResourceDiff interface {
+	GetChange(string) (interface{}, interface{})
+	Clear(string) error
+}
+
 // getRegionFromZone returns the region from a zone for Google cloud.
 func getRegionFromZone(zone string) string {
 	if zone != "" && len(zone) > 2 {
@@ -304,6 +309,15 @@ func golangSetFromStringSlice(strings []string) map[string]struct{} {
 	return set
 }
 
+func stringSliceFromGolangSet(sset map[string]struct{}) []string {
+	ls := make([]string, 0, len(sset))
+	for s := range sset {
+		ls = append(ls, s)
+	}
+
+	return ls
+}
+
 func mergeSchemas(a, b map[string]*schema.Schema) map[string]*schema.Schema {
 	merged := make(map[string]*schema.Schema)
 
@@ -465,4 +479,17 @@ func paginatedListRequest(baseUrl string, config *Config, flattener func(map[str
 	}
 
 	return ls, nil
+}
+
+func getInterconnectAttachmentLink(config *Config, project, region, ic string) (string, error) {
+	if !strings.Contains(ic, "/") {
+		icData, err := config.clientCompute.InterconnectAttachments.Get(
+			project, region, ic).Do()
+		if err != nil {
+			return "", fmt.Errorf("Error reading interconnect attachment: %s", err)
+		}
+		ic = icData.SelfLink
+	}
+
+	return ic, nil
 }

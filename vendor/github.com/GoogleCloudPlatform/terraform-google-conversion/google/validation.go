@@ -29,7 +29,7 @@ const (
 	ComputeServiceAccountNameRegex = "[0-9]{1,20}-compute@developer.gserviceaccount.com"
 
 	// https://cloud.google.com/iam/docs/understanding-custom-roles#naming_the_role
-	IAMCustomRoleIDRegex = "^[a-zA-Z0-9_\\.\\-]{1,30}$"
+	IAMCustomRoleIDRegex = "^[a-zA-Z0-9_\\.]{3,64}$"
 )
 
 var (
@@ -211,6 +211,29 @@ func validateDuration() schema.SchemaValidateFunc {
 
 		if _, err := time.ParseDuration(v); err != nil {
 			es = append(es, fmt.Errorf("expected %s to be a duration, but parsing gave an error: %s", k, err.Error()))
+			return
+		}
+
+		return
+	}
+}
+
+func validateNonNegativeDuration() schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (s []string, es []error) {
+		v, ok := i.(string)
+		if !ok {
+			es = append(es, fmt.Errorf("expected type of %s to be string", k))
+			return
+		}
+
+		dur, err := time.ParseDuration(v)
+		if err != nil {
+			es = append(es, fmt.Errorf("expected %s to be a duration, but parsing gave an error: %s", k, err.Error()))
+			return
+		}
+
+		if dur < 0 {
+			es = append(es, fmt.Errorf("duration %v must be a non-negative duration", dur))
 			return
 		}
 
