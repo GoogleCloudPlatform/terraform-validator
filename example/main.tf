@@ -74,6 +74,22 @@ resource "google_storage_bucket" "my-bucket" {
   }
 }
 
+resource "google_storage_bucket_iam_policy" "member" {
+  bucket = "${google_storage_bucket.my-bucket.name}"
+  policy_data = "${data.google_iam_policy.foo-policy.policy_data}"
+}
+
+data "google_iam_policy" "foo-policy" {
+  binding {
+    role = "roles/storage.objectViewer"
+
+    members = [
+      "allUsers",
+      "allAuthenticatedUsers",
+    ]
+  }
+}
+
 /* Uncomment and change emails to try out IAM policies.
 resource "google_project_iam_member" "owner-a" {
   project = "${local.project}"
