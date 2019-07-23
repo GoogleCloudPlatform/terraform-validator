@@ -19,7 +19,7 @@ locals {
 }
 
 provider "google" {
-  version = "~> 1.20"
+  version = "~> 2.5"
 }
 
 resource "google_compute_disk" "my-disk" {
@@ -58,6 +58,8 @@ resource "google_storage_bucket" "my-bucket" {
   name     = "my-bucket-${random_id.bucket.hex}"
   project  = "${local.project}"
   location = "US"
+
+  bucket_policy_only = "true"
 
   labels = {
     foo = "bar"
