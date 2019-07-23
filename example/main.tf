@@ -74,6 +74,24 @@ resource "google_storage_bucket" "my-bucket" {
   }
 }
 
+resource "google_sql_database_instance" "master" {
+  name             = "master-instance"
+  database_version = "POSTGRES_9_6"
+  region           = "us-central1"
+  project          = "${local.project}"
+
+  settings {
+    # Second-generation instance tiers are based on the machine
+    # type. See argument reference below.
+    tier = "db-f1-micro"
+
+    ip_configuration {
+      ipv4_enabled = "true"
+      require_ssl  = "false"
+    }
+  }
+}
+
 /* Uncomment and change emails to try out IAM policies.
 resource "google_project_iam_member" "owner-a" {
   project = "${local.project}"
