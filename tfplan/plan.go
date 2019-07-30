@@ -21,6 +21,11 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+const (
+	TF11 string = "0.11"
+	TF12 string = "0.12"
+)
+
 // Resource is the terraform representation of a resource.
 type Resource struct {
 	Path Fullpath
@@ -45,15 +50,15 @@ func (r *Resource) Provider() string {
 func ComposeResources(plan *terraform.Plan, schemas map[string]*schema.Resource) []Resource {
 	instances := make([]Resource, 0)
 	for path, sd := range mergeStateDiffs(plan) {
-		schema, ok := schemas[path.Kind]
+		schm, ok := schemas[path.Kind]
 		if !ok {
-			// Unsupported in given provider schema.
+			// Unsupported in given provider schm.
 			continue
 		}
 
 		instances = append(instances, Resource{
 			Path:        path,
-			fieldGetter: newFieldGetter(schema.Schema, sd.State, sd.Diff),
+			fieldGetter: newFieldGetter(schm.Schema, sd.State, sd.Diff),
 		})
 	}
 
