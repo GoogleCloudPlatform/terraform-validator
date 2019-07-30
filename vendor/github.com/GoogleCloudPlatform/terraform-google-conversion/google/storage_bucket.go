@@ -183,7 +183,7 @@ func expandBucketVersioning(configured interface{}) *storage.BucketVersioning {
 	return bucketVersioning
 }
 
-func expandIamConfiguration(d *schema.ResourceData) *storage.BucketIamConfiguration {
+func expandIamConfiguration(d TerraformResourceData) *storage.BucketIamConfiguration {
 	return &storage.BucketIamConfiguration{
 		ForceSendFields: []string{"BucketPolicyOnly"},
 		BucketPolicyOnly: &storage.BucketIamConfigurationBucketPolicyOnly{
