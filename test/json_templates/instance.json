@@ -1,0 +1,64 @@
+{
+	"canIpForward": false,
+	"deletionProtection": false,
+	"disks": [
+		{
+			"autoDelete": true,
+			"boot": true,
+			"initializeParams": {
+				"sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
+			}
+		},
+		{
+			"autoDelete": true,
+			"initializeParams": {
+				"diskType": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/local-ssd"
+			},
+			"interface": "SCSI",
+			"type": "SCRATCH"
+		}
+	],
+	"machineType": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/machineTypes/n1-standard-1",
+	"metadata": {
+		"items": [
+			{
+				"key": "foo",
+				"value": "bar"
+			},
+			{
+				"key": "startup-script",
+				"value": "echo hi > /test.txt"
+			}
+		]
+	},
+	"name": "my-instance",
+	"networkInterfaces": [
+		{
+			"accessConfigs": [
+				{
+					"type": "ONE_TO_ONE_NAT"
+				}
+			],
+			"network": "projects/{{.Provider.project}}/global/networks/default"
+		}
+	],
+	"scheduling": {
+		"automaticRestart": true
+	},
+	"serviceAccounts": [
+		{
+			"email": "default",
+			"scopes": [
+				"https://www.googleapis.com/auth/devstorage.read_only",
+				"https://www.googleapis.com/auth/userinfo.email",
+				"https://www.googleapis.com/auth/compute.readonly"
+			]
+		}
+	],
+	"tags": {
+		"items": [
+			"bar",
+			"foo"
+		]
+	}
+}

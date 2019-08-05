@@ -1,0 +1,14 @@
+{
+  "lifecycle": {
+    "rule": [
+    ]
+  },
+  "location": "EU",
+  "name": "test-bucket",
+  "project": "{{.Provider.project}}",
+  "storageClass": "STANDARD",
+  "website": {
+    "mainPageSuffix": "index.html",
+    "notFoundPage": "404.html"
+  }
+}

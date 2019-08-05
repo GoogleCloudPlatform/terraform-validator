@@ -36,6 +36,9 @@ var conversionTests = []struct {
 	{"project", "cloudresourcemanager.googleapis.com/Project"},
 	{"project_billing_info", "cloudbilling.googleapis.com/ProjectBillingInfo"},
 	{"firewall", "compute.googleapis.com/Firewall"},
+	{"instance", "compute.googleapis.com/Instance"},
+	{"bucket", "storage.googleapis.com/Bucket"},
+	{"sql", "sqladmin.googleapis.com/Instance"},
 }
 
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
@@ -80,6 +83,12 @@ func TestConvert(t *testing.T) {
 
 	for _, tt := range conversionTests {
 		t.Run(tt.name, func(t *testing.T) {
+			if len(assetsByType[tt.assetType]) == 0 {
+				t.Fatalf("asset type %q not found", tt.assetType)
+			}
+			if len(jsonFixtures[tt.name]) == 0 {
+				t.Fatalf("json fixtures %q not found", tt.name)
+			}
 			requireEqualJSON(t,
 				jsonFixtures[tt.name],
 				assetsByType[tt.assetType][0].Resource.Data,
