@@ -91,28 +91,46 @@ func (r jsonResourceFieldReader) ReadField(address []string) (schema.FieldReadRe
 	}
 
 	var returnVal interface{}
+	var ok bool
 	sch := schemaList[len(schemaList)-1]
+
+	if sch == nil {
+		return schema.FieldReadResult{
+			Value:  nil,
+			Exists: false,
+		}, nil
+	}
+
 	switch sch.Type {
 	case schema.TypeBool, schema.TypeInt, schema.TypeFloat, schema.TypeString:
-		returnVal = r.Source.Values[addr]
+		returnVal, ok = getValue(addr, r.Source, *sch)
 	case schema.TypeSet:
-		value := r.Source.Values[addr]
-		if value == nil {
-			if sch.Default != nil {
-				value = sch.Default
-			} else {
-				value = []interface{}{}
-			}
+		returnVal, ok = getValue(addr, r.Source, *sch)
+		if returnVal == nil {
+			returnVal = []interface{}{}
 		}
 		f := hashInterface
-		returnVal = schema.NewSet(f, value.([]interface{}))
+		returnVal = schema.NewSet(f, returnVal.([]interface{}))
+	case schema.TypeMap:
+		returnVal, ok = getValue(addr, r.Source, *sch)
+		if returnVal == nil {
+			returnVal = map[string]interface{}{}
+		}
 	default:
 		panic(fmt.Sprintf("Unknown type: %s", sch.Type))
 	}
 	return schema.FieldReadResult{
 		Value:  returnVal,
-		Exists: returnVal != nil,
+		Exists: ok,
 	}, nil
+}
+
+func getValue(addr string, source jsonResource, sch schema.Schema) (value interface{}, ok bool) {
+	value = source.Values[addr]
+	if ok = value == nil; ok {
+		value = sch.Default
+	}
+	return value, ok
 }
 
 // readJSONResources unmarshal json data to go struct
