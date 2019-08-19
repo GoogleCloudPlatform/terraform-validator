@@ -72,7 +72,12 @@ func setup(tfVersion string, t *testing.T) (data, config) {
 	run(t, executable, "plan", "--out", planPath, getGenerateDir(tfVersion))
 	if tfVersion == tfplan.TF12 {
 		jsonPlanPath := filepath.Join(getGenerateDir(tfVersion), "test.tfplan.json")
-		run(t, executable, "show", "-json", planPath, ">", jsonPlanPath)
+		jsonOut, _ := run(t, executable, "show", "-json", planPath)
+		f, err := os.Create(jsonPlanPath)
+		if err != nil {
+			t.Fatalf("error while creating file %s, error %v", jsonPlanPath, err)
+		}
+		f.Write(jsonOut)
 		// override plan path, to use it in a test
 		planPath = jsonPlanPath
 	}
@@ -108,12 +113,14 @@ func configure(t *testing.T) config {
 }
 
 // run a command and call t.Fatal on non-zero exit.
-func run(t *testing.T, name string, args ...string) {
+func run(t *testing.T, name string, args ...string) ([]byte, []byte) {
 	c := exec.Command(name, args...)
-	c.Stderr = os.Stderr
+	var stderr, stdout bytes.Buffer
+	c.Stderr, c.Stdout = &stderr, &stdout
 	if err := c.Run(); err != nil {
-		t.Fatalf("%s %s: %v", name, strings.Join(args, " "), err)
+		t.Fatalf("%s %s: %v, \n %s", name, strings.Join(args, " "), err, stderr.String())
 	}
+	return stdout.Bytes(), stderr.Bytes()
 }
 
 func runWithCred(credFile string, name string, args ...string) (error, []byte, []byte) {

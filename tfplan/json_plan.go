@@ -89,10 +89,14 @@ func (r jsonResourceFieldReader) ReadField(address []string) (schema.FieldReadRe
 	if len(schemaList) == 0 {
 		return schema.FieldReadResult{}, nil
 	}
+	sch := schemaList[len(schemaList)-1]
+	return readFieldInternal(addr, r.Source.Values, sch)
+}
+
+func readFieldInternal(addr string, values map[string]interface{}, sch *schema.Schema) (schema.FieldReadResult, error) {
 
 	var returnVal interface{}
 	var ok bool
-	sch := schemaList[len(schemaList)-1]
 
 	if sch == nil {
 		return schema.FieldReadResult{
@@ -103,18 +107,23 @@ func (r jsonResourceFieldReader) ReadField(address []string) (schema.FieldReadRe
 
 	switch sch.Type {
 	case schema.TypeBool, schema.TypeInt, schema.TypeFloat, schema.TypeString:
-		returnVal, ok = getValue(addr, r.Source, *sch)
+		returnVal, ok = getValue(addr, values, *sch)
 	case schema.TypeSet:
-		returnVal, ok = getValue(addr, r.Source, *sch)
+		returnVal, ok = getValue(addr, values, *sch)
 		if returnVal == nil {
 			returnVal = []interface{}{}
 		}
 		f := hashInterface
 		returnVal = schema.NewSet(f, returnVal.([]interface{}))
 	case schema.TypeMap:
-		returnVal, ok = getValue(addr, r.Source, *sch)
+		returnVal, ok = getValue(addr, values, *sch)
 		if returnVal == nil {
 			returnVal = map[string]interface{}{}
+		}
+	case schema.TypeList:
+		returnVal, ok = getValue(addr, values, *sch)
+		if returnVal == nil {
+			returnVal = []interface{}{}
 		}
 	default:
 		panic(fmt.Sprintf("Unknown type: %s", sch.Type))
@@ -123,13 +132,26 @@ func (r jsonResourceFieldReader) ReadField(address []string) (schema.FieldReadRe
 		Value:  returnVal,
 		Exists: ok,
 	}, nil
+
 }
 
-func getValue(addr string, source jsonResource, sch schema.Schema) (value interface{}, ok bool) {
-	value = source.Values[addr]
-	if ok = value == nil; ok {
+func getValue(addr string, values map[string]interface{}, sch schema.Schema) (value interface{}, ok bool) {
+	value = values[addr]
+	if ok = value != nil; !ok {
 		value = sch.Default
 	}
+
+	if ok && sch.Type == schema.TypeList {
+		for _, item := range value.([]interface{}) {
+			result := item.(map[string]interface{})
+			res := sch.Elem.(*schema.Resource)
+			for attrName, attrSchema := range res.Schema {
+				readResult, _ := readFieldInternal(attrName, result, attrSchema)
+				result[attrName] = readResult.ValueOrZero(attrSchema)
+			}
+		}
+	}
+
 	return value, ok
 }
 
