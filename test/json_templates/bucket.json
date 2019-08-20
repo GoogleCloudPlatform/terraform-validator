@@ -1,8 +1,18 @@
 {
+{{
+  if
+  eq
+  .TFVersion
+  "0.12"
+}}
+"billing": {},
+"lifecycle": {},
+{{else}}
   "lifecycle": {
     "rule": [
     ]
   },
+  {{end}}
   "location": "EU",
   "name": "test-bucket",
   "project": "{{.Provider.project}}",

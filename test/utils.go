@@ -39,6 +39,10 @@ func getGenerateDir(tfVersion string) string {
 	return filepath.Join(generateDir, tfVersion)
 }
 
+func getJSONGenerateDir(tfVersion string) string {
+	return filepath.Join(jsonGenerateDir, tfVersion)
+}
+
 var planPath string
 
 // setup an end-to-end test.
@@ -64,7 +68,7 @@ func setup(tfVersion string, t *testing.T) (data, config) {
 	data := newData(tfVersion, cfg.project, cfg.credentials)
 
 	generateConfigs(t, data, templateDir, getGenerateDir(tfVersion), "*.tf")
-	generateConfigs(t, data, jsonTemplateDir, jsonGenerateDir, "*.json")
+	generateConfigs(t, data, jsonTemplateDir, getJSONGenerateDir(tfVersion), "*.json")
 
 	run(t, "rm", "-rf", ".terraform")
 	run(t, executable, "fmt", getGenerateDir(tfVersion))
@@ -77,7 +81,10 @@ func setup(tfVersion string, t *testing.T) (data, config) {
 		if err != nil {
 			t.Fatalf("error while creating file %s, error %v", jsonPlanPath, err)
 		}
-		f.Write(jsonOut)
+		_, err = f.Write(jsonOut)
+		if err != nil {
+			t.Fatalf("error while writing to file %s, error %v", jsonPlanPath, err)
+		}
 		// override plan path, to use it in a test
 		planPath = jsonPlanPath
 	}

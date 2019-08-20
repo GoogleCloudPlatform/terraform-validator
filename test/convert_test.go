@@ -16,8 +16,10 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -31,21 +33,20 @@ var conversionTests = []struct {
 	name      string
 	assetType string
 }{
-	/*{"disk", "compute.googleapis.com/Disk"},
+	{"disk", "compute.googleapis.com/Disk"},
 	{"project", "cloudresourcemanager.googleapis.com/Project"},
 	{"project_billing_info", "cloudbilling.googleapis.com/ProjectBillingInfo"},
 	{"firewall", "compute.googleapis.com/Firewall"},
-	*/
 	{"instance", "compute.googleapis.com/Instance"},
-	/*{"bucket", "storage.googleapis.com/Bucket"},
-	{"sql", "sqladmin.googleapis.com/Instance"},*/
+	{"bucket", "storage.googleapis.com/Bucket"},
+	{"sql", "sqladmin.googleapis.com/Instance"},
+	{"firewall", "compute.googleapis.com/Firewall"},
 }
 
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
-	for _, tfVersion := range []string{tfplan.TF11} {
+	for _, tfVersion := range []string{tfplan.TF11, tfplan.TF12} {
 		_, cfg := setup(tfVersion, t)
-
 		err, stdOutput, errOutput := runWithCred(cfg.credentials,
 			filepath.Join("..", "bin", "terraform-validator"),
 			"convert",
@@ -70,9 +71,9 @@ func TestConvert(t *testing.T) {
 
 		jsonFixtures := make(map[string][]byte)
 
-		matches, _ := filepath.Glob(filepath.Join(jsonGenerateDir, "*.json"))
+		matches, _ := filepath.Glob(filepath.Join(getJSONGenerateDir(tfVersion), "*.json"))
 		for _, fixturePath := range matches {
-			fixtureFileName := strings.TrimPrefix(fixturePath, jsonGenerateDir+"/")
+			fixtureFileName := strings.TrimPrefix(fixturePath, getJSONGenerateDir(tfVersion)+"/")
 			fixtureName := strings.TrimSuffix(fixtureFileName, ".json")
 
 			fixtureData, err := ioutil.ReadFile(fixturePath)
@@ -97,37 +98,38 @@ func TestConvert(t *testing.T) {
 				)
 			})
 		}
-		/*
-			validationTests := []struct {
-				name            string
-				wantError       bool
-				wantOutputRegex string
-			}{
-				{
-					name:            "always_violate",
-					wantError:       true,
-					wantOutputRegex: "Constraint always_violates_all on resource",
-				},
-			}
 
-			for _, tt := range validationTests {
-				t.Run(fmt.Sprintf("validate/%s", tt.name), func(t *testing.T) {
-					wantRe := regexp.MustCompile(tt.wantOutputRegex)
-					err, stdOutput, errOutput := runWithCred(cfg.credentials,
-						filepath.Join("..", "bin", "terraform-validator"),
-						"validate",
-						"--project", cfg.project,
-						"--ancestry", "/organization/test",
-						"--policy-path", filepath.Join(samplePolicyPath, tt.name),
-						planPath,
-					)
-					if gotError := (err != nil); gotError != tt.wantError {
-						t.Fatalf("binary return %v with stderr=%s, got %v, want %v", err, errOutput, gotError, tt.wantError)
-					}
-					if tt.wantOutputRegex != "" && !wantRe.Match(stdOutput) {
-						t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", string(stdOutput), tt.wantOutputRegex)
-					}
-				})
-					}*/
+		validationTests := []struct {
+			name            string
+			wantError       bool
+			wantOutputRegex string
+		}{
+			{
+				name:            "always_violate",
+				wantError:       true,
+				wantOutputRegex: "Constraint always_violates_all on resource",
+			},
+		}
+
+		for _, tt := range validationTests {
+			t.Run(fmt.Sprintf("validate/%s/TF_%s", tt.name, tfVersion), func(t *testing.T) {
+				wantRe := regexp.MustCompile(tt.wantOutputRegex)
+				err, stdOutput, errOutput := runWithCred(cfg.credentials,
+					filepath.Join("..", "bin", "terraform-validator"),
+					"validate",
+					"--tf-version", tfVersion,
+					"--project", cfg.project,
+					"--ancestry", "/organization/test",
+					"--policy-path", filepath.Join(samplePolicyPath, tt.name),
+					planPath,
+				)
+				if gotError := (err != nil); gotError != tt.wantError {
+					t.Fatalf("binary return %v with stderr=%s, got %v, want %v", err, errOutput, gotError, tt.wantError)
+				}
+				if tt.wantOutputRegex != "" && !wantRe.Match(stdOutput) {
+					t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", string(stdOutput), tt.wantOutputRegex)
+				}
+			})
+		}
 	}
 }
