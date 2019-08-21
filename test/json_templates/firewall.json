@@ -12,6 +12,7 @@
             ]
         }
     ],
+{{if eq .TFVersion "0.12"}}"disabled": false,{{end}}
     "name": "my-test-firewall",
     "network": "projects/{{.Provider.project}}/global/networks/default",
     "priority": 1000,

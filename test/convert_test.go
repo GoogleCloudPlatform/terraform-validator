@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 )
 
 const samplePolicyPath = "sample_policies"
@@ -39,91 +40,96 @@ var conversionTests = []struct {
 	{"instance", "compute.googleapis.com/Instance"},
 	{"bucket", "storage.googleapis.com/Bucket"},
 	{"sql", "sqladmin.googleapis.com/Instance"},
+	{"firewall", "compute.googleapis.com/Firewall"},
 }
 
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
-	_, cfg := setup(t)
+	for _, tfVersion := range []string{tfplan.TF11, tfplan.TF12} {
+		_, cfg := setup(tfVersion, t)
+		err, stdOutput, errOutput := runWithCred(cfg.credentials,
+			filepath.Join("..", "bin", "terraform-validator"),
+			"convert",
+			"--tf-version", tfVersion,
+			"--project", cfg.project,
+			planPath,
+		)
 
-	err, stdOutput, errOutput := runWithCred(t, cfg.credentials,
-		filepath.Join("..", "bin", "terraform-validator"),
-		"convert",
-		"--project", cfg.project,
-		planPath,
-	)
-
-	if err != nil {
-		t.Fatalf("%v:\n%v", err, string(errOutput))
-	}
-
-	var assets []google.Asset
-	if err := json.Unmarshal(stdOutput, &assets); err != nil {
-		t.Fatalf("unmarshaling: %v", err)
-	}
-
-	assetsByType := make(map[string][]google.Asset)
-	for _, a := range assets {
-		assetsByType[a.Type] = append(assetsByType[a.Type], a)
-	}
-
-	jsonFixtures := make(map[string][]byte)
-
-	matches, _ := filepath.Glob(filepath.Join(jsonGenerateDir, "*.json"))
-	for _, fixturePath := range matches {
-		fixtureFileName := strings.TrimPrefix(fixturePath, jsonGenerateDir+"/")
-		fixtureName := strings.TrimSuffix(fixtureFileName, ".json")
-
-		fixtureData, err := ioutil.ReadFile(fixturePath)
 		if err != nil {
-			t.Fatalf("Error reading %v: %v", fixturePath, err)
+			t.Fatalf("%v:\n%v", err, string(errOutput))
 		}
 
-		jsonFixtures[fixtureName] = fixtureData
-	}
+		var assets []google.Asset
+		if err := json.Unmarshal(stdOutput, &assets); err != nil {
+			t.Fatalf("unmarshaling: %v", err)
+		}
 
-	for _, tt := range conversionTests {
-		t.Run(tt.name, func(t *testing.T) {
-			if len(assetsByType[tt.assetType]) == 0 {
-				t.Fatalf("asset type %q not found", tt.assetType)
-			}
-			if len(jsonFixtures[tt.name]) == 0 {
-				t.Fatalf("json fixtures %q not found", tt.name)
-			}
-			requireEqualJSON(t,
-				jsonFixtures[tt.name],
-				assetsByType[tt.assetType][0].Resource.Data,
-			)
-		})
-	}
+		assetsByType := make(map[string][]google.Asset)
+		for _, a := range assets {
+			assetsByType[a.Type] = append(assetsByType[a.Type], a)
+		}
 
-	validationTests := []struct {
-		name            string
-		wantError       bool
-		wantOutputRegex string
-	}{
-		{
-			name:            "always_violate",
-			wantError:       true,
-			wantOutputRegex: "Constraint always_violates_all on resource",
-		},
-	}
-	for _, tt := range validationTests {
-		t.Run(fmt.Sprintf("validate/%s", tt.name), func(t *testing.T) {
-			wantRe := regexp.MustCompile(tt.wantOutputRegex)
-			err, stdOutput, errOutput := runWithCred(t, cfg.credentials,
-				filepath.Join("..", "bin", "terraform-validator"),
-				"validate",
-				"--project", cfg.project,
-				"--ancestry", "/organization/test",
-				"--policy-path", filepath.Join(samplePolicyPath, tt.name),
-				planPath,
-			)
-			if gotError := (err != nil); gotError != tt.wantError {
-				t.Fatalf("binary return %v with stderr=%s, got %v, want %v", err, errOutput, gotError, tt.wantError)
+		jsonFixtures := make(map[string][]byte)
+
+		matches, _ := filepath.Glob(filepath.Join(getJSONGenerateDir(tfVersion), "*.json"))
+		for _, fixturePath := range matches {
+			fixtureFileName := strings.TrimPrefix(fixturePath, getJSONGenerateDir(tfVersion)+"/")
+			fixtureName := strings.TrimSuffix(fixtureFileName, ".json")
+
+			fixtureData, err := ioutil.ReadFile(fixturePath)
+			if err != nil {
+				t.Fatalf("Error reading %v: %v", fixturePath, err)
 			}
-			if tt.wantOutputRegex != "" && !wantRe.Match(stdOutput) {
-				t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", string(stdOutput), tt.wantOutputRegex)
-			}
-		})
+
+			jsonFixtures[fixtureName] = fixtureData
+		}
+
+		for _, tt := range conversionTests {
+			t.Run(tt.name+"/TF_"+tfVersion, func(t *testing.T) {
+				if len(assetsByType[tt.assetType]) == 0 {
+					t.Fatalf("asset type %q not found", tt.assetType)
+				}
+				if len(jsonFixtures[tt.name]) == 0 {
+					t.Fatalf("json fixtures %q not found", tt.name)
+				}
+				requireEqualJSON(t,
+					jsonFixtures[tt.name],
+					assetsByType[tt.assetType][0].Resource.Data,
+				)
+			})
+		}
+
+		validationTests := []struct {
+			name            string
+			wantError       bool
+			wantOutputRegex string
+		}{
+			{
+				name:            "always_violate",
+				wantError:       true,
+				wantOutputRegex: "Constraint always_violates_all on resource",
+			},
+		}
+
+		for _, tt := range validationTests {
+			t.Run(fmt.Sprintf("validate/%s/TF_%s", tt.name, tfVersion), func(t *testing.T) {
+				wantRe := regexp.MustCompile(tt.wantOutputRegex)
+				err, stdOutput, errOutput := runWithCred(cfg.credentials,
+					filepath.Join("..", "bin", "terraform-validator"),
+					"validate",
+					"--tf-version", tfVersion,
+					"--project", cfg.project,
+					"--ancestry", "/organization/test",
+					"--policy-path", filepath.Join(samplePolicyPath, tt.name),
+					planPath,
+				)
+				if gotError := (err != nil); gotError != tt.wantError {
+					t.Fatalf("binary return %v with stderr=%s, got %v, want %v", err, errOutput, gotError, tt.wantError)
+				}
+				if tt.wantOutputRegex != "" && !wantRe.Match(stdOutput) {
+					t.Fatalf("binary did not return expect output, got=%s\nwant (regex)=%s", string(stdOutput), tt.wantOutputRegex)
+				}
+			})
+		}
 	}
 }
