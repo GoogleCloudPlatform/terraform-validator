@@ -14,11 +14,9 @@
 package tfplan
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"hash/fnv"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -49,12 +47,6 @@ type jsonResource struct {
 	Values       map[string]interface{}
 }
 
-// jsonResourceFieldReader structure used to search retrieve fields from jsonResource.Values map of maps.
-type jsonResourceFieldReader struct {
-	Source jsonResource
-	Schema map[string]*schema.Schema
-}
-
 // ComposeTF12Resources inspects a plan and returns the planned resources that match the provided resource schema map.
 // ComposeTF12Resources works in a same way as tfplan.ComposeResources and returns array of tfplan.Resource
 func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
@@ -70,49 +62,104 @@ func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]R
 			// Unsupported in given provider schema.
 			continue
 		}
-
+		res := map[string]string{}
+		var address []string
+		attributes(r.Values, address, res, sch.Schema)
+		reader := &schema.MapFieldReader{
+			Map:    schema.BasicMapReader(res),
+			Schema: sch.Schema,
+		}
 		instances = append(instances, Resource{
-			Path:        Fullpath{r.Kind, r.Name, r.Module},
-			fieldGetter: newJSONFieldGetter(sch.Schema, r),
+			Path: Fullpath{r.Kind, r.Name, r.Module},
+			fieldGetter: &fieldGetter{
+				rdr:    reader,
+				schema: sch.Schema,
+			},
 		})
 	}
 	return instances, nil
 }
 
-// ReadField are responsible for decoding fields out of data into
-// the proper typed representation. jsonResourceFieldReader uses this to query data from json representation of
-// Terraform 12 plan.
-// See github.com/hashicorp/terraform/helper/schema.FieldReader interface for details
-func (r jsonResourceFieldReader) ReadField(address []string) (schema.FieldReadResult, error) {
+// attributes function takes json parsed JSON object (value param) and fill map[string]string with it's
+// content (res param) for example JSON:
+//
+//	{
+//		"foo": {
+//			"name" : "value"
+//		},
+//	  "list": ["item1", "item2"]
+//	}
+//
+// will be translated to map with following key/value set:
+//
+//	foo.name => "value"
+//	list.# => 2
+//	list.0 => "item1"
+//	list.1 => "item2"
+//
+// Map above will be passed to schema.BasicMapReader that have all appropriate logic to read fields
+// correctly during conversion to CAI.
+func attributes(value interface{}, address []string, res map[string]string, schemas map[string]*schema.Schema) {
+	schemaArr := addrToSchema(address, schemas)
+	if len(schemaArr) == 0 {
+		return
+	}
+	sch := schemaArr[len(schemaArr)-1]
 	addr := strings.Join(address, ".")
-	schemaList := jsonAddrToSchema(address, r.Schema)
-	if len(schemaList) == 0 {
-		return schema.FieldReadResult{}, nil
+	// int is special case, can't use handle it in main switch because number will be always parsed from JSON as float
+	// need to identify it by schema.TypeInt and convert to int from int or float
+	if sch.Type == schema.TypeInt && value != nil {
+		switch value.(type) {
+		case int:
+			res[addr] = strconv.Itoa(value.(int))
+		case float64:
+			res[addr] = strconv.Itoa(int(value.(float64)))
+		case float32:
+			res[addr] = strconv.Itoa(int(value.(float32)))
+		}
+		return
 	}
 
-	var returnVal interface{}
-	sch := schemaList[len(schemaList)-1]
-	switch sch.Type {
-	case schema.TypeBool, schema.TypeInt, schema.TypeFloat, schema.TypeString:
-		returnVal = r.Source.Values[addr]
-	case schema.TypeSet:
-		value := r.Source.Values[addr]
-		if value == nil {
-			if sch.Default != nil {
-				value = sch.Default
-			} else {
-				value = []interface{}{}
-			}
+	switch value.(type) {
+	case nil:
+		defaultValue, err := sch.DefaultValue()
+		if err != nil {
+			panic(fmt.Sprintf("error getting default value for %v", address))
 		}
-		f := hashInterface
-		returnVal = schema.NewSet(f, value.([]interface{}))
+		if defaultValue == nil {
+			defaultValue = sch.ZeroValue()
+		}
+		attributes(defaultValue, address, res, schemas)
+	case float64:
+		res[addr] = strconv.FormatFloat(value.(float64), 'f', 6, 64)
+	case float32:
+		res[addr] = strconv.FormatFloat(value.(float64), 'f', 6, 32)
+	case string:
+		res[addr] = value.(string)
+	case bool:
+		res[addr] = strconv.FormatBool(value.(bool))
+	case int:
+		res[addr] = strconv.Itoa(value.(int))
+	case []interface{}:
+		arr := value.([]interface{})
+		countAddr := addr + ".#"
+		res[countAddr] = strconv.Itoa(len(arr))
+		for i, e := range arr {
+			addr := append(address, strconv.Itoa(i))
+			attributes(e, addr, res, schemas)
+		}
+	case map[string]interface{}:
+		m := value.(map[string]interface{})
+		for k, v := range m {
+			addr := append(address, k)
+			attributes(v, addr, res, schemas)
+		}
+	case *schema.Set:
+		set := value.(*schema.Set)
+		attributes(set.List(), address, res, schemas)
 	default:
-		panic(fmt.Sprintf("Unknown type: %s", sch.Type))
+		panic(fmt.Sprintf("unrecognized type %T", value))
 	}
-	return schema.FieldReadResult{
-		Value:  returnVal,
-		Exists: returnVal != nil,
-	}, nil
 }
 
 // readJSONResources unmarshal json data to go struct
@@ -141,35 +188,4 @@ func readJSONResources(data []byte) ([]jsonResource, error) {
 	}
 
 	return result, nil
-}
-
-func newJSONFieldGetter(sch map[string]*schema.Schema, resource jsonResource) *fieldGetter {
-	return &fieldGetter{
-		rdr:    jsonResourceFieldReader{resource, sch},
-		schema: sch,
-	}
-}
-
-// jsonAddrToSchema returns shema.Shema object for string address representation, in most common case address is just
-func jsonAddrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.Schema {
-	var result []*schema.Schema
-	key := strings.Join(addr, ".")
-	result = append(result, schemaMap[key])
-	return result
-}
-
-// Function hashInterface returns unique in ID for any given object.
-// Function used by schema.Set instance, see github.com/hashicorp/terraform/helper/schema.SchemaSetFunc type for details.
-func hashInterface(s interface{}) int {
-	var b bytes.Buffer
-	err := gob.NewEncoder(&b).Encode(s)
-	if err != nil {
-		panic(fmt.Sprintf("error creating hashInterface function: %v", err))
-	}
-	h := fnv.New32a()
-	_, err = h.Write(b.Bytes())
-	if err != nil {
-		panic(fmt.Sprintf("error creating hashInterface function: %v", err))
-	}
-	return int(h.Sum32())
 }
