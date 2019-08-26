@@ -91,6 +91,8 @@ func NewConverter(resourceManager *cloudresourcemanager.Service, project, ancest
 		Project:     project,
 		Credentials: credentials,
 	}
+
+	converter.ConfigureBasePaths(cfg)
 	if err := cfg.LoadAndValidate(); err != nil {
 		return nil, errors.Wrap(err, "configuring")
 	}

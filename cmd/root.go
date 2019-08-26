@@ -94,7 +94,7 @@ Forseti Config Validator.`,
 		case tfplan.TF11, tfplan.TF12:
 			return nil
 		case "":
-			flags.tfVersion = tfplan.TF11
+			flags.tfVersion = tfplan.TF12
 			LoggerStdErr.Printf("Warning: --tf-version flag not defined, using default value: %s", flags.tfVersion)
 			return nil
 		default:
