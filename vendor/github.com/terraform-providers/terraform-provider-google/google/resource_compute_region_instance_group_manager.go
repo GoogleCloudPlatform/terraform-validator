@@ -44,7 +44,7 @@ func resourceComputeRegionInstanceGroupManager() *schema.Resource {
 
 			"instance_template": {
 				Type:             schema.TypeString,
-				Optional:         true,
+				Required:         true,
 				DiffSuppressFunc: compareSelfLinkRelativePaths,
 			},
 
@@ -315,7 +315,8 @@ func resourceComputeRegionInstanceGroupManagerCreate(d *schema.ResourceData, met
 	d.SetId(regionInstanceGroupManagerId{Project: project, Region: region, Name: manager.Name}.terraformId())
 
 	// Wait for the operation to complete
-	err = computeSharedOperationWait(config.clientCompute, op, project, "Creating InstanceGroupManager")
+	timeoutInMinutes := int(d.Timeout(schema.TimeoutCreate).Minutes())
+	err = computeSharedOperationWaitTime(config.clientCompute, op, project, timeoutInMinutes, "Creating InstanceGroupManager")
 	if err != nil {
 		return err
 	}
@@ -400,7 +401,7 @@ func resourceComputeRegionInstanceGroupManagerRead(d *schema.ResourceData, meta 
 	d.Set("description", manager.Description)
 	d.Set("project", regionalID.Project)
 	d.Set("target_size", manager.TargetSize)
-	if err := d.Set("target_pools", manager.TargetPools); err != nil {
+	if err := d.Set("target_pools", mapStringArr(manager.TargetPools, ConvertSelfLinkToV1)); err != nil {
 		return fmt.Errorf("Error setting target_pools in state: %s", err.Error())
 	}
 	if err := d.Set("named_port", flattenNamedPortsBeta(manager.NamedPorts)); err != nil {
@@ -464,7 +465,8 @@ func resourceComputeRegionInstanceGroupManagerUpdate(d *schema.ResourceData, met
 		}
 
 		// Wait for the operation to complete
-		err = computeSharedOperationWait(config.clientCompute, op, project, "Updating RegionInstanceGroupManager")
+		timeoutInMinutes := int(d.Timeout(schema.TimeoutUpdate).Minutes())
+		err = computeSharedOperationWaitTime(config.clientCompute, op, project, timeoutInMinutes, "Updating RegionInstanceGroupManager")
 		if err != nil {
 			return err
 		}
@@ -486,7 +488,8 @@ func resourceComputeRegionInstanceGroupManagerUpdate(d *schema.ResourceData, met
 		}
 
 		// Wait for the operation to complete
-		err = computeSharedOperationWait(config.clientCompute, op, project, "Updating InstanceGroupManager")
+		timeoutInMinutes := int(d.Timeout(schema.TimeoutUpdate).Minutes())
+		err = computeSharedOperationWaitTime(config.clientCompute, op, project, timeoutInMinutes, "Updating InstanceGroupManager")
 		if err != nil {
 			return err
 		}
@@ -510,7 +513,8 @@ func resourceComputeRegionInstanceGroupManagerUpdate(d *schema.ResourceData, met
 		}
 
 		// Wait for the operation to complete:
-		err = computeSharedOperationWait(config.clientCompute, op, project, "Updating RegionInstanceGroupManager")
+		timeoutInMinutes := int(d.Timeout(schema.TimeoutUpdate).Minutes())
+		err = computeSharedOperationWaitTime(config.clientCompute, op, project, timeoutInMinutes, "Updating RegionInstanceGroupManager")
 		if err != nil {
 			return err
 		}
@@ -528,7 +532,8 @@ func resourceComputeRegionInstanceGroupManagerUpdate(d *schema.ResourceData, met
 		}
 
 		// Wait for the operation to complete
-		err = computeSharedOperationWait(config.clientCompute, op, project, "Resizing RegionInstanceGroupManager")
+		timeoutInMinutes := int(d.Timeout(schema.TimeoutUpdate).Minutes())
+		err = computeSharedOperationWaitTime(config.clientCompute, op, project, timeoutInMinutes, "Resizing RegionInstanceGroupManager")
 		if err != nil {
 			return err
 		}
@@ -570,7 +575,11 @@ func resourceComputeRegionInstanceGroupManagerDelete(d *schema.ResourceData, met
 	}
 
 	// Wait for the operation to complete
-	err = computeSharedOperationWaitTime(config.clientCompute, op, regionalID.Project, int(d.Timeout(schema.TimeoutDelete).Minutes()), "Deleting RegionInstanceGroupManager")
+	timeoutInMinutes := int(d.Timeout(schema.TimeoutDelete).Minutes())
+	err = computeSharedOperationWaitTime(config.clientCompute, op, regionalID.Project, timeoutInMinutes, "Deleting RegionInstanceGroupManager")
+	if err != nil {
+		return fmt.Errorf("Error waiting for delete to complete: %s", err)
+	}
 
 	d.SetId("")
 	return nil
@@ -598,7 +607,7 @@ func flattenDistributionPolicy(distributionPolicy *computeBeta.DistributionPolic
 
 	if distributionPolicy != nil {
 		for _, zone := range distributionPolicy.Zones {
-			zones = append(zones, zone.Zone)
+			zones = append(zones, GetResourceNameFromSelfLink(zone.Zone))
 		}
 	}
 

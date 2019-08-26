@@ -37,9 +37,9 @@ func resourceComputeUrlMap() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(240 * time.Second),
-			Update: schema.DefaultTimeout(240 * time.Second),
-			Delete: schema.DefaultTimeout(240 * time.Second),
+			Create: schema.DefaultTimeout(4 * time.Minute),
+			Update: schema.DefaultTimeout(4 * time.Minute),
+			Delete: schema.DefaultTimeout(4 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -226,13 +226,17 @@ func resourceComputeUrlMapCreate(d *schema.ResourceData, meta interface{}) error
 		obj["tests"] = testsProp
 	}
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/urlMaps")
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/urlMaps")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Creating new UrlMap: %#v", obj)
-	res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutCreate))
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+	res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating UrlMap: %s", err)
 	}
@@ -244,10 +248,6 @@ func resourceComputeUrlMapCreate(d *schema.ResourceData, meta interface{}) error
 	}
 	d.SetId(id)
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 	op := &compute.Operation{}
 	err = Convert(res, op)
 	if err != nil {
@@ -272,20 +272,20 @@ func resourceComputeUrlMapCreate(d *schema.ResourceData, meta interface{}) error
 func resourceComputeUrlMapRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/urlMaps/{{name}}")
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/urlMaps/{{name}}")
 	if err != nil {
 		return err
-	}
-
-	res, err := sendRequest(config, "GET", url, nil)
-	if err != nil {
-		return handleNotFoundError(err, d, fmt.Sprintf("ComputeUrlMap %q", d.Id()))
 	}
 
 	project, err := getProject(d, config)
 	if err != nil {
 		return err
 	}
+	res, err := sendRequest(config, "GET", project, url, nil)
+	if err != nil {
+		return handleNotFoundError(err, d, fmt.Sprintf("ComputeUrlMap %q", d.Id()))
+	}
+
 	if err := d.Set("project", project); err != nil {
 		return fmt.Errorf("Error reading UrlMap: %s", err)
 	}
@@ -326,6 +326,11 @@ func resourceComputeUrlMapRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceComputeUrlMapUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
+
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
 
 	obj := make(map[string]interface{})
 	defaultServiceProp, err := expandComputeUrlMapDefaultService(d.Get("default_service"), d, config)
@@ -371,22 +376,18 @@ func resourceComputeUrlMapUpdate(d *schema.ResourceData, meta interface{}) error
 		obj["tests"] = testsProp
 	}
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/urlMaps/{{name}}")
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/urlMaps/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Updating UrlMap %q: %#v", d.Id(), obj)
-	res, err := sendRequestWithTimeout(config, "PUT", url, obj, d.Timeout(schema.TimeoutUpdate))
+	res, err := sendRequestWithTimeout(config, "PUT", project, url, obj, d.Timeout(schema.TimeoutUpdate))
 
 	if err != nil {
 		return fmt.Errorf("Error updating UrlMap %q: %s", d.Id(), err)
 	}
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 	op := &compute.Operation{}
 	err = Convert(res, op)
 	if err != nil {
@@ -407,22 +408,24 @@ func resourceComputeUrlMapUpdate(d *schema.ResourceData, meta interface{}) error
 func resourceComputeUrlMapDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/urlMaps/{{name}}")
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/urlMaps/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	var obj map[string]interface{}
 	log.Printf("[DEBUG] Deleting UrlMap %q", d.Id())
-	res, err := sendRequestWithTimeout(config, "DELETE", url, obj, d.Timeout(schema.TimeoutDelete))
+
+	res, err := sendRequestWithTimeout(config, "DELETE", project, url, obj, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return handleNotFoundError(err, d, "UrlMap")
 	}
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 	op := &compute.Operation{}
 	err = Convert(res, op)
 	if err != nil {
@@ -443,7 +446,11 @@ func resourceComputeUrlMapDelete(d *schema.ResourceData, meta interface{}) error
 
 func resourceComputeUrlMapImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
-	if err := parseImportId([]string{"projects/(?P<project>[^/]+)/global/urlMaps/(?P<name>[^/]+)", "(?P<project>[^/]+)/(?P<name>[^/]+)", "(?P<name>[^/]+)"}, d, config); err != nil {
+	if err := parseImportId([]string{
+		"projects/(?P<project>[^/]+)/global/urlMaps/(?P<name>[^/]+)",
+		"(?P<project>[^/]+)/(?P<name>[^/]+)",
+		"(?P<name>[^/]+)",
+	}, d, config); err != nil {
 		return nil, err
 	}
 
@@ -636,15 +643,15 @@ func flattenComputeUrlMapTestService(v interface{}, d *schema.ResourceData) inte
 
 // ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
 // instead of extracting the name and making a self_link out of it.
-func expandComputeUrlMapDefaultService(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapDefaultService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapDescription(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapHost_rule(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapHost_rule(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	v = v.(*schema.Set).List()
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
@@ -681,28 +688,28 @@ func expandComputeUrlMapHost_rule(v interface{}, d *schema.ResourceData, config 
 	return req, nil
 }
 
-func expandComputeUrlMapHost_ruleDescription(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapHost_ruleDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapHost_ruleHosts(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapHost_ruleHosts(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	v = v.(*schema.Set).List()
 	return v, nil
 }
 
-func expandComputeUrlMapHost_rulePathMatcher(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapHost_rulePathMatcher(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapFingerprint(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapFingerprint(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapPath_matcher(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcher(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -747,19 +754,19 @@ func expandComputeUrlMapPath_matcher(v interface{}, d *schema.ResourceData, conf
 
 // ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
 // instead of extracting the name and making a self_link out of it.
-func expandComputeUrlMapPath_matcherDefaultService(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcherDefaultService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapPath_matcherDescription(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcherDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapPath_matcherName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcherName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapPath_matcherPath_rule(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcherPath_rule(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -788,18 +795,18 @@ func expandComputeUrlMapPath_matcherPath_rule(v interface{}, d *schema.ResourceD
 	return req, nil
 }
 
-func expandComputeUrlMapPath_matcherPath_rulePaths(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcherPath_rulePaths(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	v = v.(*schema.Set).List()
 	return v, nil
 }
 
 // ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
 // instead of extracting the name and making a self_link out of it.
-func expandComputeUrlMapPath_matcherPath_ruleService(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapPath_matcherPath_ruleService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapTest(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapTest(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -842,20 +849,20 @@ func expandComputeUrlMapTest(v interface{}, d *schema.ResourceData, config *Conf
 	return req, nil
 }
 
-func expandComputeUrlMapTestDescription(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapTestDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapTestHost(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapTestHost(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeUrlMapTestPath(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapTestPath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
 // ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
 // instead of extracting the name and making a self_link out of it.
-func expandComputeUrlMapTestService(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeUrlMapTestService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
