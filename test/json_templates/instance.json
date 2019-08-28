@@ -5,6 +5,7 @@
 		{
 			"autoDelete": true,
 			"boot": true,
+		    {{if eq .TFVersion "0.12"}}"diskEncryptionKey": {}, {{end}}
 			"initializeParams": {
 				"sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
 			}

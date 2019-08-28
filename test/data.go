@@ -14,18 +14,28 @@
 
 package test
 
+import "github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+
 // data represents the full dataset that is used for templating terraform
 // configs. It contains Google API resources that are expected to be returned
 // after converting the terraform plan.
 type data struct {
+	// is not nil - Terraform 12 version used
+	TFVersion string
 	// provider "google"
 	Provider map[string]string
 	Project  map[string]string
 }
 
-func newData(project, credentials string) data {
+func newData(tfVersion, project, credentials string) data {
+	providerVersion := "1.20"
+	if tfVersion == tfplan.TF12 {
+		providerVersion = "2.12.0"
+	}
 	return data{
+		TFVersion: tfVersion,
 		Provider: map[string]string{
+			"version":     providerVersion,
 			"project":     project,
 			"credentials": credentials,
 		},

@@ -17,6 +17,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"html/template"
 	"os"
 	"os/exec"
@@ -34,7 +35,15 @@ const (
 	jsonGenerateDir = "json_generated"
 )
 
-var planPath = filepath.Join(generateDir, "test.tfplan")
+func getGenerateDir(tfVersion string) string {
+	return filepath.Join(generateDir, tfVersion)
+}
+
+func getJSONGenerateDir(tfVersion string) string {
+	return filepath.Join(jsonGenerateDir, tfVersion)
+}
+
+var planPath string
 
 // setup an end-to-end test.
 // Pull in env vars (config).
@@ -42,20 +51,43 @@ var planPath = filepath.Join(generateDir, "test.tfplan")
 // Generate terraform files from templates using above data.
 // Run terraform fmt/init/plan to create a .tfplan file.
 // Return data and config.
-func setup(t *testing.T) (data, config) {
+func setup(tfVersion string, t *testing.T) (data, config) {
+	planPath = filepath.Join(getGenerateDir(tfVersion), "test.tfplan")
 	cfg := configure(t)
 
-	data := newData(cfg.project, cfg.credentials)
+	var executable string
+	switch tfVersion {
+	case tfplan.TF11:
+		executable = "terraform11"
+	case tfplan.TF12:
+		executable = "terraform"
+	default:
+		t.Fatalf("unknown tfVersion %s", tfVersion)
+	}
 
-	generateConfigs(t, data, templateDir, generateDir, "*.tf")
-	generateConfigs(t, data, jsonTemplateDir, jsonGenerateDir, "*.json")
+	data := newData(tfVersion, cfg.project, cfg.credentials)
 
-	run(t, "terraform", "fmt", generateDir)
-	run(t, "terraform", "init", generateDir)
-	run(t, "terraform", "plan",
-		"--out", planPath,
-		generateDir,
-	)
+	generateConfigs(t, data, templateDir, getGenerateDir(tfVersion), "*.tf")
+	generateConfigs(t, data, jsonTemplateDir, getJSONGenerateDir(tfVersion), "*.json")
+
+	run(t, "rm", "-rf", ".terraform")
+	run(t, executable, "fmt", getGenerateDir(tfVersion))
+	run(t, executable, "init", getGenerateDir(tfVersion))
+	run(t, executable, "plan", "--out", planPath, getGenerateDir(tfVersion))
+	if tfVersion == tfplan.TF12 {
+		jsonPlanPath := filepath.Join(getGenerateDir(tfVersion), "test.tfplan.json")
+		jsonOut, _ := run(t, executable, "show", "-json", planPath)
+		f, err := os.Create(jsonPlanPath)
+		if err != nil {
+			t.Fatalf("error while creating file %s, error %v", jsonPlanPath, err)
+		}
+		_, err = f.Write(jsonOut)
+		if err != nil {
+			t.Fatalf("error while writing to file %s, error %v", jsonPlanPath, err)
+		}
+		// override plan path, to use it in a test
+		planPath = jsonPlanPath
+	}
 
 	return data, cfg
 }
@@ -88,15 +120,17 @@ func configure(t *testing.T) config {
 }
 
 // run a command and call t.Fatal on non-zero exit.
-func run(t *testing.T, name string, args ...string) {
+func run(t *testing.T, name string, args ...string) ([]byte, []byte) {
 	c := exec.Command(name, args...)
-	c.Stderr = os.Stderr
+	var stderr, stdout bytes.Buffer
+	c.Stderr, c.Stdout = &stderr, &stdout
 	if err := c.Run(); err != nil {
-		t.Fatalf("%s %s: %v", name, strings.Join(args, " "), err)
+		t.Fatalf("%s %s: %v, \n %s", name, strings.Join(args, " "), err, stderr.String())
 	}
+	return stdout.Bytes(), stderr.Bytes()
 }
 
-func runWithCred(t *testing.T, credFile string, name string, args ...string) (error, []byte, []byte) {
+func runWithCred(credFile string, name string, args ...string) (error, []byte, []byte) {
 	cmd := exec.Command(name, args...)
 	cmd.Env = []string{"GOOGLE_APPLICATION_CREDENTIALS=" + credFile}
 	var stderr, stdout bytes.Buffer
