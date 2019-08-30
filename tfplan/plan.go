@@ -21,11 +21,6 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-const (
-	TF11 string = "0.11"
-	TF12 string = "0.12"
-)
-
 // Resource is the terraform representation of a resource.
 type Resource struct {
 	Path Fullpath

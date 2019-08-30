@@ -2,6 +2,8 @@
 
 This tool is used to validate terraform plans before they are applied. Validations are ran using Forseti Config Validator.
 
+Note: this tool supports Terraform v0.12 by default. To switch to use Terraform v0.11, please see the section [Terraform v0.11](#terraform-v011).
+
 ## Getting Started
 
 To get started with Terraform Validator, please follow the [user guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-use-terraform-validator).
@@ -34,11 +36,22 @@ terraform plan --out=terraform.tfplan
 ### Terraform v0.11
 
 ```
+# Switch to use Terraform v0.11 dependencies.
+make prepare-v11 build
+
+# Optional: run unit test and integration test.
+make prepare-v11 test test-integration
+
 # Validate the google resources the plan would create.
 terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan
 
 # Apply the validated plan.
 terraform apply ./terraform.tfplan
+```
+
+```
+# Restore to use Terraform v0.12.
+make prepare-v12 build
 ```
 
 ### Terraform v0.12
@@ -50,7 +63,7 @@ For 0.12 Terraform release validator required plan exported in JSON format
 terraform show -json ./terraform.tfplan > ./terraform.tfplan.json
 
 # Validate the google resources the plan would create.
-terraform-validator validate --tf-version 0.12 --policy-path=${POLICY_PATH} ./terraform.tfplan.json
+terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan.json
 ```
 
 ### Apply validated plan
