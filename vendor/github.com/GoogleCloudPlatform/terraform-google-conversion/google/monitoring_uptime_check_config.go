@@ -69,18 +69,6 @@ func GetMonitoringUptimeCheckConfigApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("selected_regions"); !isEmptyValue(reflect.ValueOf(selectedRegionsProp)) && (ok || !reflect.DeepEqual(v, selectedRegionsProp)) {
 		obj["selectedRegions"] = selectedRegionsProp
 	}
-	isInternalProp, err := expandMonitoringUptimeCheckConfigIsInternal(d.Get("is_internal"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("is_internal"); !isEmptyValue(reflect.ValueOf(isInternalProp)) && (ok || !reflect.DeepEqual(v, isInternalProp)) {
-		obj["isInternal"] = isInternalProp
-	}
-	internalCheckersProp, err := expandMonitoringUptimeCheckConfigInternalCheckers(d.Get("internal_checkers"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("internal_checkers"); !isEmptyValue(reflect.ValueOf(internalCheckersProp)) && (ok || !reflect.DeepEqual(v, internalCheckersProp)) {
-		obj["internalCheckers"] = internalCheckersProp
-	}
 	httpCheckProp, err := expandMonitoringUptimeCheckConfigHttpCheck(d.Get("http_check"), d, config)
 	if err != nil {
 		return nil, err
@@ -148,80 +136,6 @@ func expandMonitoringUptimeCheckConfigContentMatchersContent(v interface{}, d Te
 }
 
 func expandMonitoringUptimeCheckConfigSelectedRegions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandMonitoringUptimeCheckConfigIsInternal(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandMonitoringUptimeCheckConfigInternalCheckers(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	req := make([]interface{}, 0, len(l))
-	for _, raw := range l {
-		if raw == nil {
-			continue
-		}
-		original := raw.(map[string]interface{})
-		transformed := make(map[string]interface{})
-
-		transformedGcpZone, err := expandMonitoringUptimeCheckConfigInternalCheckersGcpZone(original["gcp_zone"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedGcpZone); val.IsValid() && !isEmptyValue(val) {
-			transformed["gcpZone"] = transformedGcpZone
-		}
-
-		transformedPeerProjectId, err := expandMonitoringUptimeCheckConfigInternalCheckersPeerProjectId(original["peer_project_id"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedPeerProjectId); val.IsValid() && !isEmptyValue(val) {
-			transformed["peerProjectId"] = transformedPeerProjectId
-		}
-
-		transformedName, err := expandMonitoringUptimeCheckConfigInternalCheckersName(original["name"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedName); val.IsValid() && !isEmptyValue(val) {
-			transformed["name"] = transformedName
-		}
-
-		transformedNetwork, err := expandMonitoringUptimeCheckConfigInternalCheckersNetwork(original["network"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedNetwork); val.IsValid() && !isEmptyValue(val) {
-			transformed["network"] = transformedNetwork
-		}
-
-		transformedDisplayName, err := expandMonitoringUptimeCheckConfigInternalCheckersDisplayName(original["display_name"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedDisplayName); val.IsValid() && !isEmptyValue(val) {
-			transformed["displayName"] = transformedDisplayName
-		}
-
-		req = append(req, transformed)
-	}
-	return req, nil
-}
-
-func expandMonitoringUptimeCheckConfigInternalCheckersGcpZone(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandMonitoringUptimeCheckConfigInternalCheckersPeerProjectId(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandMonitoringUptimeCheckConfigInternalCheckersName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandMonitoringUptimeCheckConfigInternalCheckersNetwork(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandMonitoringUptimeCheckConfigInternalCheckersDisplayName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

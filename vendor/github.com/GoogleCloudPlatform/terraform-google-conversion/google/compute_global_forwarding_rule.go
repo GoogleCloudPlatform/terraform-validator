@@ -63,6 +63,12 @@ func GetComputeGlobalForwardingRuleApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("ip_version"); !isEmptyValue(reflect.ValueOf(ipVersionProp)) && (ok || !reflect.DeepEqual(v, ipVersionProp)) {
 		obj["ipVersion"] = ipVersionProp
 	}
+	loadBalancingSchemeProp, err := expandComputeGlobalForwardingRuleLoadBalancingScheme(d.Get("load_balancing_scheme"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("load_balancing_scheme"); !isEmptyValue(reflect.ValueOf(loadBalancingSchemeProp)) && (ok || !reflect.DeepEqual(v, loadBalancingSchemeProp)) {
+		obj["loadBalancingScheme"] = loadBalancingSchemeProp
+	}
 	nameProp, err := expandComputeGlobalForwardingRuleName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
@@ -98,6 +104,10 @@ func expandComputeGlobalForwardingRuleIPProtocol(v interface{}, d TerraformResou
 }
 
 func expandComputeGlobalForwardingRuleIpVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeGlobalForwardingRuleLoadBalancingScheme(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

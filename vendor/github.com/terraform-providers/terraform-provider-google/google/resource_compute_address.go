@@ -36,8 +36,8 @@ func resourceComputeAddress() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(240 * time.Second),
-			Delete: schema.DefaultTimeout(240 * time.Second),
+			Create: schema.DefaultTimeout(4 * time.Minute),
+			Delete: schema.DefaultTimeout(4 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -158,13 +158,17 @@ func resourceComputeAddressCreate(d *schema.ResourceData, meta interface{}) erro
 		obj["region"] = regionProp
 	}
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/regions/{{region}}/addresses")
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/regions/{{region}}/addresses")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Creating new Address: %#v", obj)
-	res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutCreate))
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+	res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating Address: %s", err)
 	}
@@ -176,10 +180,6 @@ func resourceComputeAddressCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.SetId(id)
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 	op := &compute.Operation{}
 	err = Convert(res, op)
 	if err != nil {
@@ -204,20 +204,20 @@ func resourceComputeAddressCreate(d *schema.ResourceData, meta interface{}) erro
 func resourceComputeAddressRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/regions/{{region}}/addresses/{{name}}")
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/regions/{{region}}/addresses/{{name}}")
 	if err != nil {
 		return err
-	}
-
-	res, err := sendRequest(config, "GET", url, nil)
-	if err != nil {
-		return handleNotFoundError(err, d, fmt.Sprintf("ComputeAddress %q", d.Id()))
 	}
 
 	project, err := getProject(d, config)
 	if err != nil {
 		return err
 	}
+	res, err := sendRequest(config, "GET", project, url, nil)
+	if err != nil {
+		return handleNotFoundError(err, d, fmt.Sprintf("ComputeAddress %q", d.Id()))
+	}
+
 	if err := d.Set("project", project); err != nil {
 		return fmt.Errorf("Error reading Address: %s", err)
 	}
@@ -259,22 +259,24 @@ func resourceComputeAddressRead(d *schema.ResourceData, meta interface{}) error 
 func resourceComputeAddressDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/regions/{{region}}/addresses/{{name}}")
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/regions/{{region}}/addresses/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	var obj map[string]interface{}
 	log.Printf("[DEBUG] Deleting Address %q", d.Id())
-	res, err := sendRequestWithTimeout(config, "DELETE", url, obj, d.Timeout(schema.TimeoutDelete))
+
+	res, err := sendRequestWithTimeout(config, "DELETE", project, url, obj, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return handleNotFoundError(err, d, "Address")
 	}
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 	op := &compute.Operation{}
 	err = Convert(res, op)
 	if err != nil {
@@ -295,7 +297,12 @@ func resourceComputeAddressDelete(d *schema.ResourceData, meta interface{}) erro
 
 func resourceComputeAddressImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
-	if err := parseImportId([]string{"projects/(?P<project>[^/]+)/regions/(?P<region>[^/]+)/addresses/(?P<name>[^/]+)", "(?P<project>[^/]+)/(?P<region>[^/]+)/(?P<name>[^/]+)", "(?P<name>[^/]+)"}, d, config); err != nil {
+	if err := parseImportId([]string{
+		"projects/(?P<project>[^/]+)/regions/(?P<region>[^/]+)/addresses/(?P<name>[^/]+)",
+		"(?P<project>[^/]+)/(?P<region>[^/]+)/(?P<name>[^/]+)",
+		"(?P<region>[^/]+)/(?P<name>[^/]+)",
+		"(?P<name>[^/]+)",
+	}, d, config); err != nil {
 		return nil, err
 	}
 
@@ -354,27 +361,27 @@ func flattenComputeAddressRegion(v interface{}, d *schema.ResourceData) interfac
 	return NameFromSelfLinkStateFunc(v)
 }
 
-func expandComputeAddressAddress(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressAddress(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeAddressAddressType(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressAddressType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeAddressDescription(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeAddressName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeAddressNetworkTier(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressNetworkTier(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeAddressSubnetwork(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressSubnetwork(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	f, err := parseRegionalFieldValue("subnetworks", v.(string), "project", "region", "zone", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for subnetwork: %s", err)
@@ -382,7 +389,7 @@ func expandComputeAddressSubnetwork(v interface{}, d *schema.ResourceData, confi
 	return f.RelativeLink(), nil
 }
 
-func expandComputeAddressRegion(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+func expandComputeAddressRegion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	f, err := parseGlobalFieldValue("regions", v.(string), "project", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for region: %s", err)
