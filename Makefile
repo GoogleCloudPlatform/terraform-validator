@@ -9,11 +9,15 @@ BUILDTAGS=""
 prepare-v11:
 	@echo "Prepare the environment for TF v0.11"
 	cp go_tf_0_11.mod go.mod
+	cp go_tf_0_11.sum go.sum
 	$(eval BUILDTAGS="tf_0_11")
+	go mod vendor
 
 prepare-v12:
 	@echo "Prepare the environment for TF v0.12"
 	cp go_tf_0_12.mod go.mod
+	cp go_tf_0_12.sum go.sum
+	go mod vendor
 
 
 test:
