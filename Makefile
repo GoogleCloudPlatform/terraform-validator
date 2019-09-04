@@ -4,13 +4,12 @@ NAME=terraform-validator
 RELEASE_BUCKET=terraform-validator
 DATE=`date +%Y-%m-%d`
 LDFLAGS="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=${DATE}"
-BUILDTAGS=""
+BUILDTAGS=$(shell grep -q 'github.com/hashicorp/terraform v0.11' go.mod && echo 'tf_0_11')
 
 prepare-v11:
 	@echo "Prepare the environment for TF v0.11"
 	cp go_tf_0_11.mod go.mod
 	cp go_tf_0_11.sum go.sum
-	$(eval BUILDTAGS="tf_0_11")
 	go mod vendor
 
 prepare-v12:
@@ -18,7 +17,6 @@ prepare-v12:
 	cp go_tf_0_12.mod go.mod
 	cp go_tf_0_12.sum go.sum
 	go mod vendor
-
 
 test:
 	# Skip integration tests in ./test/
