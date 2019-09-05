@@ -1,17 +1,22 @@
 package tfgcv
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
-const TF11PLAN string = "../test/read_planned_assets/tf11plan.tfplan"
-const TF12PLAN string = "../test/read_planned_assets/tf12plan.json"
+const (
+	testDataDir = "../test/read_planned_assets"
+	testProjectName = "gl-akopachevskyy-sql-db"
+	testAncestryName = "ancestry"
+)
+
 
 func TestReadPlannedAssets(t *testing.T) {
 	type args struct {
-		path     string
+		file     string
 		project  string
 		ancestry string
 	}
@@ -28,15 +33,21 @@ func TestReadPlannedAssets(t *testing.T) {
 		tests = append(tests, []testcase{
 			{
 				"Test TF12 and JSON plan",
-				args{TF12PLAN, "prj", "ancsetry"},
+				args{"tf12plan.json", testProjectName, testAncestryName},
 				2,
 				false,
 			},
 			{
-				"Test TF12 and binary plan",
-				args{TF12PLAN, "prj", "ancsetry"},
+				"Test TF12 and binary plan should error out",
+				args{"tf11plan.tfplan", testProjectName, testAncestryName},
 				0,
 				true,
+			},
+			{
+				"Test TF12 with all coverage",
+				args{"tf12plan.allcoverage.json", "foobar", testAncestryName},
+				9,
+				false,
 			},
 		}...)
 	}
@@ -44,14 +55,14 @@ func TestReadPlannedAssets(t *testing.T) {
 	if version.Supported(version.TF11) {
 		tests = append(tests, []testcase{
 			{
-				"Test TF11 and JSON plan",
-				args{TF11PLAN, "prj", "ancsetry"},
+				"Test TF11 and json plan should error out",
+				args{"tf12plan.json", testProjectName, testAncestryName},
 				0,
 				true,
 			},
 			{
 				"Test TF11 and binary plan",
-				args{TF12PLAN, "prj", "ancsetry"},
+				args{"tf11plan.tfplan", testProjectName, testAncestryName},
 				2,
 				false,
 			},
@@ -60,7 +71,12 @@ func TestReadPlannedAssets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadPlannedAssets(tt.args.path, tt.args.project, tt.args.ancestry)
+			testFile := filepath.Join(testDataDir, tt.args.file)
+			var offline bool
+			if version.Supported(version.TF12) {
+				offline = true
+			}
+			got, err := ReadPlannedAssets(testFile, tt.args.project, tt.args.ancestry, offline)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadPlannedAssets() error = %v, wantErr %v", err, tt.wantErr)
 				return
