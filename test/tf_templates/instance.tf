@@ -2,7 +2,7 @@ resource "google_compute_instance" "my-test-instance" {
   project      = "{{.Provider.project}}"
   name         = "my-instance"
   machine_type = "n1-standard-1"
-  zone         = "projects/{{.Provider.project}}/global/zones/us-central1-a"
+  zone         = "us-central1-a"
 
   tags = ["foo", "bar"]
 

@@ -18,7 +18,7 @@ resource "google_compute_disk" "my-disk-resource" {
   project = "{{.Provider.project}}"
   name    = "my-disk"
   type    = "pd-ssd"
-  zone    = "projects/{{.Provider.project}}/global/zones/us-central1-a"
+  zone    = "us-central1-a"
   image   = "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
   labels  = {
     "disk-label-key-a" = "disk-label-val-a"
