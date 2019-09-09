@@ -2,6 +2,11 @@
 {{if eq .TFVersion "0.12"}}
   "billing": {},
   "lifecycle": {},
+  "iamConfiguration": {
+    "bucketPolicyOnly": {
+      "enabled": false
+    }
+  },
 {{else}}
   "lifecycle": {
     "rule": [

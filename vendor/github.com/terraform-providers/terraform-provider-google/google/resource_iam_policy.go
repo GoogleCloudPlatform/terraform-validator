@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"google.golang.org/api/cloudresourcemanager/v1"
-	"log"
 )
 
 var IamPolicyBaseSchema = map[string]*schema.Schema{
@@ -37,7 +36,7 @@ func iamPolicyImport(resourceIdParser resourceIdParserFunc) schema.StateFunc {
 	}
 }
 
-func ResourceIamPolicy(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc) *schema.Resource {
+func ResourceIamPolicy(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
 	return &schema.Resource{
 		Create: ResourceIamPolicyCreate(newUpdaterFunc),
 		Read:   ResourceIamPolicyRead(newUpdaterFunc),
@@ -45,15 +44,10 @@ func ResourceIamPolicy(parentSpecificSchema map[string]*schema.Schema, newUpdate
 		Delete: ResourceIamPolicyDelete(newUpdaterFunc),
 
 		Schema: mergeSchemas(IamPolicyBaseSchema, parentSpecificSchema),
+		Importer: &schema.ResourceImporter{
+			State: iamPolicyImport(resourceIdParser),
+		},
 	}
-}
-
-func ResourceIamPolicyWithImport(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
-	r := ResourceIamPolicy(parentSpecificSchema, newUpdaterFunc)
-	r.Importer = &schema.ResourceImporter{
-		State: iamPolicyImport(resourceIdParser),
-	}
-	return r
 }
 
 func ResourceIamPolicyCreate(newUpdaterFunc newResourceIamUpdaterFunc) schema.CreateFunc {
@@ -81,13 +75,9 @@ func ResourceIamPolicyRead(newUpdaterFunc newResourceIamUpdaterFunc) schema.Read
 			return err
 		}
 
-		policy, err := updater.GetResourceIamPolicy()
+		policy, err := iamPolicyReadWithRetry(updater)
 		if err != nil {
-			if isGoogleApiErrorWithCode(err, 404) {
-				log.Printf("[DEBUG]: Policy does not exist for non-existent resource %q", updater.GetResourceId())
-				return nil
-			}
-			return err
+			return handleNotFoundError(err, d, fmt.Sprintf("Resource %q with IAM Policy", updater.DescribeResource()))
 		}
 
 		d.Set("etag", policy.Etag)

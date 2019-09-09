@@ -109,6 +109,16 @@ func GetRedisInstanceApiObject(d TerraformResourceData, config *Config) (map[str
 		obj["tier"] = tierProp
 	}
 
+	return resourceRedisInstanceEncoder(d, config, obj)
+}
+
+func resourceRedisInstanceEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+	config := meta.(*Config)
+	region, err := getRegionFromSchema("region", "location_id", d, config)
+	if err != nil {
+		return nil, err
+	}
+	d.Set("region", region)
 	return obj, nil
 }
 

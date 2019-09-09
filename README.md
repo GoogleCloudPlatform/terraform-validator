@@ -37,10 +37,10 @@ terraform plan --out=terraform.tfplan
 
 ```
 # Switch to use Terraform v0.11 dependencies.
-make prepare-v11 build
+make prepare-v11
 
-# Optional: run unit test and integration test.
-make prepare-v11 test test-integration
+# Then run the make command as usual.
+make build
 
 # Validate the google resources the plan would create.
 terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan

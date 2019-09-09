@@ -13,13 +13,21 @@
 		{
 			"autoDelete": true,
 			"initializeParams": {
+{{if eq .TFVersion "0.12"}}
+				"diskType": "projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/local-ssd"
+{{else}}
 				"diskType": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/local-ssd"
+{{end}}
 			},
 			"interface": "SCSI",
 			"type": "SCRATCH"
 		}
 	],
+{{if eq .TFVersion "0.12"}}
+	"machineType": "projects/{{.Provider.project}}/zones/us-central1-a/machineTypes/n1-standard-1",
+{{else}}
 	"machineType": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/machineTypes/n1-standard-1",
+{{end}}
 	"metadata": {
 		"items": [
 			{

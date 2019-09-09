@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	"google.golang.org/api/googleapi"
 	"google.golang.org/api/storagetransfer/v1"
 	"log"
 	"strings"
@@ -97,11 +96,12 @@ func resourceStorageTransferJob() *schema.Resource {
 							Elem:     dateObjectSchema(),
 						},
 						"start_time_of_day": {
-							Type:     schema.TypeList,
-							Optional: true,
-							ForceNew: true,
-							MaxItems: 1,
-							Elem:     timeObjectSchema(),
+							Type:             schema.TypeList,
+							Optional:         true,
+							ForceNew:         true,
+							MaxItems:         1,
+							Elem:             timeObjectSchema(),
+							DiffSuppressFunc: diffSuppressEmptyStartTimeOfDay,
 						},
 					},
 				},
@@ -302,6 +302,10 @@ func httpDataSchema() *schema.Resource {
 	}
 }
 
+func diffSuppressEmptyStartTimeOfDay(k, old, new string, d *schema.ResourceData) bool {
+	return k == "schedule.0.start_time_of_day.#" && old == "1" && new == "0"
+}
+
 func resourceStorageTransferJobCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
@@ -365,7 +369,7 @@ func resourceStorageTransferJobRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	d.Set("transfer_spec", flattenTransferSpec(res.TransferSpec, d))
+	err = d.Set("transfer_spec", flattenTransferSpec(res.TransferSpec, d))
 	if err != nil {
 		return err
 	}
@@ -458,9 +462,7 @@ func resourceStorageTransferJobDelete(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			return resource.RetryableError(err)
 		}
-		if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 429 {
-			return resource.RetryableError(gerr)
-		}
+
 		return nil
 	})
 
@@ -491,12 +493,22 @@ func expandDates(dates []interface{}) *storagetransfer.Date {
 		return nil
 	}
 
-	date := dates[0].([]interface{})
-	return &storagetransfer.Date{
-		Day:   int64(extractFirstMapConfig(date)["day"].(int)),
-		Month: int64(extractFirstMapConfig(date)["month"].(int)),
-		Year:  int64(extractFirstMapConfig(date)["year"].(int)),
+	dateMap := dates[0].(map[string]interface{})
+	date := &storagetransfer.Date{}
+	if v, ok := dateMap["day"]; ok {
+		date.Day = int64(v.(int))
 	}
+
+	if v, ok := dateMap["month"]; ok {
+		date.Month = int64(v.(int))
+	}
+
+	if v, ok := dateMap["year"]; ok {
+		date.Year = int64(v.(int))
+	}
+
+	log.Printf("[DEBUG] not nil date: %#v", dates)
+	return date
 }
 
 func flattenDate(date *storagetransfer.Date) []map[string]interface{} {
@@ -514,13 +526,25 @@ func expandTimeOfDays(times []interface{}) *storagetransfer.TimeOfDay {
 		return nil
 	}
 
-	time := times[0].([]interface{})
-	return &storagetransfer.TimeOfDay{
-		Hours:   int64(extractFirstMapConfig(time)["hours"].(int)),
-		Minutes: int64(extractFirstMapConfig(time)["minutes"].(int)),
-		Seconds: int64(extractFirstMapConfig(time)["seconds"].(int)),
-		Nanos:   int64(extractFirstMapConfig(time)["nanos"].(int)),
+	timeMap := times[0].(map[string]interface{})
+	time := &storagetransfer.TimeOfDay{}
+	if v, ok := timeMap["hours"]; ok {
+		time.Hours = int64(v.(int))
 	}
+
+	if v, ok := timeMap["minutes"]; ok {
+		time.Minutes = int64(v.(int))
+	}
+
+	if v, ok := timeMap["seconds"]; ok {
+		time.Seconds = int64(v.(int))
+	}
+
+	if v, ok := timeMap["nanos"]; ok {
+		time.Nanos = int64(v.(int))
+	}
+
+	return time
 }
 
 func flattenTimeOfDay(timeOfDay *storagetransfer.TimeOfDay) []map[string]interface{} {
@@ -541,9 +565,9 @@ func expandTransferSchedules(transferSchedules []interface{}) *storagetransfer.S
 
 	schedule := transferSchedules[0].(map[string]interface{})
 	return &storagetransfer.Schedule{
-		ScheduleStartDate: expandDates([]interface{}{schedule["schedule_start_date"]}),
-		ScheduleEndDate:   expandDates([]interface{}{schedule["schedule_end_date"]}),
-		StartTimeOfDay:    expandTimeOfDays([]interface{}{schedule["start_time_of_day"]}),
+		ScheduleStartDate: expandDates(schedule["schedule_start_date"].([]interface{})),
+		ScheduleEndDate:   expandDates(schedule["schedule_end_date"].([]interface{})),
+		StartTimeOfDay:    expandTimeOfDays(schedule["start_time_of_day"].([]interface{})),
 	}
 }
 
