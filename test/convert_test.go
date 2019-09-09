@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 const samplePolicyPath = "sample_policies"
@@ -45,12 +45,11 @@ var conversionTests = []struct {
 
 // TestConvert tests the "convert" subcommand against a generated .tfplan file.
 func TestConvert(t *testing.T) {
-	for _, tfVersion := range []string{tfplan.TF11, tfplan.TF12} {
+	for _, tfVersion := range version.AllSupportedVersions() {
 		_, cfg := setup(tfVersion, t)
 		err, stdOutput, errOutput := runWithCred(cfg.credentials,
 			filepath.Join("..", "bin", "terraform-validator"),
 			"convert",
-			"--tf-version", tfVersion,
 			"--project", cfg.project,
 			planPath,
 		)
@@ -117,7 +116,6 @@ func TestConvert(t *testing.T) {
 				err, stdOutput, errOutput := runWithCred(cfg.credentials,
 					filepath.Join("..", "bin", "terraform-validator"),
 					"validate",
-					"--tf-version", tfVersion,
 					"--project", cfg.project,
 					"--ancestry", "/organization/test",
 					"--policy-path", filepath.Join(samplePolicyPath, tt.name),

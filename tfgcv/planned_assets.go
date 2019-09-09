@@ -20,13 +20,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/option"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/golang/glog"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/pkg/errors"
@@ -36,7 +36,7 @@ import (
 // If ancestry path is provided, it assumes the project is in that path rather
 // than fetching the ancestry information using Google API.
 // It ignores non-supported resources.
-func ReadPlannedAssets(path, project, ancestry, tfVersion string) ([]google.Asset, error) {
+func ReadPlannedAssets(path, project, ancestry string) ([]google.Asset, error) {
 
 	// Add User Agent string to indicate Terraform Validator usage.
 	// Do *NOT* change the "config-validator-tf/" prefix, or else it will
@@ -53,8 +53,8 @@ func ReadPlannedAssets(path, project, ancestry, tfVersion string) ([]google.Asse
 
 	var resources []tfplan.Resource
 
-	switch tfVersion {
-	case tfplan.TF12:
+	switch version.LeastSupportedVersion() {
+	case version.TF12:
 		if ".json" != filepath.Ext(path) {
 			return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
 		}
@@ -68,7 +68,7 @@ func ReadPlannedAssets(path, project, ancestry, tfVersion string) ([]google.Asse
 		if err != nil {
 			return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
 		}
-	case tfplan.TF11:
+	case version.TF11:
 		f, err := os.Open(path)
 		if err != nil {
 			return nil, errors.Wrap(err, "opening plan file")
@@ -90,7 +90,7 @@ func ReadPlannedAssets(path, project, ancestry, tfVersion string) ([]google.Asse
 
 		resources = tfplan.ComposeResources(plan, converter.Schemas())
 	default:
-		return nil, errors.New(fmt.Sprintf("Possible values for --tf-version flag are [%s, %s], got: %s", tfplan.TF11, tfplan.TF12, tfVersion))
+		return nil, fmt.Errorf("terraform version %s is not supported by this version of validator, see README.md to switch to the right version", version.LeastSupportedVersion())
 	}
 
 	for _, r := range resources {
@@ -107,31 +107,3 @@ func ReadPlannedAssets(path, project, ancestry, tfVersion string) ([]google.Asse
 }
 
 var ErrParsingProviderProject = errors.New("unable to parse provider project")
-
-// parseProviderProject attempts to parse hardcoded "project" configuration
-// from the "google" provider block. It is lazy and fails if the job involves
-// interpolation.
-// TODO: Replicate/incorporate terraform interpolation (or is that a good idea?).
-func parseProviderProject(plan *terraform.Plan) (string, error) {
-	for _, cfg := range plan.Module.Config().ProviderConfigs {
-		if cfg.Name == "google" {
-			inf, ok := cfg.RawConfig.Raw["project"]
-			if !ok {
-				continue
-			}
-			prj := inf.(string)
-
-			// If the provider has a hardcoded project string, return it.
-			if !strings.Contains(prj, "${") {
-				return prj, nil
-			}
-
-			return "", ErrParsingProviderProject
-		}
-	}
-
-	// If we have reached this point, there was no provider-level project that
-	// was specified in this plan. This means the plan should be viable based
-	// on resource-level project fields being set.
-	return "", nil
-}

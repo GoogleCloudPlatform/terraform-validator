@@ -14,7 +14,7 @@
 
 package test
 
-import "github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+import "github.com/GoogleCloudPlatform/terraform-validator/version"
 
 // data represents the full dataset that is used for templating terraform
 // configs. It contains Google API resources that are expected to be returned
@@ -29,7 +29,7 @@ type data struct {
 
 func newData(tfVersion, project, credentials string) data {
 	providerVersion := "1.20"
-	if tfVersion == tfplan.TF12 {
+	if tfVersion == version.TF12 {
 		providerVersion = "2.12.0"
 	}
 	return data{

@@ -17,7 +17,6 @@ package test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"html/template"
 	"os"
 	"os/exec"
@@ -26,6 +25,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 const (
@@ -57,9 +58,9 @@ func setup(tfVersion string, t *testing.T) (data, config) {
 
 	var executable string
 	switch tfVersion {
-	case tfplan.TF11:
+	case version.TF11:
 		executable = "terraform11"
-	case tfplan.TF12:
+	case version.TF12:
 		executable = "terraform"
 	default:
 		t.Fatalf("unknown tfVersion %s", tfVersion)
@@ -74,7 +75,7 @@ func setup(tfVersion string, t *testing.T) (data, config) {
 	run(t, executable, "fmt", getGenerateDir(tfVersion))
 	run(t, executable, "init", getGenerateDir(tfVersion))
 	run(t, executable, "plan", "--out", planPath, getGenerateDir(tfVersion))
-	if tfVersion == tfplan.TF12 {
+	if tfVersion == version.TF12 {
 		jsonPlanPath := filepath.Join(getGenerateDir(tfVersion), "test.tfplan.json")
 		jsonOut, _ := run(t, executable, "show", "-json", planPath)
 		f, err := os.Create(jsonPlanPath)
