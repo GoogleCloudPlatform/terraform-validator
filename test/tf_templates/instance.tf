@@ -24,10 +24,6 @@ resource "google_compute_instance" "my-test-instance" {
     }
   }
 
-  metadata = {
-    foo = "bar"
-  }
-
   metadata_startup_script = "echo hi > /test.txt"
 
   service_account {

@@ -31,10 +31,6 @@
 	"metadata": {
 		"items": [
 			{
-				"key": "foo",
-				"value": "bar"
-			},
-			{
 				"key": "startup-script",
 				"value": "echo hi > /test.txt"
 			}
