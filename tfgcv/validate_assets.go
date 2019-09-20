@@ -33,11 +33,11 @@ func BuildVersion() string {
 }
 
 // ValidateAssets instantiates GCV and audits CAI assets using "policies"
-// and "lib" folder under policyPath.
-func ValidateAssets(assets []google.Asset, policyPath string) (*validator.AuditResponse, error) {
+// and "lib" folder under policyRootPath.
+func ValidateAssets(assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
 	return ValidateAssetsWithLibrary(assets,
-		filepath.Join(policyPath, "policies"),
-		filepath.Join(policyPath, "lib"))
+		filepath.Join(policyRootPath, "policies"),
+		filepath.Join(policyRootPath, "lib"))
 }
 
 // ValidateAssetsWithLibrary instantiates GCV and audits CAI assets.
