@@ -32,11 +32,19 @@ func BuildVersion() string {
 	return buildVersion
 }
 
-// ValidateAssets instantiates GCV and audits CAI assets.
+// ValidateAssets instantiates GCV and audits CAI assets using "policies"
+// and "lib" folder under policyPath.
 func ValidateAssets(assets []google.Asset, policyPath string) (*validator.AuditResponse, error) {
+	return ValidateAssetsWithLibrary(assets,
+		filepath.Join(policyPath, "policies"),
+		filepath.Join(policyPath, "lib"))
+}
+
+// ValidateAssetsWithLibrary instantiates GCV and audits CAI assets.
+func ValidateAssetsWithLibrary(assets []google.Asset, policyPath, policyLibraryDir string) (*validator.AuditResponse, error) {
 	valid, err := gcv.NewValidator(
-		gcv.PolicyPath(filepath.Join(policyPath, "policies")),
-		gcv.PolicyLibraryDir(filepath.Join(policyPath, "lib")),
+		gcv.PolicyPath(policyPath),
+		gcv.PolicyLibraryDir(policyLibraryDir),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "initializing gcv validator")
