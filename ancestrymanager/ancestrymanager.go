@@ -17,7 +17,7 @@ type AncestryManager interface {
 	GetAncestry(project string) (string, error)
 }
 
-type ancestryManager struct {
+type onlineAncestryManager struct {
 	// Talk to GCP resource manager. This field would be nil in offline mode.
 	resourceManager *cloudresourcemanager.Service
 	// Cache to prevent multiple network calls for looking up the same project's ancestry
@@ -28,41 +28,51 @@ type ancestryManager struct {
 // GetAncestry uses the resource manager API to get ancestry paths for
 // projects. It implements a cache because many resources share the same
 // project.
-func (am *ancestryManager) GetAncestry(project string) (string, error) {
-	if path, ok := am.ancestryCache[project]; ok {
+func (m *onlineAncestryManager) GetAncestry(project string) (string, error) {
+	if path, ok := m.ancestryCache[project]; ok {
 		return path, nil
 	}
-	if am.resourceManager == nil {
-		return "", fmt.Errorf("cannot fetch ancestry in offline mode for project %s", project)
-	}
-	ancestry, err := am.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
+	ancestry, err := m.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
 	if err != nil {
 		return "", err
 	}
 	path := ancestryPath(ancestry.Ancestor)
-	am.store(project, path)
+	m.store(project, path)
 	return path, nil
 }
 
-func (am *ancestryManager) store(project, ancestry string) {
+func (m *onlineAncestryManager) store(project, ancestry string) {
 	if project != "" && ancestry != "" {
-		am.ancestryCache[project] = ancestry
+		m.ancestryCache[project] = ancestry
 	}
+}
+
+type offlineAncestryManager struct {
+	project  string
+	ancestry string
+}
+
+// GetAncestry returns the ancestry for the project. It returns an error if
+// the project does not equal to the one provided during initialization.
+func (m *offlineAncestryManager) GetAncestry(project string) (string, error) {
+	if project != m.project {
+		return "", fmt.Errorf("cannot fetch ancestry in offline mode")
+	}
+	return m.ancestry, nil
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
 func New(ctx context.Context, project, ancestry string, offline bool, opts ...option.ClientOption) (AncestryManager, error) {
-	am := &ancestryManager{
-		ancestryCache: map[string]string{},
+	if offline {
+		return &offlineAncestryManager{project: project, ancestry: ancestry}, nil
 	}
+	am := &onlineAncestryManager{ancestryCache: map[string]string{}}
 	am.store(project, ancestry)
-	if !offline {
-		rm, err := cloudresourcemanager.NewService(ctx, opts...)
-		if err != nil {
-			return nil, errors.Wrap(err, "constructing resource manager client")
-		}
-		am.resourceManager = rm
+	rm, err := cloudresourcemanager.NewService(ctx, opts...)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
+	am.resourceManager = rm
 	return am, nil
 }
 
