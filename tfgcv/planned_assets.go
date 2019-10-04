@@ -21,9 +21,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/option"
 
+	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/GoogleCloudPlatform/terraform-validator/version"
@@ -37,20 +37,12 @@ import (
 // than fetching the ancestry information using Google API.
 // It ignores non-supported resources.
 func ReadPlannedAssets(path, project, ancestry string, offline bool) ([]google.Asset, error) {
-
-	var resourceManager *cloudresourcemanager.Service
-	if !offline {
-		// Add User Agent string to indicate Terraform Validator usage.
-		// Do *NOT* change the "config-validator-tf/" prefix, or else it will
-		// break usage tracking.
-		ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
-		var err error 
-		resourceManager, err = cloudresourcemanager.NewService(context.Background(), ua)
-		if err != nil {
-			return nil, errors.Wrap(err, "constructing resource manager client")
-		}
+	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
+	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(resourceManager, project, ancestry, "", offline)
+	converter, err := google.NewConverter(ancestryManager, project, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

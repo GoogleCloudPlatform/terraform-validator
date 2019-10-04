@@ -17,14 +17,13 @@ package google
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	provider "github.com/terraform-providers/terraform-provider-google/google"
-	"google.golang.org/api/cloudresourcemanager/v1"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 )
 
 var ErrDuplicateAsset = errors.New("duplicate asset")
@@ -86,29 +85,17 @@ type AssetResource struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(resourceManager *cloudresourcemanager.Service, project, ancestry, credentials string, offline bool) (*Converter, error) {
+func NewConverter(ancestryManager ancestrymanager.AncestryManager, project, credentials string) (*Converter, error) {
 	cfg := &converter.Config{
 		Project:     project,
 		Credentials: credentials,
 	}
-	if !offline {
-		if err := cfg.LoadAndValidate(); err != nil {
-			return nil, errors.Wrap(err, "configuring")
-		}
-	}
-
-	ancestryCache := make(map[string]string)
-	if ancestry != "" {
-		ancestryCache[project] = fmt.Sprintf("%s/project/%s", ancestry, project)
-	}
-
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
 		schema:          p,
 		mapperFuncs:     mappers(),
 		cfg:             cfg,
-		resourceManager: resourceManager,
-		ancestryCache:   ancestryCache,
+		ancestryManager: ancestryManager,
 		assets:          make(map[string]Asset),
 	}, nil
 }
@@ -124,12 +111,8 @@ type Converter struct {
 
 	cfg *converter.Config
 
-	// Talk to GCP resource manager. This field would be nil in offline mode.
-	resourceManager *cloudresourcemanager.Service
-
-	// Cache to prevent multiple network calls for looking up the same project's ancestry
-	// map[project]ancestryPath
-	ancestryCache map[string]string
+	// ancestryManager provides a manager to find the ancestry information for a project.
+	ancestryManager ancestrymanager.AncestryManager
 
 	// Map of converted assets (key = asset.Type + asset.Name)
 	assets map[string]Asset
@@ -210,7 +193,7 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 		return Asset{}, err
 	}
 
-	ancestry, err := c.getAncestry(project)
+	ancestry, err := c.ancestryManager.GetAncestry(project)
 	if err != nil {
 		return Asset{}, errors.Wrapf(err, "getting resource ancestry: project %v", project)
 	}
@@ -246,36 +229,4 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 		project:        project,
 		converterAsset: cai,
 	}, nil
-}
-
-// getAncestry uses the resource manager API to get ancestry paths for
-// projects. It implements a cache because many resources share the same
-// project.
-func (c *Converter) getAncestry(project string) (string, error) {
-	if path, ok := c.ancestryCache[project]; ok {
-		return path, nil
-	}
-	if c.resourceManager == nil {
-		return "", fmt.Errorf("cannot fetch ancestry in offline mode for project %s", project)
-	}
-
-	ancestry, err := c.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
-	if err != nil {
-		return "", err
-	}
-
-	path := ancestryPath(ancestry.Ancestor)
-	c.ancestryCache[project] = path
-
-	return path, nil
-}
-
-// ancestryPath composes a path containing organization/folder/project
-// (i.e. "organization/my-org/folder/my-folder/project/my-prj").
-func ancestryPath(as []*cloudresourcemanager.Ancestor) string {
-	var path []string
-	for i := len(as) - 1; i >= 0; i-- {
-		path = append(path, as[i].ResourceId.Type, as[i].ResourceId.Id)
-	}
-	return strings.Join(path, "/")
 }

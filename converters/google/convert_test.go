@@ -19,49 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/api/cloudresourcemanager/v1"
 )
-
-func TestAncestryPath(t *testing.T) {
-	cases := []struct {
-		name           string
-		input          []*cloudresourcemanager.Ancestor
-		expectedOutput string
-	}{
-		{
-			name:           "Empty",
-			input:          []*cloudresourcemanager.Ancestor{},
-			expectedOutput: "",
-		},
-		{
-			name: "ProjectOrganization",
-			input: []*cloudresourcemanager.Ancestor{
-				{
-					ResourceId: &cloudresourcemanager.ResourceId{
-						Id:   "my-prj",
-						Type: "project",
-					},
-				},
-				{
-					ResourceId: &cloudresourcemanager.ResourceId{
-						Id:   "my-org",
-						Type: "organization",
-					},
-				},
-			},
-			expectedOutput: "organization/my-org/project/my-prj",
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			output := ancestryPath(c.input)
-			if output != c.expectedOutput {
-				t.Errorf("expected output %q, got %q", c.expectedOutput, output)
-			}
-		})
-	}
-}
 
 func TestSortByName(t *testing.T) {
 	cases := []struct {
