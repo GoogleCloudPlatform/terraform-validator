@@ -22,29 +22,15 @@ steps:
   name: 'gcr.io/cloud-builders/go'
   entrypoint: /usr/bin/make
   args: [build]
-- id: prepare
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && prepare_environment']
-  env:
-    - 'TF_VAR_org_id=$_ORG_ID'
-    - 'TF_VAR_folder_id=$_FOLDER_ID'
-    - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
-- id: print_source
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cat test/source.sh']
 - id: test-integration
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source test/source.sh && make test-integration']
-- id: destroy
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && cleanup_environment']
+  args: ['/bin/bash', '-c', 'make test-integration']
   env:
-  - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
-  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+    - 'TEST_PROJECT=$_TEST_PROJECT'
 tags:
 - 'ci'
 - 'integration'
 substitutions:
   _DOCKER_IMAGE_DEVELOPER_TOOLS: 'cft/developer-tools'
   _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '0.1.0'
+
