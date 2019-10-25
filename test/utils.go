@@ -108,15 +108,15 @@ func configure(t *testing.T) config {
 	}
 
 	cfg.credentials, ok = os.LookupEnv("TEST_CREDENTIALS")
-	if !ok {
-		t.Fatal("missing required env var TEST_CREDENTIALS")
+	if ok {
+		// Make credentials path relative to repo root rather than
+		// test/ dir if it is a relative path.
+		if !filepath.IsAbs(cfg.credentials) {
+			cfg.credentials = filepath.Join("..", cfg.credentials)
+		}
+	} else {
+		t.Log("missing env var TEST_CREDENTIALS, will try to use Application Default Credentials")
 	}
-	// Make credentials path relative to repo root rather than
-	// test/ dir if it is a relative path.
-	if !filepath.IsAbs(cfg.credentials) {
-		cfg.credentials = filepath.Join("..", cfg.credentials)
-	}
-
 	return cfg
 }
 
