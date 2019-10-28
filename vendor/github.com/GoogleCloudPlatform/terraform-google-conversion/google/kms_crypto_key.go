@@ -20,12 +20,12 @@ import (
 	"time"
 )
 
-func GetKmsCryptoKeyCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
+func GetKMSCryptoKeyCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//kms.googleapis.com/{{key_ring}}/cryptoKeys/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
-	if obj, err := GetKmsCryptoKeyApiObject(d, config); err == nil {
+	if obj, err := GetKMSCryptoKeyApiObject(d, config); err == nil {
 		return Asset{
 			Name: name,
 			Type: "kms.googleapis.com/CryptoKey",
@@ -41,37 +41,37 @@ func GetKmsCryptoKeyCaiObject(d TerraformResourceData, config *Config) (Asset, e
 	}
 }
 
-func GetKmsCryptoKeyApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
+func GetKMSCryptoKeyApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	labelsProp, err := expandKmsCryptoKeyLabels(d.Get("labels"), d, config)
+	labelsProp, err := expandKMSCryptoKeyLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
 		obj["labels"] = labelsProp
 	}
-	purposeProp, err := expandKmsCryptoKeyPurpose(d.Get("purpose"), d, config)
+	purposeProp, err := expandKMSCryptoKeyPurpose(d.Get("purpose"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("purpose"); !isEmptyValue(reflect.ValueOf(purposeProp)) && (ok || !reflect.DeepEqual(v, purposeProp)) {
 		obj["purpose"] = purposeProp
 	}
-	rotationPeriodProp, err := expandKmsCryptoKeyRotationPeriod(d.Get("rotation_period"), d, config)
+	rotationPeriodProp, err := expandKMSCryptoKeyRotationPeriod(d.Get("rotation_period"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("rotation_period"); !isEmptyValue(reflect.ValueOf(rotationPeriodProp)) && (ok || !reflect.DeepEqual(v, rotationPeriodProp)) {
 		obj["rotationPeriod"] = rotationPeriodProp
 	}
-	versionTemplateProp, err := expandKmsCryptoKeyVersionTemplate(d.Get("version_template"), d, config)
+	versionTemplateProp, err := expandKMSCryptoKeyVersionTemplate(d.Get("version_template"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("version_template"); !isEmptyValue(reflect.ValueOf(versionTemplateProp)) && (ok || !reflect.DeepEqual(v, versionTemplateProp)) {
 		obj["versionTemplate"] = versionTemplateProp
 	}
 
-	return resourceKmsCryptoKeyEncoder(d, config, obj)
+	return resourceKMSCryptoKeyEncoder(d, config, obj)
 }
 
-func resourceKmsCryptoKeyEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+func resourceKMSCryptoKeyEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
 	// if rotationPeriod is set, nextRotationTime must also be set.
 	if d.Get("rotation_period") != "" {
 		rotationPeriod := d.Get("rotation_period").(string)
@@ -87,7 +87,7 @@ func resourceKmsCryptoKeyEncoder(d TerraformResourceData, meta interface{}, obj 
 	return obj, nil
 }
 
-func expandKmsCryptoKeyLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+func expandKMSCryptoKeyLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
 	if v == nil {
 		return map[string]string{}, nil
 	}
@@ -98,15 +98,15 @@ func expandKmsCryptoKeyLabels(v interface{}, d TerraformResourceData, config *Co
 	return m, nil
 }
 
-func expandKmsCryptoKeyPurpose(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSCryptoKeyPurpose(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandKmsCryptoKeyRotationPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSCryptoKeyRotationPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandKmsCryptoKeyVersionTemplate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSCryptoKeyVersionTemplate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -115,14 +115,14 @@ func expandKmsCryptoKeyVersionTemplate(v interface{}, d TerraformResourceData, c
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedAlgorithm, err := expandKmsCryptoKeyVersionTemplateAlgorithm(original["algorithm"], d, config)
+	transformedAlgorithm, err := expandKMSCryptoKeyVersionTemplateAlgorithm(original["algorithm"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedAlgorithm); val.IsValid() && !isEmptyValue(val) {
 		transformed["algorithm"] = transformedAlgorithm
 	}
 
-	transformedProtectionLevel, err := expandKmsCryptoKeyVersionTemplateProtectionLevel(original["protection_level"], d, config)
+	transformedProtectionLevel, err := expandKMSCryptoKeyVersionTemplateProtectionLevel(original["protection_level"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedProtectionLevel); val.IsValid() && !isEmptyValue(val) {
@@ -132,10 +132,10 @@ func expandKmsCryptoKeyVersionTemplate(v interface{}, d TerraformResourceData, c
 	return transformed, nil
 }
 
-func expandKmsCryptoKeyVersionTemplateAlgorithm(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSCryptoKeyVersionTemplateAlgorithm(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandKmsCryptoKeyVersionTemplateProtectionLevel(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSCryptoKeyVersionTemplateProtectionLevel(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

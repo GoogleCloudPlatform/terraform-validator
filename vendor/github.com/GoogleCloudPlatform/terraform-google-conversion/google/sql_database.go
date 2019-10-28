@@ -16,12 +16,12 @@ package google
 
 import "reflect"
 
-func GetSqlDatabaseCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
+func GetSQLDatabaseCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//sql.googleapis.com/projects/{{project}}/instances/{{instance}}/databases/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
-	if obj, err := GetSqlDatabaseApiObject(d, config); err == nil {
+	if obj, err := GetSQLDatabaseApiObject(d, config); err == nil {
 		return Asset{
 			Name: name,
 			Type: "sql.googleapis.com/Database",
@@ -37,27 +37,27 @@ func GetSqlDatabaseCaiObject(d TerraformResourceData, config *Config) (Asset, er
 	}
 }
 
-func GetSqlDatabaseApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
+func GetSQLDatabaseApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	charsetProp, err := expandSqlDatabaseCharset(d.Get("charset"), d, config)
+	charsetProp, err := expandSQLDatabaseCharset(d.Get("charset"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("charset"); !isEmptyValue(reflect.ValueOf(charsetProp)) && (ok || !reflect.DeepEqual(v, charsetProp)) {
 		obj["charset"] = charsetProp
 	}
-	collationProp, err := expandSqlDatabaseCollation(d.Get("collation"), d, config)
+	collationProp, err := expandSQLDatabaseCollation(d.Get("collation"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("collation"); !isEmptyValue(reflect.ValueOf(collationProp)) && (ok || !reflect.DeepEqual(v, collationProp)) {
 		obj["collation"] = collationProp
 	}
-	nameProp, err := expandSqlDatabaseName(d.Get("name"), d, config)
+	nameProp, err := expandSQLDatabaseName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
-	instanceProp, err := expandSqlDatabaseInstance(d.Get("instance"), d, config)
+	instanceProp, err := expandSQLDatabaseInstance(d.Get("instance"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("instance"); !isEmptyValue(reflect.ValueOf(instanceProp)) && (ok || !reflect.DeepEqual(v, instanceProp)) {
@@ -67,18 +67,18 @@ func GetSqlDatabaseApiObject(d TerraformResourceData, config *Config) (map[strin
 	return obj, nil
 }
 
-func expandSqlDatabaseCharset(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSQLDatabaseCharset(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandSqlDatabaseCollation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSQLDatabaseCollation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandSqlDatabaseName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSQLDatabaseName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandSqlDatabaseInstance(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSQLDatabaseInstance(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

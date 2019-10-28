@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // validatePeerAddr returns false if a tunnel's peer_ip property
@@ -251,7 +251,13 @@ func expandComputeVpnTunnelRouter(v interface{}, d TerraformResourceData, config
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for router: %s", err)
 	}
-	return "https://www.googleapis.com/compute/v1/" + f.RelativeLink(), nil
+
+	url, err := replaceVars(d, config, "{{ComputeBasePath}}"+f.RelativeLink())
+	if err != nil {
+		return nil, err
+	}
+
+	return url, nil
 }
 
 func expandComputeVpnTunnelPeerIp(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
