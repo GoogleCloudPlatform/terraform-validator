@@ -5,7 +5,7 @@ package tfgcv
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 // parseProviderProject attempts to parse hardcoded "project" configuration

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
 	provider "github.com/terraform-providers/terraform-provider-google/google"
 

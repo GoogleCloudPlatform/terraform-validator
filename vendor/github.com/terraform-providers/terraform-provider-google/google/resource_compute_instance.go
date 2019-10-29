@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform/helper/customdiff"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/mitchellh/hashstructure"
 	computeBeta "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/compute/v1"
@@ -126,13 +126,21 @@ func resourceComputeInstance() *schema.Resource {
 							},
 						},
 
+						"mode": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ForceNew:     true,
+							Default:      "READ_WRITE",
+							ValidateFunc: validation.StringInSlice([]string{"READ_WRITE", "READ_ONLY"}, false),
+						},
+
 						"source": {
 							Type:             schema.TypeString,
 							Optional:         true,
 							Computed:         true,
 							ForceNew:         true,
 							ConflictsWith:    []string{"boot_disk.initialize_params"},
-							DiffSuppressFunc: linkDiffSuppress,
+							DiffSuppressFunc: compareSelfLinkOrResourceName,
 						},
 					},
 				},
@@ -403,7 +411,7 @@ func resourceComputeInstance() *schema.Resource {
 							Type:             schema.TypeString,
 							Required:         true,
 							ForceNew:         true,
-							DiffSuppressFunc: linkDiffSuppress,
+							DiffSuppressFunc: compareSelfLinkOrResourceName,
 						},
 					},
 				},
@@ -641,26 +649,24 @@ func getDisk(diskUri string, d *schema.ResourceData, config *Config) (*compute.D
 	return disk, err
 }
 
-func expandComputeInstance(project string, zone *compute.Zone, d *schema.ResourceData, config *Config) (*computeBeta.Instance, error) {
+func expandComputeInstance(project string, d *schema.ResourceData, config *Config) (*computeBeta.Instance, error) {
 	// Get the machine type
 	var machineTypeUrl string
 	if mt, ok := d.GetOk("machine_type"); ok {
-		log.Printf("[DEBUG] Loading machine type: %s", mt.(string))
-		machineType, err := config.clientCompute.MachineTypes.Get(
-			project, zone.Name, mt.(string)).Do()
+		machineType, err := ParseMachineTypesFieldValue(mt.(string), d, config)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"Error loading machine type: %s",
 				err)
 		}
-		machineTypeUrl = machineType.SelfLink
+		machineTypeUrl = machineType.RelativeLink()
 	}
 
 	// Build up the list of disks
 
 	disks := []*computeBeta.AttachedDisk{}
 	if _, hasBootDisk := d.GetOk("boot_disk"); hasBootDisk {
-		bootDisk, err := expandBootDisk(d, config, zone, project)
+		bootDisk, err := expandBootDisk(d, config, project)
 		if err != nil {
 			return nil, err
 		}
@@ -668,7 +674,7 @@ func expandComputeInstance(project string, zone *compute.Zone, d *schema.Resourc
 	}
 
 	if _, hasScratchDisk := d.GetOk("scratch_disk"); hasScratchDisk {
-		scratchDisks, err := expandScratchDisks(d, config, zone, project)
+		scratchDisks, err := expandScratchDisks(d, config, project)
 		if err != nil {
 			return nil, err
 		}
@@ -749,7 +755,7 @@ func resourceComputeInstanceCreate(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Error loading zone '%s': %s", z, err)
 	}
 
-	instance, err := expandComputeInstance(project, zone, d, config)
+	instance, err := expandComputeInstance(project, d, config)
 	if err != nil {
 		return err
 	}
@@ -1163,7 +1169,7 @@ func resourceComputeInstanceUpdate(d *schema.ResourceData, meta interface{}) err
 				if err != nil {
 					return errwrap.Wrapf("Error removing alias_ip_range: {{err}}", err)
 				}
-				opErr := computeSharedOperationWaitTime(config.clientCompute, op, project, int(d.Timeout(schema.TimeoutUpdate).Minutes()), "updaing alias ip ranges")
+				opErr := computeSharedOperationWaitTime(config.clientCompute, op, project, int(d.Timeout(schema.TimeoutUpdate).Minutes()), "updating alias ip ranges")
 				if opErr != nil {
 					return opErr
 				}
@@ -1187,7 +1193,7 @@ func resourceComputeInstanceUpdate(d *schema.ResourceData, meta interface{}) err
 				if err != nil {
 					return errwrap.Wrapf("Error adding alias_ip_range: {{err}}", err)
 				}
-				opErr := computeSharedOperationWaitTime(config.clientCompute, op, project, int(d.Timeout(schema.TimeoutUpdate).Minutes()), "updaing alias ip ranges")
+				opErr := computeSharedOperationWaitTime(config.clientCompute, op, project, int(d.Timeout(schema.TimeoutUpdate).Minutes()), "updating alias ip ranges")
 				if opErr != nil {
 					return opErr
 				}
@@ -1601,7 +1607,7 @@ func resourceComputeInstanceImportState(d *schema.ResourceData, meta interface{}
 	return []*schema.ResourceData{d}, nil
 }
 
-func expandBootDisk(d *schema.ResourceData, config *Config, zone *compute.Zone, project string) (*computeBeta.AttachedDisk, error) {
+func expandBootDisk(d *schema.ResourceData, config *Config, project string) (*computeBeta.AttachedDisk, error) {
 	disk := &computeBeta.AttachedDisk{
 		AutoDelete: d.Get("boot_disk.0.auto_delete").(bool),
 		Boot:       true,
@@ -1666,6 +1672,10 @@ func expandBootDisk(d *schema.ResourceData, config *Config, zone *compute.Zone, 
 		}
 	}
 
+	if v, ok := d.GetOk("boot_disk.0.mode"); ok {
+		disk.Mode = v.(string)
+	}
+
 	return disk, nil
 }
 
@@ -1673,6 +1683,7 @@ func flattenBootDisk(d *schema.ResourceData, disk *computeBeta.AttachedDisk, con
 	result := map[string]interface{}{
 		"auto_delete": disk.AutoDelete,
 		"device_name": disk.DeviceName,
+		"mode":        disk.Mode,
 		"source":      ConvertSelfLinkToV1(disk.Source),
 		// disk_encryption_key_raw is not returned from the API, so copy it from what the user
 		// originally specified to avoid diffs.
@@ -1714,7 +1725,7 @@ func flattenBootDisk(d *schema.ResourceData, disk *computeBeta.AttachedDisk, con
 	return []map[string]interface{}{result}
 }
 
-func expandScratchDisks(d *schema.ResourceData, config *Config, zone *compute.Zone, project string) ([]*computeBeta.AttachedDisk, error) {
+func expandScratchDisks(d *schema.ResourceData, config *Config, project string) ([]*computeBeta.AttachedDisk, error) {
 	diskType, err := readDiskType(config, d, "local-ssd")
 	if err != nil {
 		return nil, fmt.Errorf("Error loading disk type 'local-ssd': %s", err)

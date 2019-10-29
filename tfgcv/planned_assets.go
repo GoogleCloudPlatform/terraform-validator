@@ -28,7 +28,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/golang/glog"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/pkg/errors"
 )
 

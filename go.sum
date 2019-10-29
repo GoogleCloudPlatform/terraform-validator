@@ -284,6 +284,8 @@ github.com/hashicorp/terraform-config-inspect v0.0.0-20190821133035-82a99dc22ef4
 github.com/hashicorp/terraform-config-inspect v0.0.0-20190821133035-82a99dc22ef4/go.mod h1:JDmizlhaP5P0rYTTZB0reDMefAiJyfWPEtugV4in1oI=
 github.com/hashicorp/terraform-plugin-sdk v1.0.0 h1:3AjuuV1LJKs1NlG+heUgqWN6/QCSx2kDhyS6K7F0fTw=
 github.com/hashicorp/terraform-plugin-sdk v1.0.0/go.mod h1:NuwtLpEpPsFaKJPJNGtMcn9vlhe6Ofe+Y6NqXhJgV2M=
+github.com/hashicorp/terraform-plugin-sdk v1.2.0 h1:OASbbPmJHbajCSXelwWLSw/HkvnakG4rd/GcrqD2k/g=
+github.com/hashicorp/terraform-plugin-sdk v1.2.0/go.mod h1:NuwtLpEpPsFaKJPJNGtMcn9vlhe6Ofe+Y6NqXhJgV2M=
 github.com/hashicorp/vault v0.10.4/go.mod h1:KfSyffbKxoVyspOdlaGVjIuwLobi07qD1bAbosPMpP0=
 github.com/hashicorp/vault v1.0.1/go.mod h1:KfSyffbKxoVyspOdlaGVjIuwLobi07qD1bAbosPMpP0=
 github.com/hashicorp/vault v1.0.2 h1:CpHnQQKqhquAfC862BiwhksW5Fqhhv0BKlxXpoMlZsA=
@@ -493,6 +495,7 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/svanharmelen/jsonapi v0.0.0-20180618144545-0c0828c3f16d/go.mod h1:BSTlc8jOjh0niykqEGVXOLXdi9o0r0kR8tCYiMvjFgw=
 github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07/go.mod h1:kDXzergiv9cbyO7IOYJZWg1U88JhDg3PB6klq9Hg2pA=
+github.com/terraform-providers/terraform-provider-google v0.0.0-20190926053353-6d9ad351701b h1:pVqlKKvM5Vwo3SvNyaTKTRiqd361TrABKL/BIXHJjmQ=
 github.com/terraform-providers/terraform-provider-google v0.0.0-20190926053353-6d9ad351701b/go.mod h1:hUDrGt1uKudvKmZ4GqcIlxNkFcfYDST1Bo6oY/FMYYc=
 github.com/terraform-providers/terraform-provider-google v1.20.0 h1:GCVLdJ49gSQxrI3b9Hu8BrNXKSyfGvLrlTJFyuWzsa4=
 github.com/terraform-providers/terraform-provider-google v1.20.0/go.mod h1:Ay9UTdQsm6vHYRjhyFRLPis39XspOYHmgy5pwNrgsco=
