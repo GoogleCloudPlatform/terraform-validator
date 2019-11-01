@@ -93,9 +93,10 @@ func NewConverter(ancestryManager ancestrymanager.AncestryManager, project, cred
 	if !offline {
 		converter.ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(); err != nil {
-			return nil, errors.Wrap(err, "load and validate config")	
+			return nil, errors.Wrap(err, "load and validate config")
 		}
 	}
+
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
 		schema:          p,
