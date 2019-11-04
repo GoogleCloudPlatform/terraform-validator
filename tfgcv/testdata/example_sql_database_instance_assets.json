@@ -1,0 +1,25 @@
+[
+  {
+    "name": "//cloudsql.googleapis.com/projects/foobar/instances/master-instance",
+    "asset_type": "sqladmin.googleapis.com/Instance",
+    "ancestry_path": "organization/12345/folder/67890/project/foobar",
+    "resource": {
+      "version": "v1beta4",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/sqladmin/v1beta4/rest",
+      "discovery_name": "DatabaseInstance",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "databaseVersion": "POSTGRES_9_6",
+        "name": "master-instance",
+        "project": "foobar",
+        "region": "us-central1",
+        "settings": {
+          "pricingPlan": "PER_USE",
+          "replicationType": "SYNCHRONOUS",
+          "storageAutoResize": true,
+          "tier": "db-f1-micro"
+        }
+      }
+    }
+  }
+]
