@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
 	provider "github.com/terraform-providers/terraform-provider-google/google"
 
@@ -93,9 +93,10 @@ func NewConverter(ancestryManager ancestrymanager.AncestryManager, project, cred
 	if !offline {
 		converter.ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(); err != nil {
-			return nil, errors.Wrap(err, "load and validate config")	
+			return nil, errors.Wrap(err, "load and validate config")
 		}
 	}
+
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
 		schema:          p,

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/servicenetworking/v1"
 )
@@ -32,7 +32,7 @@ func resourceServiceNetworkingConnection() *schema.Resource {
 			},
 			// NOTE(craigatgoogle): This field is weird, it's required to make the Insert/List calls as a parameter
 			// named "parent", however it's also defined in the response as an output field called "peering", which
-			// uses "-" as a delimeter instead of ".". To alleviate user confusion I've opted to model the gcloud
+			// uses "-" as a delimiter instead of ".". To alleviate user confusion I've opted to model the gcloud
 			// CLI's approach, calling the field "service" and accepting the same format as the CLI with the "."
 			// delimiter.
 			// See: https://cloud.google.com/vpc/docs/configure-private-services-access#creating-connection
@@ -177,11 +177,12 @@ func resourceServiceNetworkingConnectionDelete(d *schema.ResourceData, meta inte
 	obj["name"] = peering
 	url := fmt.Sprintf("%s%s/removePeering", config.ComputeBasePath, serviceNetworkingNetworkName)
 
-	project, err := getProject(d, config)
+	networkFieldValue, err := ParseNetworkFieldValue(network, d, config)
 	if err != nil {
-		return err
+		return errwrap.Wrapf("Failed to retrieve network field value, err: {{err}}", err)
 	}
 
+	project := networkFieldValue.Project
 	res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return handleNotFoundError(err, d, fmt.Sprintf("ServiceNetworkingConnection %q", d.Id()))

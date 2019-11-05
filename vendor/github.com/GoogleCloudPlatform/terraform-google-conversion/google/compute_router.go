@@ -63,7 +63,7 @@ func GetComputeRouterApiObject(d TerraformResourceData, config *Config) (map[str
 	bgpProp, err := expandComputeRouterBgp(d.Get("bgp"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("bgp"); !isEmptyValue(reflect.ValueOf(bgpProp)) && (ok || !reflect.DeepEqual(v, bgpProp)) {
+	} else if v, ok := d.GetOkExists("bgp"); ok || !reflect.DeepEqual(v, bgpProp) {
 		obj["bgp"] = bgpProp
 	}
 	regionProp, err := expandComputeRouterRegion(d.Get("region"), d, config)

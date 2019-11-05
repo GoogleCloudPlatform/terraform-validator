@@ -10,10 +10,10 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/go-version"
-	"github.com/hashicorp/terraform/helper/customdiff"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	containerBeta "google.golang.org/api/container/v1beta1"
 )
 
@@ -1771,7 +1771,9 @@ func expandMasterAuth(configured interface{}) *containerBeta.MasterAuth {
 func expandMasterAuthorizedNetworksConfig(configured interface{}) *containerBeta.MasterAuthorizedNetworksConfig {
 	l := configured.([]interface{})
 	if len(l) == 0 {
-		return nil
+		return &containerBeta.MasterAuthorizedNetworksConfig{
+			Enabled: false,
+		}
 	}
 	result := &containerBeta.MasterAuthorizedNetworksConfig{
 		Enabled: true,
@@ -1990,7 +1992,7 @@ func flattenMasterAuth(ma *containerBeta.MasterAuth) []map[string]interface{} {
 }
 
 func flattenMasterAuthorizedNetworksConfig(c *containerBeta.MasterAuthorizedNetworksConfig) []map[string]interface{} {
-	if c == nil {
+	if c == nil || !c.Enabled {
 		return nil
 	}
 	result := make(map[string]interface{})

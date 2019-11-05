@@ -16,12 +16,12 @@ package google
 
 import "reflect"
 
-func GetKmsKeyRingCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
+func GetKMSKeyRingCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//kms.googleapis.com/projects/{{project}}/locations/{{location}}/keyRings/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
-	if obj, err := GetKmsKeyRingApiObject(d, config); err == nil {
+	if obj, err := GetKMSKeyRingApiObject(d, config); err == nil {
 		return Asset{
 			Name: name,
 			Type: "kms.googleapis.com/KeyRing",
@@ -37,32 +37,32 @@ func GetKmsKeyRingCaiObject(d TerraformResourceData, config *Config) (Asset, err
 	}
 }
 
-func GetKmsKeyRingApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
+func GetKMSKeyRingApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	nameProp, err := expandKmsKeyRingName(d.Get("name"), d, config)
+	nameProp, err := expandKMSKeyRingName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
-	locationProp, err := expandKmsKeyRingLocation(d.Get("location"), d, config)
+	locationProp, err := expandKMSKeyRingLocation(d.Get("location"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("location"); !isEmptyValue(reflect.ValueOf(locationProp)) && (ok || !reflect.DeepEqual(v, locationProp)) {
 		obj["location"] = locationProp
 	}
 
-	return resourceKmsKeyRingEncoder(d, config, obj)
+	return resourceKMSKeyRingEncoder(d, config, obj)
 }
 
-func resourceKmsKeyRingEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+func resourceKMSKeyRingEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
 	return nil, nil
 }
 
-func expandKmsKeyRingName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSKeyRingName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandKmsKeyRingLocation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandKMSKeyRingLocation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // Is the new disk size smaller than the old one?
