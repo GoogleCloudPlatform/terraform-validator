@@ -42,7 +42,7 @@ func ReadPlannedAssets(path, project, ancestry string, offline bool) ([]google.A
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(ancestryManager, project, "")
+	converter, err := google.NewConverter(ancestryManager, project, "", offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}
