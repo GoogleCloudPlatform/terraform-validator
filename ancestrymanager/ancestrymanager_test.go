@@ -55,7 +55,8 @@ func TestAncestryPath(t *testing.T) {
 func TestGetAncestry(t *testing.T) {
 	ctx := context.Background()
 	ownerProject := "foo"
-	ownerAncestry := "organization/qux/folder/bar/project/foo"
+	ownerAncestry := "organization/qux/folder/bar"
+	ownerAncestryPath := "organization/qux/folder/bar/project/foo"
 	anotherProject := "foo2"
 
 	// Setup a simple test server to mock the response of resource manager.
@@ -90,8 +91,8 @@ func TestGetAncestry(t *testing.T) {
 		wantError bool
 		want      string
 	}{
-		{name: "owner_project_online", target: amOnline, query: ownerProject, want: ownerAncestry},
-		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestry},
+		{name: "owner_project_online", target: amOnline, query: ownerProject, want: ownerAncestryPath},
+		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestryPath},
 		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2"},
 		{name: "another_project_offline", target: amOffline, query: anotherProject, wantError: true},
 		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true},
