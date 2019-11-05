@@ -85,10 +85,16 @@ type AssetResource struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(ancestryManager ancestrymanager.AncestryManager, project, credentials string) (*Converter, error) {
+func NewConverter(ancestryManager ancestrymanager.AncestryManager, project, credentials string, offline bool) (*Converter, error) {
 	cfg := &converter.Config{
 		Project:     project,
 		Credentials: credentials,
+	}
+	if !offline {
+		converter.ConfigureBasePaths(cfg)
+		if err := cfg.LoadAndValidate(); err != nil {
+			return nil, errors.Wrap(err, "load and validate config")	
+		}
 	}
 	p := provider.Provider().(*schema.Provider)
 	return &Converter{
