@@ -66,6 +66,12 @@ func GetComputeAddressApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
+	purposeProp, err := expandComputeAddressPurpose(d.Get("purpose"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("purpose"); !isEmptyValue(reflect.ValueOf(purposeProp)) && (ok || !reflect.DeepEqual(v, purposeProp)) {
+		obj["purpose"] = purposeProp
+	}
 	networkTierProp, err := expandComputeAddressNetworkTier(d.Get("network_tier"), d, config)
 	if err != nil {
 		return nil, err
@@ -101,6 +107,10 @@ func expandComputeAddressDescription(v interface{}, d TerraformResourceData, con
 }
 
 func expandComputeAddressName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeAddressPurpose(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

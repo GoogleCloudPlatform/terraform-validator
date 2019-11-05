@@ -69,6 +69,12 @@ func GetComputeGlobalForwardingRuleApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("load_balancing_scheme"); !isEmptyValue(reflect.ValueOf(loadBalancingSchemeProp)) && (ok || !reflect.DeepEqual(v, loadBalancingSchemeProp)) {
 		obj["loadBalancingScheme"] = loadBalancingSchemeProp
 	}
+	metadataFiltersProp, err := expandComputeGlobalForwardingRuleMetadataFilters(d.Get("metadata_filters"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("metadata_filters"); !isEmptyValue(reflect.ValueOf(metadataFiltersProp)) && (ok || !reflect.DeepEqual(v, metadataFiltersProp)) {
+		obj["metadataFilters"] = metadataFiltersProp
+	}
 	nameProp, err := expandComputeGlobalForwardingRuleName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
@@ -108,6 +114,76 @@ func expandComputeGlobalForwardingRuleIpVersion(v interface{}, d TerraformResour
 }
 
 func expandComputeGlobalForwardingRuleLoadBalancingScheme(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeGlobalForwardingRuleMetadataFilters(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedFilterMatchCriteria, err := expandComputeGlobalForwardingRuleMetadataFiltersFilterMatchCriteria(original["filter_match_criteria"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedFilterMatchCriteria); val.IsValid() && !isEmptyValue(val) {
+			transformed["filterMatchCriteria"] = transformedFilterMatchCriteria
+		}
+
+		transformedFilterLabels, err := expandComputeGlobalForwardingRuleMetadataFiltersFilterLabels(original["filter_labels"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedFilterLabels); val.IsValid() && !isEmptyValue(val) {
+			transformed["filterLabels"] = transformedFilterLabels
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandComputeGlobalForwardingRuleMetadataFiltersFilterMatchCriteria(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeGlobalForwardingRuleMetadataFiltersFilterLabels(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedName, err := expandComputeGlobalForwardingRuleMetadataFiltersFilterLabelsName(original["name"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedName); val.IsValid() && !isEmptyValue(val) {
+			transformed["name"] = transformedName
+		}
+
+		transformedValue, err := expandComputeGlobalForwardingRuleMetadataFiltersFilterLabelsValue(original["value"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedValue); val.IsValid() && !isEmptyValue(val) {
+			transformed["value"] = transformedValue
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandComputeGlobalForwardingRuleMetadataFiltersFilterLabelsName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeGlobalForwardingRuleMetadataFiltersFilterLabelsValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

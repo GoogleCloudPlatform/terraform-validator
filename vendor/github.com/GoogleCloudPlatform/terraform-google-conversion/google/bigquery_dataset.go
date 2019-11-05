@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const datasetIdRegexp = `[0-9A-Za-z_]+`
@@ -118,6 +118,12 @@ func GetBigQueryDatasetApiObject(d TerraformResourceData, config *Config) (map[s
 		return nil, err
 	} else if v, ok := d.GetOkExists("location"); !isEmptyValue(reflect.ValueOf(locationProp)) && (ok || !reflect.DeepEqual(v, locationProp)) {
 		obj["location"] = locationProp
+	}
+	defaultEncryptionConfigurationProp, err := expandBigQueryDatasetDefaultEncryptionConfiguration(d.Get("default_encryption_configuration"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("default_encryption_configuration"); !isEmptyValue(reflect.ValueOf(defaultEncryptionConfigurationProp)) && (ok || !reflect.DeepEqual(v, defaultEncryptionConfigurationProp)) {
+		obj["defaultEncryptionConfiguration"] = defaultEncryptionConfigurationProp
 	}
 
 	return obj, nil
@@ -290,5 +296,28 @@ func expandBigQueryDatasetLabels(v interface{}, d TerraformResourceData, config 
 }
 
 func expandBigQueryDatasetLocation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigQueryDatasetDefaultEncryptionConfiguration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedKmsKeyName, err := expandBigQueryDatasetDefaultEncryptionConfigurationKmsKeyName(original["kms_key_name"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedKmsKeyName); val.IsValid() && !isEmptyValue(val) {
+		transformed["kmsKeyName"] = transformedKmsKeyName
+	}
+
+	return transformed, nil
+}
+
+func expandBigQueryDatasetDefaultEncryptionConfigurationKmsKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

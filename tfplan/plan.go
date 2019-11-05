@@ -17,8 +17,8 @@ package tfplan
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 // Resource is the terraform representation of a resource.

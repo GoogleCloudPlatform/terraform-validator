@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/logging"
-	"github.com/hashicorp/terraform/helper/pathorcontents"
-	"github.com/hashicorp/terraform/httpclient"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
+	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/terraform-providers/terraform-provider-google/version"
 
 	"golang.org/x/oauth2"
@@ -64,8 +64,9 @@ type Config struct {
 	BatchingConfig      *batchingConfig
 	UserProjectOverride bool
 
-	client    *http.Client
-	userAgent string
+	client           *http.Client
+	terraformVersion string
+	userAgent        string
 
 	tokenSource oauth2.TokenSource
 
@@ -76,25 +77,29 @@ type Config struct {
 	BigtableBasePath             string
 	BinaryAuthorizationBasePath  string
 	CloudBuildBasePath           string
+	CloudFunctionsBasePath       string
 	CloudSchedulerBasePath       string
 	ComputeBasePath              string
+	ContainerAnalysisBasePath    string
 	DataprocBasePath             string
-	DnsBasePath                  string
+	DNSBasePath                  string
 	FilestoreBasePath            string
 	FirestoreBasePath            string
-	KmsBasePath                  string
+	IapBasePath                  string
+	KMSBasePath                  string
 	LoggingBasePath              string
 	MLEngineBasePath             string
 	MonitoringBasePath           string
 	PubsubBasePath               string
 	RedisBasePath                string
 	ResourceManagerBasePath      string
+	RuntimeConfigBasePath        string
 	SecurityCenterBasePath       string
 	SourceRepoBasePath           string
 	SpannerBasePath              string
-	SqlBasePath                  string
+	SQLBasePath                  string
 	StorageBasePath              string
-	TpuBasePath                  string
+	TPUBasePath                  string
 
 	CloudBillingBasePath string
 	clientBilling        *cloudbilling.APIService
@@ -144,8 +149,7 @@ type Config struct {
 	ResourceManagerV2Beta1BasePath string
 	clientResourceManagerV2Beta1   *resourceManagerV2Beta1.Service
 
-	RuntimeconfigBasePath string
-	clientRuntimeconfig   *runtimeconfig.Service
+	clientRuntimeconfig *runtimeconfig.Service
 
 	clientSpanner *spanner.Service
 
@@ -166,8 +170,7 @@ type Config struct {
 
 	clientBigQuery *bigquery.Service
 
-	CloudFunctionsBasePath string
-	clientCloudFunctions   *cloudfunctions.Service
+	clientCloudFunctions *cloudfunctions.Service
 
 	CloudIoTBasePath string
 	clientCloudIoT   *cloudiot.Service
@@ -201,25 +204,29 @@ var BigqueryDataTransferDefaultBasePath = "https://bigquerydatatransfer.googleap
 var BigtableDefaultBasePath = "https://bigtableadmin.googleapis.com/v2/"
 var BinaryAuthorizationDefaultBasePath = "https://binaryauthorization.googleapis.com/v1/"
 var CloudBuildDefaultBasePath = "https://cloudbuild.googleapis.com/v1/"
+var CloudFunctionsDefaultBasePath = "https://cloudfunctions.googleapis.com/v1/"
 var CloudSchedulerDefaultBasePath = "https://cloudscheduler.googleapis.com/v1/"
 var ComputeDefaultBasePath = "https://www.googleapis.com/compute/v1/"
+var ContainerAnalysisDefaultBasePath = "https://containeranalysis.googleapis.com/v1/"
 var DataprocDefaultBasePath = "https://dataproc.googleapis.com/v1/"
-var DnsDefaultBasePath = "https://www.googleapis.com/dns/v1/"
+var DNSDefaultBasePath = "https://www.googleapis.com/dns/v1/"
 var FilestoreDefaultBasePath = "https://file.googleapis.com/v1/"
 var FirestoreDefaultBasePath = "https://firestore.googleapis.com/v1/"
-var KmsDefaultBasePath = "https://cloudkms.googleapis.com/v1/"
+var IapDefaultBasePath = "https://iap.googleapis.com/v1/"
+var KMSDefaultBasePath = "https://cloudkms.googleapis.com/v1/"
 var LoggingDefaultBasePath = "https://logging.googleapis.com/v2/"
 var MLEngineDefaultBasePath = "https://ml.googleapis.com/v1/"
 var MonitoringDefaultBasePath = "https://monitoring.googleapis.com/v3/"
 var PubsubDefaultBasePath = "https://pubsub.googleapis.com/v1/"
 var RedisDefaultBasePath = "https://redis.googleapis.com/v1/"
 var ResourceManagerDefaultBasePath = "https://cloudresourcemanager.googleapis.com/v1/"
+var RuntimeConfigDefaultBasePath = "https://runtimeconfig.googleapis.com/v1beta1/"
 var SecurityCenterDefaultBasePath = "https://securitycenter.googleapis.com/v1/"
 var SourceRepoDefaultBasePath = "https://sourcerepo.googleapis.com/v1/"
 var SpannerDefaultBasePath = "https://spanner.googleapis.com/v1/"
-var SqlDefaultBasePath = "https://www.googleapis.com/sql/v1beta4/"
+var SQLDefaultBasePath = "https://www.googleapis.com/sql/v1beta4/"
 var StorageDefaultBasePath = "https://www.googleapis.com/storage/v1/"
-var TpuDefaultBasePath = "https://tpu.googleapis.com/v1/"
+var TPUDefaultBasePath = "https://tpu.googleapis.com/v1/"
 
 var defaultClientScopes = []string{
 	"https://www.googleapis.com/auth/compute",
@@ -246,10 +253,9 @@ func (c *Config) LoadAndValidate() error {
 	// timeout for the maximum amount of time a logical request can take.
 	client.Timeout, _ = time.ParseDuration("30s")
 
-	terraformVersion := httpclient.UserAgentString()
+	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
 	providerVersion := fmt.Sprintf("terraform-provider-google/%s", version.ProviderVersion)
-	terraformWebsite := "(+https://www.terraform.io)"
-	userAgent := fmt.Sprintf("%s %s %s", terraformVersion, terraformWebsite, providerVersion)
+	userAgent := fmt.Sprintf("%s %s", tfUserAgent, providerVersion)
 
 	c.client = client
 	c.userAgent = userAgent
@@ -261,7 +267,7 @@ func (c *Config) LoadAndValidate() error {
 	// while most only want the host URL, some older ones also want the version and some
 	// of those "projects" as well. You can find out if this is required by looking at
 	// the basePath value in the client library file.
-	computeClientBasePath := removeBasePathVersion(c.ComputeBasePath) + "v1/projects/"
+	computeClientBasePath := c.ComputeBasePath + "projects/"
 	log.Printf("[INFO] Instantiating GCE client for path %s", computeClientBasePath)
 	c.clientCompute, err = compute.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -270,7 +276,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientCompute.UserAgent = userAgent
 	c.clientCompute.BasePath = computeClientBasePath
 
-	computeBetaClientBasePath := removeBasePathVersion(c.ComputeBetaBasePath) + "beta/projects/"
+	computeBetaClientBasePath := c.ComputeBetaBasePath + "projects/"
 	log.Printf("[INFO] Instantiating GCE Beta client for path %s", computeBetaClientBasePath)
 	c.clientComputeBeta, err = computeBeta.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -297,7 +303,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientContainerBeta.UserAgent = userAgent
 	c.clientContainerBeta.BasePath = containerBetaClientBasePath
 
-	dnsClientBasePath := removeBasePathVersion(c.DnsBasePath) + "v1/projects/"
+	dnsClientBasePath := c.DNSBasePath + "projects/"
 	log.Printf("[INFO] Instantiating Google Cloud DNS client for path %s", dnsClientBasePath)
 	c.clientDns, err = dns.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -306,7 +312,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientDns.UserAgent = userAgent
 	c.clientDns.BasePath = dnsClientBasePath
 
-	dnsBetaClientBasePath := removeBasePathVersion(c.DnsBetaBasePath) + "v1beta2/projects/"
+	dnsBetaClientBasePath := c.DnsBetaBasePath + "projects/"
 	log.Printf("[INFO] Instantiating Google Cloud DNS Beta client for path %s", dnsBetaClientBasePath)
 	c.clientDnsBeta, err = dnsBeta.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -315,7 +321,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientDnsBeta.UserAgent = userAgent
 	c.clientDnsBeta.BasePath = dnsBetaClientBasePath
 
-	kmsClientBasePath := removeBasePathVersion(c.KmsBasePath)
+	kmsClientBasePath := removeBasePathVersion(c.KMSBasePath)
 	log.Printf("[INFO] Instantiating Google Cloud KMS client for path %s", kmsClientBasePath)
 	c.clientKms, err = cloudkms.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -333,7 +339,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientLogging.UserAgent = userAgent
 	c.clientLogging.BasePath = loggingClientBasePath
 
-	storageClientBasePath := removeBasePathVersion(c.StorageBasePath) + "v1/"
+	storageClientBasePath := c.StorageBasePath
 	log.Printf("[INFO] Instantiating Google Storage client for path %s", storageClientBasePath)
 	c.clientStorage, err = storage.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -342,7 +348,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientStorage.UserAgent = userAgent
 	c.clientStorage.BasePath = storageClientBasePath
 
-	sqlClientBasePath := removeBasePathVersion(c.SqlBasePath) + "v1beta4/"
+	sqlClientBasePath := c.SQLBasePath
 	log.Printf("[INFO] Instantiating Google SqlAdmin client for path %s", sqlClientBasePath)
 	c.clientSqlAdmin, err = sqladmin.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -387,14 +393,14 @@ func (c *Config) LoadAndValidate() error {
 	c.clientResourceManagerV2Beta1.UserAgent = userAgent
 	c.clientResourceManagerV2Beta1.BasePath = resourceManagerV2Beta1BasePath
 
-	runtimeconfigClientBasePath := removeBasePathVersion(c.RuntimeconfigBasePath)
-	log.Printf("[INFO] Instantiating Google Cloud Runtimeconfig client for path %s", runtimeconfigClientBasePath)
+	runtimeConfigClientBasePath := removeBasePathVersion(c.RuntimeConfigBasePath)
+	log.Printf("[INFO] Instantiating Google Cloud Runtimeconfig client for path %s", runtimeConfigClientBasePath)
 	c.clientRuntimeconfig, err = runtimeconfig.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
 		return err
 	}
 	c.clientRuntimeconfig.UserAgent = userAgent
-	c.clientRuntimeconfig.BasePath = runtimeconfigClientBasePath
+	c.clientRuntimeconfig.BasePath = runtimeConfigClientBasePath
 
 	iamClientBasePath := removeBasePathVersion(c.IAMBasePath)
 	log.Printf("[INFO] Instantiating Google Cloud IAM client for path %s", iamClientBasePath)
@@ -450,7 +456,7 @@ func (c *Config) LoadAndValidate() error {
 	c.clientBuild.UserAgent = userAgent
 	c.clientBuild.BasePath = cloudBuildClientBasePath
 
-	bigQueryClientBasePath := removeBasePathVersion(c.BigQueryBasePath) + "v2/"
+	bigQueryClientBasePath := c.BigQueryBasePath
 	log.Printf("[INFO] Instantiating Google Cloud BigQuery client for path %s", bigQueryClientBasePath)
 	c.clientBigQuery, err = bigquery.NewService(context, option.WithHTTPClient(client))
 	if err != nil {
@@ -663,25 +669,29 @@ func ConfigureBasePaths(c *Config) {
 	c.BigtableBasePath = BigtableDefaultBasePath
 	c.BinaryAuthorizationBasePath = BinaryAuthorizationDefaultBasePath
 	c.CloudBuildBasePath = CloudBuildDefaultBasePath
+	c.CloudFunctionsBasePath = CloudFunctionsDefaultBasePath
 	c.CloudSchedulerBasePath = CloudSchedulerDefaultBasePath
 	c.ComputeBasePath = ComputeDefaultBasePath
+	c.ContainerAnalysisBasePath = ContainerAnalysisDefaultBasePath
 	c.DataprocBasePath = DataprocDefaultBasePath
-	c.DnsBasePath = DnsDefaultBasePath
+	c.DNSBasePath = DNSDefaultBasePath
 	c.FilestoreBasePath = FilestoreDefaultBasePath
 	c.FirestoreBasePath = FirestoreDefaultBasePath
-	c.KmsBasePath = KmsDefaultBasePath
+	c.IapBasePath = IapDefaultBasePath
+	c.KMSBasePath = KMSDefaultBasePath
 	c.LoggingBasePath = LoggingDefaultBasePath
 	c.MLEngineBasePath = MLEngineDefaultBasePath
 	c.MonitoringBasePath = MonitoringDefaultBasePath
 	c.PubsubBasePath = PubsubDefaultBasePath
 	c.RedisBasePath = RedisDefaultBasePath
 	c.ResourceManagerBasePath = ResourceManagerDefaultBasePath
+	c.RuntimeConfigBasePath = RuntimeConfigDefaultBasePath
 	c.SecurityCenterBasePath = SecurityCenterDefaultBasePath
 	c.SourceRepoBasePath = SourceRepoDefaultBasePath
 	c.SpannerBasePath = SpannerDefaultBasePath
-	c.SqlBasePath = SqlDefaultBasePath
+	c.SQLBasePath = SQLDefaultBasePath
 	c.StorageBasePath = StorageDefaultBasePath
-	c.TpuBasePath = TpuDefaultBasePath
+	c.TPUBasePath = TPUDefaultBasePath
 
 	// Handwritten Products / Versioned / Atypical Entries
 	c.CloudBillingBasePath = CloudBillingDefaultBasePath
@@ -694,13 +704,11 @@ func ConfigureBasePaths(c *Config) {
 	c.DnsBetaBasePath = DnsBetaDefaultBasePath
 	c.IamCredentialsBasePath = IamCredentialsDefaultBasePath
 	c.ResourceManagerV2Beta1BasePath = ResourceManagerV2Beta1DefaultBasePath
-	c.RuntimeconfigBasePath = RuntimeconfigDefaultBasePath
 	c.IAMBasePath = IAMDefaultBasePath
 	c.ServiceManagementBasePath = ServiceManagementDefaultBasePath
 	c.ServiceNetworkingBasePath = ServiceNetworkingDefaultBasePath
 	c.ServiceUsageBasePath = ServiceUsageDefaultBasePath
 	c.BigQueryBasePath = BigQueryDefaultBasePath
-	c.CloudFunctionsBasePath = CloudFunctionsDefaultBasePath
 	c.CloudIoTBasePath = CloudIoTDefaultBasePath
 	c.StorageTransferBasePath = StorageTransferDefaultBasePath
 	c.BigtableAdminBasePath = BigtableAdminDefaultBasePath

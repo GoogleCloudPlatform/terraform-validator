@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"google.golang.org/api/googleapi"
 )
 
@@ -152,13 +152,6 @@ func isConflictError(err error) bool {
 		if e.Code == 409 {
 			return true
 		}
-	}
-	return false
-}
-
-func linkDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	if GetResourceNameFromSelfLink(old) == new {
-		return true
 	}
 	return false
 }
@@ -318,6 +311,28 @@ func stringSliceFromGolangSet(sset map[string]struct{}) []string {
 	return ls
 }
 
+func reverseStringMap(m map[string]string) map[string]string {
+	o := map[string]string{}
+	for k, v := range m {
+		o[v] = k
+	}
+	return o
+}
+
+func mergeStringMaps(a, b map[string]string) map[string]string {
+	merged := make(map[string]string)
+
+	for k, v := range a {
+		merged[k] = v
+	}
+
+	for k, v := range b {
+		merged[k] = v
+	}
+
+	return merged
+}
+
 func mergeSchemas(a, b map[string]*schema.Schema) map[string]*schema.Schema {
 	merged := make(map[string]*schema.Schema)
 
@@ -368,13 +383,24 @@ func retryTimeDuration(retryFunc func() error, duration time.Duration, errorRetr
 		if err == nil {
 			return nil
 		}
-		for _, e := range errwrap.GetAllType(err, &googleapi.Error{}) {
+		for _, e := range getAllTypes(err, &googleapi.Error{}, &url.Error{}) {
 			if isRetryableError(e, errorRetryPredicates) {
 				return resource.RetryableError(e)
 			}
 		}
 		return resource.NonRetryableError(err)
 	})
+}
+
+func getAllTypes(err error, args ...interface{}) []error {
+	var result []error
+	for _, v := range args {
+		subResult := errwrap.GetAllType(err, v)
+		if subResult != nil {
+			result = append(result, subResult...)
+		}
+	}
+	return result
 }
 
 func isRetryableError(err error, retryPredicates []func(e error) (bool, string)) bool {
@@ -504,4 +530,37 @@ func getInterconnectAttachmentLink(config *Config, project, region, ic string) (
 	}
 
 	return ic, nil
+}
+
+// Given two sets of references (with "from" values in self link form),
+// determine which need to be added or removed // during an update using
+// addX/removeX APIs.
+func calcAddRemove(from []string, to []string) (add, remove []string) {
+	add = make([]string, 0)
+	remove = make([]string, 0)
+	for _, u := range to {
+		found := false
+		for _, v := range from {
+			if compareSelfLinkOrResourceName("", v, u, nil) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			add = append(add, u)
+		}
+	}
+	for _, u := range from {
+		found := false
+		for _, v := range to {
+			if compareSelfLinkOrResourceName("", u, v, nil) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			remove = append(remove, u)
+		}
+	}
+	return add, remove
 }

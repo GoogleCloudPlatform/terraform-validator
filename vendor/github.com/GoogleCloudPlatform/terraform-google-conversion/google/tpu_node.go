@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // compareTpuNodeSchedulingConfig diff suppresses for the default
@@ -55,12 +55,12 @@ func validateHttpHeaders() schema.SchemaValidateFunc {
 	}
 }
 
-func GetTpuNodeCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
+func GetTPUNodeCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//tpu.googleapis.com/projects/{{project}}/locations/{{zone}}/nodes/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
-	if obj, err := GetTpuNodeApiObject(d, config); err == nil {
+	if obj, err := GetTPUNodeApiObject(d, config); err == nil {
 		return Asset{
 			Name: name,
 			Type: "tpu.googleapis.com/Node",
@@ -76,51 +76,51 @@ func GetTpuNodeCaiObject(d TerraformResourceData, config *Config) (Asset, error)
 	}
 }
 
-func GetTpuNodeApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
+func GetTPUNodeApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	nameProp, err := expandTpuNodeName(d.Get("name"), d, config)
+	nameProp, err := expandTPUNodeName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
-	descriptionProp, err := expandTpuNodeDescription(d.Get("description"), d, config)
+	descriptionProp, err := expandTPUNodeDescription(d.Get("description"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("description"); !isEmptyValue(reflect.ValueOf(descriptionProp)) && (ok || !reflect.DeepEqual(v, descriptionProp)) {
 		obj["description"] = descriptionProp
 	}
-	acceleratorTypeProp, err := expandTpuNodeAcceleratorType(d.Get("accelerator_type"), d, config)
+	acceleratorTypeProp, err := expandTPUNodeAcceleratorType(d.Get("accelerator_type"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("accelerator_type"); !isEmptyValue(reflect.ValueOf(acceleratorTypeProp)) && (ok || !reflect.DeepEqual(v, acceleratorTypeProp)) {
 		obj["acceleratorType"] = acceleratorTypeProp
 	}
-	tensorflowVersionProp, err := expandTpuNodeTensorflowVersion(d.Get("tensorflow_version"), d, config)
+	tensorflowVersionProp, err := expandTPUNodeTensorflowVersion(d.Get("tensorflow_version"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("tensorflow_version"); !isEmptyValue(reflect.ValueOf(tensorflowVersionProp)) && (ok || !reflect.DeepEqual(v, tensorflowVersionProp)) {
 		obj["tensorflowVersion"] = tensorflowVersionProp
 	}
-	networkProp, err := expandTpuNodeNetwork(d.Get("network"), d, config)
+	networkProp, err := expandTPUNodeNetwork(d.Get("network"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("network"); !isEmptyValue(reflect.ValueOf(networkProp)) && (ok || !reflect.DeepEqual(v, networkProp)) {
 		obj["network"] = networkProp
 	}
-	cidrBlockProp, err := expandTpuNodeCidrBlock(d.Get("cidr_block"), d, config)
+	cidrBlockProp, err := expandTPUNodeCidrBlock(d.Get("cidr_block"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("cidr_block"); !isEmptyValue(reflect.ValueOf(cidrBlockProp)) && (ok || !reflect.DeepEqual(v, cidrBlockProp)) {
 		obj["cidrBlock"] = cidrBlockProp
 	}
-	schedulingConfigProp, err := expandTpuNodeSchedulingConfig(d.Get("scheduling_config"), d, config)
+	schedulingConfigProp, err := expandTPUNodeSchedulingConfig(d.Get("scheduling_config"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("scheduling_config"); !isEmptyValue(reflect.ValueOf(schedulingConfigProp)) && (ok || !reflect.DeepEqual(v, schedulingConfigProp)) {
 		obj["schedulingConfig"] = schedulingConfigProp
 	}
-	labelsProp, err := expandTpuNodeLabels(d.Get("labels"), d, config)
+	labelsProp, err := expandTPUNodeLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
@@ -130,31 +130,31 @@ func GetTpuNodeApiObject(d TerraformResourceData, config *Config) (map[string]in
 	return obj, nil
 }
 
-func expandTpuNodeName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeAcceleratorType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeAcceleratorType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeTensorflowVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeTensorflowVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeNetwork(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeNetwork(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeCidrBlock(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeCidrBlock(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeSchedulingConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeSchedulingConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -163,7 +163,7 @@ func expandTpuNodeSchedulingConfig(v interface{}, d TerraformResourceData, confi
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedPreemptible, err := expandTpuNodeSchedulingConfigPreemptible(original["preemptible"], d, config)
+	transformedPreemptible, err := expandTPUNodeSchedulingConfigPreemptible(original["preemptible"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedPreemptible); val.IsValid() && !isEmptyValue(val) {
@@ -173,11 +173,11 @@ func expandTpuNodeSchedulingConfig(v interface{}, d TerraformResourceData, confi
 	return transformed, nil
 }
 
-func expandTpuNodeSchedulingConfigPreemptible(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandTPUNodeSchedulingConfigPreemptible(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandTpuNodeLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+func expandTPUNodeLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
 	if v == nil {
 		return map[string]string{}, nil
 	}

@@ -28,7 +28,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/golang/glog"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/pkg/errors"
 )
 
@@ -42,7 +42,7 @@ func ReadPlannedAssets(path, project, ancestry string, offline bool) ([]google.A
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(ancestryManager, project, "")
+	converter, err := google.NewConverter(ancestryManager, project, "", offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

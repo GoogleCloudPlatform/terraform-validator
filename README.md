@@ -49,11 +49,6 @@ terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan
 terraform apply ./terraform.tfplan
 ```
 
-```
-# Restore to use Terraform v0.12.
-make prepare-v12 build
-```
-
 ### Terraform v0.12
 
 For 0.12 Terraform release validator required plan exported in JSON format

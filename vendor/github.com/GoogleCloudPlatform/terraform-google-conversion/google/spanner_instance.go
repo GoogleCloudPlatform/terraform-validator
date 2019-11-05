@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func GetSpannerInstanceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -63,7 +63,7 @@ func GetSpannerInstanceApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("display_name"); !isEmptyValue(reflect.ValueOf(displayNameProp)) && (ok || !reflect.DeepEqual(v, displayNameProp)) {
 		obj["displayName"] = displayNameProp
 	}
-	nodeCountProp, err := expandSpannerInstanceNum_nodes(d.Get("num_nodes"), d, config)
+	nodeCountProp, err := expandSpannerInstanceNumNodes(d.Get("num_nodes"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("num_nodes"); !isEmptyValue(reflect.ValueOf(nodeCountProp)) && (ok || !reflect.DeepEqual(v, nodeCountProp)) {
@@ -114,7 +114,7 @@ func expandSpannerInstanceDisplayName(v interface{}, d TerraformResourceData, co
 	return v, nil
 }
 
-func expandSpannerInstanceNum_nodes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSpannerInstanceNumNodes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
