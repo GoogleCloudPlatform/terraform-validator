@@ -15,7 +15,6 @@
           {
             "autoDelete": true,
             "boot": true,
-            "diskEncryptionKey": {},
             "initializeParams": {
               "sourceImage": "projects/debian-cloud/global/images/debian-9"
             }
