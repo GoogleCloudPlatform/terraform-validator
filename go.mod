@@ -5,6 +5,7 @@ require (
 	github.com/forseti-security/config-validator v0.0.0-20190619160113-b8fae8e864e3
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.2
+	github.com/google/go-cmp v0.3.0
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.2.0
 	github.com/hashicorp/vault v1.0.2 // indirect

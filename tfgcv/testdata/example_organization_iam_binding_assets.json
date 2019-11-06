@@ -1,0 +1,17 @@
+[
+  {
+    "name": "//cloudresourcemanager.googleapis.com/organizations/123456789",
+    "asset_type": "cloudresourcemanager.googleapis.com/Organization",
+    "ancestry_path": "organization/12345/folder/67890/project/foobar",
+    "iam_policy": {
+      "bindings": [
+        {
+          "role": "roles/browser",
+          "members": [
+            "user:alice@gmail.com"
+          ]
+        }
+      ]
+    }
+  }
+]
