@@ -66,14 +66,13 @@ func TestConvert(t *testing.T) {
 
 		assetsByType := make(map[string]google.Asset)
 		for _, a := range assets {
-			t := a.Type
+			tt := a.Type
 			// NOTE: Since IAM policy assets will have the same type, we'll add a
 			// suffix to map it to the right JSON fixture
 			if a.IAMPolicy != nil {
-				fmt.Println("POLICY")
-				t += ":IAM"
+				tt += ":IAM"
 			}
-			assetsByType[t] = a
+			assetsByType[tt] = a
 		}
 
 		jsonFixtures := make(map[string][]byte)
