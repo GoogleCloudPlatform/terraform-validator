@@ -116,6 +116,24 @@ func mappers() map[string][]mapper {
 				merge:   converter.MergeProjectIamMember,
 			},
 		},
+		"google_storage_bucket_iam_policy": {
+			{
+				convert: converter.GetBucketIamPolicyCaiObject,
+				merge:   converter.MergeBucketIamPolicy,
+			},
+		},
+		"google_storage_bucket_iam_binding": {
+			{
+				convert: converter.GetBucketIamBindingCaiObject,
+				merge:   converter.MergeBucketIamBinding,
+			},
+		},
+		"google_storage_bucket_iam_member": {
+			{
+				convert: converter.GetBucketIamMemberCaiObject,
+				merge:   converter.MergeBucketIamMember,
+			},
+		},
 	}
 }
 
