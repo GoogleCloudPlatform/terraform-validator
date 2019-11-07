@@ -39,6 +39,7 @@ var conversionTests = []struct {
 	{"firewall", "compute.googleapis.com/Firewall"},
 	{"instance", "compute.googleapis.com/Instance"},
 	{"bucket", "storage.googleapis.com/Bucket"},
+	{"bucket_iam", "storage.googleapis.com/Bucket:IAM"},
 	{"sql", "sqladmin.googleapis.com/Instance"},
 	{"firewall", "compute.googleapis.com/Firewall"},
 }
@@ -63,13 +64,19 @@ func TestConvert(t *testing.T) {
 			t.Fatalf("unmarshaling: %v", err)
 		}
 
-		assetsByType := make(map[string][]google.Asset)
+		assetsByType := make(map[string]google.Asset)
 		for _, a := range assets {
-			assetsByType[a.Type] = append(assetsByType[a.Type], a)
+			t := a.Type
+			// NOTE: Since IAM policy assets will have the same type, we'll add a
+			// suffix to map it to the right JSON fixture
+			if a.IAMPolicy != nil {
+				fmt.Println("POLICY")
+				t += ":IAM"
+			}
+			assetsByType[t] = a
 		}
 
 		jsonFixtures := make(map[string][]byte)
-
 		matches, _ := filepath.Glob(filepath.Join(getJSONGenerateDir(tfVersion), "*.json"))
 		for _, fixturePath := range matches {
 			fixtureFileName := strings.TrimPrefix(fixturePath, getJSONGenerateDir(tfVersion)+"/")
@@ -85,16 +92,24 @@ func TestConvert(t *testing.T) {
 
 		for _, tt := range conversionTests {
 			t.Run(tt.name+"/TF_"+tfVersion, func(t *testing.T) {
-				if len(assetsByType[tt.assetType]) == 0 {
+				if _, ok := assetsByType[tt.assetType]; !ok {
 					t.Fatalf("asset type %q not found", tt.assetType)
 				}
-				if len(jsonFixtures[tt.name]) == 0 {
+				if _, ok := jsonFixtures[tt.name]; !ok {
 					t.Fatalf("json fixtures %q not found", tt.name)
 				}
-				requireEqualJSON(t,
-					jsonFixtures[tt.name],
-					assetsByType[tt.assetType][0].Resource.Data,
-				)
+				asset := assetsByType[tt.assetType]
+				if asset.IAMPolicy != nil {
+					requireEqualJSON(t,
+						jsonFixtures[tt.name],
+						assetsByType[tt.assetType].IAMPolicy,
+					)
+				} else {
+					requireEqualJSON(t,
+						jsonFixtures[tt.name],
+						assetsByType[tt.assetType].Resource.Data,
+					)
+				}
 			})
 		}
 
