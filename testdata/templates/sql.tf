@@ -1,3 +1,8 @@
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  credentials = "{{.Provider.credentials}}"
+}
+
 resource "google_sql_database_instance" "my-test-sql" {
   name = "master-instance"
   database_version = "POSTGRES_9_6"

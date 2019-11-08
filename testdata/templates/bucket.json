@@ -1,0 +1,37 @@
+[
+  {
+    "name": "//storage.googleapis.com/test-bucket",
+    "asset_type": "storage.googleapis.com/Bucket",
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/storage/v1/rest",
+      "discovery_name": "Bucket",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+      "data": {
+{{if eq .TFVersion "0.12"}}
+        "billing": {},
+        "lifecycle": {},
+        "iamConfiguration": {
+          "bucketPolicyOnly": {
+            "enabled": false
+          }
+        },
+{{else}}
+        "lifecycle": {
+          "rule": [
+          ]
+        },
+{{end}}
+        "location": "EU",
+        "name": "test-bucket",
+        "project": "{{.Provider.project}}",
+        "storageClass": "STANDARD",
+        "website": {
+          "mainPageSuffix": "index.html",
+          "notFoundPage": "404.html"
+        }
+      }
+    }
+  }
+]

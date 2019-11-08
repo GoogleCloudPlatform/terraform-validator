@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  credentials = "{{.Provider.credentials}}"
+}
+
 resource "google_project" "my-project-resource" {
   name       = "{{.Project.Name}}"
   project_id = "{{.Project.ProjectId}}"

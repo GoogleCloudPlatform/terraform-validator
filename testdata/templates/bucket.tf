@@ -1,3 +1,8 @@
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  credentials = "{{.Provider.credentials}}"
+}
+
 resource "google_storage_bucket" "my-test-bucket" {
   name     = "test-bucket"
   location = "EU"

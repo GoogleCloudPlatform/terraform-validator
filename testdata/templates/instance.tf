@@ -1,3 +1,8 @@
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  credentials = "{{.Provider.credentials}}"
+}
+
 resource "google_compute_instance" "my-test-instance" {
   project      = "{{.Provider.project}}"
   name         = "my-instance"
