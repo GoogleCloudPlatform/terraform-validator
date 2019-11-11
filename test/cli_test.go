@@ -318,19 +318,19 @@ func run(t *testing.T, cmd *exec.Cmd, wantError bool) ([]byte, []byte) {
 	cmd.Stderr, cmd.Stdout = &stderr, &stdout
 	err := cmd.Run()
 	if gotError := (err != nil); gotError != wantError {
-		t.Fatalf("running %s: \nerror=%v \nstderr=%s \nstdout=%s", cmd, err, stderr.String(), stdout.String())
+		t.Fatalf("running %s: \nerror=%v \nstderr=%s \nstdout=%s", cmdToString(cmd), err, stderr.String(), stdout.String())
 	}
 	// Print env, stdout and stderr if verbose flag is used.
 	if len(cmd.Env) != 0 {
-		t.Logf("=== Environment Variable of %s ===", cmd)
+		t.Logf("=== Environment Variable of %s ===", cmdToString(cmd))
 		t.Log(strings.Join(cmd.Env, "\n"))
 	}
 	if stdout.String() != "" {
-		t.Logf("=== STDOUT of %s ===", cmd)
+		t.Logf("=== STDOUT of %s ===", cmdToString(cmd))
 		t.Log(stdout.String())
 	}
 	if stderr.String() != "" {
-		t.Logf("=== STDERR of %s ===", cmd)
+		t.Logf("=== STDERR of %s ===", cmdToString(cmd))
 		t.Log(stderr.String())
 	}
 	return stdout.Bytes(), stderr.Bytes()
@@ -364,4 +364,16 @@ func generateTestFiles(t *testing.T, sourceDir string, targetDir string, selecto
 			t.Fatalf("closing file %v: %v", path, err)
 		}
 	}
+}
+
+// cmdToString clones the logic of https://golang.org/pkg/os/exec/#Cmd.String.
+func cmdToString(c *exec.Cmd) string {
+	// report the exact executable path (plus args)
+	b := new(strings.Builder)
+	b.WriteString(c.Path)
+	for _, a := range c.Args[1:] {
+		b.WriteByte(' ')
+		b.WriteString(a)
+	}
+	return b.String()
 }
