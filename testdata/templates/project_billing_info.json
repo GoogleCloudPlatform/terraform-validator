@@ -1,5 +1,0 @@
-{
-    "billingAccountName": "billingAccounts/{{.Project.BillingAccountName}}",
-    "name": "projects/{{.Project.ProjectId}}/billingInfo",
-    "projectId": "{{.Project.ProjectId}}"
-}

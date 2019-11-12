@@ -16,7 +16,7 @@
 
 provider "google" {
   version     = "~> {{.Provider.version}}"
-  credentials = "{{.Provider.credentials}}"
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
 resource "google_compute_disk" "my-disk-resource" {

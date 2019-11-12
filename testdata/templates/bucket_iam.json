@@ -1,10 +1,17 @@
-{
-  "bindings": [
-    {
-      "role":"roles/storage.objectViewer",
-      "members": [
-        "allUsers"
+[
+  {
+    "name": "//storage.googleapis.com/placeholder-foobar",
+    "asset_type": "storage.googleapis.com/Bucket",
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+    "iam_policy": {
+      "bindings": [
+        {
+          "role":"roles/storage.objectViewer",
+          "members": [
+            "allUsers"
+          ]
+        }
       ]
     }
-  ]
-}
+  }
+]

@@ -107,34 +107,36 @@ func init() {
 
 // TestCLI tests the "convert" and "validate" subcommand against a generated .tfplan file.
 func TestCLI(t *testing.T) {
-	// Define the reusable rules to be use for the test cases.
-	type rule struct {
+	// Define the reusable constraints to be use for the test cases.
+	type constraint struct {
 		name            string
-		wantError       bool
+		wantViolation   bool
 		wantOutputRegex string
 	}
 	// Currently, we only test one rule. Moving forward, resource specific rules
 	// should be added to increase the coverage.
-	alwaysViolate := rule{name: "always_violate", wantError: true, wantOutputRegex: "Constraint always_violates_all on resource"}
+	alwaysViolate := constraint{name: "always_violate", wantViolation: true, wantOutputRegex: "Constraint always_violates_all on resource"}
 
 	// Test cases for each type of resource is defined here.
 	cases := []struct {
-		name    string
-		offline bool
-		rules   []rule
+		name        string
+		offline     bool
+		constraints []constraint
 	}{
-		{name: "bucket", offline: true, rules: []rule{alwaysViolate}},
-		{name: "bucket", offline: false, rules: []rule{alwaysViolate}},
-		{name: "disk", offline: true, rules: []rule{alwaysViolate}},
-		{name: "disk", offline: false, rules: []rule{alwaysViolate}},
-		{name: "firewall", offline: true, rules: []rule{alwaysViolate}},
-		{name: "firewall", offline: false, rules: []rule{alwaysViolate}},
-		{name: "instance", offline: true, rules: []rule{alwaysViolate}},
-		{name: "instance", offline: false, rules: []rule{alwaysViolate}},
-		{name: "project", offline: true, rules: []rule{alwaysViolate}},
-		{name: "project", offline: false, rules: []rule{alwaysViolate}},
-		{name: "sql", offline: true, rules: []rule{alwaysViolate}},
-		{name: "sql", offline: false, rules: []rule{alwaysViolate}},
+		{name: "bucket", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "bucket", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "bucket_iam", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "bucket_iam", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "disk", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "disk", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "firewall", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "firewall", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "instance", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "instance", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "project", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "project", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "sql", offline: true, constraints: []constraint{alwaysViolate}},
+		{name: "sql", offline: false, constraints: []constraint{alwaysViolate}},
 	}
 	for _, c := range cases {
 		// As tests are run in parallel, the test case need to be cloned to local
@@ -159,9 +161,9 @@ func TestCLI(t *testing.T) {
 				testConvertCommand(t, dir, c.name, c.offline)
 			})
 
-			for _, r := range c.rules {
-				t.Run(fmt.Sprintf("cmd=validate/rule=%s", r.name), func(t *testing.T) {
-					testValidateCommand(t, r.wantError, r.wantOutputRegex, dir, c.name, c.offline, r.name)
+			for _, ct := range c.constraints {
+				t.Run(fmt.Sprintf("cmd=validate/constraint=%s", ct.name), func(t *testing.T) {
+					testValidateCommand(t, ct.wantViolation, ct.wantOutputRegex, dir, c.name, c.offline, ct.name)
 				})
 			}
 		})
@@ -202,6 +204,13 @@ func testConvertCommand(t *testing.T, dir, name string, offline bool) {
 			want[i].Ancestry = ""
 		}
 	}
+
+	// Replace placeholder in names.
+	re := regexp.MustCompile(`/placeholder-.*`)
+	for i := range got {
+		got[i].Name = re.ReplaceAllString(got[i].Name, "/placeholder-foobar")
+	}
+
 	// compare assets
 	gotJSON, err := json.Marshal(got)
 	if err != nil {
@@ -214,18 +223,18 @@ func testConvertCommand(t *testing.T, dir, name string, offline bool) {
 	require.JSONEq(t, string(wantJSON), string(gotJSON))
 }
 
-func testValidateCommand(t *testing.T, wantError bool, want, dir, name string, offline bool, ruleName string) {
+func testValidateCommand(t *testing.T, wantViolation bool, want, dir, name string, offline bool, constraintName string) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("cannot get current directory: %v", err)
 	}
-	policyPath := filepath.Join(cwd, samplePolicyPath, ruleName)
+	policyPath := filepath.Join(cwd, samplePolicyPath, constraintName)
 	var got []byte
 	switch version.LeastSupportedVersion() {
 	case version.TF11:
-		got = tfvValidate(t, wantError, dir, name+".tfplan", policyPath, offline)
+		got = tfvValidate(t, wantViolation, dir, name+".tfplan", policyPath, offline)
 	default:
-		got = tfvValidate(t, wantError, dir, name+".tfplan.json", policyPath, offline)
+		got = tfvValidate(t, wantViolation, dir, name+".tfplan.json", policyPath, offline)
 	}
 	wantRe := regexp.MustCompile(want)
 	if want != "" && !wantRe.Match(got) {
@@ -247,26 +256,22 @@ func terraform(t *testing.T, dir, name string) {
 }
 
 func terraformInit(t *testing.T, executable, dir string) {
-	wantError := false
-	cmd := exec.Command(executable, "init", "-input=false", dir)
-	cmd.Env = []string{"HOME=" + filepath.Join(dir, "fakehome")}
-	cmd.Dir = dir
-	run(t, cmd, wantError)
+	terraformExec(t, executable, dir, "init", "-input=false")
 }
 
 func terraformPlan(t *testing.T, executable, dir, tfplan string) {
-	wantError := false
-	cmd := exec.Command(executable, "plan", "-input=false", "--out", tfplan, dir)
-	cmd.Env = []string{"HOME=" + filepath.Join(dir, "fakehome")}
-	cmd.Dir = dir
-	run(t, cmd, wantError)
+	terraformExec(t, executable, dir, "plan", "-input=false", "--out", tfplan)
 }
 
 func terraformShow(t *testing.T, executable, dir, tfplan string) []byte {
-	wantError := false
-	cmd := exec.Command(executable, "show", "--json", tfplan)
+	return terraformExec(t, executable, dir, "show", "--json", tfplan)
+}
+
+func terraformExec(t *testing.T, executable, dir string, args ...string) []byte {
+	cmd := exec.Command(executable, args...)
 	cmd.Env = []string{"HOME=" + filepath.Join(dir, "fakehome")}
 	cmd.Dir = dir
+	wantError := false
 	payload, _ := run(t, cmd, wantError)
 	return payload
 }
@@ -292,7 +297,12 @@ func tfvConvert(t *testing.T, dir, tfplan string, offline bool) []byte {
 	}
 	args = append(args, tfplan)
 	cmd := exec.Command(executable, args...)
-	cmd.Env = []string{"GOOGLE_APPLICATION_CREDENTIALS=" + data.Provider["credentials"]}
+	// Remove environment variables inherited from the test runtime.
+	cmd.Env = []string{}
+	// Add credentials back.
+	if data.Provider["credentials"] != "" {
+		cmd.Env = append(cmd.Env, "GOOGLE_APPLICATION_CREDENTIALS="+data.Provider["credentials"])
+	}
 	cmd.Dir = dir
 	payload, _ := run(t, cmd, wantError)
 	return payload
