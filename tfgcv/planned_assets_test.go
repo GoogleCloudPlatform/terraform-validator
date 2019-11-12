@@ -14,11 +14,10 @@ import (
 )
 
 const (
-	testDataDir = "../test/read_planned_assets"
-	testProjectName = "gl-akopachevskyy-sql-db"
+	testDataDir      = "../test/read_planned_assets"
+	testProjectName  = "gl-akopachevskyy-sql-db"
 	testAncestryName = "ancestry"
 )
-
 
 func TestReadPlannedAssets(t *testing.T) {
 	type args struct {
@@ -107,11 +106,12 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 	defaultProject := "foobar"
 	defaultAncestry := "organization/12345/folder/67890"
 	cases := []struct {
-		name     string
+		name string
 	}{
 		{name: "example_compute_disk"},
 		{name: "example_compute_firewall"},
 		{name: "example_compute_instance"},
+		{name: "example_container_cluster"},
 		{name: "example_organization_iam_binding"},
 		{name: "example_organization_iam_member"},
 		{name: "example_organization_iam_policy"},
@@ -121,6 +121,8 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_project_iam_policy"},
 		{name: "example_sql_database_instance"},
 		{name: "example_storage_bucket"},
+		{name: "full_container_cluster"},
+		{name: "full_container_node_pool"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -166,4 +168,3 @@ func remarshal(t *testing.T, assets []google.Asset) []google.Asset {
 	}
 	return got
 }
-

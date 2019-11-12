@@ -39,6 +39,12 @@ func GetCloudBuildTriggerCaiObject(d TerraformResourceData, config *Config) (Ass
 
 func GetCloudBuildTriggerApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
+	nameProp, err := expandCloudBuildTriggerName(d.Get("name"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
+		obj["name"] = nameProp
+	}
 	descriptionProp, err := expandCloudBuildTriggerDescription(d.Get("description"), d, config)
 	if err != nil {
 		return nil, err
@@ -89,6 +95,10 @@ func GetCloudBuildTriggerApiObject(d TerraformResourceData, config *Config) (map
 	}
 
 	return obj, nil
+}
+
+func expandCloudBuildTriggerName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandCloudBuildTriggerDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

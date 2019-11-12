@@ -74,6 +74,8 @@ The follow Terraform resources are supported for running validation checks:
 - `google_compute_disk`
 - `google_compute_instance`
 - `google_compute_firewall`
+- `google_container_cluster`
+- `google_container_node_pool`
 - `google_storage_bucket`
 - `google_storage_bucket_iam_policy`
 - `google_storage_bucket_iam_binding`

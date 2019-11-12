@@ -1,0 +1,129 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/foobar/locations/test-location/clusters/test-cluster",
+    "asset_type": "container.googleapis.com/Cluster",
+    "ancestry_path": "organization/12345/folder/67890/project/foobar",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/container/v1/rest",
+      "discovery_name": "Cluster",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "addonsConfig": {
+          "horizontalPodAutoscaling": {
+            "disabled": true
+          },
+          "httpLoadBalancing": {
+            "disabled": true
+          },
+          "kubernetesDashboard": {
+            "disabled": true
+          },
+          "networkPolicyConfig": {
+            "disabled": true
+          }
+        },
+        "binaryAuthorization": null,
+        "clusterIpv4Cidr": "10.0.0.42/32",
+        "description": "test-description",
+        "enableKubernetesAlpha": true,
+        "initialClusterVersion": "test-min_master_version",
+        "initialNodeCount": 42,
+        "ipAllocationPolicy": {
+          "clusterSecondaryRangeName": "test-cluster_secondary_range_name",
+          "servicesSecondaryRangeName": "test-services_secondary_range_name",
+          "useIpAliases": true
+        },
+        "legacyAbac": {
+          "enabled": true
+        },
+        "location": "test-location",
+        "locations": [
+          "test-node_locations"
+        ],
+        "loggingService": "logging.googleapis.com",
+        "masterAuth": {
+          "clientCertificateConfig": {
+            "issueClientCertificate": true
+          },
+          "password": "test-password",
+          "username": "test-username"
+        },
+        "masterAuthorizedNetworksConfig": {
+          "cidrBlocks": [
+            {
+              "cidrBlock": "10.0.0.42/32",
+              "displayName": "test-display_name1"
+            },
+            {
+              "cidrBlock": "10.0.1.42/32",
+              "displayName": "test-display_name2"
+            }
+          ]
+        },
+        "monitoringService": "monitoring.googleapis.com",
+        "name": "test-cluster",
+        "network": "projects/foobar/global/networks/test-network",
+        "networkPolicy": {
+          "enabled": true,
+          "provider": "CALICO"
+        },
+        "nodeConfig": {
+          "accelerators": [
+            {
+              "acceleratorCount": 1,
+              "acceleratorType": "test-type1"
+            },
+            {
+              "acceleratorCount": 1,
+              "acceleratorType": "test-type2"
+            }
+          ],
+          "diskSizeGb": 42,
+          "diskType": "pd-standard",
+          "imageType": "test-image_type",
+          "labels": {
+            "test-label-key": "test-label-value"
+          },
+          "localSsdCount": 42,
+          "machineType": "test-machine_type",
+          "metadata": {
+            "test-metadata-key": "test-metadata-value"
+          },
+          "minCpuPlatform": "test-min_cpu_platform",
+          "oauthScopes": [
+            "https://www.googleapis.com/auth/devstorage.read_only",
+            "test-oauth_scopes"
+          ],
+          "preemptible": true,
+          "serviceAccount": "test-service_account",
+          "tags": [
+            "test-tags"
+          ],
+          "taints": [
+            {
+              "effect": "NO_SCHEDULE",
+              "key": "test-key1",
+              "value": "test-value1"
+            },
+            {
+              "effect": "NO_SCHEDULE",
+              "key": "test-key2",
+              "value": "test-value2"
+            }
+          ]
+        },
+        "podSecurityPolicyConfig": null,
+        "privateClusterConfig": {
+          "enablePrivateEndpoint": true,
+          "enablePrivateNodes": true,
+          "masterIpv4CidrBlock": "127.0.0.0/28"
+        },
+        "resourceLabels": {
+          "test-resource_labels-key": "test-resource_labels-value"
+        },
+        "subnetwork": "projects/foobar/global/networks/test-subnetwork"
+      }
+    }
+  }
+]
