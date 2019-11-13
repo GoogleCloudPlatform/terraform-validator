@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
+}
+
 resource "google_compute_disk" "my-disk-resource" {
   project = "{{.Provider.project}}"
   name    = "my-disk"

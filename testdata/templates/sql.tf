@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-resource "google_compute_firewall" "my-test-firewall" {
-  name    = "my-test-firewall"
-  network = "default"
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
+}
 
-  allow {
-    protocol = "icmp"
+resource "google_sql_database_instance" "my-test-sql" {
+  name = "master-instance"
+  database_version = "POSTGRES_9_6"
+  region = "us-central1"
+
+  settings {
+    # Second-generation instance tiers are based on the machine
+    # type. See argument reference below.
+    tier = "db-f1-micro"
   }
-
-  allow {
-    protocol = "tcp"
-    ports    = ["80", "8080", "1000-2000"]
-  }
-
-  source_tags = ["web"]
 }

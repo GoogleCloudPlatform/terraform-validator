@@ -16,5 +16,21 @@
 
 provider "google" {
   version     = "~> {{.Provider.version}}"
-  credentials = "{{.Provider.credentials}}"
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
+}
+
+resource "google_compute_firewall" "my-test-firewall" {
+  name    = "my-test-firewall"
+  network = "default"
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8080", "1000-2000"]
+  }
+
+  source_tags = ["web"]
 }
