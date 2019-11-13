@@ -121,8 +121,12 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_project_iam_policy"},
 		{name: "example_sql_database_instance"},
 		{name: "example_storage_bucket"},
+		{name: "full_compute_firewall"},
+		{name: "full_compute_instance"},
 		{name: "full_container_cluster"},
 		{name: "full_container_node_pool"},
+		{name: "full_sql_database_instance"},
+		{name: "full_storage_bucket"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
