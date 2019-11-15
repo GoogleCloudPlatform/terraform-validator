@@ -1,6 +1,6 @@
 [
   {
-    "name": "//container.googleapis.com/projects/{{.Provider.project}}/locations/test-location/clusters/test-cluster/nodePools/test-node-pool",
+    "name": "//container.googleapis.com/projects/{{.Provider.project}}/locations/us-central1/clusters/test-cluster/nodePools/test-node-pool",
     "asset_type": "container.googleapis.com/NodePool",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
@@ -48,7 +48,7 @@
           ]
         },
         "initialNodeCount": 42,
-        "location": "test-location",
+        "location": "us-central1",
         "management": {
           "autoRepair": true,
           "autoUpgrade": true

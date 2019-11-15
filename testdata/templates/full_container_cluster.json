@@ -1,6 +1,6 @@
 [
   {
-    "name": "//container.googleapis.com/projects/{{.Provider.project}}/locations/test-location/clusters/test-cluster",
+    "name": "//container.googleapis.com/projects/{{.Provider.project}}/locations/us-central1/clusters/test-cluster",
     "asset_type": "container.googleapis.com/Cluster",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
@@ -37,7 +37,7 @@
         "legacyAbac": {
           "enabled": true
         },
-        "location": "test-location",
+        "location": "us-central1",
         "locations": [
           "test-node_locations"
         ],

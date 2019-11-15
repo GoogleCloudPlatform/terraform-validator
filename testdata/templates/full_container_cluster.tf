@@ -73,7 +73,7 @@ resource "google_container_cluster" "full_list_default_1" {
     cluster_secondary_range_name  = "test-cluster_secondary_range_name"
     services_secondary_range_name = "test-services_secondary_range_name"
   }
-  location        = "test-location"
+  location        = "us-central1"
   logging_service = "logging.googleapis.com"
   maintenance_policy {
     daily_maintenance_window {

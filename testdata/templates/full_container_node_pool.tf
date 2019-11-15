@@ -34,7 +34,7 @@ resource "google_container_node_pool" "full_list_default_1" {
   }
   cluster = "test-cluster"
   initial_node_count = 42
-  location = "test-location"
+  location = "us-central1"
   management {
     auto_repair = true
     auto_upgrade = true
@@ -67,7 +67,7 @@ resource "google_container_node_pool" "full_list_default_1" {
     tags = ["test-tags"]
   }
   node_count = 42
-  region = "test-region"
+  region = "us-central1"
   version = "test-version"
-  zone = "test-zone"
+  zone = "us-central1-a"
 }

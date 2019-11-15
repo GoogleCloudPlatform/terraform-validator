@@ -128,7 +128,7 @@
                 "location_preference": [
                   {
                     "follow_gae_application": "test-follow_gae_application",
-                    "zone": "test-zone"
+                    "zone": "us-central1-a"
                   }
                 ],
                 "maintenance_window": [
@@ -319,7 +319,7 @@
               "location_preference": [
                 {
                   "follow_gae_application": "test-follow_gae_application",
-                  "zone": "test-zone"
+                  "zone": "us-central1-a"
                 }
               ],
               "maintenance_window": [
@@ -623,7 +623,7 @@
                       "constant_value": "test-follow_gae_application"
                     },
                     "zone": {
-                      "constant_value": "test-zone"
+                      "constant_value": "us-central1-a"
                     }
                   }
                 ],

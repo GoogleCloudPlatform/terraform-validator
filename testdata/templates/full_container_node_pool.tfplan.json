@@ -20,7 +20,7 @@
             ],
             "cluster": "test-cluster",
             "initial_node_count": 42,
-            "location": "test-location",
+            "location": "us-central1",
             "management": [
               {
                 "auto_repair": true,
@@ -67,10 +67,10 @@
               }
             ],
             "node_count": 42,
-            "region": "test-region",
+            "region": "us-central1",
             "timeouts": null,
             "version": "test-version",
-            "zone": "test-zone"
+            "zone": "us-central1-a"
           }
         }
       ]
@@ -97,7 +97,7 @@
           ],
           "cluster": "test-cluster",
           "initial_node_count": 42,
-          "location": "test-location",
+          "location": "us-central1",
           "management": [
             {
               "auto_repair": true,
@@ -144,10 +144,10 @@
             }
           ],
           "node_count": 42,
-          "region": "test-region",
+          "region": "us-central1",
           "timeouts": null,
           "version": "test-version",
-          "zone": "test-zone"
+          "zone": "us-central1-a"
         },
         "after_unknown": {
           "autoscaling": [
@@ -211,7 +211,7 @@
               "constant_value": 42
             },
             "location": {
-              "constant_value": "test-location"
+              "constant_value": "us-central1"
             },
             "management": [
               {
@@ -282,13 +282,13 @@
               "constant_value": 42
             },
             "region": {
-              "constant_value": "test-region"
+              "constant_value": "us-central1"
             },
             "version": {
               "constant_value": "test-version"
             },
             "zone": {
-              "constant_value": "test-zone"
+              "constant_value": "us-central1-a"
             }
           },
           "schema_version": 1
