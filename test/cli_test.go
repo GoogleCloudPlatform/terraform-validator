@@ -26,84 +26,12 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"text/template"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
-
-const (
-	samplePolicyPath = "../testdata/sample_policies"
-	defaultAncestry  = "organization/12345/folder/67890"
-	defaultProject   = "foobar"
-)
-
-var (
-	data      *testData
-	tfvBinary string
-)
-
-// testData represents the full dataset that is used for templating terraform
-// configs. It contains Google API resources that are expected to be returned
-// after converting the terraform plan.
-type testData struct {
-	// is not nil - Terraform 12 version used
-	TFVersion string
-	// provider "google"
-	Provider map[string]string
-	Project  map[string]string
-	Ancestry string
-}
-
-// init initializes the variables used for testing. As tests rely on
-// environment variables, the parsing of those are only done once.
-func init() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("cannot get current directory: %v", err)
-	}
-	tfvBinary = filepath.Join(cwd, "..", "bin", "terraform-validator")
-	project, ok := os.LookupEnv("TEST_PROJECT")
-	if !ok {
-		log.Printf("Missing required env var TEST_PROJECT. Default (%s) will be used.", defaultProject)
-		project = defaultProject
-	}
-	credentials, ok := os.LookupEnv("TEST_CREDENTIALS")
-	if ok {
-		// Make credentials path relative to repo root rather than
-		// test/ dir if it is a relative path.
-		if !filepath.IsAbs(credentials) {
-			credentials = filepath.Join(cwd, "..", credentials)
-		}
-	} else {
-		log.Printf("missing env var TEST_CREDENTIALS, will try to use Application Default Credentials")
-	}
-	ancestry, ok := os.LookupEnv("TEST_ANCESTRY")
-	if !ok {
-		log.Printf("Missing required env var TEST_ANCESTRY. Default (%s) will be used.", defaultAncestry)
-		ancestry = defaultAncestry
-	}
-	providerVersion := "1.20"
-	if version.TF12 == version.LeastSupportedVersion() {
-		providerVersion = "2.12.0"
-	}
-	data = &testData{
-		TFVersion: version.LeastSupportedVersion(),
-		Provider: map[string]string{
-			"version":     providerVersion,
-			"project":     project,
-			"credentials": credentials,
-		},
-		Project: map[string]string{
-			"Name":               "My Project Name",
-			"ProjectId":          "my-project-id",
-			"BillingAccountName": "012345-567890-ABCDEF",
-		},
-		Ancestry: ancestry,
-	}
-}
 
 // TestCLI tests the "convert" and "validate" subcommand against a generated .tfplan file.
 func TestCLI(t *testing.T) {
@@ -120,53 +48,73 @@ func TestCLI(t *testing.T) {
 	// Test cases for each type of resource is defined here.
 	cases := []struct {
 		name        string
-		offline     bool
 		constraints []constraint
 	}{
-		{name: "bucket", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "bucket", offline: false, constraints: []constraint{alwaysViolate}},
-		{name: "bucket_iam", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "bucket_iam", offline: false, constraints: []constraint{alwaysViolate}},
-		{name: "disk", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "disk", offline: false, constraints: []constraint{alwaysViolate}},
-		{name: "firewall", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "firewall", offline: false, constraints: []constraint{alwaysViolate}},
-		{name: "instance", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "instance", offline: false, constraints: []constraint{alwaysViolate}},
-		{name: "project", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "project", offline: false, constraints: []constraint{alwaysViolate}},
-		{name: "sql", offline: true, constraints: []constraint{alwaysViolate}},
-		{name: "sql", offline: false, constraints: []constraint{alwaysViolate}},
+		{name: "bucket"},
+		{name: "bucket_iam"},
+		{name: "disk"},
+		{name: "firewall"},
+		{name: "instance"},
+		{name: "project"},
+		{name: "sql"},
+		{name: "example_compute_disk"},
+		{name: "example_compute_firewall"},
+		{name: "example_compute_instance"},
+		{name: "example_container_cluster"},
+		{name: "example_organization_iam_binding"},
+		{name: "example_organization_iam_member"},
+		{name: "example_organization_iam_policy"},
+		{name: "example_project"},
+		{name: "example_project_iam_binding"},
+		{name: "example_project_iam_member"},
+		{name: "example_project_iam_policy"},
+		{name: "example_sql_database_instance"},
+		{name: "example_storage_bucket"},
+		{name: "full_compute_firewall"},
+		{name: "full_compute_instance"},
+		{name: "full_container_cluster"},
+		{name: "full_container_node_pool"},
+		{name: "full_sql_database_instance"},
+		{name: "full_storage_bucket"},
 	}
 	for _, c := range cases {
 		// As tests are run in parallel, the test case need to be cloned to local
 		// scope.
 		c := c
-		t.Run(fmt.Sprintf("v=%s/tf=%s/offline=%t", version.LeastSupportedVersion(), c.name, c.offline), func(t *testing.T) {
-			t.Parallel()
-			// Create a temporary directory for running terraform.
-			dir, err := ioutil.TempDir(os.TempDir(), "terraform")
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer os.RemoveAll(dir)
 
-			// Generate the <name>.tf and <name>_assets.json files into the temporary directory.
-			generateTestFiles(t, "../testdata/templates", dir, c.name+".tf")
-			generateTestFiles(t, "../testdata/templates", dir, c.name+".json")
+		// Add default constraints if not set.
+		if len(c.constraints) == 0 {
+			c.constraints = []constraint{alwaysViolate}
+		}
 
-			terraform(t, dir, c.name)
+		// Test both offline and online mode.
+		for _, offline := range []bool{true, false} {
+			t.Run(fmt.Sprintf("v=%s/tf=%s/offline=%t", version.LeastSupportedVersion(), c.name, offline), func(t *testing.T) {
+				t.Parallel()
+				// Create a temporary directory for running terraform.
+				dir, err := ioutil.TempDir(tmpDir, "terraform")
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer os.RemoveAll(dir)
 
-			t.Run("cmd=convert", func(t *testing.T) {
-				testConvertCommand(t, dir, c.name, c.offline)
-			})
+				// Generate the <name>.tf and <name>_assets.json files into the temporary directory.
+				generateTestFiles(t, "../testdata/templates", dir, c.name+".tf")
+				generateTestFiles(t, "../testdata/templates", dir, c.name+".json")
 
-			for _, ct := range c.constraints {
-				t.Run(fmt.Sprintf("cmd=validate/constraint=%s", ct.name), func(t *testing.T) {
-					testValidateCommand(t, ct.wantViolation, ct.wantOutputRegex, dir, c.name, c.offline, ct.name)
+				terraform(t, dir, c.name)
+
+				t.Run("cmd=convert", func(t *testing.T) {
+					testConvertCommand(t, dir, c.name, offline)
 				})
-			}
-		})
+
+				for _, ct := range c.constraints {
+					t.Run(fmt.Sprintf("cmd=validate/constraint=%s", ct.name), func(t *testing.T) {
+						testValidateCommand(t, ct.wantViolation, ct.wantOutputRegex, dir, c.name, offline, ct.name)
+					})
+				}
+			})
+		}
 	}
 }
 
@@ -194,32 +142,8 @@ func testConvertCommand(t *testing.T, dir, name string, offline bool) {
 		t.Fatalf("unmarshaling: %v", err)
 	}
 
-	if !offline {
-		// remove the ancestry as the value of that is dependent on project,
-		// and is not important for the test.
-		for i := range got {
-			got[i].Ancestry = ""
-		}
-		for i := range want {
-			want[i].Ancestry = ""
-		}
-	}
-
-	// Replace placeholder in names.
-	re := regexp.MustCompile(`/placeholder-.*`)
-	for i := range got {
-		got[i].Name = re.ReplaceAllString(got[i].Name, "/placeholder-foobar")
-	}
-
-	// compare assets
-	gotJSON, err := json.Marshal(got)
-	if err != nil {
-		t.Fatalf("marshaling: %v", err)
-	}
-	wantJSON, err := json.Marshal(want)
-	if err != nil {
-		t.Fatalf("marshaling: %v", err)
-	}
+	gotJSON := normalizeAssets(t, got, offline)
+	wantJSON := normalizeAssets(t, want, offline)
 	require.JSONEq(t, string(wantJSON), string(gotJSON))
 }
 
@@ -344,36 +268,6 @@ func run(t *testing.T, cmd *exec.Cmd, wantError bool) ([]byte, []byte) {
 		t.Log(stderr.String())
 	}
 	return stdout.Bytes(), stderr.Bytes()
-}
-
-func generateTestFiles(t *testing.T, sourceDir string, targetDir string, selector string) {
-	funcMap := template.FuncMap{
-		"pastLastSlash": func(s string) string {
-			split := strings.Split(s, "/")
-			return split[len(split)-1]
-		},
-	}
-	tmpls, err := template.New("").Funcs(funcMap).
-		ParseGlob(filepath.Join(sourceDir, selector))
-	if err != nil {
-		t.Fatalf("generateTestFiles: %v", err)
-	}
-	for _, tmpl := range tmpls.Templates() {
-		if tmpl.Name() == "" {
-			continue // Skip base template.
-		}
-		path := filepath.Join(targetDir, tmpl.Name())
-		f, err := os.Create(path)
-		if err != nil {
-			t.Fatalf("creating terraform file %v: %v", path, err)
-		}
-		if err := tmpl.Execute(f, data); err != nil {
-			t.Fatalf("templating terraform file %v: %v", path, err)
-		}
-		if err := f.Close(); err != nil {
-			t.Fatalf("closing file %v: %v", path, err)
-		}
-	}
 }
 
 // cmdToString clones the logic of https://golang.org/pkg/os/exec/#Cmd.String.

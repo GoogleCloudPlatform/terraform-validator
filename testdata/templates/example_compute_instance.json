@@ -1,6 +1,6 @@
 [
   {
-    "name": "//compute.googleapis.com/projects/{{.Provider.project}}/zones/us-central1-a/instances/my-instance",
+    "name": "//compute.googleapis.com/projects/{{.Provider.project}}/zones/us-central1-a/instances/test",
     "asset_type": "compute.googleapis.com/Instance",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
@@ -16,37 +16,29 @@
             "autoDelete": true,
             "boot": true,
             "initializeParams": {
-              "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
+              "sourceImage": "projects/debian-cloud/global/images/debian-9"
             },
             "mode": "READ_WRITE"
           },
           {
             "autoDelete": true,
             "initializeParams": {
-      {{if eq .TFVersion "0.12"}}
               "diskType": "projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/local-ssd"
-      {{else}}
-              "diskType": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/local-ssd"
-      {{end}}
             },
             "interface": "SCSI",
             "type": "SCRATCH"
           }
         ],
-      {{if eq .TFVersion "0.12"}}
         "machineType": "projects/{{.Provider.project}}/zones/us-central1-a/machineTypes/n1-standard-1",
-      {{else}}
-        "machineType": "https://www.googleapis.com/compute/v1/projects/{{.Provider.project}}/zones/us-central1-a/machineTypes/n1-standard-1",
-      {{end}}
         "metadata": {
           "items": [
             {
-              "key": "startup-script",
-              "value": "echo hi > /test.txt"
+              "key": "foo",
+              "value": "bar"
             }
           ]
         },
-        "name": "my-instance",
+        "name": "test",
         "networkInterfaces": [
           {
             "accessConfigs": [
