@@ -37,6 +37,7 @@ resource "google_container_cluster" "full_list_default_1" {
   # pod_security_policy_config
   # release_channel
   # resource_usage_export_config
+  # taint
   # vertical_pod_autoscaling
   # workload_identity_config
 
@@ -128,16 +129,6 @@ resource "google_container_cluster" "full_list_default_1" {
     preemptible      = true
     service_account  = "test-service_account"
     tags             = ["test-tags"]
-    taint {
-      key    = "test-key1"
-      value  = "test-value1"
-      effect = "NO_SCHEDULE"
-    }
-    taint {
-      key    = "test-key2"
-      value  = "test-value2"
-      effect = "NO_SCHEDULE"
-    }
   }
   node_locations = ["test-node_locations"]
   node_version   = "test-node_version"

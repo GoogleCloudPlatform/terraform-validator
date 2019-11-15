@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	samplePolicyPath = "../testdata/sample_policies"
-	defaultAncestry  = "organization/12345/folder/67890"
-	defaultProject   = "foobar"
+	samplePolicyPath       = "../testdata/sample_policies"
+	defaultAncestry        = "organization/12345/folder/67890"
+	defaultProject         = "foobar"
+	defaultProviderVersion = "2.17.0"
 )
 
 var (
@@ -68,7 +69,7 @@ func init() {
 	}
 	providerVersion := "1.20"
 	if version.TF12 == version.LeastSupportedVersion() {
-		providerVersion = "2.12.0"
+		providerVersion = defaultProviderVersion
 	}
 	data = &testData{
 		TFVersion: version.LeastSupportedVersion(),

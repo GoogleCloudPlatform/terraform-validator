@@ -17,7 +17,8 @@
             "boot": true,
             "initializeParams": {
               "sourceImage": "projects/debian-cloud/global/images/debian-9"
-            }
+            },
+            "mode": "READ_WRITE"
           },
           {
             "autoDelete": true,

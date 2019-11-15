@@ -99,18 +99,6 @@
           "serviceAccount": "test-service_account",
           "tags": [
             "test-tags"
-          ],
-          "taints": [
-            {
-              "effect": "NO_SCHEDULE",
-              "key": "test-key1",
-              "value": "test-value1"
-            },
-            {
-              "effect": "NO_SCHEDULE",
-              "key": "test-key2",
-              "value": "test-value2"
-            }
           ]
         },
         "podSecurityPolicyConfig": null,

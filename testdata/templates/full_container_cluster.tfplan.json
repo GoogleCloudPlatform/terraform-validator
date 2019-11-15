@@ -133,18 +133,6 @@
                 "tags": [
                   "test-tags"
                 ],
-                "taint": [
-                  {
-                    "effect": "NO_SCHEDULE",
-                    "key": "test-key1",
-                    "value": "test-value1"
-                  },
-                  {
-                    "effect": "NO_SCHEDULE",
-                    "key": "test-key2",
-                    "value": "test-value2"
-                  }
-                ],
                 "workload_metadata_config": []
               }
             ],
@@ -305,18 +293,6 @@
               "tags": [
                 "test-tags"
               ],
-              "taint": [
-                {
-                  "effect": "NO_SCHEDULE",
-                  "key": "test-key1",
-                  "value": "test-value1"
-                },
-                {
-                  "effect": "NO_SCHEDULE",
-                  "key": "test-key2",
-                  "value": "test-value2"
-                }
-              ],
               "workload_metadata_config": []
             }
           ],
@@ -421,10 +397,6 @@
               "shielded_instance_config": true,
               "tags": [
                 false
-              ],
-              "taint": [
-                {},
-                {}
               ],
               "workload_metadata_config": []
             }
@@ -638,31 +610,7 @@
                   "constant_value": [
                     "test-tags"
                   ]
-                },
-                "taint": [
-                  {
-                    "effect": {
-                      "constant_value": "NO_SCHEDULE"
-                    },
-                    "key": {
-                      "constant_value": "test-key1"
-                    },
-                    "value": {
-                      "constant_value": "test-value1"
-                    }
-                  },
-                  {
-                    "effect": {
-                      "constant_value": "NO_SCHEDULE"
-                    },
-                    "key": {
-                      "constant_value": "test-key2"
-                    },
-                    "value": {
-                      "constant_value": "test-value2"
-                    }
-                  }
-                ]
+                }
               }
             ],
             "node_locations": {

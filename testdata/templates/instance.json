@@ -17,7 +17,8 @@
             "boot": true,
             "initializeParams": {
               "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
-            }
+            },
+            "mode": "READ_WRITE"
           },
           {
             "autoDelete": true,

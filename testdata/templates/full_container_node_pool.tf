@@ -26,6 +26,7 @@ resource "google_container_node_pool" "full_list_default_1" {
   # node_config.sandbox_config
   # node_config.workload_metadata_config
   # node_locations
+  # taint
 
   autoscaling {
     min_node_count = 42
@@ -64,16 +65,6 @@ resource "google_container_node_pool" "full_list_default_1" {
     preemptible = true
     service_account = "test-service_account"
     tags = ["test-tags"]
-    taint {
-      key    = "test-key1"
-      value  = "test-value1"
-      effect = "NO_SCHEDULE"
-    }
-    taint {
-      key    = "test-key2"
-      value  = "test-value2"
-      effect = "NO_SCHEDULE"
-    }
   }
   node_count = 42
   region = "test-region"
