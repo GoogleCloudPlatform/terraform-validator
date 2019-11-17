@@ -248,7 +248,7 @@
             },
             "name": "My Project Name",
             "org_id": "my-org",
-            "project_id": "my-project-id",
+            "project_id": "foobar",
             "timeouts": null
           }
         },
@@ -820,7 +820,7 @@
           },
           "name": "My Project Name",
           "org_id": "my-org",
-          "project_id": "my-project-id",
+          "project_id": "foobar",
           "timeouts": null
         },
         "after_unknown": {
@@ -1376,7 +1376,7 @@
               "constant_value": "my-org"
             },
             "project_id": {
-              "constant_value": "my-project-id"
+              "constant_value": "foobar"
             }
           },
           "schema_version": 1

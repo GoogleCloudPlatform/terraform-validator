@@ -89,8 +89,6 @@ func GetComputeUrlMapApiObject(d TerraformResourceData, config *Config) (map[str
 	return obj, nil
 }
 
-// ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
-// instead of extracting the name and making a self_link out of it.
 func expandComputeUrlMapDefaultService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
@@ -200,8 +198,6 @@ func expandComputeUrlMapPathMatcher(v interface{}, d TerraformResourceData, conf
 	return req, nil
 }
 
-// ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
-// instead of extracting the name and making a self_link out of it.
 func expandComputeUrlMapPathMatcherDefaultService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
@@ -248,8 +244,6 @@ func expandComputeUrlMapPathMatcherPathRulePaths(v interface{}, d TerraformResou
 	return v, nil
 }
 
-// ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
-// instead of extracting the name and making a self_link out of it.
 func expandComputeUrlMapPathMatcherPathRuleService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
@@ -309,8 +303,6 @@ func expandComputeUrlMapTestPath(v interface{}, d TerraformResourceData, config 
 	return v, nil
 }
 
-// ResourceRef only supports 1 type and UrlMap has references to a BackendBucket or BackendService. Just read the self_link string
-// instead of extracting the name and making a self_link out of it.
 func expandComputeUrlMapTestService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
