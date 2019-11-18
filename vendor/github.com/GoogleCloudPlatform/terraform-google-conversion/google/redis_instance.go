@@ -14,10 +14,7 @@
 
 package google
 
-import (
-	"fmt"
-	"reflect"
-)
+import "reflect"
 
 func GetRedisInstanceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//redis.googleapis.com/projects/{{project}}/locations/{{region}}/instances/{{name}}")
@@ -165,17 +162,7 @@ func expandRedisInstanceLocationId(v interface{}, d TerraformResourceData, confi
 }
 
 func expandRedisInstanceName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	project, err := getProject(d, config)
-	if err != nil {
-		return nil, err
-	}
-
-	region, err := getRegion(d, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return fmt.Sprintf("projects/%s/locations/%s/instances/%s", project, region, v.(string)), nil
+	return replaceVars(d, config, "projects/{{project}}/locations/{{region}}/instances/{{name}}")
 }
 
 func expandRedisInstanceMemorySizeGb(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

@@ -1,6 +1,6 @@
 [
   {
-    "name": "//cloudbilling.googleapis.com/projects/{{.Provider.project}}/billingInfo",
+    "name": "//cloudbilling.googleapis.com/projects/{{.Project.ProjectId}}/billingInfo",
     "asset_type": "cloudbilling.googleapis.com/ProjectBillingInfo",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
@@ -10,13 +10,13 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "billingAccountName": "billingAccounts/012345-567890-ABCDEF",
-        "name": "projects/my-project-id/billingInfo",
-        "projectId": "my-project-id"
+        "name": "projects/{{.Project.ProjectId}}/billingInfo",
+        "projectId": "{{.Project.ProjectId}}"
       }
     }
   },
   {
-    "name": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+    "name": "//cloudresourcemanager.googleapis.com/projects/{{.Project.ProjectId}}",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {

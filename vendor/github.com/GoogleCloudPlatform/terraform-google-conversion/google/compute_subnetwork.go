@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"strings"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 )
@@ -41,13 +40,6 @@ func isShrinkageIpCidr(old, new, _ interface{}) bool {
 	}
 
 	return true
-}
-
-func splitSubnetID(id string) (region string, name string) {
-	parts := strings.Split(id, "/")
-	region = parts[0]
-	name = parts[1]
-	return
 }
 
 func GetComputeSubnetworkCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -97,12 +89,6 @@ func GetComputeSubnetworkApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("network"); !isEmptyValue(reflect.ValueOf(networkProp)) && (ok || !reflect.DeepEqual(v, networkProp)) {
 		obj["network"] = networkProp
 	}
-	enableFlowLogsProp, err := expandComputeSubnetworkEnableFlowLogs(d.Get("enable_flow_logs"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("enable_flow_logs"); ok || !reflect.DeepEqual(v, enableFlowLogsProp) {
-		obj["enableFlowLogs"] = enableFlowLogsProp
-	}
 	fingerprintProp, err := expandComputeSubnetworkFingerprint(d.Get("fingerprint"), d, config)
 	if err != nil {
 		return nil, err
@@ -130,7 +116,7 @@ func GetComputeSubnetworkApiObject(d TerraformResourceData, config *Config) (map
 	logConfigProp, err := expandComputeSubnetworkLogConfig(d.Get("log_config"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("log_config"); !isEmptyValue(reflect.ValueOf(logConfigProp)) && (ok || !reflect.DeepEqual(v, logConfigProp)) {
+	} else if v, ok := d.GetOkExists("log_config"); ok || !reflect.DeepEqual(v, logConfigProp) {
 		obj["logConfig"] = logConfigProp
 	}
 
@@ -155,10 +141,6 @@ func expandComputeSubnetworkNetwork(v interface{}, d TerraformResourceData, conf
 		return nil, fmt.Errorf("Invalid value for network: %s", err)
 	}
 	return f.RelativeLink(), nil
-}
-
-func expandComputeSubnetworkEnableFlowLogs(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
 }
 
 func expandComputeSubnetworkFingerprint(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
@@ -216,21 +198,27 @@ func expandComputeSubnetworkRegion(v interface{}, d TerraformResourceData, confi
 
 func expandComputeSubnetworkLogConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
+	transformed := make(map[string]interface{})
 	if len(l) == 0 || l[0] == nil {
-		return nil, nil
+		purpose, ok := d.GetOkExists("purpose")
+
+		if ok && purpose.(string) == "INTERNAL_HTTPS_LOAD_BALANCER" {
+			// Subnetworks for L7ILB do not accept any values for logConfig
+			return nil, nil
+		}
+		// send enable = false to ensure logging is disabled if there is no config
+		transformed["enable"] = false
+		return transformed, nil
 	}
+
 	raw := l[0]
 	original := raw.(map[string]interface{})
 
-	v, ok := d.GetOkExists("enable_flow_logs")
-
-	transformed := make(map[string]interface{})
-	if !ok || v.(bool) {
-		transformed["enable"] = true
-		transformed["aggregationInterval"] = original["aggregation_interval"]
-		transformed["flowSampling"] = original["flow_sampling"]
-		transformed["metadata"] = original["metadata"]
-	}
+	// The log_config block is specified, so logging should be enabled
+	transformed["enable"] = true
+	transformed["aggregationInterval"] = original["aggregation_interval"]
+	transformed["flowSampling"] = original["flow_sampling"]
+	transformed["metadata"] = original["metadata"]
 
 	return transformed, nil
 }

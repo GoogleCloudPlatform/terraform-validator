@@ -45,12 +45,6 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("description"); !isEmptyValue(reflect.ValueOf(descriptionProp)) && (ok || !reflect.DeepEqual(v, descriptionProp)) {
 		obj["description"] = descriptionProp
 	}
-	IPv4RangeProp, err := expandComputeNetworkIpv4Range(d.Get("ipv4_range"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("ipv4_range"); !isEmptyValue(reflect.ValueOf(IPv4RangeProp)) && (ok || !reflect.DeepEqual(v, IPv4RangeProp)) {
-		obj["IPv4Range"] = IPv4RangeProp
-	}
 	nameProp, err := expandComputeNetworkName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
@@ -60,7 +54,7 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 	autoCreateSubnetworksProp, err := expandComputeNetworkAutoCreateSubnetworks(d.Get("auto_create_subnetworks"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("auto_create_subnetworks"); !isEmptyValue(reflect.ValueOf(autoCreateSubnetworksProp)) && (ok || !reflect.DeepEqual(v, autoCreateSubnetworksProp)) {
+	} else if v, ok := d.GetOkExists("auto_create_subnetworks"); ok || !reflect.DeepEqual(v, autoCreateSubnetworksProp) {
 		obj["autoCreateSubnetworks"] = autoCreateSubnetworksProp
 	}
 	routingConfigProp, err := expandComputeNetworkRoutingConfig(nil, d, config)
@@ -70,22 +64,10 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 		obj["routingConfig"] = routingConfigProp
 	}
 
-	return resourceComputeNetworkEncoder(d, config, obj)
-}
-
-func resourceComputeNetworkEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
-	if _, ok := d.GetOk("ipv4_range"); !ok {
-		obj["autoCreateSubnetworks"] = d.Get("auto_create_subnetworks")
-	}
-
 	return obj, nil
 }
 
 func expandComputeNetworkDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeNetworkIpv4Range(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

@@ -138,11 +138,7 @@ func expandComputeRouteTags(v interface{}, d TerraformResourceData, config *Conf
 
 func expandComputeRouteNextHopGateway(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	if v == "default-internet-gateway" {
-		project, err := getProject(d, config)
-		if err != nil {
-			return nil, err
-		}
-		return fmt.Sprintf("projects/%s/global/gateways/default-internet-gateway", project), nil
+		return replaceVars(d, config, "projects/{{project}}/global/gateways/default-internet-gateway")
 	} else {
 		return v, nil
 	}
