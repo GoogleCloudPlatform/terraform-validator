@@ -147,25 +147,7 @@ func GetCloudSchedulerJobApiObject(d TerraformResourceData, config *Config) (map
 }
 
 func expandCloudSchedulerJobName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	var jobName string
-	project, err := getProject(d, config)
-	if err != nil {
-		return nil, err
-	}
-
-	region, err := getRegion(d, config)
-	if err != nil {
-		return nil, err
-	}
-
-	if v, ok := d.GetOk("name"); ok {
-		jobName = fmt.Sprintf("projects/%s/locations/%s/jobs/%s", project, region, v.(string))
-	} else {
-		err := fmt.Errorf("The name is missing for the job cannot be empty")
-		return nil, err
-	}
-
-	return jobName, nil
+	return replaceVars(d, config, "projects/{{project}}/locations/{{region}}/jobs/{{name}}")
 }
 
 func expandCloudSchedulerJobDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

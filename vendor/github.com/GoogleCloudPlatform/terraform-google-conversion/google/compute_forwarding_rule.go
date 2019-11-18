@@ -69,12 +69,6 @@ func GetComputeForwardingRuleApiObject(d TerraformResourceData, config *Config) 
 	} else if v, ok := d.GetOkExists("backend_service"); !isEmptyValue(reflect.ValueOf(backendServiceProp)) && (ok || !reflect.DeepEqual(v, backendServiceProp)) {
 		obj["backendService"] = backendServiceProp
 	}
-	ipVersionProp, err := expandComputeForwardingRuleIpVersion(d.Get("ip_version"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("ip_version"); !isEmptyValue(reflect.ValueOf(ipVersionProp)) && (ok || !reflect.DeepEqual(v, ipVersionProp)) {
-		obj["ipVersion"] = ipVersionProp
-	}
 	loadBalancingSchemeProp, err := expandComputeForwardingRuleLoadBalancingScheme(d.Get("load_balancing_scheme"), d, config)
 	if err != nil {
 		return nil, err
@@ -188,10 +182,6 @@ func expandComputeForwardingRuleBackendService(v interface{}, d TerraformResourc
 		return nil, err
 	}
 	return url + v.(string), nil
-}
-
-func expandComputeForwardingRuleIpVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
 }
 
 func expandComputeForwardingRuleLoadBalancingScheme(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
