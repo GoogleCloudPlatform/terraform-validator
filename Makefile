@@ -13,14 +13,14 @@ prepare-v11:
 	go mod vendor
 
 test:
-	# Skip integration tests in ./test/
-	GO111MODULE=on go test -mod=vendor -tags=$(BUILDTAGS) `go list -mod=vendor -tags=$(BUILDTAGS) ./... | grep -v terraform-validator/test`
+	# Skip integration tests in ./test/ using -short flag
+	GO111MODULE=on go test -mod=vendor -short -tags=$(BUILDTAGS) ./...
 
 run-docker:
 	docker run -it -v `pwd`:/terraform-validator -v ${GOOGLE_APPLICATION_CREDENTIALS}:/terraform-validator/credentials.json --entrypoint=/bin/bash --env TEST_PROJECT=${PROJECT_ID} --env TEST_CREDENTIALS=./credentials.json terraform-validator;
 
 test-integration:
-	go test -mod=vendor -tags=$(BUILDTAGS) -v ./test
+	go test -mod=vendor -tags=$(BUILDTAGS) -v -run=CLI ./test
 
 build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .
