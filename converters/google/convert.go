@@ -55,9 +55,6 @@ type Asset struct {
 	Ancestry  string         `json:"ancestry_path"`
 	Resource  *AssetResource `json:"resource,omitempty"`
 	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
-
-	project string
-
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
@@ -199,12 +196,10 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 	if err != nil {
 		return Asset{}, err
 	}
-
 	ancestry, err := c.ancestryManager.GetAncestry(project)
 	if err != nil {
 		return Asset{}, errors.Wrapf(err, "getting resource ancestry: project %v", project)
 	}
-
 	var resource *AssetResource
 	if cai.Resource != nil {
 		resource = &AssetResource{
@@ -233,7 +228,6 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 		Ancestry:       ancestry,
 		Resource:       resource,
 		IAMPolicy:      policy,
-		project:        project,
 		converterAsset: cai,
 	}, nil
 }
