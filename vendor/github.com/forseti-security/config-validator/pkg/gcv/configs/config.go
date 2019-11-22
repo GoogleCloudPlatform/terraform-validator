@@ -16,6 +16,7 @@
 package configs
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,6 +27,10 @@ import (
 	"github.com/smallfish/simpleyaml"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/forseti-security/config-validator/pkg/api/validator"
+	"github.com/golang/protobuf/jsonpb"
+	pb "github.com/golang/protobuf/ptypes/struct"
 )
 
 type yamlFile struct {
@@ -92,6 +97,23 @@ func asConstraint(data *UnclassifiedConfig) (*Constraint, error) {
 	return &Constraint{
 		Confg: data,
 	}, nil
+}
+
+// AsProto returns the constraint a Kubernetes proto
+func (c *Constraint) AsProto() (*validator.Constraint, error) {
+	ci, err := c.Confg.AsInterface()
+	if err != nil {
+		return nil, errors.Wrap(err, "converting to proto")
+	}
+	cp := &validator.Constraint{}
+
+	metadata, err := convertToProtoVal(ci.(map[string]interface{})["metadata"])
+	if err != nil {
+		return nil, errors.Wrap(err, "converting to proto")
+	}
+	cp.Metadata = metadata
+
+	return cp, nil
 }
 
 // asConstraintTemplate attempts to convert to template
@@ -247,4 +269,18 @@ func CategorizeYAMLFile(data []byte, dataSource string) (interface{}, error) {
 		return asConstraint(unclassified)
 	}
 	return nil, fmt.Errorf("unable to determine configuration type for data %s", dataSource)
+}
+
+func convertToProtoVal(from interface{}) (*pb.Value, error) {
+	to := &pb.Value{}
+	jsn, err := json.Marshal(from)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshalling to json")
+	}
+
+	if err := jsonpb.UnmarshalString(string(jsn), to); err != nil {
+		return nil, errors.Wrap(err, "unmarshalling to proto")
+	}
+
+	return to, nil
 }
