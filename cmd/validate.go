@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -49,6 +50,7 @@ Example:
 		return nil
 	},
 	RunE: func(c *cobra.Command, args []string) error {
+		ctx := context.Background()
 		assets, err := tfgcv.ReadPlannedAssets(args[0], flags.validate.project, flags.validate.ancestry, flags.validate.offline)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
@@ -57,7 +59,7 @@ Example:
 			return errors.Wrap(err, "converting tfplan to CAI assets")
 		}
 
-		auditResult, err := tfgcv.ValidateAssets(assets, flags.validate.policyPath)
+		auditResult, err := tfgcv.ValidateAssets(ctx, assets, flags.validate.policyPath)
 		if err != nil {
 			return errors.Wrap(err, "validating: FCV")
 		}

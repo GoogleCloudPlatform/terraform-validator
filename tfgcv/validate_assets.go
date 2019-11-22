@@ -34,18 +34,15 @@ func BuildVersion() string {
 
 // ValidateAssets instantiates GCV and audits CAI assets using "policies"
 // and "lib" folder under policyRootPath.
-func ValidateAssets(assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
-	return ValidateAssetsWithLibrary(assets,
-		filepath.Join(policyRootPath, "policies"),
+func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
+	return ValidateAssetsWithLibrary(ctx, assets,
+		[]string{filepath.Join(policyRootPath, "policies")},
 		filepath.Join(policyRootPath, "lib"))
 }
 
 // ValidateAssetsWithLibrary instantiates GCV and audits CAI assets.
-func ValidateAssetsWithLibrary(assets []google.Asset, policyPath, policyLibraryDir string) (*validator.AuditResponse, error) {
-	valid, err := gcv.NewValidator(
-		gcv.PolicyPath(policyPath),
-		gcv.PolicyLibraryDir(policyLibraryDir),
-	)
+func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, policyPaths []string, policyLibraryDir string) (*validator.AuditResponse, error) {
+	valid, err := gcv.NewValidator(ctx.Done(), policyPaths, policyLibraryDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "initializing gcv validator")
 	}
