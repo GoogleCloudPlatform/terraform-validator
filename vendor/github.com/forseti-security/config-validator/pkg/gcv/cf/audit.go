@@ -23,9 +23,14 @@ package validator.gcp.lib
 
 audit[result] {
 	inventory := data.inventory
-	constraints := data.constraints
 
 	asset := inventory[_]
+	handle_asset[result] with input.asset as asset 
+}
+
+handle_asset[result] {
+	asset := input.asset
+	constraints := data.constraints
 	constraint := constraints[_]
 	spec := _get_default(constraint, "spec", {})
 	match := _get_default(spec, "match", {})
@@ -49,6 +54,7 @@ audit[result] {
 	result := {
 		"asset": asset.name,
 		"constraint": constraint.metadata.name,
+		"constraint_config": constraint,
 		"violation": violation,
 	}
 }
