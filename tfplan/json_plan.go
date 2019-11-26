@@ -23,28 +23,33 @@ import (
 	"github.com/pkg/errors"
 )
 
+const maxChildModuleLevel = 100
+
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
 type jsonPlan struct {
 	PlannedValues struct {
 		RootModules struct {
-			Resources    []jsonResource
-			ChildModules []struct {
-				Address   string
-				Resources []jsonResource
-			} `json:"child_modules"`
+			Resources    []jsonResource `json:"resources"`
+			ChildModules []childModule  `json:"child_modules"`
 		} `json:"root_module"`
 	} `json:"planned_values"`
 }
 
+type childModule struct {
+	Address      string         `json:"address"`
+	Resources    []jsonResource `json:"resources"`
+	ChildModules []childModule  `json:"child_modules"`
+}
+
 // jsonResource represent single Terraform resource definition.
 type jsonResource struct {
-	Module       string
-	Name         string
-	Address      string
-	Mode         string
-	Kind         string `json:"type"`
-	ProviderName string `json:"provider_name"`
-	Values       map[string]interface{}
+	Module       string                 `json:"module"`
+	Name         string                 `json:"name"`
+	Address      string                 `json:"address"`
+	Mode         string                 `json:"mode"`
+	Kind         string                 `json:"type"`
+	ProviderName string                 `json:"provider_name"`
+	Values       map[string]interface{} `json:"values"`
 }
 
 // ComposeTF12Resources inspects a plan and returns the planned resources that match the provided resource schema map.
@@ -54,7 +59,6 @@ func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]R
 	if err != nil {
 		return nil, errors.Wrap(err, "read resources")
 	}
-
 	var instances []Resource
 	for _, r := range resources {
 		sch, ok := schemas[r.Kind]
@@ -167,25 +171,36 @@ func attributes(value interface{}, address []string, res map[string]string, sche
 func readJSONResources(data []byte) ([]jsonResource, error) {
 	plan := jsonPlan{}
 	err := json.Unmarshal(data, &plan)
-
 	if err != nil {
 		return nil, err
 	}
-
 	var result []jsonResource
-
 	for _, resource := range plan.PlannedValues.RootModules.Resources {
 		resource.Module = "root"
 		result = append(result, resource)
 	}
-
 	for _, module := range plan.PlannedValues.RootModules.ChildModules {
-		name := strings.SplitAfterN(module.Address, ".", 2)[1]
-		for _, resource := range module.Resources {
-			resource.Module = name
-			result = append(result, resource)
-		}
+		result = append(result, resourcesFromModule(&module, 0)...)
 	}
-
 	return result, nil
+}
+
+func resourcesFromModule(module *childModule, level int) []jsonResource {
+	if level > maxChildModuleLevel {
+		return nil
+	}
+	pcs := strings.SplitAfterN(module.Address, ".", 2)
+	if len(pcs) < 2 {
+		return nil
+	}
+	name := pcs[1]
+	var result []jsonResource
+	for _, resource := range module.Resources {
+		resource.Module = name
+		result = append(result, resource)
+	}
+	for _, c := range module.ChildModules {
+		result = append(result, resourcesFromModule(&c, level+1)...)
+	}
+	return result
 }
