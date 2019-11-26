@@ -22,7 +22,8 @@
                   {
                     "image": "projects/debian-cloud/global/images/debian-9"
                   }
-                ]
+                ],
+                "mode": "READ_WRITE"
               }
             ],
             "can_ip_forward": false,
