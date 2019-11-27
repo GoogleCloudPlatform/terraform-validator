@@ -80,11 +80,9 @@ func TestCLI(t *testing.T) {
 		{name: "full_sql_database_instance"},
 		{name: "full_storage_bucket"},
 	}
-	for _, c := range cases {
-		// As tests are run in parallel, the test case need to be cloned to local
-		// scope.
-		c := c
-
+	for i := range cases {
+		// Allocate a variable to make sure test can run in parallel.
+		c := cases[i]
 		// Add default constraints if not set.
 		if len(c.constraints) == 0 {
 			c.constraints = []constraint{alwaysViolate}

@@ -42,7 +42,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "full_sql_database_instance"},
 		{name: "full_storage_bucket"},
 	}
-	for _, c := range cases {
+	for i := range cases {
+		// Allocate a variable to make sure test can run in parallel.
+		c := cases[i]
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			// Create a temporary directory for running terraform.

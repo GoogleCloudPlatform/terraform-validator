@@ -39,6 +39,7 @@
                     "type": "pd-standard"
                   }
                 ],
+                "mode": "READ_WRITE",
                 "source": "test-source"
               }
             ],
@@ -162,7 +163,8 @@
               {
                 "auto_delete": true,
                 "disk_encryption_key_raw": null,
-                "kms_key_self_link": "test-kms_key_self_link"
+                "kms_key_self_link": "test-kms_key_self_link",
+                "mode": "READ_WRITE"
               }
             ],
             "can_ip_forward": false,
@@ -234,6 +236,7 @@
                   "type": "pd-standard"
                 }
               ],
+              "mode": "READ_WRITE",
               "source": "test-source"
             }
           ],
@@ -466,7 +469,8 @@
             {
               "auto_delete": true,
               "disk_encryption_key_raw": null,
-              "kms_key_self_link": "test-kms_key_self_link"
+              "kms_key_self_link": "test-kms_key_self_link",
+              "mode": "READ_WRITE"
             }
           ],
           "can_ip_forward": false,
