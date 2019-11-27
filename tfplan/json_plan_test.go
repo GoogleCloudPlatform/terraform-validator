@@ -17,7 +17,17 @@ func TestReadJSONResources(t *testing.T) {
           "address": "module.foo",
           "resources": [
             {
-              "address": "module.foo.google_compute_instance.bar"
+              "address": "module.foo.google_compute_instance.quz1"
+            }
+          ],
+          "child_modules": [
+            {
+              "address": "module.foo.bar",
+              "resources": [
+                {
+                  "address": "module.foo.bar.google_compute_instance.quz2"
+                }
+              ]
             }
           ]
         }
@@ -29,9 +39,18 @@ func TestReadJSONResources(t *testing.T) {
 	wantJSON := []byte(`
 [
   {
-    "address": "module.foo.google_compute_instance.bar",
+    "address": "module.foo.google_compute_instance.quz1",
     "mode": "",
     "module": "foo",
+    "name": "",
+    "provider_name": "",
+    "type": "",
+    "values": null
+  },
+  {
+    "address": "module.foo.bar.google_compute_instance.quz2",
+    "mode": "",
+    "module": "foo.bar",
     "name": "",
     "provider_name": "",
     "type": "",
