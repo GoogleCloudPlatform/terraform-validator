@@ -16,6 +16,7 @@ package tfplan
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -23,7 +24,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const maxChildModuleLevel = 100
+const maxChildModuleLevel = 10000
 
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
 type jsonPlan struct {
@@ -187,6 +188,7 @@ func readJSONResources(data []byte) ([]jsonResource, error) {
 
 func resourcesFromModule(module *childModule, level int) []jsonResource {
 	if level > maxChildModuleLevel {
+		log.Printf("The configuration has more than %d level of modules. Modules with a depth more than %d will be ignored.", maxChildModuleLevel, maxChildModuleLevel)
 		return nil
 	}
 	pcs := strings.SplitAfterN(module.Address, ".", 2)
