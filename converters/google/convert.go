@@ -192,11 +192,11 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *converter.Config, cai converter.Asset) (Asset, error) {
-	project, err := getProject(tfData, cfg)
+	project, err := getProject(tfData, cfg, cai)
 	if err != nil {
 		return Asset{}, err
 	}
-	ancestry, err := c.ancestryManager.GetAncestry(project)
+	ancestry, err := c.ancestryManager.GetAncestry(project, ancestrymanager.TerraformResource(tfData), ancestrymanager.Asset(cai))
 	if err != nil {
 		return Asset{}, errors.Wrapf(err, "getting resource ancestry: project %v", project)
 	}
