@@ -16,4 +16,10 @@
 
 variable "project_id" {
   description = "The project to create resources inside of."
+  type = string
+  default = null
+}
+
+variable "org_id" {
+  description = "The organization ID use for creating resources."
 }
