@@ -23,10 +23,10 @@ provider "google" {
   project = local.project
 }
 
-# resource "google_folder" "test" {
-#   display_name = "validator-test"
-#   parent       = "organizations/${var.org_id}"
-# }
+resource "google_folder" "test" {
+  display_name = "validator-test"
+  parent       = "organizations/${var.org_id}"
+}
 
 resource "google_project" "my_project" {
   name       = "test-project"
@@ -36,57 +36,57 @@ resource "google_project" "my_project" {
   # folder_id  = google_folder.test.name
 }
 
-# resource "google_compute_disk" "my-disk" {
-#   name    = "my-disk"
-#   project = local.project
-#   type    = "pd-ssd"
-#   zone    = "us-central1-a"
-#   image   = "debian-8-jessie-v20170523"
+resource "google_compute_disk" "my-disk" {
+  name    = "my-disk"
+  project = local.project
+  type    = "pd-ssd"
+  zone    = "us-central1-a"
+  image   = "debian-8-jessie-v20170523"
 
-#   labels = {
-#     foo = "bar"
-#   }
-# }
+  labels = {
+    foo = "bar"
+  }
+}
 
-# resource "google_compute_firewall" "my-test-firewall" {
-#   name    = "my-test-firewall"
-#   network = "default"
+resource "google_compute_firewall" "my-test-firewall" {
+  name    = "my-test-firewall"
+  network = "default"
 
-#   allow {
-#     protocol = "icmp"
-#   }
+  allow {
+    protocol = "icmp"
+  }
 
-#   allow {
-#     protocol = "tcp"
-#     ports    = ["80", "8080", "1000-2000"]
-#   }
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8080", "1000-2000"]
+  }
 
-#   source_tags = ["web"]
-# }
+  source_tags = ["web"]
+}
 
-# resource "random_id" "bucket" {
-#   byte_length = 8
-# }
+resource "random_id" "bucket" {
+  byte_length = 8
+}
 
-# resource "google_storage_bucket" "my-bucket" {
-#   name     = "my-bucket-${random_id.bucket.hex}"
-#   project  = local.project
-#   location = "US"
+resource "google_storage_bucket" "my-bucket" {
+  name     = "my-bucket-${random_id.bucket.hex}"
+  project  = local.project
+  location = "US"
 
-#   labels = {
-#     foo = "bar"
-#   }
+  labels = {
+    foo = "bar"
+  }
 
-#   website {
-#     main_page_suffix = "index.html"
-#     not_found_page   = "404.html"
-#   }
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
 
-#   cors {
-#     origin = ["*"]
-#     method = ["POST"]
-#   }
-# }
+  cors {
+    origin = ["*"]
+    method = ["POST"]
+  }
+}
 
 /* Uncomment and change emails to try out IAM policies.
 resource "google_project_iam_member" "owner-a" {
