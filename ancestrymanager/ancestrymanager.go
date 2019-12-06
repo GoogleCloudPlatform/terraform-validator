@@ -125,6 +125,45 @@ type onlineAncestryManager struct {
 	ancestryCache map[string]string
 }
 
+func (m *onlineAncestryManager) getAncestryForProject(project string) (string, error) {
+	if path, ok := m.ancestryCache[project]; ok {
+		return path, nil
+	}
+	response, err := m.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
+	if err != nil {
+		return "", err
+	}
+}
+
+// GetAncestry uses the resource manager API to get ancestry paths for
+// projects. It implements a cache because many resources share the same
+// project.
+func (m *onlineAncestryManager) GetAncestryWithResource(project string, options ...GetAncestryOption) (string, error) {
+	req := new(getAncestryRequest)
+	req.project = project
+
+	for _, option := range options {
+		option(req)
+	}
+
+	m.getAncestryForProject(project)
+	response, err := m.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
+	var ancestry []*cloudresourcemanager.Ancestor
+	if err != nil {
+		rAncestry, ok := m.getAncestryFromResource(req)
+		if !ok {
+			return "", err
+		}
+		ancestry = rAncestry
+	} else {
+		ancestry = response.Ancestor
+	}
+	path := ancestryPath(ancestry)
+	log.Printf("[INFO] Retrieved ancestry for %s: %s", project, path)
+	m.store(project, path)
+	return path, nil
+}
+
 // GetAncestry uses the resource manager API to get ancestry paths for
 // projects. It implements a cache because many resources share the same
 // project.
