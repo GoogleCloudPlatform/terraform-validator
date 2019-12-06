@@ -51,11 +51,16 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.Terra
 
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
+		project_id, ok := tfData.GetOk("project_id")
+		if !ok || project_id == "" {
+			return nil, false
+		}
+
 		ancestry := []*cloudresourcemanager.Ancestor{
 			&cloudresourcemanager.Ancestor{
 				ResourceId: &cloudresourcemanager.ResourceId{
 					Type: "project",
-					Id:   cai.Resource.Data["projectId"].(string),
+					Id:   project_id.(string),
 				},
 			},
 		}
