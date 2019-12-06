@@ -80,7 +80,7 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.Terra
 			}
 			return append(ancestry, folderAncestry...), true
 		}
-		return nil, true
+		return nil, false
 	default:
 		log.Printf("[INFO] Resource of type %s does not include sufficient data for ancestry retrieval", cai.Type)
 		return nil, false
@@ -125,7 +125,7 @@ func (m *onlineAncestryManager) GetAncestryWithResource(project string, tfData c
 		return "", err
 	}
 	path = ancestryPath(ancestry)
-	log.Printf("[INFO] Retrieved ancestry for %s: %s", project, path)
+	log.Printf("[INFO] [Online] Retrieved ancestry for %s: %s", project, path)
 	m.store(project, path)
 	return path, nil
 }
@@ -157,7 +157,7 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 	ancestry, ok := m.getAncestryFromResource(tfData, cai)
 	if ok {
 		path := ancestryPath(ancestry)
-		log.Printf("[INFO] Retrieved ancestry for %s: %s", project, path)
+		log.Printf("[INFO] [Offline] Retrieved ancestry for %s: %s", project, path)
 		return path, nil
 	}
 
