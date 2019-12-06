@@ -151,20 +151,21 @@ func (m *offlineAncestryManager) GetAncestry(project string) (string, error) {
 	return m.ancestry, nil
 }
 
-// GetAncestryWithResource first attempts to get Ancestry from the offline cache
-// If that fails, it falls back to inspecting the resource.
+// GetAncestryWithResource first attempts to get Ancestry from the resource
+// If that fails, it falls back to the offline cache.
 func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error) {
-	path, err := m.GetAncestry(project)
-	if path != "" {
+	ancestry, ok := m.getAncestryFromResource(tfData, cai)
+	if ok {
+		path := ancestryPath(ancestry)
+		log.Printf("[INFO] Retrieved ancestry for %s: %s", project, path)
 		return path, nil
 	}
 
-	ancestry, ok := m.getAncestryFromResource(tfData, cai)
-	if !ok {
+	path, err := m.GetAncestry(project)
+	if err != nil {
 		return "", err
 	}
-	path = ancestryPath(ancestry)
-	log.Printf("[INFO] Retrieved ancestry for %s: %s", project, path)
+
 	return path, nil
 }
 
