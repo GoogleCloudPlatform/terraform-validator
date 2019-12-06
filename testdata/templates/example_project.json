@@ -9,7 +9,7 @@
       "discovery_name": "ProjectBillingInfo",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "billingAccountName": "billingAccounts/",
+        "billingAccountName": "billingAccounts/{{.Project.BillingAccountName}}",
         "name": "projects/{{.Provider.project}}/billingInfo",
         "projectId": "{{.Provider.project}}"
       }
@@ -26,6 +26,9 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "name": "My Project",
+        "labels": {
+          "project-label-key-a": "project-label-val-a"
+        },
         "projectId": "{{.Provider.project}}"
       }
     }

@@ -58,7 +58,6 @@ func TestCLI(t *testing.T) {
 		{name: "disk"},
 		{name: "firewall"},
 		{name: "instance"},
-		{name: "project"},
 		{name: "sql"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_firewall"},

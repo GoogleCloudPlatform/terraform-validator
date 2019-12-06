@@ -23,6 +23,12 @@ resource "google_project" "my_project-in-a-folder" {
   name = "My Project"
   project_id = "{{.Provider.project}}"
   folder_id  = "${google_folder.department1.name}"
+
+  billing_account = "{{.Project.BillingAccountName}}"
+
+  labels  = {
+    "project-label-key-a" = "project-label-val-a"
+  }
 }
 
 resource "google_folder" "department1" {
