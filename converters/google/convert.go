@@ -196,7 +196,7 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 	if err != nil {
 		return Asset{}, err
 	}
-	ancestry, err := c.ancestryManager.GetAncestry(project, ancestrymanager.TerraformResource(tfData), ancestrymanager.Asset(cai))
+	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
 	if err != nil {
 		return Asset{}, errors.Wrapf(err, "getting resource ancestry: project %v", project)
 	}
