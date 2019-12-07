@@ -14,14 +14,15 @@
 
 timeout: 3600s
 steps:
-- id: test
-  name: 'gcr.io/cloud-builders/go'
-  entrypoint: /usr/bin/make
-  args: [test]
 - id: build
   name: 'gcr.io/cloud-builders/go'
   entrypoint: /usr/bin/make
   args: [build]
+- id: test
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'make test']
+  env:
+    - 'TEST_PROJECT=$_TEST_PROJECT'
 - id: test-integration
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'make test-integration']

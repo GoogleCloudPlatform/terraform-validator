@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
 	"os"
 	"path/filepath"
@@ -42,6 +43,9 @@ type testData struct {
 // init initializes the variables used for testing. As tests rely on
 // environment variables, the parsing of those are only done once.
 func init() {
+	// don't raise errors in glog
+	flag.CommandLine.Parse([]string{})
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("cannot get current directory: %v", err)
