@@ -19,14 +19,8 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_project" "my-project-resource" {
-  name       = "{{.Project.Name}}"
-  project_id = "{{.Project.ProjectId}}"
-  org_id     = "my-org"
-
-  billing_account = "{{.Project.BillingAccountName}}"
-
-  labels  = {
-    "project-label-key-a" = "project-label-val-a"
-  }
+resource "google_project" "my_project" {
+  name        = "My Project"
+  project_id  = "foobat"
+  folder_id   = "folders/{{.FolderID}}"
 }

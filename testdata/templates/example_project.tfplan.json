@@ -26,8 +26,10 @@
           "schema_version": 1,
           "values": {
             "auto_create_network": true,
-            "billing_account": null,
-            "labels": null,
+            "billing_account": "{{.Project.BillingAccountName}}",
+            "labels": {
+              "project-label-key-a": "project-label-val-a"
+            },
             "name": "My Project",
             "project_id": "{{.Provider.project}}",
             "timeouts": null
@@ -74,8 +76,10 @@
         "before": null,
         "after": {
           "auto_create_network": true,
-          "billing_account": null,
-          "labels": null,
+          "billing_account": "{{.Project.BillingAccountName}}",
+          "labels": {
+            "project-label-key-a": "project-label-val-a"
+          },
           "name": "My Project",
           "project_id": "{{.Provider.project}}",
           "timeouts": null
@@ -136,6 +140,14 @@
             },
             "name": {
               "constant_value": "My Project"
+            },
+            "labels": {
+              "constant_value": {
+                  "project-label-key-a": "project-label-val-a"
+              }
+            },
+            "billing_account": {
+              "constant_value": "{{.Project.BillingAccountName}}"
             },
             "project_id": {
               "constant_value": "{{.Provider.project}}"

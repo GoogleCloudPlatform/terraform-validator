@@ -18,6 +18,8 @@ import (
 const (
 	samplePolicyPath       = "../testdata/sample_policies"
 	defaultAncestry        = "organization/12345/folder/67890"
+	defaultOrganization    = "12345"
+	defaultFolder          = "67890"
 	defaultProject         = "foobar"
 	defaultProviderVersion = "2.17.0"
 )
@@ -37,6 +39,8 @@ type testData struct {
 	// provider "google"
 	Provider map[string]string
 	Project  map[string]string
+	OrgID    string
+	FolderID string
 	Ancestry string
 }
 
@@ -55,6 +59,16 @@ func init() {
 	if !ok {
 		log.Printf("Missing required env var TEST_PROJECT. Default (%s) will be used.", defaultProject)
 		project = defaultProject
+	}
+	org, ok := os.LookupEnv("TEST_ORG_ID")
+	if !ok {
+		log.Printf("Missing required env var TEST_ORG_ID. Default (%s) will be used.", defaultOrganization)
+		org = defaultOrganization
+	}
+	folder, ok := os.LookupEnv("TEST_FOLDER_ID")
+	if !ok {
+		log.Printf("Missing required env var TEST_FOLDER_ID. Default (%s) will be used.", defaultFolder)
+		folder = defaultFolder
 	}
 	credentials, ok := os.LookupEnv("TEST_CREDENTIALS")
 	if ok {
@@ -87,6 +101,8 @@ func init() {
 			"ProjectId":          "my-project-id",
 			"BillingAccountName": "012345-567890-ABCDEF",
 		},
+		OrgID:    org,
+		FolderID: folder,
 		Ancestry: ancestry,
 	}
 }

@@ -16,6 +16,7 @@ package google
 
 import (
 	"fmt"
+	"log"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 )
@@ -25,7 +26,20 @@ import (
 // getProject reads the "project" field from the given resource data and falls
 // back to the provider's value if not given. If the provider's value is not
 // given, an error is returned.
-func getProject(d converter.TerraformResourceData, config *converter.Config) (string, error) {
+func getProject(d converter.TerraformResourceData, config *converter.Config, cai converter.Asset) (string, error) {
+	switch cai.Type {
+	case "cloudresourcemanager.googleapis.com/Project",
+		"cloudbilling.googleapis.com/ProjectBillingInfo":
+		res, ok := d.GetOk("project_id")
+		if ok {
+			return res.(string), nil
+		} else {
+			log.Printf("[WARN] Failed to retrieve project_id for %s from resource", cai.Name)
+		}
+	}
+
+	log.Printf("[INFO] Failed to retrieve project_id for %s from resource", cai.Name)
+
 	return getProjectFromSchema("project", d, config)
 }
 

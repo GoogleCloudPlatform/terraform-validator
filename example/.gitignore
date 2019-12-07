@@ -15,3 +15,5 @@ tfplan.*
 
 # Inventory
 inventory*.json
+
+terraform.tfplan.json

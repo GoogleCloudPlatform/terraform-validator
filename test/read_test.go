@@ -30,6 +30,8 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_organization_iam_member"},
 		{name: "example_organization_iam_policy"},
 		{name: "example_project"},
+		{name: "example_project_in_org"},
+		{name: "example_project_in_folder"},
 		{name: "example_project_iam_binding"},
 		{name: "example_project_iam_member"},
 		{name: "example_project_iam_policy"},

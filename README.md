@@ -13,7 +13,7 @@ To get started with Terraform Validator, please follow the [user guide](https://
 See the [Auth](#Auth) section first.
 
 
-### Steps similar both for Terraform v0.11 and v0.12 versions
+### Terraform 0.12 Usage
 
 ```
 # The example/ directory contains a basic Terraform config for testing the validator.
@@ -22,8 +22,9 @@ cd example/
 # Set default credentials.
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/credentials.json
 
-# Set a project to test with
+# Set a project and org to test with
 export TF_VAR_project_id=my-project-id
+export TF_VAR_org_id=93392932
 
 # Set the local forseti-config-policies repository path.
 export POLICY_PATH=/path/to/your/forseti-config-policies/repo
@@ -31,42 +32,19 @@ export POLICY_PATH=/path/to/your/forseti-config-policies/repo
 # Generate a terraform plan.
 terraform plan --out=terraform.tfplan
 
-```
-
-### Terraform v0.11
-
-```
-# Switch to use Terraform v0.11 dependencies.
-make prepare-v11
-
-# Then run the make command as usual.
-make build
-
-# Validate the google resources the plan would create.
-terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan
-
-# Apply the validated plan.
-terraform apply ./terraform.tfplan
-```
-
-### Terraform v0.12
-
-For 0.12 Terraform release validator required plan exported in JSON format
-
-```
 # Plan JSON representation. 
 terraform show -json ./terraform.tfplan > ./terraform.tfplan.json
 
 # Validate the google resources the plan would create.
 terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan.json
-```
 
-### Apply validated plan
-
-```
 # Apply the validated plan.
 terraform apply ./terraform.tfplan
 ```
+
+### Terraform v0.11
+
+Terraform 0.11 is no longer officially supported.
 
 ## Resources
 The follow Terraform resources are supported for running validation checks:

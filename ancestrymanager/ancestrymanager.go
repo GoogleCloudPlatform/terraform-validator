@@ -4,20 +4,96 @@ package ancestrymanager
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/pkg/errors"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/option"
+
+	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 )
 
 // AncestryManager is the interface that wraps the GetAncestry method.
 type AncestryManager interface {
-	// GetAncestry takes a project name and return a ancestry path
+	// GetAncestry takes a project name to return an ancestry path
 	GetAncestry(project string) (string, error)
+	// GetAncestry takes a project name and resource data to return an ancestry path
+	GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error)
+}
+
+// resourceAncestryManager provides common methods for retrieving ancestry from resources
+type resourceAncestryManager struct {
+}
+
+func (m *resourceAncestryManager) getFolderAncestry(folder_id string) ([]*cloudresourcemanager.Ancestor, error) {
+	// TODO(morgantep): Incorporate folders.GetAncestry from v2alpha1 API
+	log.Printf("[INFO] Retrieve ancestry for folder: %s", folder_id)
+
+	return []*cloudresourcemanager.Ancestor{
+		&cloudresourcemanager.Ancestor{
+			ResourceId: &cloudresourcemanager.ResourceId{
+				Type: "folder",
+				Id:   folder_id,
+			},
+		},
+		&cloudresourcemanager.Ancestor{
+			ResourceId: &cloudresourcemanager.ResourceId{
+				Type: "organization",
+				Id:   "unknown",
+			},
+		},
+	}, nil
+}
+
+func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.TerraformResourceData, cai converter.Asset) ([]*cloudresourcemanager.Ancestor, bool) {
+	log.Printf("[INFO] Retrieving ancestry from resource (type=%s)", cai.Type)
+
+	switch cai.Type {
+	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
+		project_id, ok := tfData.GetOk("project_id")
+		if !ok || project_id == "" {
+			return nil, false
+		}
+
+		ancestry := []*cloudresourcemanager.Ancestor{
+			&cloudresourcemanager.Ancestor{
+				ResourceId: &cloudresourcemanager.ResourceId{
+					Type: "project",
+					Id:   project_id.(string),
+				},
+			},
+		}
+
+		org_id, ok := tfData.GetOk("org_id")
+		if ok && org_id != "" {
+			s := strings.Split(org_id.(string), "/")
+			return append(ancestry, &cloudresourcemanager.Ancestor{
+				ResourceId: &cloudresourcemanager.ResourceId{
+					Type: "organization",
+					Id:   s[len(s)-1],
+				},
+			}), true
+		}
+
+		folder_id, ok := tfData.GetOk("folder_id")
+		if ok && folder_id != "" {
+			folderAncestry, err := m.getFolderAncestry(folder_id.(string))
+			if err != nil {
+				log.Printf("[ERROR] Failed to retrieve folder ancestry: %s", err)
+				return nil, false
+			}
+			return append(ancestry, folderAncestry...), true
+		}
+		return nil, false
+	default:
+		log.Printf("[INFO] Resource of type %s does not include sufficient data for ancestry retrieval", cai.Type)
+		return nil, false
+	}
 }
 
 type onlineAncestryManager struct {
+	resourceAncestryManager
 	// Talk to GCP resource manager. This field would be nil in offline mode.
 	resourceManager *cloudresourcemanager.Service
 	// Cache to prevent multiple network calls for looking up the same project's ancestry
@@ -41,6 +117,24 @@ func (m *onlineAncestryManager) GetAncestry(project string) (string, error) {
 	return path, nil
 }
 
+// GetAncestryWithResource first attempts to get Ancestry from the API
+// If that fails, it falls back to inspecting the resource.
+func (m *onlineAncestryManager) GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error) {
+	path, err := m.GetAncestry(project)
+	if path != "" {
+		return path, nil
+	}
+
+	ancestry, ok := m.getAncestryFromResource(tfData, cai)
+	if !ok {
+		return "", err
+	}
+	path = ancestryPath(ancestry)
+	log.Printf("[INFO] [Online] Retrieved ancestry for %s: %s", project, path)
+	m.store(project, path)
+	return path, nil
+}
+
 func (m *onlineAncestryManager) store(project, ancestry string) {
 	if project != "" && ancestry != "" {
 		m.ancestryCache[project] = ancestry
@@ -48,6 +142,7 @@ func (m *onlineAncestryManager) store(project, ancestry string) {
 }
 
 type offlineAncestryManager struct {
+	resourceAncestryManager
 	project  string
 	ancestry string
 }
@@ -59,6 +154,24 @@ func (m *offlineAncestryManager) GetAncestry(project string) (string, error) {
 		return "", fmt.Errorf("cannot fetch ancestry in offline mode")
 	}
 	return m.ancestry, nil
+}
+
+// GetAncestryWithResource first attempts to get Ancestry from the resource
+// If that fails, it falls back to the offline cache.
+func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error) {
+	ancestry, ok := m.getAncestryFromResource(tfData, cai)
+	if ok {
+		path := ancestryPath(ancestry)
+		log.Printf("[INFO] [Offline] Retrieved ancestry for %s: %s", project, path)
+		return path, nil
+	}
+
+	path, err := m.GetAncestry(project)
+	if err != nil {
+		return "", err
+	}
+
+	return path, nil
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.

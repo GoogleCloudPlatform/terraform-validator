@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-variable "project_id" {
-  description = "The project to create resources inside of."
-  type = string
-  default = null
+provider "google" {
+  version     = "~> {{.Provider.version}}"
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-variable "org_id" {
-  description = "The organization ID use for creating resources."
+resource "google_project" "my_project" {
+  name = "My Project"
+  project_id = "foobat"
+  org_id     = "{{.OrgID}}"
 }

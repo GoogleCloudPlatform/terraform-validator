@@ -23,6 +23,24 @@ provider "google" {
   project = local.project
 }
 
+resource "google_folder" "test" {
+  display_name = "validator-test"
+  parent       = "organizations/${var.org_id}"
+}
+
+resource "google_project" "my_project" {
+  name       = "test-project"
+  project_id = "test-project-912"
+  folder_id  = "folders/880142660913"
+
+  labels  = {
+    "project-label-key-a" = "project-label-val-a"
+  }
+
+  # org_id     = "organizations/${var.org_id}"
+  # folder_id  = google_folder.test.name
+}
+
 resource "google_compute_disk" "my-disk" {
   name    = "my-disk"
   project = local.project
