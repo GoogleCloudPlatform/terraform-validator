@@ -23,6 +23,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		name string
 	}{
 		{name: "example_compute_disk"},
+		{name: "example_compute_disk_empty"},
 		{name: "example_compute_firewall"},
 		{name: "example_compute_instance"},
 		{name: "example_container_cluster"},
