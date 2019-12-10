@@ -26,15 +26,15 @@ type AncestryManager interface {
 type resourceAncestryManager struct {
 }
 
-func (m *resourceAncestryManager) getFolderAncestry(folder_id string) ([]*cloudresourcemanager.Ancestor, error) {
+func (m *resourceAncestryManager) getFolderAncestry(folderID string) ([]*cloudresourcemanager.Ancestor, error) {
 	// TODO(morgantep): Incorporate folders.GetAncestry from v2alpha1 API
-	log.Printf("[INFO] Retrieve ancestry for folder: %s", folder_id)
+	log.Printf("[INFO] Retrieve ancestry for folder: %s", folderID)
 
 	return []*cloudresourcemanager.Ancestor{
 		&cloudresourcemanager.Ancestor{
 			ResourceId: &cloudresourcemanager.ResourceId{
 				Type: "folder",
-				Id:   folder_id,
+				Id:   folderID,
 			},
 		},
 		&cloudresourcemanager.Ancestor{
@@ -51,8 +51,8 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.Terra
 
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
-		project_id, ok := tfData.GetOk("project_id")
-		if !ok || project_id == "" {
+		projectID, ok := tfData.GetOk("project_id")
+		if !ok || projectID == "" {
 			return nil, false
 		}
 
@@ -60,14 +60,14 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.Terra
 			&cloudresourcemanager.Ancestor{
 				ResourceId: &cloudresourcemanager.ResourceId{
 					Type: "project",
-					Id:   project_id.(string),
+					Id:   projectID.(string),
 				},
 			},
 		}
 
-		org_id, ok := tfData.GetOk("org_id")
-		if ok && org_id != "" {
-			s := strings.Split(org_id.(string), "/")
+		orgID, ok := tfData.GetOk("org_id")
+		if ok && orgID != "" {
+			s := strings.Split(orgID.(string), "/")
 			return append(ancestry, &cloudresourcemanager.Ancestor{
 				ResourceId: &cloudresourcemanager.ResourceId{
 					Type: "organization",
@@ -76,9 +76,9 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.Terra
 			}), true
 		}
 
-		folder_id, ok := tfData.GetOk("folder_id")
-		if ok && folder_id != "" {
-			folderAncestry, err := m.getFolderAncestry(folder_id.(string))
+		folderID, ok := tfData.GetOk("folder_id")
+		if ok && folderID != "" {
+			folderAncestry, err := m.getFolderAncestry(folderID.(string))
 			if err != nil {
 				log.Printf("[ERROR] Failed to retrieve folder ancestry: %s", err)
 				return nil, false
