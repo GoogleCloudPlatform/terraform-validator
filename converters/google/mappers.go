@@ -53,6 +53,7 @@ func mappers() map[string][]mapper {
 		"google_sql_database_instance": {{convert: converter.GetSQLDatabaseInstanceCaiObject}},
 		"google_container_cluster":     {{convert: converter.GetContainerClusterCaiObject}},
 		"google_container_node_pool":   {{convert: converter.GetContainerNodePoolCaiObject}},
+		"google_bigquery_dataset":      {{convert: converter.GetBigQueryDatasetCaiObject}},
 
 		// Terraform resources of type "google_project" have a 1:N relationship with CAI assets.
 		"google_project": {
