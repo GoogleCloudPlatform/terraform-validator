@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
-	"google.golang.org/api/googleapi"
 )
 
 type Waiter interface {
@@ -102,13 +101,11 @@ func CommonRefreshFunc(w Waiter) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		op, err := w.QueryOp()
 		if err != nil {
-			// Importantly, this error is in the GET to the operation, and isn't an error
-			// with the resource CRUD request itself.
-			if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 404 {
-				log.Printf("[DEBUG] Dismissed an operation GET as retryable based on error code being 404: %s", err)
-				return op, "done: false", nil
+			// Retry 404 when getting operation (not resource state)
+			if isRetryableError(err, isNotFoundRetryableError("GET operation")) {
+				log.Printf("[DEBUG] Dismissed retryable error on GET operation %q: %s", w.OpName(), err)
+				return nil, "done: false", nil
 			}
-
 			return nil, "", fmt.Errorf("error while retrieving operation: %s", err)
 		}
 
@@ -119,7 +116,7 @@ func CommonRefreshFunc(w Waiter) resource.StateRefreshFunc {
 		if err = w.Error(); err != nil {
 			if w.IsRetryable(err) {
 				log.Printf("[DEBUG] Retrying operation GET based on retryable err: %s", err)
-				return op, w.State(), nil
+				return nil, w.State(), nil
 			}
 			return nil, "", err
 		}

@@ -29,6 +29,9 @@
         ],
         "direction": "INGRESS",
         "disabled": true,
+        "logConfig": {
+          "enable": false
+        },
         "name": "test-firewall1",
         "network": "projects/{{.Provider.project}}/global/networks/test-network",
         "priority": 42
@@ -59,6 +62,9 @@
           }
         ],
         "disabled": false,
+        "logConfig": {
+          "enable": false
+        },
         "name": "test-firewall2",
         "network": "projects/{{.Provider.project}}/global/networks/test-network",
         "priority": 1000,
@@ -93,6 +99,9 @@
           }
         ],
         "disabled": false,
+        "logConfig": {
+          "enable": false
+        },
         "name": "test-firewall3",
         "network": "projects/{{.Provider.project}}/global/networks/test-network",
         "priority": 1000,

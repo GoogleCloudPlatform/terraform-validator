@@ -36,13 +36,13 @@ import (
 // If ancestry path is provided, it assumes the project is in that path rather
 // than fetching the ancestry information using Google API.
 // It ignores non-supported resources.
-func ReadPlannedAssets(path, project, ancestry string, offline bool) ([]google.Asset, error) {
+func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline bool) ([]google.Asset, error) {
 	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
 	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(ancestryManager, project, "", offline)
+	converter, err := google.NewConverter(ctx, ancestryManager, project, "", offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

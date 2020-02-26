@@ -11,6 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
+// Compare only the resource name of two self links/paths.
+func compareResourceNames(_, old, new string, _ *schema.ResourceData) bool {
+	return GetResourceNameFromSelfLink(old) == GetResourceNameFromSelfLink(new)
+}
+
 // Compare only the relative path of two self links.
 func compareSelfLinkRelativePaths(_, old, new string, _ *schema.ResourceData) bool {
 	oldStripped, err := getRelativePath(old)
@@ -143,6 +148,14 @@ func GetLocationalResourcePropertiesFromSelfLinkString(selfLink string) (string,
 	}
 
 	s := strings.Split(parsed.Path, "/")
+
+	// This is a pretty bad way to tell if this is a self link, but stops us
+	// from accessing an index out of bounds and causing a panic. generally, we
+	// expect bad values to be partial URIs and names, so this will catch them
+	if len(s) < 9 {
+		return "", "", "", fmt.Errorf("value %s was not a self link", selfLink)
+	}
+
 	return s[4], s[6], s[8], nil
 }
 

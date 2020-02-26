@@ -16,23 +16,21 @@
           "httpLoadBalancing": {
             "disabled": true
           },
-          "kubernetesDashboard": {
-            "disabled": true
-          },
           "networkPolicyConfig": {
             "disabled": true
           }
         },
         "binaryAuthorization": null,
-        "clusterIpv4Cidr": "10.0.0.42/32",
+        "defaultMaxPodsConstraint": {
+          "maxPodsPerNode": 42
+        },
         "description": "test-description",
         "enableKubernetesAlpha": true,
         "initialClusterVersion": "test-min_master_version",
         "initialNodeCount": 42,
         "ipAllocationPolicy": {
           "clusterSecondaryRangeName": "test-cluster_secondary_range_name",
-          "servicesSecondaryRangeName": "test-services_secondary_range_name",
-          "useIpAliases": true
+          "servicesSecondaryRangeName": "test-services_secondary_range_name"
         },
         "legacyAbac": {
           "enabled": true
@@ -59,7 +57,8 @@
               "cidrBlock": "10.0.1.42/32",
               "displayName": "test-display_name2"
             }
-          ]
+          ],
+          "enabled": true
         },
         "monitoringService": "monitoring.googleapis.com",
         "name": "test-cluster",

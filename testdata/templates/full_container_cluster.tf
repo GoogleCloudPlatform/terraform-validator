@@ -55,21 +55,17 @@ resource "google_container_cluster" "full_list_default_1" {
 
   name = "test-cluster"
 
-  additional_zones = ["test-additional_zones"]
   addons_config {
     horizontal_pod_autoscaling { disabled = true }
     http_load_balancing { disabled = true }
-    kubernetes_dashboard { disabled = true }
     network_policy_config { disabled = true }
   }
-  cluster_ipv4_cidr         = "10.0.0.42/32"
   default_max_pods_per_node = 42
   description               = "test-description"
   enable_kubernetes_alpha   = true
   enable_legacy_abac        = true
   initial_node_count        = 42
   ip_allocation_policy {
-    use_ip_aliases                = true
     cluster_secondary_range_name  = "test-cluster_secondary_range_name"
     services_secondary_range_name = "test-services_secondary_range_name"
   }

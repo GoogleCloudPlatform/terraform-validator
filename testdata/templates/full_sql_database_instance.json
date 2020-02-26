@@ -39,7 +39,8 @@
           "backupConfiguration": {
             "binaryLogEnabled": true,
             "enabled": true,
-            "startTime": "42:42"
+            "startTime": "42:42",
+            "location": "us"
           },
           "crashSafeReplicationEnabled": true,
           "dataDiskSizeGb": "42",

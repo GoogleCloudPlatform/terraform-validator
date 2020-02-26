@@ -65,7 +65,6 @@
               "condition": {
                 "age": 42,
                 "createdBefore": "test-created_before",
-                "isLive": true,
                 "matchesStorageClass": [
                   "test-matches_storage_class1",
                   "matches_storage_class2"
@@ -81,7 +80,6 @@
               "condition": {
                 "age": 42,
                 "createdBefore": "test-created_before",
-                "isLive": true,
                 "matchesStorageClass": [
                   "test-matches_storage_class1",
                   "matches_storage_class2"
@@ -98,6 +96,9 @@
         },
         "name": "image-store-bucket",
         "project": "{{.Provider.project}}",
+        "retentionPolicy": {
+          "retentionPeriod": "42"
+        },
         "storageClass": "test-storage_class",
         "versioning": {
           "enabled": true

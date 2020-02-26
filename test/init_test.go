@@ -21,7 +21,7 @@ const (
 	defaultOrganization    = "12345"
 	defaultFolder          = "67890"
 	defaultProject         = "foobar"
-	defaultProviderVersion = "2.17.0"
+	defaultProviderVersion = "3.0.0"
 )
 
 var (

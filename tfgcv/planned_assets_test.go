@@ -1,6 +1,7 @@
 package tfgcv
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -79,7 +80,8 @@ func TestReadPlannedAssets(t *testing.T) {
 			if version.Supported(version.TF12) {
 				offline = true
 			}
-			got, err := ReadPlannedAssets(testFile, tt.args.project, tt.args.ancestry, offline)
+			ctx := context.Background()
+			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, tt.args.ancestry, offline)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadPlannedAssets() error = %v, wantErr %v", err, tt.wantErr)
 				return

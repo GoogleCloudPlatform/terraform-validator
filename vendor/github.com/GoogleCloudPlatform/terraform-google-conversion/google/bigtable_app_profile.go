@@ -62,6 +62,12 @@ func GetBigtableAppProfileApiObject(d TerraformResourceData, config *Config) (ma
 		obj["singleClusterRouting"] = singleClusterRoutingProp
 	}
 
+	return resourceBigtableAppProfileEncoder(d, config, obj)
+}
+
+func resourceBigtableAppProfileEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+	// Instance is a URL parameter only, so replace self-link/path with resource name only.
+	d.Set("instance", GetResourceNameFromSelfLink(d.Get("instance").(string)))
 	return obj, nil
 }
 

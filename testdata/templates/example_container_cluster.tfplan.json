@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.13",
+  "terraform_version": "0.12.20",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -13,11 +13,13 @@
           "schema_version": 1,
           "values": {
             "description": null,
-            "enable_intranode_visibility": null,
+            "enable_binary_authorization": false,
             "enable_kubernetes_alpha": false,
             "enable_legacy_abac": false,
             "initial_node_count": 1,
+            "ip_allocation_policy": [],
             "location": "us-central1",
+            "logging_service": "logging.googleapis.com/kubernetes",
             "maintenance_policy": [],
             "master_auth": [
               {
@@ -32,13 +34,14 @@
             ],
             "master_authorized_networks_config": [],
             "min_master_version": null,
+            "monitoring_service": "monitoring.googleapis.com/kubernetes",
             "name": "my-gke-cluster",
             "network": "default",
-            "pod_security_policy_config": [],
             "private_cluster_config": [],
             "remove_default_node_pool": true,
             "resource_labels": null,
-            "timeouts": null
+            "timeouts": null,
+            "vertical_pod_autoscaling": []
           }
         },
         {
@@ -65,10 +68,7 @@
                   "https://www.googleapis.com/auth/monitoring"
                 ],
                 "preemptible": true,
-                "sandbox_config": [],
-                "tags": null,
-                "taint": [],
-                "workload_metadata_config": []
+                "tags": null
               }
             ],
             "node_count": 1,
@@ -92,11 +92,13 @@
         "before": null,
         "after": {
           "description": null,
-          "enable_intranode_visibility": null,
+          "enable_binary_authorization": false,
           "enable_kubernetes_alpha": false,
           "enable_legacy_abac": false,
           "initial_node_count": 1,
+          "ip_allocation_policy": [],
           "location": "us-central1",
+          "logging_service": "logging.googleapis.com/kubernetes",
           "maintenance_policy": [],
           "master_auth": [
             {
@@ -111,27 +113,29 @@
           ],
           "master_authorized_networks_config": [],
           "min_master_version": null,
+          "monitoring_service": "monitoring.googleapis.com/kubernetes",
           "name": "my-gke-cluster",
           "network": "default",
-          "pod_security_policy_config": [],
           "private_cluster_config": [],
           "remove_default_node_pool": true,
           "resource_labels": null,
-          "timeouts": null
+          "timeouts": null,
+          "vertical_pod_autoscaling": []
         },
         "after_unknown": {
           "additional_zones": true,
           "addons_config": true,
+          "authenticator_groups_config": true,
           "cluster_autoscaling": true,
           "cluster_ipv4_cidr": true,
           "default_max_pods_per_node": true,
-          "enable_binary_authorization": true,
+          "enable_intranode_visibility": true,
           "enable_tpu": true,
           "endpoint": true,
           "id": true,
           "instance_group_urls": true,
-          "ip_allocation_policy": true,
-          "logging_service": true,
+          "ip_allocation_policy": [],
+          "label_fingerprint": true,
           "maintenance_policy": [],
           "master_auth": [
             {
@@ -145,18 +149,19 @@
           ],
           "master_authorized_networks_config": [],
           "master_version": true,
-          "monitoring_service": true,
           "network_policy": true,
           "node_config": true,
           "node_locations": true,
           "node_pool": true,
           "node_version": true,
-          "pod_security_policy_config": [],
+          "operation": true,
+          "pod_security_policy_config": true,
           "private_cluster_config": [],
           "project": true,
           "region": true,
           "services_ipv4_cidr": true,
           "subnetwork": true,
+          "vertical_pod_autoscaling": [],
           "zone": true
         }
       }
@@ -189,10 +194,7 @@
                 "https://www.googleapis.com/auth/monitoring"
               ],
               "preemptible": true,
-              "sandbox_config": [],
-              "tags": null,
-              "taint": [],
-              "workload_metadata_config": []
+              "tags": null
             }
           ],
           "node_count": 1,
@@ -219,11 +221,11 @@
                 false,
                 false
               ],
-              "sandbox_config": [],
+              "sandbox_config": true,
               "service_account": true,
               "shielded_instance_config": true,
-              "taint": [],
-              "workload_metadata_config": []
+              "taint": true,
+              "workload_metadata_config": true
             }
           ],
           "project": true,

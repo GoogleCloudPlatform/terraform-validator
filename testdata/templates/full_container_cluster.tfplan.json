@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.13",
+  "terraform_version": "0.12.20",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -12,9 +12,6 @@
           "provider_name": "google",
           "schema_version": 1,
           "values": {
-            "additional_zones": [
-              "test-additional_zones"
-            ],
             "addons_config": [
               {
                 "horizontal_pod_autoscaling": [
@@ -27,11 +24,6 @@
                     "disabled": true
                   }
                 ],
-                "kubernetes_dashboard": [
-                  {
-                    "disabled": true
-                  }
-                ],
                 "network_policy_config": [
                   {
                     "disabled": true
@@ -39,18 +31,16 @@
                 ]
               }
             ],
-            "cluster_ipv4_cidr": "10.0.0.42/32",
             "default_max_pods_per_node": 42,
             "description": "test-description",
-            "enable_intranode_visibility": null,
+            "enable_binary_authorization": false,
             "enable_kubernetes_alpha": true,
             "enable_legacy_abac": true,
             "initial_node_count": 42,
             "ip_allocation_policy": [
               {
                 "cluster_secondary_range_name": "test-cluster_secondary_range_name",
-                "services_secondary_range_name": "test-services_secondary_range_name",
-                "use_ip_aliases": true
+                "services_secondary_range_name": "test-services_secondary_range_name"
               }
             ],
             "location": "us-central1",
@@ -128,19 +118,16 @@
                   "test-oauth_scopes"
                 ],
                 "preemptible": true,
-                "sandbox_config": [],
                 "service_account": "test-service_account",
                 "tags": [
                   "test-tags"
-                ],
-                "workload_metadata_config": []
+                ]
               }
             ],
             "node_locations": [
               "test-node_locations"
             ],
             "node_version": "test-node_version",
-            "pod_security_policy_config": [],
             "private_cluster_config": [
               {
                 "enable_private_endpoint": true,
@@ -153,7 +140,8 @@
               "test-resource_labels-key": "test-resource_labels-value"
             },
             "subnetwork": "test-subnetwork",
-            "timeouts": null
+            "timeouts": null,
+            "vertical_pod_autoscaling": []
           }
         }
       ]
@@ -172,9 +160,6 @@
         ],
         "before": null,
         "after": {
-          "additional_zones": [
-            "test-additional_zones"
-          ],
           "addons_config": [
             {
               "horizontal_pod_autoscaling": [
@@ -187,11 +172,6 @@
                   "disabled": true
                 }
               ],
-              "kubernetes_dashboard": [
-                {
-                  "disabled": true
-                }
-              ],
               "network_policy_config": [
                 {
                   "disabled": true
@@ -199,18 +179,16 @@
               ]
             }
           ],
-          "cluster_ipv4_cidr": "10.0.0.42/32",
           "default_max_pods_per_node": 42,
           "description": "test-description",
-          "enable_intranode_visibility": null,
+          "enable_binary_authorization": false,
           "enable_kubernetes_alpha": true,
           "enable_legacy_abac": true,
           "initial_node_count": 42,
           "ip_allocation_policy": [
             {
               "cluster_secondary_range_name": "test-cluster_secondary_range_name",
-              "services_secondary_range_name": "test-services_secondary_range_name",
-              "use_ip_aliases": true
+              "services_secondary_range_name": "test-services_secondary_range_name"
             }
           ],
           "location": "us-central1",
@@ -288,19 +266,16 @@
                 "test-oauth_scopes"
               ],
               "preemptible": true,
-              "sandbox_config": [],
               "service_account": "test-service_account",
               "tags": [
                 "test-tags"
-              ],
-              "workload_metadata_config": []
+              ]
             }
           ],
           "node_locations": [
             "test-node_locations"
           ],
           "node_version": "test-node_version",
-          "pod_security_policy_config": [],
           "private_cluster_config": [
             {
               "enable_private_endpoint": true,
@@ -313,12 +288,11 @@
             "test-resource_labels-key": "test-resource_labels-value"
           },
           "subnetwork": "test-subnetwork",
-          "timeouts": null
+          "timeouts": null,
+          "vertical_pod_autoscaling": []
         },
         "after_unknown": {
-          "additional_zones": [
-            false
-          ],
+          "additional_zones": true,
           "addons_config": [
             {
               "horizontal_pod_autoscaling": [
@@ -327,16 +301,16 @@
               "http_load_balancing": [
                 {}
               ],
-              "kubernetes_dashboard": [
-                {}
-              ],
+              "kubernetes_dashboard": true,
               "network_policy_config": [
                 {}
               ]
             }
           ],
+          "authenticator_groups_config": true,
           "cluster_autoscaling": true,
-          "enable_binary_authorization": true,
+          "cluster_ipv4_cidr": true,
+          "enable_intranode_visibility": true,
           "enable_tpu": true,
           "endpoint": true,
           "id": true,
@@ -344,12 +318,12 @@
           "ip_allocation_policy": [
             {
               "cluster_ipv4_cidr_block": true,
-              "create_subnetwork": true,
               "node_ipv4_cidr_block": true,
               "services_ipv4_cidr_block": true,
               "subnetwork_name": true
             }
           ],
+          "label_fingerprint": true,
           "maintenance_policy": [
             {
               "daily_maintenance_window": [
@@ -393,21 +367,24 @@
                 false,
                 false
               ],
-              "sandbox_config": [],
+              "sandbox_config": true,
               "shielded_instance_config": true,
               "tags": [
                 false
               ],
-              "workload_metadata_config": []
+              "taint": true,
+              "workload_metadata_config": true
             }
           ],
           "node_locations": [
             false
           ],
           "node_pool": true,
-          "pod_security_policy_config": [],
+          "operation": true,
+          "pod_security_policy_config": true,
           "private_cluster_config": [
             {
+              "peering_name": true,
               "private_endpoint": true,
               "public_endpoint": true
             }
@@ -416,6 +393,7 @@
           "region": true,
           "resource_labels": {},
           "services_ipv4_cidr": true,
+          "vertical_pod_autoscaling": [],
           "zone": true
         }
       }
@@ -431,11 +409,6 @@
           "name": "full_list_default_1",
           "provider_config_key": "google",
           "expressions": {
-            "additional_zones": {
-              "constant_value": [
-                "test-additional_zones"
-              ]
-            },
             "addons_config": [
               {
                 "horizontal_pod_autoscaling": [
@@ -452,13 +425,6 @@
                     }
                   }
                 ],
-                "kubernetes_dashboard": [
-                  {
-                    "disabled": {
-                      "constant_value": true
-                    }
-                  }
-                ],
                 "network_policy_config": [
                   {
                     "disabled": {
@@ -468,9 +434,6 @@
                 ]
               }
             ],
-            "cluster_ipv4_cidr": {
-              "constant_value": "10.0.0.42/32"
-            },
             "default_max_pods_per_node": {
               "constant_value": 42
             },
@@ -486,6 +449,16 @@
             "initial_node_count": {
               "constant_value": 42
             },
+            "ip_allocation_policy": [
+              {
+                "cluster_secondary_range_name": {
+                  "constant_value": "test-cluster_secondary_range_name"
+                },
+                "services_secondary_range_name": {
+                  "constant_value": "test-services_secondary_range_name"
+                }
+              }
+            ],
             "location": {
               "constant_value": "us-central1"
             },

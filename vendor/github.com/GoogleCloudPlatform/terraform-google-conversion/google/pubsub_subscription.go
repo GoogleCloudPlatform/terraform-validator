@@ -127,7 +127,7 @@ func expandPubsubSubscriptionTopic(v interface{}, d TerraformResourceData, confi
 
 	topic := d.Get("topic").(string)
 
-	re := regexp.MustCompile("projects\\/(.*)\\/topics\\/(.*)")
+	re := regexp.MustCompile(`projects\/(.*)\/topics\/(.*)`)
 	match := re.FindStringSubmatch(topic)
 	if len(match) == 3 {
 		return topic, nil

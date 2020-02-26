@@ -51,7 +51,6 @@ resource "google_storage_bucket" "full-list-default" {
     condition {
       age                   = 42
       created_before        = "test-created_before"
-      is_live               = true
       matches_storage_class = ["test-matches_storage_class1", "matches_storage_class2"]
       num_newer_versions    = 42
       with_state            = "LIVE"
@@ -65,7 +64,6 @@ resource "google_storage_bucket" "full-list-default" {
     condition {
       age                   = 42
       created_before        = "test-created_before"
-      is_live               = true
       matches_storage_class = ["test-matches_storage_class1", "matches_storage_class2"]
       num_newer_versions    = 42
       with_state            = "LIVE"

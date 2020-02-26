@@ -71,7 +71,7 @@ func GetComputeRouteApiObject(d TerraformResourceData, config *Config) (map[stri
 	priorityProp, err := expandComputeRoutePriority(d.Get("priority"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("priority"); !isEmptyValue(reflect.ValueOf(priorityProp)) && (ok || !reflect.DeepEqual(v, priorityProp)) {
+	} else if v, ok := d.GetOkExists("priority"); ok || !reflect.DeepEqual(v, priorityProp) {
 		obj["priority"] = priorityProp
 	}
 	tagsProp, err := expandComputeRouteTags(d.Get("tags"), d, config)
@@ -103,6 +103,12 @@ func GetComputeRouteApiObject(d TerraformResourceData, config *Config) (map[stri
 		return nil, err
 	} else if v, ok := d.GetOkExists("next_hop_vpn_tunnel"); !isEmptyValue(reflect.ValueOf(nextHopVpnTunnelProp)) && (ok || !reflect.DeepEqual(v, nextHopVpnTunnelProp)) {
 		obj["nextHopVpnTunnel"] = nextHopVpnTunnelProp
+	}
+	nextHopIlbProp, err := expandComputeRouteNextHopIlb(d.Get("next_hop_ilb"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("next_hop_ilb"); !isEmptyValue(reflect.ValueOf(nextHopIlbProp)) && (ok || !reflect.DeepEqual(v, nextHopIlbProp)) {
+		obj["nextHopIlb"] = nextHopIlbProp
 	}
 
 	return obj, nil
@@ -167,6 +173,14 @@ func expandComputeRouteNextHopVpnTunnel(v interface{}, d TerraformResourceData, 
 	f, err := parseRegionalFieldValue("vpnTunnels", v.(string), "project", "region", "zone", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for next_hop_vpn_tunnel: %s", err)
+	}
+	return f.RelativeLink(), nil
+}
+
+func expandComputeRouteNextHopIlb(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	f, err := parseRegionalFieldValue("forwardingRules", v.(string), "project", "region", "zone", d, config, true)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid value for next_hop_ilb: %s", err)
 	}
 	return f.RelativeLink(), nil
 }

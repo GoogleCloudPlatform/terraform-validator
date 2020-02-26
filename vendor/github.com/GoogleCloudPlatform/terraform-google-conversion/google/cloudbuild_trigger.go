@@ -14,7 +14,50 @@
 
 package google
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+func stepTimeoutCustomizeDiff(diff *schema.ResourceDiff, v interface{}) error {
+	buildList := diff.Get("build").([]interface{})
+	if len(buildList) == 0 || buildList[0] == nil {
+		return nil
+	}
+	build := buildList[0].(map[string]interface{})
+	buildTimeoutString := build["timeout"].(string)
+
+	buildTimeout, err := time.ParseDuration(buildTimeoutString)
+	if err != nil {
+		return fmt.Errorf("Error parsing build timeout : %s", err)
+	}
+
+	var stepTimeoutSum time.Duration = 0
+	steps := build["step"].([]interface{})
+	for _, rawstep := range steps {
+		if rawstep == nil {
+			continue
+		}
+		step := rawstep.(map[string]interface{})
+		timeoutString := step["timeout"].(string)
+		if len(timeoutString) == 0 {
+			continue
+		}
+
+		timeout, err := time.ParseDuration(timeoutString)
+		if err != nil {
+			return fmt.Errorf("Error parsing build step timeout: %s", err)
+		}
+		stepTimeoutSum += timeout
+	}
+	if stepTimeoutSum > buildTimeout {
+		return fmt.Errorf("Step timeout sum (%v) cannot be greater than build timeout (%v)", stepTimeoutSum, buildTimeout)
+	}
+	return nil
+}
 
 func GetCloudBuildTriggerCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//cloudbuild.googleapis.com/projects/{{project}}/triggers/{{trigger_id}}")
@@ -233,6 +276,13 @@ func expandCloudBuildTriggerBuild(v interface{}, d TerraformResourceData, config
 		transformed["images"] = transformedImages
 	}
 
+	transformedTimeout, err := expandCloudBuildTriggerBuildTimeout(original["timeout"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTimeout); val.IsValid() && !isEmptyValue(val) {
+		transformed["timeout"] = transformedTimeout
+	}
+
 	transformedStep, err := expandCloudBuildTriggerBuildStep(original["step"], d, config)
 	if err != nil {
 		return nil, err
@@ -248,6 +298,10 @@ func expandCloudBuildTriggerBuildTags(v interface{}, d TerraformResourceData, co
 }
 
 func expandCloudBuildTriggerBuildImages(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBuildTimeout(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
