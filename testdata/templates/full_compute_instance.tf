@@ -69,7 +69,6 @@ resource "google_compute_instance" "full_list_default_1" {
     source = "test-source"
     # Optional arguments
     device_name             = "test-device_name"
-    disk_encryption_key_raw = "test-disk_encryption_key_raw"
     kms_key_self_link       = "test-kms_key_self_link"
     mode                    = "READ_ONLY"
   }

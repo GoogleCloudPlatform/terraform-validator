@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	"google.golang.org/api/googleapi"
 	sqladmin "google.golang.org/api/sqladmin/v1beta4"
 )
 
@@ -111,7 +110,7 @@ func expandSqlDatabaseInstanceSettings(configured []interface{}, secondGen bool)
 	// 1st Generation instances don't support the disk_autoresize parameter
 	// and it defaults to true - so we shouldn't set it if this is first gen
 	if secondGen {
-		settings.StorageAutoResize = googleapi.Bool(_settings["disk_autoresize"].(bool))
+		settings.StorageAutoResize = _settings["disk_autoresize"].(bool)
 	}
 
 	return settings
@@ -229,5 +228,6 @@ func expandBackupConfiguration(configured []interface{}) *sqladmin.BackupConfigu
 		BinaryLogEnabled: _backupConfiguration["binary_log_enabled"].(bool),
 		Enabled:          _backupConfiguration["enabled"].(bool),
 		StartTime:        _backupConfiguration["start_time"].(string),
+		Location:         _backupConfiguration["location"].(string),
 	}
 }

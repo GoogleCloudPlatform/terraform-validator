@@ -10,6 +10,14 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "canIpForward": true,
+        "displayDevice": {
+          "enableDisplay": false
+        },
+        "shieldedVmConfig": {
+          "enableIntegrityMonitoring": true,
+          "enableSecureBoot": true,
+          "enableVtpm": true
+        },
         "deletionProtection": true,
         "description": "test-description",
         "disks": [
@@ -47,13 +55,12 @@
           {
             "deviceName": "test-device_name",
             "diskEncryptionKey": {
-              "rawKey": "test-disk_encryption_key_raw"
+              "kmsKeyName": "test-kms_key_self_link"
             },
             "mode": "READ_ONLY",
             "source": "projects/{{.Provider.project}}/zones/us-central1-a/disks/test-source"
           },
           {
-            "diskEncryptionKey": {},
             "mode": "READ_WRITE",
             "source": "projects/{{.Provider.project}}/zones/us-central1-a/disks/test-source2"
           }
@@ -148,6 +155,14 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "canIpForward": false,
+        "displayDevice": {
+          "enableDisplay": false
+        },
+        "shieldedVmConfig": {
+          "enableIntegrityMonitoring": false,
+          "enableSecureBoot": false,
+          "enableVtpm": false
+        },
         "deletionProtection": false,
         "disks": [
           {

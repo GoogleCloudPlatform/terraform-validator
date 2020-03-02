@@ -15,6 +15,7 @@
 package google
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
@@ -82,14 +83,14 @@ type AssetResource struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(ancestryManager ancestrymanager.AncestryManager, project, credentials string, offline bool) (*Converter, error) {
+func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryManager, project, credentials string, offline bool) (*Converter, error) {
 	cfg := &converter.Config{
 		Project:     project,
 		Credentials: credentials,
 	}
 	if !offline {
 		converter.ConfigureBasePaths(cfg)
-		if err := cfg.LoadAndValidate(); err != nil {
+		if err := cfg.LoadAndValidate(ctx); err != nil {
 			return nil, errors.Wrap(err, "load and validate config")
 		}
 	}

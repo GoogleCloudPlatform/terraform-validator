@@ -52,6 +52,7 @@ resource "google_sql_database_instance" "master" {
       binary_log_enabled = true
       enabled            = true
       start_time         = "42:42"
+      location           = "us"
     }
     crash_safe_replication = true
     database_flags {

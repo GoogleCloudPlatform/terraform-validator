@@ -17,7 +17,27 @@ package google
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
+
+// customizeDiff func for additional checks on google_compute_router properties:
+func resourceComputeRouterCustomDiff(diff *schema.ResourceDiff, meta interface{}) error {
+
+	block := diff.Get("bgp.0").(map[string]interface{})
+	advertiseMode := block["advertise_mode"]
+	advertisedGroups := block["advertised_groups"].([]interface{})
+	advertisedIPRanges := block["advertised_ip_ranges"].([]interface{})
+
+	if advertiseMode == "DEFAULT" && len(advertisedGroups) != 0 {
+		return fmt.Errorf("Error in bgp: advertised_groups cannot be specified when using advertise_mode DEFAULT")
+	}
+	if advertiseMode == "DEFAULT" && len(advertisedIPRanges) != 0 {
+		return fmt.Errorf("Error in bgp: advertised_ip_ranges cannot be specified when using advertise_mode DEFAULT")
+	}
+
+	return nil
+}
 
 func GetComputeRouterCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/routers/{{name}}")

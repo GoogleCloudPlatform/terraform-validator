@@ -16,14 +16,97 @@ package google
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func migrateStateNoop(v int, is *terraform.InstanceState, meta interface{}) (*terraform.InstanceState, error) {
-	return is, nil
+// Fields in "backends" that are not allowed for INTERNAL backend services
+// (loadBalancingScheme) - the API returns an error if they are set at all
+// in the request.
+var backendServiceOnlyNonInternalFieldNames = []string{
+	"capacity_scaler",
+	"max_connections",
+	"max_connections_per_instance",
+	"max_connections_per_endpoint",
+	"max_rate",
+	"max_rate_per_instance",
+	"max_rate_per_endpoint",
+	"max_utilization",
+}
+
+// validateNonInternalBackendServiceBackends ensures capacity_scaler is set for each backend in an non-INTERNAL
+// backend service. To prevent a permadiff, we decided to override the API behavior and require the
+//// capacity_scaler value in this case.
+//
+// The API:
+// - requires the sum of the backends' capacity_scalers be > 0
+// - defaults to 1 if capacity_scaler is omitted from the request
+//
+// However, the schema.Set Hash function defaults to 0 if not given, which we chose because it's the default
+// float and because INTERNAL backends can't have the value set, so there will be a permadiff for a
+// situational non-zero default returned from the API. We can't diff suppress or customdiff a
+// field inside a set object in ResourceDiff, since the value also determines the hash for that set object.
+func validateNonInternalBackendServiceBackends(backends []interface{}, d *schema.ResourceDiff) error {
+	sum := 0.0
+
+	for _, b := range backends {
+		if b == nil {
+			continue
+		}
+		backend := b.(map[string]interface{})
+		if v, ok := backend["capacity_scaler"]; ok && v != nil {
+			sum += v.(float64)
+		} else {
+			return fmt.Errorf("capacity_scaler is required for each backend in non-INTERNAL backend service")
+		}
+	}
+	if sum == 0.0 {
+		return fmt.Errorf("non-INTERNAL backend service must have at least one non-zero capacity_scaler for backends")
+	}
+	return nil
+}
+
+// If INTERNAL, make sure the user did not provide values for any of the fields that cannot be sent.
+// We ignore these values regardless when sent to the API, but this adds plan-time validation if a
+// user sets the value to non-zero. We can't validate for empty but set because
+// of how the SDK handles set objects (on any read, nil fields will get set to empty values)
+func validateInternalBackendServiceBackends(backends []interface{}, d *schema.ResourceDiff) error {
+	for _, b := range backends {
+		if b == nil {
+			continue
+		}
+		backend := b.(map[string]interface{})
+		for _, fn := range backendServiceOnlyNonInternalFieldNames {
+			if v, ok := backend[fn]; ok && !isEmptyValue(reflect.ValueOf(v)) {
+				return fmt.Errorf("%q cannot be set for INTERNAL backend service, found value %v", fn, v)
+			}
+		}
+	}
+	return nil
+}
+
+func customDiffRegionBackendService(d *schema.ResourceDiff, meta interface{}) error {
+	v, ok := d.GetOk("backend")
+	if !ok {
+		return nil
+	}
+	if v == nil {
+		return nil
+	}
+
+	backends := v.(*schema.Set).List()
+	if len(backends) == 0 {
+		return nil
+	}
+
+	switch d.Get("load_balancing_scheme").(string) {
+	case "INTERNAL":
+		return validateInternalBackendServiceBackends(backends, d)
+	default:
+		return validateNonInternalBackendServiceBackends(backends, d)
+	}
 }
 
 func GetComputeRegionBackendServiceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -116,6 +199,44 @@ func GetComputeRegionBackendServiceApiObject(d TerraformResourceData, config *Co
 		obj["region"] = regionProp
 	}
 
+	return resourceComputeRegionBackendServiceEncoder(d, config, obj)
+}
+
+func resourceComputeRegionBackendServiceEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+	if d.Get("load_balancing_scheme").(string) != "INTERNAL" {
+		return obj, nil
+	}
+
+	backendServiceOnlyNonInternalApiFieldNames := []string{
+		"capacityScaler",
+		"maxConnections",
+		"maxConnectionsPerInstance",
+		"maxConnectionsPerEndpoint",
+		"maxRate",
+		"maxRatePerInstance",
+		"maxRatePerEndpoint",
+		"maxUtilization",
+	}
+
+	var backends []interface{}
+	if lsV := obj["backends"]; lsV != nil {
+		backends = lsV.([]interface{})
+	}
+	for idx, v := range backends {
+		if v == nil {
+			continue
+		}
+		backend := v.(map[string]interface{})
+		// Remove fields from backends that cannot be sent for INTERNAL
+		// backend services
+		for _, k := range backendServiceOnlyNonInternalApiFieldNames {
+			log.Printf("[DEBUG] Removing field %q for request for INTERNAL backend service %s", k, d.Get("name"))
+			delete(backend, k)
+		}
+		backends[idx] = backend
+	}
+
+	obj["backends"] = backends
 	return obj, nil
 }
 
@@ -140,7 +261,7 @@ func expandComputeRegionBackendServiceBackend(v interface{}, d TerraformResource
 		transformedCapacityScaler, err := expandComputeRegionBackendServiceBackendCapacityScaler(original["capacity_scaler"], d, config)
 		if err != nil {
 			return nil, err
-		} else if val := reflect.ValueOf(transformedCapacityScaler); val.IsValid() && !isEmptyValue(val) {
+		} else {
 			transformed["capacityScaler"] = transformedCapacityScaler
 		}
 

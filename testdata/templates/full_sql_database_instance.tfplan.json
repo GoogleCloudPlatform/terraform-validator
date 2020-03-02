@@ -32,7 +32,6 @@
             "auto_create_subnetworks": true,
             "delete_default_routes_on_create": false,
             "description": null,
-            "ipv4_range": null,
             "name": "private-network",
             "timeouts": null
           }
@@ -90,7 +89,8 @@
                   {
                     "binary_log_enabled": true,
                     "enabled": true,
-                    "start_time": "42:42"
+                    "start_time": "42:42",
+                    "location": "us"
                   }
                 ],
                 "crash_safe_replication": true,
@@ -198,13 +198,13 @@
           "auto_create_subnetworks": true,
           "delete_default_routes_on_create": false,
           "description": null,
-          "ipv4_range": null,
           "name": "private-network",
           "timeouts": null
         },
         "after_unknown": {
           "gateway_ipv4": true,
           "id": true,
+          "ipv4_range": true,
           "project": true,
           "routing_mode": true,
           "self_link": true
@@ -281,7 +281,8 @@
                 {
                   "binary_log_enabled": true,
                   "enabled": true,
-                  "start_time": "42:42"
+                  "start_time": "42:42",
+                  "location": "us"
                 }
               ],
               "crash_safe_replication": true,
@@ -545,6 +546,9 @@
                     },
                     "start_time": {
                       "constant_value": "42:42"
+                    },
+                    "location": {
+                      "constant_value": "us"
                     }
                   }
                 ],

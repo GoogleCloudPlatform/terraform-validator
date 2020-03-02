@@ -118,6 +118,12 @@ func GetCloudSchedulerJobApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("time_zone"); !isEmptyValue(reflect.ValueOf(timeZoneProp)) && (ok || !reflect.DeepEqual(v, timeZoneProp)) {
 		obj["timeZone"] = timeZoneProp
 	}
+	attemptDeadlineProp, err := expandCloudSchedulerJobAttemptDeadline(d.Get("attempt_deadline"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("attempt_deadline"); !isEmptyValue(reflect.ValueOf(attemptDeadlineProp)) && (ok || !reflect.DeepEqual(v, attemptDeadlineProp)) {
+		obj["attemptDeadline"] = attemptDeadlineProp
+	}
 	retryConfigProp, err := expandCloudSchedulerJobRetryConfig(d.Get("retry_config"), d, config)
 	if err != nil {
 		return nil, err
@@ -159,6 +165,10 @@ func expandCloudSchedulerJobSchedule(v interface{}, d TerraformResourceData, con
 }
 
 func expandCloudSchedulerJobTimeZone(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudSchedulerJobAttemptDeadline(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

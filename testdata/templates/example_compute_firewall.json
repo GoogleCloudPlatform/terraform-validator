@@ -23,6 +23,9 @@
           }
         ],
         "disabled": false,
+        "logConfig": {
+          "enable": false
+        },
         "name": "test-firewall",
         "network": "projects/{{.Provider.project}}/global/networks/test-network",
         "priority": 1000,

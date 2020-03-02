@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.10",
+  "terraform_version": "0.12.20",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -29,7 +29,7 @@
             "can_ip_forward": false,
             "deletion_protection": false,
             "description": null,
-            "disk": [],
+            "enable_display": null,
             "hostname": null,
             "labels": null,
             "machine_type": "n1-standard-1",
@@ -37,7 +37,6 @@
               "foo": "bar"
             },
             "metadata_startup_script": null,
-            "min_cpu_platform": null,
             "name": "test",
             "network_interface": [
               {
@@ -99,13 +98,14 @@
                 {
                   "image": "projects/debian-cloud/global/images/debian-9"
                 }
-              ]
+              ],
+              "mode": "READ_WRITE"
             }
           ],
           "can_ip_forward": false,
           "deletion_protection": false,
           "description": null,
-          "disk": [],
+          "enable_display": null,
           "hostname": null,
           "labels": null,
           "machine_type": "n1-standard-1",
@@ -113,7 +113,6 @@
             "foo": "bar"
           },
           "metadata_startup_script": null,
-          "min_cpu_platform": null,
           "name": "test",
           "network_interface": [
             {
@@ -166,23 +165,21 @@
             }
           ],
           "cpu_platform": true,
-          "disk": [],
           "guest_accelerator": true,
           "id": true,
           "instance_id": true,
           "label_fingerprint": true,
           "metadata": {},
           "metadata_fingerprint": true,
+          "min_cpu_platform": true,
           "network_interface": [
             {
               "access_config": [
                 {
-                  "assigned_nat_ip": true,
                   "nat_ip": true,
                   "network_tier": true
                 }
               ],
-              "address": true,
               "alias_ip_range": [],
               "name": true,
               "network_ip": true,
@@ -269,7 +266,11 @@
               }
             ],
             "scratch_disk": [
-              {}
+              {
+                "interface": {
+                  "constant_value": "SCSI"
+                }
+              }
             ],
             "service_account": [
               {

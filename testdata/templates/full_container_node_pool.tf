@@ -67,7 +67,5 @@ resource "google_container_node_pool" "full_list_default_1" {
     tags = ["test-tags"]
   }
   node_count = 42
-  region = "us-central1"
   version = "test-version"
-  zone = "us-central1-a"
 }

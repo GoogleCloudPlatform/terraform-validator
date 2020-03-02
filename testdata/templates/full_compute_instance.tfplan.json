@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.10",
+  "terraform_version": "0.12.20",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -16,7 +16,7 @@
             "attached_disk": [
               {
                 "device_name": "test-device_name",
-                "disk_encryption_key_raw": "test-disk_encryption_key_raw",
+                "disk_encryption_key_raw": null,
                 "kms_key_self_link": "test-kms_key_self_link",
                 "mode": "READ_ONLY",
                 "source": "test-source"
@@ -46,7 +46,7 @@
             "can_ip_forward": true,
             "deletion_protection": true,
             "description": "test-description",
-            "disk": [],
+            "enable_display": null,
             "guest_accelerator": [
               {
                 "count": 42,
@@ -170,13 +170,12 @@
             "can_ip_forward": false,
             "deletion_protection": false,
             "description": null,
-            "disk": [],
+            "enable_display": null,
             "hostname": null,
             "labels": null,
             "machine_type": "n1-standard-1",
             "metadata": null,
             "metadata_startup_script": null,
-            "min_cpu_platform": null,
             "name": "test2",
             "network_interface": [
               {
@@ -213,7 +212,7 @@
           "attached_disk": [
             {
               "device_name": "test-device_name",
-              "disk_encryption_key_raw": "test-disk_encryption_key_raw",
+              "disk_encryption_key_raw": null,
               "kms_key_self_link": "test-kms_key_self_link",
               "mode": "READ_ONLY",
               "source": "test-source"
@@ -243,7 +242,7 @@
           "can_ip_forward": true,
           "deletion_protection": true,
           "description": "test-description",
-          "disk": [],
+          "enable_display": null,
           "guest_accelerator": [
             {
               "count": 42,
@@ -368,7 +367,6 @@
             }
           ],
           "cpu_platform": true,
-          "disk": [],
           "guest_accelerator": [
             {},
             {}
@@ -383,20 +381,16 @@
             {
               "access_config": [
                 {
-                  "assigned_nat_ip": true,
                   "network_tier": true
                 },
                 {
-                  "assigned_nat_ip": true,
                   "nat_ip": true
                 },
                 {
-                  "assigned_nat_ip": true,
                   "nat_ip": true,
                   "network_tier": true
                 }
               ],
-              "address": true,
               "alias_ip_range": [
                 {}
               ],
@@ -406,7 +400,6 @@
             },
             {
               "access_config": [],
-              "address": true,
               "alias_ip_range": [],
               "name": true,
               "network": true,
@@ -476,13 +469,12 @@
           "can_ip_forward": false,
           "deletion_protection": false,
           "description": null,
-          "disk": [],
+          "enable_display": null,
           "hostname": null,
           "labels": null,
           "machine_type": "n1-standard-1",
           "metadata": null,
           "metadata_startup_script": null,
-          "min_cpu_platform": null,
           "name": "test2",
           "network_interface": [
             {
@@ -509,16 +501,15 @@
             }
           ],
           "cpu_platform": true,
-          "disk": [],
           "guest_accelerator": true,
           "id": true,
           "instance_id": true,
           "label_fingerprint": true,
           "metadata_fingerprint": true,
+          "min_cpu_platform": true,
           "network_interface": [
             {
               "access_config": [],
-              "address": true,
               "alias_ip_range": [],
               "name": true,
               "network_ip": true,
@@ -564,9 +555,6 @@
               {
                 "device_name": {
                   "constant_value": "test-device_name"
-                },
-                "disk_encryption_key_raw": {
-                  "constant_value": "test-disk_encryption_key_raw"
                 },
                 "kms_key_self_link": {
                   "constant_value": "test-kms_key_self_link"

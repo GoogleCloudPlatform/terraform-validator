@@ -14,7 +14,11 @@
 
 package google
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
 
 func GetSourceRepoRepositoryCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//sourcerepo.googleapis.com/projects/{{project}}/repos/{{name}}")
@@ -45,10 +49,49 @@ func GetSourceRepoRepositoryApiObject(d TerraformResourceData, config *Config) (
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
+	pubsubConfigsProp, err := expandSourceRepoRepositoryPubsubConfigs(d.Get("pubsub_configs"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("pubsub_configs"); !isEmptyValue(reflect.ValueOf(pubsubConfigsProp)) && (ok || !reflect.DeepEqual(v, pubsubConfigsProp)) {
+		obj["pubsubConfigs"] = pubsubConfigsProp
+	}
 
 	return obj, nil
 }
 
 func expandSourceRepoRepositoryName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return replaceVars(d, config, "projects/{{project}}/repos/{{name}}")
+}
+
+func expandSourceRepoRepositoryPubsubConfigs(v interface{}, d TerraformResourceData, config *Config) (map[string]interface{}, error) {
+	if v == nil {
+		return map[string]interface{}{}, nil
+	}
+	m := make(map[string]interface{})
+	for _, raw := range v.(*schema.Set).List() {
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedMessageFormat, err := expandSourceRepoRepositoryPubsubConfigsMessageFormat(original["message_format"], d, config)
+		if err != nil {
+			return nil, err
+		}
+		transformed["messageFormat"] = transformedMessageFormat
+		transformedServiceAccountEmail, err := expandSourceRepoRepositoryPubsubConfigsServiceAccountEmail(original["service_account_email"], d, config)
+		if err != nil {
+			return nil, err
+		}
+		transformed["serviceAccountEmail"] = transformedServiceAccountEmail
+
+		m[original["topic"].(string)] = transformed
+	}
+	return m, nil
+}
+
+func expandSourceRepoRepositoryPubsubConfigsMessageFormat(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSourceRepoRepositoryPubsubConfigsServiceAccountEmail(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }

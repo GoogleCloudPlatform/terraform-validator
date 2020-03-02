@@ -23,7 +23,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"google.golang.org/api/compute/v1"
 )
 
 func resourceComputeTargetHttpsProxy() *schema.Resource {
@@ -48,10 +47,20 @@ func resourceComputeTargetHttpsProxy() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				Description: `Name of the resource. Provided by the client when the resource is
+created. The name must be 1-63 characters long, and comply with
+RFC1035. Specifically, the name must be 1-63 characters long and match
+the regular expression '[a-z]([-a-z0-9]*[a-z0-9])?' which means the
+first character must be a lowercase letter, and all following
+characters must be a dash, lowercase letter, or digit, except the last
+character, which cannot be a dash.`,
 			},
 			"ssl_certificates": {
 				Type:     schema.TypeList,
 				Required: true,
+				Description: `A list of SslCertificate resources that are used to authenticate
+connections between users and the load balancer. At least one SSL
+certificate must be specified.`,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					DiffSuppressFunc: compareSelfLinkOrResourceName,
@@ -61,29 +70,44 @@ func resourceComputeTargetHttpsProxy() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: compareSelfLinkOrResourceName,
+				Description: `A reference to the UrlMap resource that defines the mapping from URL
+to the BackendService.`,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: `An optional description of this resource.`,
 			},
 			"quic_override": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"NONE", "ENABLE", "DISABLE", ""}, false),
+				Description: `Specifies the QUIC override policy for this resource. This determines
+whether the load balancer will attempt to negotiate QUIC with clients
+or not. Can specify one of NONE, ENABLE, or DISABLE. If NONE is
+specified, uses the QUIC policy with no user overrides, which is
+equivalent to DISABLE. Not specifying this field is equivalent to
+specifying NONE.`,
+				Default: "NONE",
 			},
 			"ssl_policy": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: compareSelfLinkOrResourceName,
+				Description: `A reference to the SslPolicy resource that will be associated with
+the TargetHttpsProxy resource. If not set, the TargetHttpsProxy
+resource will not have any SSL policy configured.`,
 			},
 			"creation_timestamp": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: `Creation timestamp in RFC3339 text format.`,
 			},
 			"proxy_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: `The unique identifier for the resource.`,
 			},
 			"project": {
 				Type:     schema.TypeString,
@@ -156,26 +180,20 @@ func resourceComputeTargetHttpsProxyCreate(d *schema.ResourceData, meta interfac
 	}
 
 	// Store the ID now
-	id, err := replaceVars(d, config, "{{name}}")
+	id, err := replaceVars(d, config, "projects/{{project}}/global/targetHttpsProxies/{{name}}")
 	if err != nil {
 		return fmt.Errorf("Error constructing id: %s", err)
 	}
 	d.SetId(id)
 
-	op := &compute.Operation{}
-	err = Convert(res, op)
-	if err != nil {
-		return err
-	}
-
-	waitErr := computeOperationWaitTime(
-		config.clientCompute, op, project, "Creating TargetHttpsProxy",
+	err = computeOperationWaitTime(
+		config, res, project, "Creating TargetHttpsProxy",
 		int(d.Timeout(schema.TimeoutCreate).Minutes()))
 
-	if waitErr != nil {
+	if err != nil {
 		// The resource didn't actually create
 		d.SetId("")
-		return fmt.Errorf("Error waiting to create TargetHttpsProxy: %s", waitErr)
+		return fmt.Errorf("Error waiting to create TargetHttpsProxy: %s", err)
 	}
 
 	log.Printf("[DEBUG] Finished creating TargetHttpsProxy %q: %#v", d.Id(), res)
@@ -204,28 +222,28 @@ func resourceComputeTargetHttpsProxyRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
 
-	if err := d.Set("creation_timestamp", flattenComputeTargetHttpsProxyCreationTimestamp(res["creationTimestamp"], d)); err != nil {
+	if err := d.Set("creation_timestamp", flattenComputeTargetHttpsProxyCreationTimestamp(res["creationTimestamp"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("description", flattenComputeTargetHttpsProxyDescription(res["description"], d)); err != nil {
+	if err := d.Set("description", flattenComputeTargetHttpsProxyDescription(res["description"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("proxy_id", flattenComputeTargetHttpsProxyProxyId(res["id"], d)); err != nil {
+	if err := d.Set("proxy_id", flattenComputeTargetHttpsProxyProxyId(res["id"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("name", flattenComputeTargetHttpsProxyName(res["name"], d)); err != nil {
+	if err := d.Set("name", flattenComputeTargetHttpsProxyName(res["name"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("quic_override", flattenComputeTargetHttpsProxyQuicOverride(res["quicOverride"], d)); err != nil {
+	if err := d.Set("quic_override", flattenComputeTargetHttpsProxyQuicOverride(res["quicOverride"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("ssl_certificates", flattenComputeTargetHttpsProxySslCertificates(res["sslCertificates"], d)); err != nil {
+	if err := d.Set("ssl_certificates", flattenComputeTargetHttpsProxySslCertificates(res["sslCertificates"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("ssl_policy", flattenComputeTargetHttpsProxySslPolicy(res["sslPolicy"], d)); err != nil {
+	if err := d.Set("ssl_policy", flattenComputeTargetHttpsProxySslPolicy(res["sslPolicy"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
-	if err := d.Set("url_map", flattenComputeTargetHttpsProxyUrlMap(res["urlMap"], d)); err != nil {
+	if err := d.Set("url_map", flattenComputeTargetHttpsProxyUrlMap(res["urlMap"], d, config)); err != nil {
 		return fmt.Errorf("Error reading TargetHttpsProxy: %s", err)
 	}
 	if err := d.Set("self_link", ConvertSelfLinkToV1(res["selfLink"].(string))); err != nil {
@@ -247,6 +265,7 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 
 	if d.HasChange("quic_override") {
 		obj := make(map[string]interface{})
+
 		quicOverrideProp, err := expandComputeTargetHttpsProxyQuicOverride(d.Get("quic_override"), d, config)
 		if err != nil {
 			return err
@@ -263,16 +282,9 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 			return fmt.Errorf("Error updating TargetHttpsProxy %q: %s", d.Id(), err)
 		}
 
-		op := &compute.Operation{}
-		err = Convert(res, op)
-		if err != nil {
-			return err
-		}
-
 		err = computeOperationWaitTime(
-			config.clientCompute, op, project, "Updating TargetHttpsProxy",
+			config, res, project, "Updating TargetHttpsProxy",
 			int(d.Timeout(schema.TimeoutUpdate).Minutes()))
-
 		if err != nil {
 			return err
 		}
@@ -281,6 +293,7 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 	}
 	if d.HasChange("ssl_certificates") {
 		obj := make(map[string]interface{})
+
 		sslCertificatesProp, err := expandComputeTargetHttpsProxySslCertificates(d.Get("ssl_certificates"), d, config)
 		if err != nil {
 			return err
@@ -297,16 +310,9 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 			return fmt.Errorf("Error updating TargetHttpsProxy %q: %s", d.Id(), err)
 		}
 
-		op := &compute.Operation{}
-		err = Convert(res, op)
-		if err != nil {
-			return err
-		}
-
 		err = computeOperationWaitTime(
-			config.clientCompute, op, project, "Updating TargetHttpsProxy",
+			config, res, project, "Updating TargetHttpsProxy",
 			int(d.Timeout(schema.TimeoutUpdate).Minutes()))
-
 		if err != nil {
 			return err
 		}
@@ -315,6 +321,7 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 	}
 	if d.HasChange("ssl_policy") {
 		obj := make(map[string]interface{})
+
 		sslPolicyProp, err := expandComputeTargetHttpsProxySslPolicy(d.Get("ssl_policy"), d, config)
 		if err != nil {
 			return err
@@ -331,16 +338,9 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 			return fmt.Errorf("Error updating TargetHttpsProxy %q: %s", d.Id(), err)
 		}
 
-		op := &compute.Operation{}
-		err = Convert(res, op)
-		if err != nil {
-			return err
-		}
-
 		err = computeOperationWaitTime(
-			config.clientCompute, op, project, "Updating TargetHttpsProxy",
+			config, res, project, "Updating TargetHttpsProxy",
 			int(d.Timeout(schema.TimeoutUpdate).Minutes()))
-
 		if err != nil {
 			return err
 		}
@@ -349,6 +349,7 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 	}
 	if d.HasChange("url_map") {
 		obj := make(map[string]interface{})
+
 		urlMapProp, err := expandComputeTargetHttpsProxyUrlMap(d.Get("url_map"), d, config)
 		if err != nil {
 			return err
@@ -365,16 +366,9 @@ func resourceComputeTargetHttpsProxyUpdate(d *schema.ResourceData, meta interfac
 			return fmt.Errorf("Error updating TargetHttpsProxy %q: %s", d.Id(), err)
 		}
 
-		op := &compute.Operation{}
-		err = Convert(res, op)
-		if err != nil {
-			return err
-		}
-
 		err = computeOperationWaitTime(
-			config.clientCompute, op, project, "Updating TargetHttpsProxy",
+			config, res, project, "Updating TargetHttpsProxy",
 			int(d.Timeout(schema.TimeoutUpdate).Minutes()))
-
 		if err != nil {
 			return err
 		}
@@ -408,14 +402,8 @@ func resourceComputeTargetHttpsProxyDelete(d *schema.ResourceData, meta interfac
 		return handleNotFoundError(err, d, "TargetHttpsProxy")
 	}
 
-	op := &compute.Operation{}
-	err = Convert(res, op)
-	if err != nil {
-		return err
-	}
-
 	err = computeOperationWaitTime(
-		config.clientCompute, op, project, "Deleting TargetHttpsProxy",
+		config, res, project, "Deleting TargetHttpsProxy",
 		int(d.Timeout(schema.TimeoutDelete).Minutes()))
 
 	if err != nil {
@@ -437,7 +425,7 @@ func resourceComputeTargetHttpsProxyImport(d *schema.ResourceData, meta interfac
 	}
 
 	// Replace import id for the resource id
-	id, err := replaceVars(d, config, "{{name}}")
+	id, err := replaceVars(d, config, "projects/{{project}}/global/targetHttpsProxies/{{name}}")
 	if err != nil {
 		return nil, fmt.Errorf("Error constructing id: %s", err)
 	}
@@ -446,15 +434,15 @@ func resourceComputeTargetHttpsProxyImport(d *schema.ResourceData, meta interfac
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenComputeTargetHttpsProxyCreationTimestamp(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxyCreationTimestamp(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	return v
 }
 
-func flattenComputeTargetHttpsProxyDescription(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxyDescription(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	return v
 }
 
-func flattenComputeTargetHttpsProxyProxyId(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxyProxyId(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -464,29 +452,33 @@ func flattenComputeTargetHttpsProxyProxyId(v interface{}, d *schema.ResourceData
 	return v
 }
 
-func flattenComputeTargetHttpsProxyName(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxyName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	return v
 }
 
-func flattenComputeTargetHttpsProxyQuicOverride(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxyQuicOverride(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+	if v == nil || isEmptyValue(reflect.ValueOf(v)) {
+		return "NONE"
+	}
+
 	return v
 }
 
-func flattenComputeTargetHttpsProxySslCertificates(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxySslCertificates(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	if v == nil {
 		return v
 	}
 	return convertAndMapStringArr(v.([]interface{}), ConvertSelfLinkToV1)
 }
 
-func flattenComputeTargetHttpsProxySslPolicy(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxySslPolicy(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	if v == nil {
 		return v
 	}
 	return ConvertSelfLinkToV1(v.(string))
 }
 
-func flattenComputeTargetHttpsProxyUrlMap(v interface{}, d *schema.ResourceData) interface{} {
+func flattenComputeTargetHttpsProxyUrlMap(v interface{}, d *schema.ResourceData, config *Config) interface{} {
 	if v == nil {
 		return v
 	}
@@ -509,6 +501,9 @@ func expandComputeTargetHttpsProxySslCertificates(v interface{}, d TerraformReso
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
+		if raw == nil {
+			return nil, fmt.Errorf("Invalid value for ssl_certificates: nil")
+		}
 		f, err := parseGlobalFieldValue("sslCertificates", raw.(string), "project", d, config, true)
 		if err != nil {
 			return nil, fmt.Errorf("Invalid value for ssl_certificates: %s", err)

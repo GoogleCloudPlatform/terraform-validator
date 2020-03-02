@@ -55,20 +55,12 @@ func GetBinaryAuthorizationAttestorApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("description"); !isEmptyValue(reflect.ValueOf(descriptionProp)) && (ok || !reflect.DeepEqual(v, descriptionProp)) {
 		obj["description"] = descriptionProp
 	}
-	userOwnedDrydockNoteProp, err := expandBinaryAuthorizationAttestorAttestationAuthorityNote(d.Get("attestation_authority_note"), d, config)
+	userOwnedGrafeasNoteProp, err := expandBinaryAuthorizationAttestorAttestationAuthorityNote(d.Get("attestation_authority_note"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("attestation_authority_note"); !isEmptyValue(reflect.ValueOf(userOwnedDrydockNoteProp)) && (ok || !reflect.DeepEqual(v, userOwnedDrydockNoteProp)) {
-		obj["userOwnedDrydockNote"] = userOwnedDrydockNoteProp
+	} else if v, ok := d.GetOkExists("attestation_authority_note"); !isEmptyValue(reflect.ValueOf(userOwnedGrafeasNoteProp)) && (ok || !reflect.DeepEqual(v, userOwnedGrafeasNoteProp)) {
+		obj["userOwnedGrafeasNote"] = userOwnedGrafeasNoteProp
 	}
-
-	return resourceBinaryAuthorizationAttestorEncoder(d, config, obj)
-}
-
-func resourceBinaryAuthorizationAttestorEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
-	// Field was renamed in GA API
-	obj["userOwnedGrafeasNote"] = obj["userOwnedDrydockNote"]
-	delete(obj, "userOwnedDrydockNote")
 
 	return obj, nil
 }
