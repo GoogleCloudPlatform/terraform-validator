@@ -32,7 +32,7 @@ export POLICY_PATH=/path/to/your/forseti-config-policies/repo
 # Generate a terraform plan.
 terraform plan --out=terraform.tfplan
 
-# Plan JSON representation. 
+# Plan JSON representation.
 terraform show -json ./terraform.tfplan > ./terraform.tfplan.json
 
 # Validate the google resources the plan would create.
@@ -49,26 +49,27 @@ Terraform 0.11 is no longer officially supported.
 ## Resources
 The follow Terraform resources are supported for running validation checks:
 
+- `google_bigquery_dataset`
 - `google_compute_disk`
-- `google_compute_instance`
 - `google_compute_firewall`
+- `google_compute_instance`
 - `google_container_cluster`
 - `google_container_node_pool`
-- `google_storage_bucket`
-- `google_storage_bucket_iam_policy`
-- `google_storage_bucket_iam_binding`
-- `google_storage_bucket_iam_member`
-- `google_sql_database_instance`
-- `google_project`
-- `google_organization_iam_policy`
-- `google_organization_iam_binding`
-- `google_organization_iam_member`
-- `google_folder_iam_policy`
 - `google_folder_iam_binding`
 - `google_folder_iam_member`
-- `google_project_iam_policy`
+- `google_folder_iam_policy`
+- `google_organization_iam_binding`
+- `google_organization_iam_member`
+- `google_organization_iam_policy`
+- `google_project`
 - `google_project_iam_binding`
 - `google_project_iam_member`
+- `google_project_iam_policy`
+- `google_sql_database_instance`
+- `google_storage_bucket`
+- `google_storage_bucket_iam_binding`
+- `google_storage_bucket_iam_member`
+- `google_storage_bucket_iam_policy`
 
 ## Testing
 
