@@ -135,6 +135,11 @@
                 "master_ipv4_cidr_block": "127.0.0.0/28"
               }
             ],
+            "workload_identity_config": [
+              {
+                "identity_namespace": "testproject.svc.id.goog"
+              }
+            ],
             "remove_default_node_pool": true,
             "resource_labels": {
               "test-resource_labels-key": "test-resource_labels-value"
@@ -281,6 +286,11 @@
               "enable_private_endpoint": true,
               "enable_private_nodes": true,
               "master_ipv4_cidr_block": "127.0.0.0/28"
+            }
+          ],
+          "workload_identity_config": [
+            {
+              "identity_namespace": "testproject.svc.id.goog"
             }
           ],
           "remove_default_node_pool": true,
@@ -604,6 +614,13 @@
                 },
                 "master_ipv4_cidr_block": {
                   "constant_value": "127.0.0.0/28"
+                }
+              }
+            ],
+            "workload_identity_config": [
+              {
+                "identity_namespace": {
+                  "constant_value": true
                 }
               }
             ],
