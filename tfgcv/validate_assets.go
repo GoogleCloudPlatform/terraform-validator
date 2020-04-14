@@ -42,7 +42,7 @@ func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath s
 
 // ValidateAssetsWithLibrary instantiates GCV and audits CAI assets.
 func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, policyPaths []string, policyLibraryDir string) (*validator.AuditResponse, error) {
-	valid, err := gcv.NewValidator(ctx.Done(), policyPaths, policyLibraryDir)
+	valid, err := gcv.NewValidator(policyPaths, policyLibraryDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "initializing gcv validator")
 	}
@@ -55,15 +55,13 @@ func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, polic
 		}
 	}
 
-	if err := valid.AddData(&validator.AddDataRequest{
-		Assets: pbAssets,
-	}); err != nil {
-		return nil, errors.Wrap(err, "adding data to validator")
-	}
-
-	auditResult, err := valid.Audit(context.Background())
-	if err != nil {
-		return nil, errors.Wrap(err, "auditing")
+	auditResult := &validator.AuditResponse{}
+	for _, asset := range pbAssets {
+		violations, err := valid.ReviewAsset(context.Background(), asset)
+		if err != nil {
+			return nil, errors.Wrapf(err, "auditing %s", asset)
+		}
+		auditResult.Violations = append(auditResult.Violations, violations...)
 	}
 
 	return auditResult, nil
