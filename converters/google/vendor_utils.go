@@ -38,8 +38,6 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 		}
 	}
 
-	log.Printf("[INFO] Failed to retrieve project_id for %s from resource", cai.Name)
-
 	return getProjectFromSchema("project", d, config)
 }
 
