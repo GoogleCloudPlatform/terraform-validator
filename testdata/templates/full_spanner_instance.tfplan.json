@@ -1,0 +1,76 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.12.13",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+            {
+              "address": "module.env.google_spanner_instance.spanner-instance",
+              "mode": "managed",
+              "type": "google_spanner_instance",
+              "name": "spanner-instance",
+              "provider_name": "google",
+              "schema_version": 0,
+              "values": {
+                "config": "projects/{{.Provider.project}}/instanceConfigs/regional-us-central1",
+                "display_name": "spanner-instance",
+                "id": "{{.Provider.project}}/spanner-instance",
+                "labels": {
+                  "label1": "value1",
+                  "label2": "value2",
+                  "label3": "value3"
+                },
+                "name": "spanner-instance",
+                "num_nodes": 1,
+                "state": "READY",
+                "timeouts": null
+              }
+            }
+          ]
+        }
+    },
+  "resource_changes": [
+     {
+      "address": "module.env.google_spanner_instance.spanner-instance",
+      "module_address": "module.env",
+      "mode": "managed",
+      "type": "google_spanner_instance",
+      "name": "spanner-instance",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "config": "projects/abcloud-ref-dev/instanceConfigs/regional-us-central1",
+          "display_name": "spanner-instance",
+          "id": "{{.Provider.project}}/spanner-instance",
+          "labels": {
+            "label1": "value1",
+            "label2": "value2",
+            "label3": "value3"
+          },
+          "name": "spanner-instance",
+          "num_nodes": 1,
+          "state": "READY",
+          "timeouts": null
+        },
+        "after": {
+          "config": "projects/{{.Provider.project}}/instanceConfigs/regional-us-central1",
+          "display_name": "spanner-instance",
+          "id": "{{.Provider.project}}/spanner-instance",
+          "labels": {
+            "label1": "value1",
+            "label2": "value2",
+            "label3": "value3"
+          },
+          "name": "spanner-instance",
+          "num_nodes": 1,
+          "state": "READY",
+          "timeouts": null
+        },
+        "after_unknown": {}
+      }
+    }
+  ]
+}

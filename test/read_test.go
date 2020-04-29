@@ -45,6 +45,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "full_container_cluster"},
 		{name: "full_container_node_pool"},
 		{name: "full_sql_database_instance"},
+		{name: "full_spanner_instance"},
 		{name: "full_storage_bucket"},
 	}
 	for i := range cases {
