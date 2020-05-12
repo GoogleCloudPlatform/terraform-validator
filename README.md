@@ -1,6 +1,8 @@
 # Terraform Validator
 
-This tool is used to validate terraform plans before they are applied. Validations are ran using Forseti Config Validator.
+This tool is used to validate terraform plans before they are applied. Validations are based on policies from the Config Validator [Policy Library](https://github.com/forseti-security/policy-library).
+
+**Note**: Using Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary.
 
 Note: this tool supports Terraform v0.12 by default. To switch to use Terraform v0.11, please see the section [Terraform v0.11](#terraform-v011).
 
