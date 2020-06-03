@@ -176,9 +176,6 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
 func New(ctx context.Context, project, ancestry string, offline bool, opts ...option.ClientOption) (AncestryManager, error) {
-	if ancestry != "" {
-		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
-	}
 	if offline {
 		return &offlineAncestryManager{project: project, ancestry: ancestry}, nil
 	}

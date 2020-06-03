@@ -55,19 +55,19 @@ func TestAncestryPath(t *testing.T) {
 func TestGetAncestry(t *testing.T) {
 	ctx := context.Background()
 	ownerProject := "foo"
-	ownerAncestry := "organization/qux/folder/bar"
-	ownerAncestryPath := "organization/qux/folder/bar/project/foo"
+	ownerAncestry := "organization/qux/folder/bar/project/foo_number"
+	ownerAncestryPath := "organization/qux/folder/bar/project/foo_number"
 	anotherProject := "foo2"
 
 	// Setup a simple test server to mock the response of resource manager.
 	cache := map[string][]*cloudresourcemanager.Ancestor{
 		ownerProject: []*cloudresourcemanager.Ancestor{
-			{ResourceId: &cloudresourcemanager.ResourceId{Id: "foo", Type: "project"}},
+			{ResourceId: &cloudresourcemanager.ResourceId{Id: "foo_number", Type: "project"}},
 			{ResourceId: &cloudresourcemanager.ResourceId{Id: "bar", Type: "folder"}},
 			{ResourceId: &cloudresourcemanager.ResourceId{Id: "qux", Type: "organization"}},
 		},
 		anotherProject: []*cloudresourcemanager.Ancestor{
-			{ResourceId: &cloudresourcemanager.ResourceId{Id: "foo2", Type: "project"}},
+			{ResourceId: &cloudresourcemanager.ResourceId{Id: "foo2_number", Type: "project"}},
 			{ResourceId: &cloudresourcemanager.ResourceId{Id: "bar2", Type: "folder"}},
 			{ResourceId: &cloudresourcemanager.ResourceId{Id: "qux2", Type: "organization"}},
 		},
@@ -93,7 +93,7 @@ func TestGetAncestry(t *testing.T) {
 	}{
 		{name: "owner_project_online", target: amOnline, query: ownerProject, want: ownerAncestryPath},
 		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestryPath},
-		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2"},
+		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2_number"},
 		{name: "another_project_offline", target: amOffline, query: anotherProject, wantError: true},
 		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true},
 	}
