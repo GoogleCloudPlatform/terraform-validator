@@ -1,0 +1,20 @@
+[
+  {
+    "address": "module.foo.google_compute_instance.quz1",
+    "mode": "",
+    "module": "foo",
+    "name": "",
+    "provider_name": "",
+    "type": "",
+    "values": null
+  },
+  {
+    "address": "module.foo.bar.google_compute_instance.quz2",
+    "mode": "",
+    "module": "foo.bar",
+    "name": "",
+    "provider_name": "",
+    "type": "",
+    "values": null
+  }
+]

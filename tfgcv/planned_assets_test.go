@@ -31,15 +31,21 @@ func TestReadPlannedAssets(t *testing.T) {
 
 	if version.Supported(version.TF12) {
 		tests = append(tests, []testcase{
+			// {
+			// 	"Test TF12 and JSON plan",
+			// 	args{"tf12plan.json", testProjectName, testAncestryName},
+			// 	2,
+			// 	false,
+			// },
+			// {
+			// 	"Test TF12 with all coverage",
+			// 	args{"tf12plan.allcoverage.json", "foobar", testAncestryName},
+			// 	9,
+			// 	false,
+			// },
 			{
-				"Test TF12 and JSON plan",
-				args{"tf12plan.json", testProjectName, testAncestryName},
-				2,
-				false,
-			},
-			{
-				"Test TF12 with all coverage",
-				args{"tf12plan.allcoverage.json", "foobar", testAncestryName},
+				"Test TF12 with computed resources",
+				args{"tf12plan.computed.json", "foobar", testAncestryName},
 				9,
 				false,
 			},

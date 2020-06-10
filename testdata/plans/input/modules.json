@@ -1,0 +1,26 @@
+{
+  "planned_values": {
+    "root_module": {
+      "child_modules": [
+        {
+          "address": "module.foo",
+          "resources": [
+            {
+              "address": "module.foo.google_compute_instance.quz1"
+            }
+          ],
+          "child_modules": [
+            {
+              "address": "module.foo.bar",
+              "resources": [
+                {
+                  "address": "module.foo.bar.google_compute_instance.quz2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
