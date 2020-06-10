@@ -12,43 +12,67 @@
       "boot_disk": [
         {
           "auto_delete": true,
+          "device_name": "_computed_",
           "disk_encryption_key_raw": null,
+          "disk_encryption_key_sha256": "_computed_",
           "initialize_params": [
             {
-              "image": "debian-cloud/debian-9"
+              "image": "debian-cloud/debian-9",
+              "labels": "_computed_",
+              "size": "_computed_",
+              "type": "_computed_"
             }
           ],
-          "mode": "READ_WRITE"
+          "kms_key_self_link": "_computed_",
+          "mode": "READ_WRITE",
+          "source": "_computed_"
         }
       ],
       "can_ip_forward": false,
+      "cpu_platform": "_computed_",
+      "current_status": "_computed_",
       "deletion_protection": false,
       "description": null,
       "desired_status": null,
       "enable_display": null,
+      "guest_accelerator": "_computed_",
       "hostname": null,
+      "id": "_computed_",
+      "instance_id": "_computed_",
+      "label_fingerprint": "_computed_",
       "labels": null,
       "machine_type": "f1-micro",
       "metadata": null,
+      "metadata_fingerprint": "_computed_",
       "metadata_startup_script": null,
+      "min_cpu_platform": "_computed_",
       "name": "main",
       "network_interface": [
         {
           "access_config": [
             {
+              "nat_ip": "_computed_",
+              "network_tier": "_computed_",
               "public_ptr_domain_name": null
             }
           ],
           "alias_ip_range": [],
-          "network": "computed"
+          "name": "_computed_",
+          "network": "_computed_",
+          "network_ip": "_computed_",
+          "subnetwork": "_computed_",
+          "subnetwork_project": "_computed_"
         }
       ],
       "project": "gcp-foundation-shared-devops",
       "resource_policies": null,
+      "scheduling": "_computed_",
       "scratch_disk": [],
+      "self_link": "_computed_",
       "service_account": [],
       "shielded_instance_config": [],
       "tags": null,
+      "tags_fingerprint": "_computed_",
       "timeouts": null,
       "zone": "us-central1-a"
     }
@@ -64,8 +88,13 @@
       "auto_create_subnetworks": true,
       "delete_default_routes_on_create": false,
       "description": null,
+      "gateway_ipv4": "_computed_",
+      "id": "_computed_",
+      "ipv4_range": "_computed_",
       "name": "main-network",
       "project": "gcp-foundation-shared-devops",
+      "routing_mode": "_computed_",
+      "self_link": "_computed_",
       "timeouts": null
     }
   }

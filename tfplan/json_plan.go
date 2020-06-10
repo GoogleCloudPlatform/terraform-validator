@@ -34,6 +34,12 @@ type jsonPlan struct {
 			ChildModules []childModule  `json:"child_modules"`
 		} `json:"root_module"`
 	} `json:"planned_values"`
+	ResourceChanges []struct {
+		Address string `json:"address"`
+		Change  struct {
+			AfterUnknown map[string]interface{} `json:"after_unknown"`
+		} `json:"change"`
+	} `json:"resource_changes"`
 }
 
 type childModule struct {
@@ -183,7 +189,55 @@ func readJSONResources(data []byte) ([]jsonResource, error) {
 	for _, module := range plan.PlannedValues.RootModules.ChildModules {
 		result = append(result, resourcesFromModule(&module, 0)...)
 	}
+
+	resources := make(map[string]*jsonResource)
+	for i, resource := range result {
+		resources[resource.Address] = &result[i]
+	}
+
+	// Inject computed values into resources
+	for _, change := range plan.ResourceChanges {
+		resource, ok := resources[change.Address]
+		if !ok {
+			continue
+		}
+		err = injectComputedMap(change.Change.AfterUnknown, resource.Values)
+	}
+
 	return result, nil
+}
+
+func injectComputedMap(changes map[string]interface{}, resource map[string]interface{}) error {
+	for key, val := range changes {
+		switch val.(type) {
+		case bool:
+			if val.(bool) {
+				resource[key] = "_computed_"
+			}
+		case []interface{}:
+			resourceValue, ok := resource[key]
+			if !ok {
+				resourceValue = make([]interface{}, 0)
+				log.Printf("Injected empty array at %v", key)
+			}
+			injectComputedArray(val.([]interface{}), resourceValue.([]interface{}))
+		default:
+			log.Printf("Unknown computed value found (key = %v): %v", key, val)
+		}
+	}
+	return nil
+}
+
+func injectComputedArray(changeValue []interface{}, resourceValue []interface{}) error {
+	for i, item := range changeValue {
+		if len(resourceValue) <= i {
+			resourceValue = append(resourceValue, make(map[string]interface{}))
+			log.Printf("Injected empty value at %v", i)
+		}
+		resourceItem := resourceValue[i]
+		injectComputedMap(item.(map[string]interface{}), resourceItem.(map[string]interface{}))
+	}
+	return nil
 }
 
 func resourcesFromModule(module *childModule, level int) []jsonResource {
