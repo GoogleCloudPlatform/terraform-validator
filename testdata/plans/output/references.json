@@ -1,0 +1,72 @@
+[
+  {
+    "module": "root",
+    "name": "main",
+    "address": "google_compute_instance.main",
+    "mode": "managed",
+    "type": "google_compute_instance",
+    "provider_name": "google",
+    "values": {
+      "allow_stopping_for_update": null,
+      "attached_disk": [],
+      "boot_disk": [
+        {
+          "auto_delete": true,
+          "disk_encryption_key_raw": null,
+          "initialize_params": [
+            {
+              "image": "debian-cloud/debian-9"
+            }
+          ],
+          "mode": "READ_WRITE"
+        }
+      ],
+      "can_ip_forward": false,
+      "deletion_protection": false,
+      "description": null,
+      "desired_status": null,
+      "enable_display": null,
+      "hostname": null,
+      "labels": null,
+      "machine_type": "f1-micro",
+      "metadata": null,
+      "metadata_startup_script": null,
+      "name": "main",
+      "network_interface": [
+        {
+          "access_config": [
+            {
+              "public_ptr_domain_name": null
+            }
+          ],
+          "alias_ip_range": [],
+          "network": "computed"
+        }
+      ],
+      "project": "gcp-foundation-shared-devops",
+      "resource_policies": null,
+      "scratch_disk": [],
+      "service_account": [],
+      "shielded_instance_config": [],
+      "tags": null,
+      "timeouts": null,
+      "zone": "us-central1-a"
+    }
+  },
+  {
+    "module": "root",
+    "name": "main",
+    "address": "google_compute_network.main",
+    "mode": "managed",
+    "type": "google_compute_network",
+    "provider_name": "google",
+    "values": {
+      "auto_create_subnetworks": true,
+      "delete_default_routes_on_create": false,
+      "description": null,
+      "name": "main-network",
+      "project": "gcp-foundation-shared-devops",
+      "timeouts": null
+    }
+  }
+]

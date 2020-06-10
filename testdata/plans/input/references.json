@@ -1,0 +1,285 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.12.24",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.main",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "main",
+          "provider_name": "google",
+          "schema_version": 6,
+          "values": {
+            "allow_stopping_for_update": null,
+            "attached_disk": [],
+            "boot_disk": [
+              {
+                "auto_delete": true,
+                "disk_encryption_key_raw": null,
+                "initialize_params": [
+                  {
+                    "image": "debian-cloud/debian-9"
+                  }
+                ],
+                "mode": "READ_WRITE"
+              }
+            ],
+            "can_ip_forward": false,
+            "deletion_protection": false,
+            "description": null,
+            "desired_status": null,
+            "enable_display": null,
+            "hostname": null,
+            "labels": null,
+            "machine_type": "f1-micro",
+            "metadata": null,
+            "metadata_startup_script": null,
+            "name": "main",
+            "network_interface": [
+              {
+                "access_config": [
+                  {
+                    "public_ptr_domain_name": null
+                  }
+                ],
+                "alias_ip_range": []
+              }
+            ],
+            "project": "gcp-foundation-shared-devops",
+            "resource_policies": null,
+            "scratch_disk": [],
+            "service_account": [],
+            "shielded_instance_config": [],
+            "tags": null,
+            "timeouts": null,
+            "zone": "us-central1-a"
+          }
+        },
+        {
+          "address": "google_compute_network.main",
+          "mode": "managed",
+          "type": "google_compute_network",
+          "name": "main",
+          "provider_name": "google",
+          "schema_version": 0,
+          "values": {
+            "auto_create_subnetworks": true,
+            "delete_default_routes_on_create": false,
+            "description": null,
+            "name": "main-network",
+            "project": "gcp-foundation-shared-devops",
+            "timeouts": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "google_compute_instance.main",
+      "mode": "managed",
+      "type": "google_compute_instance",
+      "name": "main",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allow_stopping_for_update": null,
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "auto_delete": true,
+              "disk_encryption_key_raw": null,
+              "initialize_params": [
+                {
+                  "image": "debian-cloud/debian-9"
+                }
+              ],
+              "mode": "READ_WRITE"
+            }
+          ],
+          "can_ip_forward": false,
+          "deletion_protection": false,
+          "description": null,
+          "desired_status": null,
+          "enable_display": null,
+          "hostname": null,
+          "labels": null,
+          "machine_type": "f1-micro",
+          "metadata": null,
+          "metadata_startup_script": null,
+          "name": "main",
+          "network_interface": [
+            {
+              "access_config": [
+                {
+                  "public_ptr_domain_name": null
+                }
+              ],
+              "alias_ip_range": []
+            }
+          ],
+          "project": "gcp-foundation-shared-devops",
+          "resource_policies": null,
+          "scratch_disk": [],
+          "service_account": [],
+          "shielded_instance_config": [],
+          "tags": null,
+          "timeouts": null,
+          "zone": "us-central1-a"
+        },
+        "after_unknown": {
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "device_name": true,
+              "disk_encryption_key_sha256": true,
+              "initialize_params": [
+                {
+                  "labels": true,
+                  "size": true,
+                  "type": true
+                }
+              ],
+              "kms_key_self_link": true,
+              "source": true
+            }
+          ],
+          "cpu_platform": true,
+          "current_status": true,
+          "guest_accelerator": true,
+          "id": true,
+          "instance_id": true,
+          "label_fingerprint": true,
+          "metadata_fingerprint": true,
+          "min_cpu_platform": true,
+          "network_interface": [
+            {
+              "access_config": [
+                {
+                  "nat_ip": true,
+                  "network_tier": true
+                }
+              ],
+              "alias_ip_range": [],
+              "name": true,
+              "network": true,
+              "network_ip": true,
+              "subnetwork": true,
+              "subnetwork_project": true
+            }
+          ],
+          "scheduling": true,
+          "scratch_disk": [],
+          "self_link": true,
+          "service_account": [],
+          "shielded_instance_config": [],
+          "tags_fingerprint": true
+        }
+      }
+    },
+    {
+      "address": "google_compute_network.main",
+      "mode": "managed",
+      "type": "google_compute_network",
+      "name": "main",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "auto_create_subnetworks": true,
+          "delete_default_routes_on_create": false,
+          "description": null,
+          "name": "main-network",
+          "project": "gcp-foundation-shared-devops",
+          "timeouts": null
+        },
+        "after_unknown": {
+          "gateway_ipv4": true,
+          "id": true,
+          "ipv4_range": true,
+          "routing_mode": true,
+          "self_link": true
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.main",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "main",
+          "provider_config_key": "google",
+          "expressions": {
+            "boot_disk": [
+              {
+                "initialize_params": [
+                  {
+                    "image": {
+                      "constant_value": "debian-cloud/debian-9"
+                    }
+                  }
+                ]
+              }
+            ],
+            "machine_type": {
+              "constant_value": "f1-micro"
+            },
+            "name": {
+              "constant_value": "main"
+            },
+            "network_interface": [
+              {
+                "access_config": [
+                  {}
+                ],
+                "network": {
+                  "references": [
+                    "google_compute_network.main"
+                  ]
+                }
+              }
+            ],
+            "project": {
+              "constant_value": "gcp-foundation-shared-devops"
+            },
+            "zone": {
+              "constant_value": "us-central1-a"
+            }
+          },
+          "schema_version": 6
+        },
+        {
+          "address": "google_compute_network.main",
+          "mode": "managed",
+          "type": "google_compute_network",
+          "name": "main",
+          "provider_config_key": "google",
+          "expressions": {
+            "auto_create_subnetworks": {
+              "constant_value": "true"
+            },
+            "name": {
+              "constant_value": "main-network"
+            },
+            "project": {
+              "constant_value": "gcp-foundation-shared-devops"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

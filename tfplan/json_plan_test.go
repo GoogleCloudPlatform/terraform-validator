@@ -2,6 +2,7 @@ package tfplan
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -26,6 +27,10 @@ func TestReadJSONResources(t *testing.T) {
 			"Test modules",
 			"modules.json",
 		},
+		{
+			"Computed references",
+			"references.json",
+		},
 	}
 
 	for _, tt := range tests {
@@ -43,11 +48,13 @@ func TestReadJSONResources(t *testing.T) {
 			}
 
 			got, err := readJSONResources(input)
+
 			if err != nil {
 				t.Fatalf("got error: %v", err)
 			}
 
 			gotJSON, err := json.Marshal(got)
+			fmt.Print(string(gotJSON))
 			if err != nil {
 				t.Fatalf("marshaling: %v", err)
 			}
