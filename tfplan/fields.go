@@ -15,7 +15,6 @@
 package tfplan
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
