@@ -25,6 +25,7 @@ import (
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 )
 
 var ErrDuplicateAsset = errors.New("duplicate asset")
@@ -51,15 +52,27 @@ func (nonImplementedResourceData) SetId(string)                  {}
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).
 type Asset struct {
-	Name      string         `json:"name"`
-	Type      string         `json:"asset_type"`
-	Ancestry  string         `json:"ancestry_path"`
-	Resource  *AssetResource `json:"resource,omitempty"`
-	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
+	Name          string         `json:"name"`
+	Type          string         `json:"asset_type"`
+	Ancestry      string         `json:"ancestry_path"`
+	Resource      *AssetResource `json:"resource,omitempty"`
+	IAMPolicy     *IAMPolicy     `json:"iam_policy,omitempty"`
+	ChangedFields []string       `json:"changed_fields"`
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
 	converterAsset converter.Asset
+}
+
+// HasChange indicates if the field is scheduled for any type of change.
+// If the field does not exist, this function return false.
+func (a *Asset) HasChange(field string) bool {
+	for _, v := range a.ChangedFields {
+		if v == field {
+			return true
+		}
+	}
+	return false
 }
 
 // IAMPolicy is the representation of a Cloud IAM policy set on a cloud resource.
@@ -169,6 +182,8 @@ func (c *Converter) AddResource(r TerraformResource) error {
 		if err != nil {
 			return errors.Wrap(err, "augmenting asset")
 		}
+		tmp := data.TerraformResource.(*tfplan.Resource)
+		augmented.ChangedFields = tmp.Changes
 		c.assets[key] = augmented
 	}
 

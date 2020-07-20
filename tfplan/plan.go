@@ -24,6 +24,8 @@ import (
 // Resource is the terraform representation of a resource.
 type Resource struct {
 	Path Fullpath
+	// Changes lists the fileds that have changed.
+	Changes []string
 	*fieldGetter
 }
 

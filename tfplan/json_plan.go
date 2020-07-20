@@ -27,6 +27,7 @@ import (
 const maxChildModuleLevel = 10000
 
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
+// https://www.terraform.io/docs/internals/json-format.html#plan-representation
 type jsonPlan struct {
 	PlannedValues struct {
 		RootModules struct {
@@ -34,6 +35,25 @@ type jsonPlan struct {
 			ChildModules []childModule  `json:"child_modules"`
 		} `json:"root_module"`
 	} `json:"planned_values"`
+	ResourceChanges []jsonResourceChange `json:"resource_changes"`
+}
+
+type jsonResourceChange struct {
+	Address string `json:"address"`
+	Kind    string `json:"type"`
+	Change  struct {
+		// Valid actions values are:
+		//    ["no-op"]
+		//    ["create"]
+		//    ["read"]
+		//    ["update"]
+		//    ["delete", "create"]
+		//    ["create", "delete"]
+		//    ["delete"]
+		Actions []string               `json:"actions"`
+		Before  map[string]interface{} `json:"before"`
+		After   map[string]interface{} `json:"after"`
+	} `json:"change"`
 }
 
 type childModule struct {
@@ -56,10 +76,22 @@ type jsonResource struct {
 // ComposeTF12Resources inspects a plan and returns the planned resources that match the provided resource schema map.
 // ComposeTF12Resources works in a same way as tfplan.ComposeResources and returns array of tfplan.Resource
 func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
-	resources, err := readJSONResources(data)
+	plan := jsonPlan{}
+	err := json.Unmarshal(data, &plan)
+	if err != nil {
+		return nil, err
+	}
+
+	resources, err := readJSONResources(plan)
 	if err != nil {
 		return nil, errors.Wrap(err, "read resources")
 	}
+
+	changes, err := readJSONResourceChanges(plan)
+	if err != nil {
+		return nil, err
+	}
+
 	var instances []Resource
 	for _, r := range resources {
 		sch, ok := schemas[r.Kind]
@@ -75,7 +107,8 @@ func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]R
 			Schema: sch.Schema,
 		}
 		instances = append(instances, Resource{
-			Path: Fullpath{r.Kind, r.Name, r.Module},
+			Path:    Fullpath{r.Kind, r.Name, r.Module},
+			Changes: changes[r.Address],
 			fieldGetter: &fieldGetter{
 				rdr:    reader,
 				schema: sch.Schema,
@@ -169,12 +202,7 @@ func attributes(value interface{}, address []string, res map[string]string, sche
 
 // readJSONResources unmarshal json data to go struct
 // and returns array of all jsonResources both from root and child modules.
-func readJSONResources(data []byte) ([]jsonResource, error) {
-	plan := jsonPlan{}
-	err := json.Unmarshal(data, &plan)
-	if err != nil {
-		return nil, err
-	}
+func readJSONResources(plan jsonPlan) ([]jsonResource, error) {
 	var result []jsonResource
 	for _, resource := range plan.PlannedValues.RootModules.Resources {
 		resource.Module = "root"
@@ -182,6 +210,29 @@ func readJSONResources(data []byte) ([]jsonResource, error) {
 	}
 	for _, module := range plan.PlannedValues.RootModules.ChildModules {
 		result = append(result, resourcesFromModule(&module, 0)...)
+	}
+	return result, nil
+}
+
+// readJSONResourceChanges parses the plan to determine what fields of a
+// resource have changed.
+func readJSONResourceChanges(plan jsonPlan) (map[string][]string, error) {
+	result := make(map[string][]string)
+	for _, resource := range plan.ResourceChanges {
+		change := resource.Change
+		// Always include the list, even if it's empty.
+		result[resource.Address] = make([]string, 0)
+		// Skip no-ops.
+		if change.Actions[0] == "no-op" {
+			continue
+		}
+		// I'm assuming that Before and After will have the exact same
+		// set of fields.
+		for key, value := range change.Before {
+			if change.After[key] != value {
+				result[resource.Address] = append(result[resource.Address], key)
+			}
+		}
 	}
 	return result, nil
 }
