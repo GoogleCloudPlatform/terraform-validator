@@ -27,6 +27,7 @@ import (
 const maxChildModuleLevel = 10000
 
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
+// https://www.terraform.io/docs/internals/json-format.html#plan-representation
 type jsonPlan struct {
 	PlannedValues struct {
 		RootModules struct {
@@ -34,6 +35,33 @@ type jsonPlan struct {
 			ChildModules []childModule  `json:"child_modules"`
 		} `json:"root_module"`
 	} `json:"planned_values"`
+	ResourceChanges []jsonResourceChange `json:"resource_changes"`
+}
+
+type jsonResourceChange struct {
+	Address      string `json:"address"`
+	Mode         string `json:"mode"`
+	Kind         string `json:"type"`
+	Name         string `json:"name"`
+	ProviderName string `json:"provider_name"`
+	Change       struct {
+		// Valid actions values are:
+		//    ["no-op"]
+		//    ["create"]
+		//    ["read"]
+		//    ["update"]
+		//    ["delete", "create"]
+		//    ["create", "delete"]
+		//    ["delete"]
+		Actions []string               `json:"actions"`
+		Before  map[string]interface{} `json:"before"`
+		After   map[string]interface{} `json:"after"`
+	} `json:"change"`
+}
+
+// isCreate returns true if the action on the resource is ["create"].
+func (c *jsonResourceChange) isCreate() bool {
+	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "create"
 }
 
 type childModule struct {
@@ -56,10 +84,28 @@ type jsonResource struct {
 // ComposeTF12Resources inspects a plan and returns the planned resources that match the provided resource schema map.
 // ComposeTF12Resources works in a same way as tfplan.ComposeResources and returns array of tfplan.Resource
 func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
-	resources, err := readJSONResources(data)
+	plan, err := readPlan(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "read resources")
+		return nil, err
 	}
+	resources := readPlannedJSONResources(plan)
+	return jsonToResources(resources, schemas), nil
+}
+
+// ComposeCurrentTF12Resources inspects a plan and returns the current resources that match the provided resource schema map.
+// This works the same as ComposeTF12Resources but operates on current rather than planned resources.
+func ComposeCurrentTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
+	plan, err := readPlan(data)
+	if err != nil {
+		return nil, err
+	}
+	resources := readCurrentJSONResources(plan)
+	return jsonToResources(resources, schemas), nil
+}
+
+// jsonToResource converts the jsonResources to tfplan.Resource using the provided schemas.
+// Any resources not supported by the schemas are silently skipped.
+func jsonToResources(resources []jsonResource, schemas map[string]*schema.Resource) []Resource {
 	var instances []Resource
 	for _, r := range resources {
 		sch, ok := schemas[r.Kind]
@@ -82,7 +128,18 @@ func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]R
 			},
 		})
 	}
-	return instances, nil
+	return instances
+}
+
+func jsonResourceFromChange(c jsonResourceChange) jsonResource {
+	return jsonResource{
+		Name:         c.Name,
+		Address:      c.Address,
+		Mode:         c.Mode,
+		Kind:         c.Kind,
+		ProviderName: c.ProviderName,
+		Values:       c.Change.Before,
+	}
 }
 
 // attributes function takes json parsed JSON object (value param) and fill map[string]string with it's
@@ -167,14 +224,20 @@ func attributes(value interface{}, address []string, res map[string]string, sche
 	}
 }
 
-// readJSONResources unmarshal json data to go struct
-// and returns array of all jsonResources both from root and child modules.
-func readJSONResources(data []byte) ([]jsonResource, error) {
+// readPlan converts the raw bytes into a jsonPlan
+func readPlan(data []byte) (jsonPlan, error) {
 	plan := jsonPlan{}
 	err := json.Unmarshal(data, &plan)
 	if err != nil {
-		return nil, err
+		return jsonPlan{}, errors.Wrap(err, "read resources")
 	}
+	return plan, nil
+}
+
+// readPlannedJSONResources reads a jsonPlan and returns an array of all
+// planned jsonResources.
+// This includes resources from both from root and child modules.
+func readPlannedJSONResources(plan jsonPlan) []jsonResource {
 	var result []jsonResource
 	for _, resource := range plan.PlannedValues.RootModules.Resources {
 		resource.Module = "root"
@@ -183,7 +246,27 @@ func readJSONResources(data []byte) ([]jsonResource, error) {
 	for _, module := range plan.PlannedValues.RootModules.ChildModules {
 		result = append(result, resourcesFromModule(&module, 0)...)
 	}
-	return result, nil
+	return result
+}
+
+// readCurrentJSONResources constructs jsonResources for the current state.
+func readCurrentJSONResources(plan jsonPlan) []jsonResource {
+	var result []jsonResource
+	for _, c := range plan.ResourceChanges {
+		// Ignore resources being created because they don't currently exist.
+		if c.isCreate() {
+			continue
+		}
+		result = append(result, jsonResource{
+			Name:         c.Name,
+			Address:      c.Address,
+			Mode:         c.Mode,
+			Kind:         c.Kind,
+			ProviderName: c.ProviderName,
+			Values:       c.Change.Before,
+		})
+	}
+	return result
 }
 
 func resourcesFromModule(module *childModule, level int) []jsonResource {
