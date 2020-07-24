@@ -37,27 +37,18 @@ import (
 // than fetching the ancestry information using Google API.
 // It ignores non-supported resources.
 func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline bool) ([]google.Asset, error) {
-	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
-	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
+	converter, err := newConverter(ctx, path, project, ancestry, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
-	}
-	converter, err := google.NewConverter(ctx, ancestryManager, project, "", offline)
-	if err != nil {
-		return nil, errors.Wrap(err, "building google converter")
+		return nil, err
 	}
 
 	var resources []tfplan.Resource
 
 	switch version.LeastSupportedVersion() {
 	case version.TF12:
-		if ".json" != filepath.Ext(path) {
-			return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
-		}
-		// JSON format means Terraform 12
-		data, err := ioutil.ReadFile(path)
+		data, err := readTF12Data(path)
 		if err != nil {
-			return nil, errors.Wrap(err, "opening JSON plan file")
+			return nil, err
 		}
 
 		resources, err = tfplan.ComposeTF12Resources(data, converter.Schemas())
@@ -100,6 +91,74 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 	}
 
 	return converter.Assets(), nil
+}
+
+// ReadCurrentAssets extracts CAI assets from a terraform plan file.
+// This is the same as ReadPlannedAssets, but operates on the current rather than
+// the planned resources.
+// Only supports version.TF12
+func ReadCurrentAssets(ctx context.Context, path, project, ancestry string, offline bool) ([]google.Asset, error) {
+	converter, err := newConverter(ctx, path, project, ancestry, offline)
+	if err != nil {
+		return nil, err
+	}
+
+	var resources []tfplan.Resource
+
+	switch version.LeastSupportedVersion() {
+	case version.TF12:
+		data, err := readTF12Data(path)
+		if err != nil {
+			return nil, err
+		}
+		if ".json" != filepath.Ext(path) {
+			return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
+		}
+
+		resources, err = tfplan.ComposeCurrentTF12Resources(data, converter.Schemas())
+		if err != nil {
+			return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
+		}
+	default:
+		return nil, fmt.Errorf("terraform version %s is not supported by this version of validator, see README.md to switch to the right version", version.LeastSupportedVersion())
+	}
+
+	for _, r := range resources {
+		if err := converter.AddResource(&r); err != nil {
+			if errors.Cause(err) == google.ErrDuplicateAsset {
+				glog.Warningf("converting resource: %v", err)
+			} else {
+				return nil, errors.Wrapf(err, "converting resource %v", r.Kind())
+			}
+		}
+	}
+
+	return converter.Assets(), nil
+}
+
+func newConverter(ctx context.Context, path, project, ancestry string, offline bool) (*google.Converter, error) {
+	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
+	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing resource manager client")
+	}
+	converter, err := google.NewConverter(ctx, ancestryManager, project, "", offline)
+	if err != nil {
+		return nil, errors.Wrap(err, "building google converter")
+	}
+	return converter, nil
+}
+
+func readTF12Data(path string) ([]byte, error) {
+	if ".json" != filepath.Ext(path) {
+		return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
+	}
+	// JSON format means Terraform 12
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "opening JSON plan file")
+	}
+	return data, nil
 }
 
 var ErrParsingProviderProject = errors.New("unable to parse provider project")
