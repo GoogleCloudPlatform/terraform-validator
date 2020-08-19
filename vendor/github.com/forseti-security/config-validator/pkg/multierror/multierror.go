@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package multierror
 
 import (
@@ -26,10 +40,11 @@ func (errs errorImpl) Format(s fmt.State, verb rune) {
 		_, _ = fmt.Fprintf(s, "errors (%d):\n", len(errs))
 		for _, err := range errs {
 			if formatter, ok := err.(fmt.Formatter); ok {
+				_, _ = io.WriteString(s, "  ")
 				formatter.Format(s, verb)
 				_, _ = io.WriteString(s, "\n")
 			} else {
-				_, _ = fmt.Fprintf(s, "%v\n", err)
+				_, _ = fmt.Fprintf(s, "  %v\n", err)
 			}
 		}
 
@@ -60,6 +75,10 @@ func (e *Errors) Empty() bool {
 
 func (e *Errors) Add(err error) {
 	if err == nil {
+		return
+	}
+	if ei, ok := err.(errorImpl); ok {
+		e.errs = append(e.errs, ei...)
 		return
 	}
 	e.errs = append(e.errs, err)

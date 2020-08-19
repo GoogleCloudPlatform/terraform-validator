@@ -16,165 +16,57 @@
 package configs
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"os"
-	"path/filepath"
+	"github.com/golang/glog"
+	"regexp"
+	"sort"
 	"strings"
 
-	"github.com/ghodss/yaml"
+	"github.com/forseti-security/config-validator/pkg/multierror"
+	cfapis "github.com/open-policy-agent/frameworks/constraint/pkg/apis"
+	cfv1alpha1 "github.com/open-policy-agent/frameworks/constraint/pkg/apis/templates/v1alpha1"
+	cftemplates "github.com/open-policy-agent/frameworks/constraint/pkg/core/templates"
+	"github.com/open-policy-agent/frameworks/constraint/pkg/regorewriter"
 	"github.com/pkg/errors"
-	"github.com/smallfish/simpleyaml"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
-	"github.com/forseti-security/config-validator/pkg/api/validator"
-	"github.com/golang/protobuf/jsonpb"
-	pb "github.com/golang/protobuf/ptypes/struct"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/kubectl/pkg/scheme"
 )
 
-type yamlFile struct {
-	source       string // helpful information to rediscover this data
-	yaml         *simpleyaml.Yaml
-	fileContents []byte
-}
-
-// UnclassifiedConfig stores loosely parsed information not specific to constraints or templates.
-type UnclassifiedConfig struct {
-	Group        string
-	MetadataName string
-	Kind         string
-	Yaml         *simpleyaml.Yaml
-	// keep the file path to help debug logging
-	FilePath string
-	// Preserve the raw user data to forward into rego
-	// This prevents any data loss issues from going though parsing libraries.
-	RawFile string
-}
-
-// ConstraintTemplate stores parsed information including the raw data.
-type ConstraintTemplate struct {
-	Confg *UnclassifiedConfig
-	// This is the kind that this template generates.
-	GeneratedKind string
-	Rego          string
-}
-
-// Constraint stores parsed information including the raw data.
-type Constraint struct {
-	Confg *UnclassifiedConfig
+func init() {
+	utilruntime.Must(cfapis.AddToScheme(scheme.Scheme))
+	utilruntime.Must(apiextensions.AddToScheme(scheme.Scheme))
+	utilruntime.Must(apiextensionsv1beta1.AddToScheme(scheme.Scheme))
 }
 
 const (
-	validTemplateGroup   = "templates.gatekeeper.sh/v1alpha1"
-	validConstraintGroup = "constraints.gatekeeper.sh/v1alpha1"
-	expectedTarget       = "validation.gcp.forsetisecurity.org"
+	K8STargetName = "admission.k8s.gatekeeper.sh"
 )
 
-// AsInterface returns the the config data as a structured golang object. This uses yaml.Unmarshal to create this object.
-func (c *UnclassifiedConfig) AsInterface() (interface{}, error) {
-	// Use yaml.Unmarshal to create a proper golang object that maintains the same structure
-	var f interface{}
-	if err := yaml.Unmarshal([]byte(c.RawFile), &f); err != nil {
-		return nil, errors.Wrap(err, "converting from yaml")
-	}
-	return f, nil
-}
+const (
+	constraintGroup = "constraints.gatekeeper.sh"
+	expectedTarget  = "validation.gcp.forsetisecurity.org"
+	yamlPath        = expectedTarget + "/yamlpath"
+	OriginalName    = expectedTarget + "/originalName"
+)
 
-// asConstraint attempts to convert to constraint
-// Returns:
-//   *Constraint: only set if valid constraint
-//   bool: (always set) if this is a constraint
-func asConstraint(data *UnclassifiedConfig) (*Constraint, error) {
-	// There is no validation matching this constraint to the template here that happens after
-	// basic parsing has happened when we have more context.
-	if data.Group != validConstraintGroup {
-		return nil, fmt.Errorf("group expected to be %s not %s", validConstraintGroup, data.Group)
-	}
-	if data.Kind == "ConstraintTemplate" {
-		return nil, fmt.Errorf("kind should not be ConstraintTemplate")
-	}
-	return &Constraint{
-		Confg: data,
-	}, nil
-}
+const (
+	gcpConstraint = "gcp"
+	k8sConstraint = "k8s"
+)
 
-// AsProto returns the constraint a Kubernetes proto
-func (c *Constraint) AsProto() (*validator.Constraint, error) {
-	ci, err := c.Confg.AsInterface()
-	if err != nil {
-		return nil, errors.Wrap(err, "converting to proto")
-	}
-	cp := &validator.Constraint{}
-
-	metadata, err := convertToProtoVal(ci.(map[string]interface{})["metadata"])
-	if err != nil {
-		return nil, errors.Wrap(err, "converting to proto")
-	}
-	cp.Metadata = metadata
-
-	return cp, nil
-}
-
-// asConstraintTemplate attempts to convert to template
-// Returns:
-//   *ConstraintTemplate: only set if valid template
-//   bool: (always set) if this is a template
-func asConstraintTemplate(data *UnclassifiedConfig) (*ConstraintTemplate, error) {
-	if data.Group != validTemplateGroup {
-		return nil, fmt.Errorf("group expected to be %s not %s", validTemplateGroup, data.Group)
-	}
-	if data.Kind != "ConstraintTemplate" {
-		return nil, fmt.Errorf("kind expected to be ConstraintTemplate not %s", data.Kind)
-	}
-	generatedKind, err := data.Yaml.GetPath("spec", "crd", "spec", "names", "kind").String()
-	if err != nil {
-		return nil, err // field expected to exist
-	}
-	rego, err := extractRego(data.Yaml)
-	if err != nil {
-		return nil, err // field expected to exist
-	}
-	return &ConstraintTemplate{
-		Confg:         data,
-		GeneratedKind: generatedKind,
-		Rego:          rego,
-	}, nil
-}
-
-func extractRego(yaml *simpleyaml.Yaml) (string, error) {
-	targets := yaml.GetPath("spec", "targets")
-	if !targets.IsArray() {
-		// Old format looks like the following
-		// targets:
-		//   validation.gcp.forsetisecurity.org:
-		//     rego:
-		return targets.GetPath(expectedTarget, "rego").String()
-	}
-	// New format looks like the following
-	// targets:
-	//  - target: validation.gcp.forsetisecurity.org
-	//    rego:
-	size, err := targets.GetArraySize()
-	if err != nil {
-		return "", err
-	}
-	for i := 0; i < size; i++ {
-		target := targets.GetIndex(i)
-		targetString, err := target.Get("target").String()
-		if err != nil {
-			return "", err
-		}
-		if targetString == expectedTarget {
-			return target.Get("rego").String()
-		}
-	}
-
-	return "", status.Error(codes.InvalidArgument, "Unable to locate rego field in constraint template")
-}
+var (
+	// templateGK is the GroupKind for ConstraintTemplate types.
+	TemplateGK = schema.GroupKind{Group: cfv1alpha1.SchemeGroupVersion.Group, Kind: "ConstraintTemplate"}
+)
 
 func arrayFilterSuffix(arr []string, suffix string) []string {
-	filteredList := []string{}
+	var filteredList []string
 	for _, s := range arr {
 		if strings.HasSuffix(strings.ToLower(s), strings.ToLower(suffix)) {
 			filteredList = append(filteredList, s)
@@ -183,104 +75,405 @@ func arrayFilterSuffix(arr []string, suffix string) []string {
 	return filteredList
 }
 
-// listFiles returns a list of files under a dir. Errors will be grpc errors.
-func listFiles(dir string) ([]string, error) {
-	files := []string{}
+func setAnnotation(u *unstructured.Unstructured, key, value string) {
+	annotations := u.GetAnnotations()
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+	annotations[key] = value
+	u.SetAnnotations(annotations)
+}
 
-	visit := func(path string, f os.FileInfo, err error) error {
+// LoadUnstructured loads .yaml files from the provided directories as k8s
+// unstructured.Unstructured types.
+func LoadUnstructured(dirs []string) ([]*unstructured.Unstructured, error) {
+	var files []File
+	for _, dir := range dirs {
+		dirPath, err := NewPath(dir)
 		if err != nil {
-			return errors.Wrapf(err, "error visiting path %s", path)
+			return nil, err
 		}
-		if !f.IsDir() {
-			files = append(files, path)
+		dirFiles, err := dirPath.ReadAll(context.Background(), SuffixPredicate(".yaml"))
+		if err != nil {
+			return nil, err
 		}
+		files = append(files, dirFiles...)
+	}
+
+	var yamlDocs []*unstructured.Unstructured
+	for _, file := range files {
+		documents := strings.Split(string(file.Content), "\n---")
+		for _, rawDoc := range documents {
+			document := strings.TrimLeft(rawDoc, "\n ")
+			if len(document) == 0 {
+				continue
+			}
+
+			var u unstructured.Unstructured
+			_, _, err := scheme.Codecs.UniversalDeserializer().Decode([]byte(document), nil, &u)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to decode %s", file)
+			}
+
+			setAnnotation(&u, yamlPath, file.Path)
+			yamlDocs = append(yamlDocs, &u)
+		}
+	}
+	if len(yamlDocs) == 0 {
+		return nil, fmt.Errorf("zero configurations found in the provided directories: %v", dirs)
+	}
+	return yamlDocs, nil
+}
+
+const regoAdapter = `
+violation[{"msg": message, "details": metadata}] {
+	deny[{"msg": message, "details": metadata}] with input as {"asset": input.review, "constraint": {"spec": {"parameters": input.parameters}}}
+}
+`
+
+func injectRegoAdapter(rego string) string {
+	return rego + "\n" + regoAdapter
+}
+
+// convertLegacyConstraintTemplate handles converting a legacy forseti v1alpha1 ConstraintTemplate
+// to a constraint framework v1alpha1 ConstraintTemplate.
+func convertLegacyConstraintTemplate(u *unstructured.Unstructured, regoLib []string) error {
+	targetMap, found, err := unstructured.NestedMap(u.Object, "spec", "targets")
+	if err != nil && !found {
 		return nil
 	}
 
-	err := filepath.Walk(dir, visit)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+	if u.GroupVersionKind().Version != "v1alpha1" {
+		return errors.Errorf("only v1alpha1 constraint templates are eligible for legacy conversion")
 	}
-	return files, nil
+
+	// Make name match kind as appropriate
+	ctKind, found, err := unstructured.NestedString(u.Object, "spec", "crd", "spec", "names", "kind")
+	if err != nil {
+		return errors.Wrapf(err, "invalid kind at spec.crd.spec.names.kind")
+	}
+	if !found {
+		return errors.Errorf("No kind found at spec.crd.spec.names.kind")
+	}
+
+	if len(targetMap) != 1 {
+		return errors.Errorf("got invalid number of targets %d", len(targetMap))
+	}
+
+	// Transcode target
+	var targets []interface{}
+	for name, targetIface := range targetMap {
+		legacyTarget, ok := targetIface.(map[string]interface{})
+		if !ok {
+			return errors.Errorf("wrong type in legacy target")
+		}
+
+		target := map[string]interface{}{}
+		regoIface, found := legacyTarget["rego"]
+		if !found {
+			return errors.Errorf("no rego specified in template")
+		}
+		rego, ok := regoIface.(string)
+		if !ok {
+			return errors.Errorf("failed to get rego from template")
+		}
+
+		rr, err := regorewriter.New(regorewriter.NewPackagePrefixer("lib"), []string{"data.validator"}, nil)
+		if err != nil {
+			return errors.Wrapf(err, "failed to create rego rewriter")
+		}
+		for idx, lib := range regoLib {
+			if err := rr.AddLib(fmt.Sprintf("idx-%d.rego", idx), lib); err != nil {
+				return errors.Wrapf(err, "failed to add lib %d", idx)
+			}
+		}
+		if err := rr.AddEntryPoint("template-rego", injectRegoAdapter(rego)); err != nil {
+			return errors.Wrapf(err, "failed to add source")
+		}
+		srcs, err := rr.Rewrite()
+		if err != nil {
+			return errors.Wrapf(err, "failed to rewrite")
+		}
+
+		if len(srcs.EntryPoints) != 1 {
+			return errors.Errorf("invalid number of entrypoints")
+		}
+
+		newRego, err := srcs.EntryPoints[0].Content()
+		if err != nil {
+			return errors.Wrapf(err, "failed to convert rego to bytes")
+		}
+		var libs []interface{}
+		for _, lib := range srcs.Libs {
+			libBytes, err := lib.Content()
+			if err != nil {
+				return errors.Wrapf(err, "failed to convert lib to bytes")
+			}
+			libs = append(libs, string(libBytes))
+		}
+
+		target["rego"] = string(newRego)
+		target["libs"] = libs
+		target["target"] = name
+		targets = append(targets, target)
+	}
+
+	if err := unstructured.SetNestedSlice(u.Object, targets, "spec", "targets"); err != nil {
+		return errors.Wrapf(err, "failed to set transcoded target spec")
+	}
+	originalName := u.GetName()
+	u.SetName(strings.ToLower(ctKind))
+	setAnnotation(u, OriginalName, originalName)
+	return nil
 }
 
-// ListYAMLFiles returns a list of YAML files under a dir. Errors will be grpc errors.
-func ListYAMLFiles(dir string) ([]string, error) {
-	files, err := listFiles(dir)
+var terminatingStarRegex = regexp.MustCompilePOSIX(`/\*$`)
+var starRegex = regexp.MustCompilePOSIX(`/\*/`)
+
+func fixLegacyMatcher(ancestry string) string {
+	normalized := NormalizeAncestry(ancestry)
+	return starRegex.ReplaceAllString(
+		terminatingStarRegex.ReplaceAllString(normalized, "/**"),
+		"/**/",
+	)
+}
+
+func NormalizeAncestry(val string) string {
+	for _, r := range []struct {
+		old string
+		new string
+	}{
+		{"organization/", "organizations/"},
+		{"folder/", "folders/"},
+		{"project/", "projects/"},
+	} {
+		val = strings.ReplaceAll(val, r.old, r.new)
+	}
+	return val
+}
+
+func convertLegacyResourceName(u *unstructured.Unstructured) {
+	originalName := u.GetName()
+	compatibleName := strings.ReplaceAll(strings.ToLower(originalName), "_", "-")
+	if originalName == compatibleName {
+		return
+	}
+	u.SetName(compatibleName)
+	setAnnotation(u, OriginalName, originalName)
+}
+
+func convertLegacyCRM(obj map[string]interface{}, field ...string) error {
+	strs, found, err := unstructured.NestedStringSlice(obj, field...)
+	if err != nil {
+		return errors.Wrapf(err, "invalid field type for %s", field)
+	}
+	if !found {
+		return nil
+	}
+	for idx, val := range strs {
+		strs[idx] = fixLegacyMatcher(val)
+	}
+	return unstructured.SetNestedStringSlice(obj, strs, field...)
+}
+
+func convertLegacyConstraint(u *unstructured.Unstructured) error {
+	convertLegacyResourceName(u)
+	if err := convertLegacyCRM(u.Object, "spec", "match", "target"); err != nil {
+		return err
+	}
+	if err := convertLegacyCRM(u.Object, "spec", "match", "exclude"); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Configuration represents the configuration files fed into FCV.
+type Configuration struct {
+	GCPTemplates   []*cftemplates.ConstraintTemplate // Constraint Templates for GCP
+	GCPConstraints []*unstructured.Unstructured      // Constraints for GCP
+	K8STemplates   []*cftemplates.ConstraintTemplate // Constraint Templates for GKE
+	K8SConstraints []*unstructured.Unstructured      // Constraints for GKE
+
+	// regoLib contains the set of rego libraries, it is only used during construction of Configuration
+	regoLib []string
+	// allConstraints contains all input constraints, it is only used during construction of Configuration
+	allConstraints []*unstructured.Unstructured
+	// templateNames is a set of the names of all templates for checking exclusivity.
+	templateNames map[string]*cftemplates.ConstraintTemplate
+	// templateNames is a set of the kinds of all templates for checking exclusivity.
+	templateKinds map[string]*cftemplates.ConstraintTemplate
+}
+
+func newConfiguration() *Configuration {
+	return &Configuration{
+		templateNames: map[string]*cftemplates.ConstraintTemplate{},
+		templateKinds: map[string]*cftemplates.ConstraintTemplate{},
+	}
+}
+
+func loadRegoFiles(dir string) ([]string, error) {
+	dirPath, err := NewPath(dir)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to handle path for %s", dir)
+	}
+
+	files, err := dirPath.ReadAll(context.Background(), SuffixPredicate(".rego"))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read files from %s", dir)
+	}
+
+	var libs []string
+	for _, f := range files {
+		libs = append(libs, string(f.Content))
+	}
+	sort.Strings(libs)
+	return libs, nil
+}
+
+func (c *Configuration) loadUnstructured(u *unstructured.Unstructured) error {
+	switch {
+	case u.GroupVersionKind().GroupKind() == TemplateGK:
+		switch u.GroupVersionKind().Version {
+		case "v1alpha1":
+			openAPIResult := configValidatorV1Alpha1SchemaValidator.Validate(u.Object)
+			if openAPIResult.HasErrorsOrWarnings() {
+				return errors.Wrapf(openAPIResult.AsError(), "v1alpha1 validation failure")
+			}
+
+			if err := convertLegacyConstraintTemplate(u, c.regoLib); err != nil {
+				return errors.Wrapf(err, "failed to convert legacy forseti ConstraintTemplate "+
+					"to ConstraintFramework format, this is likely due to an issue in the spec.crd.spec.validation field")
+			}
+		case "v1beta1":
+			openAPIResult := configValidatorV1Beta1SchemaValidator.Validate(u.Object)
+			if openAPIResult.HasErrorsOrWarnings() {
+				return errors.Wrapf(openAPIResult.AsError(), "v1alpha1 validation failure")
+			}
+		default:
+			return errors.Errorf("unrecognized ConstraintTemplate version %s", u.GroupVersionKind().Version)
+		}
+
+		groupVersioner := runtime.GroupVersioner(schema.GroupVersions(scheme.Scheme.PrioritizedVersionsAllGroups()))
+		obj, err := scheme.Scheme.ConvertToVersion(u, groupVersioner)
+		if err != nil {
+			return errors.Wrapf(err, "failed to convert unstructured ConstraintTemplate to versioned")
+		}
+
+		var ct cftemplates.ConstraintTemplate
+		if err := scheme.Scheme.Convert(obj, &ct, nil); err != nil {
+			return errors.Wrapf(err, "failed to convert to versioned constraint template internal struct")
+		}
+
+		if dup, found := c.templateNames[ct.Name]; found {
+			return errors.Errorf(
+				"ConstraintTemplate %q declared at path %q has duplicate name conflict with template declared at path %q",
+				ct.Name, ct.GetAnnotations()[yamlPath], dup.GetAnnotations()[yamlPath])
+		}
+		c.templateNames[ct.Name] = &ct
+		if dup, found := c.templateKinds[ct.Name]; found {
+			return errors.Errorf(
+				"ConstraintTemplate %q crd kind %q declared at path %q has duplicate kind conflict with template declared at path %q",
+				ct.Name, ct.Spec.CRD.Spec.Names.Kind, ct.GetAnnotations()[yamlPath], dup.GetAnnotations()[yamlPath])
+		}
+		c.templateKinds[ct.Name] = &ct
+
+		for _, target := range ct.Spec.Targets {
+			switch target.Target {
+			// TODO: Using consant from gcptarget package causes circular reference.  Fix circular reference and use gcptarget.Name
+			case "validation.gcp.forsetisecurity.org":
+				c.GCPTemplates = append(c.GCPTemplates, &ct)
+			case K8STargetName:
+				c.K8STemplates = append(c.K8STemplates, &ct)
+			default:
+				return errors.Errorf("")
+			}
+		}
+
+	case u.GroupVersionKind().Group == constraintGroup:
+		c.allConstraints = append(c.allConstraints, u)
+
+	case u.GroupVersionKind().Group == cfv1alpha1.SchemeGroupVersion.Group:
+		return errors.Errorf("unexpected data type %s in group %s", u.GroupVersionKind(), cfv1alpha1.SchemeGroupVersion.Group)
+
+	default:
+		glog.V(1).Infof("Ignoring %s %s", u.GroupVersionKind(), u.GetName())
+	}
+	return nil
+}
+
+func (c *Configuration) finishLoad() error {
+	templates := map[string]string{}
+	for _, t := range c.GCPTemplates {
+		templates[t.Spec.CRD.Spec.Names.Kind] = gcpConstraint
+	}
+	for _, t := range c.K8STemplates {
+		templates[t.Spec.CRD.Spec.Names.Kind] = k8sConstraint
+	}
+
+	byTemplate := map[string]map[string]*unstructured.Unstructured{}
+	allConstraints := c.allConstraints
+	c.allConstraints = nil
+	for _, constraint := range allConstraints {
+		gvk := constraint.GroupVersionKind()
+		if gvk.Version == "v1alpha1" {
+			if err := convertLegacyConstraint(constraint); err != nil {
+				return errors.Wrapf(err, "failed to convert constraint")
+			}
+		}
+
+		templateConstraints, found := byTemplate[constraint.GetKind()]
+		if !found {
+			templateConstraints = map[string]*unstructured.Unstructured{}
+			byTemplate[constraint.GetKind()] = templateConstraints
+		}
+		if dup, found := templateConstraints[constraint.GetName()]; found {
+			return errors.Errorf(
+				"Constraint %q declared at path %q has duplicate name conflict with constraint declared at path %q",
+				dup.GetName(), dup.GetAnnotations()[yamlPath], constraint.GetAnnotations()[yamlPath])
+		}
+
+		switch templates[gvk.Kind] {
+		case gcpConstraint:
+			c.GCPConstraints = append(c.GCPConstraints, constraint)
+		case k8sConstraint:
+			c.K8SConstraints = append(c.K8SConstraints, constraint)
+		default:
+			return errors.Errorf("constraint %s does not correspond to any templates", gvk)
+		}
+	}
+	return nil
+}
+
+// NewConfiguration returns the configuration from the list of provided directories.
+func NewConfiguration(dirs []string, libDir string) (*Configuration, error) {
+	unstructuredObjects, err := LoadUnstructured(dirs)
 	if err != nil {
 		return nil, err
 	}
-	return arrayFilterSuffix(files, ".yaml"), nil
-}
 
-// ListRegoFiles returns a list of rego files under a dir. Errors will be grpc errors.
-func ListRegoFiles(dir string) ([]string, error) {
-	files, err := listFiles(dir)
+	regoLib, err := loadRegoFiles(libDir)
 	if err != nil {
 		return nil, err
 	}
-	return arrayFilterSuffix(files, ".rego"), nil
-}
 
-// convertYAMLToUnclassifiedConfig converts yaml file to an unclassified config, if expected fields don't exist, a log message is printed and the config is skipped.
-func convertYAMLToUnclassifiedConfig(config *yamlFile) (*UnclassifiedConfig, error) {
-	kind, err := config.yaml.Get("kind").String()
-	if err != nil {
-		return nil, fmt.Errorf("error in converting %s: %v", config.source, err)
+	configuration := newConfiguration()
+	configuration.regoLib = regoLib
+	var errs multierror.Errors
+	for _, u := range unstructuredObjects {
+		if err := configuration.loadUnstructured(u); err != nil {
+			yamlPath := u.GetAnnotations()[yamlPath]
+			name := u.GetName()
+			errs.Add(errors.Wrapf(err, "failed to load resource %s %s", yamlPath, name))
+		}
 	}
-	group, err := config.yaml.Get("apiVersion").String()
-	if err != nil {
-		return nil, fmt.Errorf("error in converting %s: %v", config.source, err)
-	}
-	metadataName, err := config.yaml.GetPath("metadata", "name").String()
-	if err != nil {
-		return nil, fmt.Errorf("error in converting %s: %v", config.source, err)
-	}
-	convertedConfig := &UnclassifiedConfig{
-		Group:        group,
-		MetadataName: metadataName,
-		Kind:         kind,
-		Yaml:         config.yaml,
-		FilePath:     config.source,
-		RawFile:      string(config.fileContents),
-	}
-	return convertedConfig, nil
-}
+	if !errs.Empty() {
+		return nil, errs.ToError()
 
-// Returns either a *ConstraintTemplate or a *Constraint or an error
-// dataSource should be helpful documentation to help rediscover the source of this information.
-func CategorizeYAMLFile(data []byte, dataSource string) (interface{}, error) {
-	y, err := simpleyaml.NewYaml(data)
-	if err != nil {
-		return nil, err
-	}
-	unclassified, err := convertYAMLToUnclassifiedConfig(&yamlFile{
-		yaml:         y,
-		fileContents: data,
-		source:       dataSource,
-	})
-	if err != nil {
-		return nil, err
-	}
-	switch unclassified.Group {
-	case validTemplateGroup:
-		return asConstraintTemplate(unclassified)
-	case validConstraintGroup:
-		return asConstraint(unclassified)
-	}
-	return nil, fmt.Errorf("unable to determine configuration type for data %s", dataSource)
-}
-
-func convertToProtoVal(from interface{}) (*pb.Value, error) {
-	to := &pb.Value{}
-	jsn, err := json.Marshal(from)
-	if err != nil {
-		return nil, errors.Wrap(err, "marshalling to json")
 	}
 
-	if err := jsonpb.UnmarshalString(string(jsn), to); err != nil {
-		return nil, errors.Wrap(err, "unmarshalling to proto")
+	if err := configuration.finishLoad(); err != nil {
+		return nil, errors.Wrapf(err, "config error")
 	}
 
-	return to, nil
+	return configuration, nil
 }

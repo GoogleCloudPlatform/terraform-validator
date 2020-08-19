@@ -67,8 +67,10 @@ var DefaultBuiltins = [...]*Builtin{
 	ArrayConcat,
 	ArraySlice,
 
-	// Casting
+	// Conversions
 	ToNumber,
+
+	// Casts (DEPRECATED)
 	CastObject,
 	CastNull,
 	CastBoolean,
@@ -82,6 +84,7 @@ var DefaultBuiltins = [...]*Builtin{
 	GlobsMatch,
 	RegexTemplateMatch,
 	RegexFind,
+	RegexFindAllStringSubmatch,
 
 	// Sets
 	SetDiff,
@@ -100,7 +103,13 @@ var DefaultBuiltins = [...]*Builtin{
 	EndsWith,
 	Split,
 	Replace,
+	ReplaceN,
 	Trim,
+	TrimLeft,
+	TrimPrefix,
+	TrimRight,
+	TrimSuffix,
+	TrimSpace,
 	Sprintf,
 
 	// Encoding
@@ -116,6 +125,15 @@ var DefaultBuiltins = [...]*Builtin{
 	YAMLMarshal,
 	YAMLUnmarshal,
 
+	// Object Manipulation
+	ObjectUnion,
+	ObjectRemove,
+	ObjectFilter,
+	ObjectGet,
+
+	// JSON Object Manipulation
+	JSONFilter,
+
 	// Tokens
 	JWTDecode,
 	JWTVerifyRS256,
@@ -123,6 +141,8 @@ var DefaultBuiltins = [...]*Builtin{
 	JWTVerifyES256,
 	JWTVerifyHS256,
 	JWTDecodeVerify,
+	JWTEncodeSignRaw,
+	JWTEncodeSign,
 
 	// Time
 	NowNanos,
@@ -135,6 +155,9 @@ var DefaultBuiltins = [...]*Builtin{
 
 	// Crypto
 	CryptoX509ParseCertificates,
+	CryptoMd5,
+	CryptoSha1,
+	CryptoSha256,
 
 	// Graphs
 	WalkBuiltin,
@@ -168,10 +191,14 @@ var DefaultBuiltins = [...]*Builtin{
 	NetCIDROverlap,
 	NetCIDRIntersects,
 	NetCIDRContains,
+	NetCIDRExpand,
 
 	// Glob
 	GlobMatch,
 	GlobQuoteMeta,
+
+	// Units
+	UnitsParseBytes,
 }
 
 // BuiltinMap provides a convenient mapping of built-in names to
@@ -522,7 +549,7 @@ var ArraySlice = &Builtin{
 }
 
 /**
- * Casting
+ * Conversions
  */
 
 // ToNumber takes a string, bool, or number value and converts it to a number.
@@ -543,65 +570,6 @@ var ToNumber = &Builtin{
 	),
 }
 
-// CastArray checks the underlying type of the input. If it is array or set, an array
-// containing the values is returned. If it is not an array, an error is thrown.
-var CastArray = &Builtin{
-	Name: "cast_array",
-	Decl: types.NewFunction(
-		types.Args(types.A),
-		types.NewArray(nil, types.A),
-	),
-}
-
-// CastSet checks the underlying type of the input.
-// If it is a set, the set is returned.
-// If it is an array, the array is returned in set form (all duplicates removed)
-// If neither, an error is thrown
-var CastSet = &Builtin{
-	Name: "cast_set",
-	Decl: types.NewFunction(
-		types.Args(types.A),
-		types.NewSet(types.A),
-	),
-}
-
-// CastString returns input if it is a string; if not returns error.
-// For formatting variables, see sprintf
-var CastString = &Builtin{
-	Name: "cast_string",
-	Decl: types.NewFunction(
-		types.Args(types.A),
-		types.S,
-	),
-}
-
-// CastBoolean returns input if it is a boolean; if not returns error.
-var CastBoolean = &Builtin{
-	Name: "cast_boolean",
-	Decl: types.NewFunction(
-		types.Args(types.A),
-		types.B,
-	),
-}
-
-// CastNull returns null if input is null; if not returns error.
-var CastNull = &Builtin{
-	Name: "cast_null",
-	Decl: types.NewFunction(
-		types.Args(types.A),
-		types.NewNull(),
-	),
-}
-
-// CastObject returns the given object if it is null; throws an error otherwise
-var CastObject = &Builtin{
-	Name: "cast_object",
-	Decl: types.NewFunction(
-		types.Args(types.A),
-		types.NewObject(nil, types.NewDynamicProperty(types.A, types.A)),
-	),
-}
-
 /**
  * Regular Expressions
  */
@@ -616,6 +584,21 @@ var RegexMatch = &Builtin{
 			types.S,
 		),
 		types.B,
+	),
+}
+
+// RegexFindAllStringSubmatch returns an array of all successive matches of the expression.
+// It takes two strings and a number, the pattern, the value and number of matches to
+// return, -1 means all matches.
+var RegexFindAllStringSubmatch = &Builtin{
+	Name: "regex.find_all_string_submatch_n",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+			types.S,
+			types.N,
+		),
+		types.NewArray(nil, types.NewArray(nil, types.S)),
 	),
 }
 
@@ -634,7 +617,7 @@ var RegexTemplateMatch = &Builtin{
 	),
 }
 
-// RegexSplit splits the input string by the occurences of the given pattern.
+// RegexSplit splits the input string by the occurrences of the given pattern.
 var RegexSplit = &Builtin{
 	Name: "regex.split",
 	Decl: types.NewFunction(
@@ -813,13 +796,92 @@ var Replace = &Builtin{
 	),
 }
 
-// Trim returns the given string will all leading or trailing instances of the second
+// ReplaceN replaces a string from a list of old, new string pairs.
+// Replacements are performed in the order they appear in the target string, without overlapping matches.
+// The old string comparisons are done in argument order.
+var ReplaceN = &Builtin{
+	Name: "strings.replace_n",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(
+				nil,
+				types.NewDynamicProperty(
+					types.S,
+					types.S)),
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// Trim returns the given string with all leading or trailing instances of the second
 // argument removed.
 var Trim = &Builtin{
 	Name: "trim",
 	Decl: types.NewFunction(
 		types.Args(
 			types.S,
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// TrimLeft returns the given string with all leading instances of second argument removed.
+var TrimLeft = &Builtin{
+	Name: "trim_left",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// TrimPrefix returns the given string without the second argument prefix string.
+// If the given string doesn't start with prefix, it is returned unchanged.
+var TrimPrefix = &Builtin{
+	Name: "trim_prefix",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// TrimRight returns the given string with all trailing instances of second argument removed.
+var TrimRight = &Builtin{
+	Name: "trim_right",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// TrimSuffix returns the given string without the second argument suffix string.
+// If the given string doesn't end with suffix, it is returned unchanged.
+var TrimSuffix = &Builtin{
+	Name: "trim_suffix",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// TrimSpace return the given string with all leading and trailing white space removed.
+var TrimSpace = &Builtin{
+	Name: "trim_space",
+	Decl: types.NewFunction(
+		types.Args(
 			types.S,
 		),
 		types.S,
@@ -835,6 +897,18 @@ var Sprintf = &Builtin{
 			types.NewArray(nil, types.A),
 		),
 		types.S,
+	),
+}
+
+// UnitsParseBytes converts strings like 10GB, 5K, 4mb, and the like into an
+// integer number of bytes.
+var UnitsParseBytes = &Builtin{
+	Name: "units.parse_bytes",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+		),
+		types.N,
 	),
 }
 
@@ -856,6 +930,97 @@ var JSONUnmarshal = &Builtin{
 	Name: "json.unmarshal",
 	Decl: types.NewFunction(
 		types.Args(types.S),
+		types.A,
+	),
+}
+
+// JSONFilter filters the JSON object
+var JSONFilter = &Builtin{
+	Name: "json.filter",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(
+				nil,
+				types.NewDynamicProperty(types.A, types.A),
+			),
+			types.NewAny(
+				types.NewArray(
+					nil,
+					types.NewAny(
+						types.S,
+						types.NewArray(
+							nil,
+							types.A,
+						),
+					),
+				),
+				types.NewSet(
+					types.NewAny(
+						types.S,
+						types.NewArray(
+							nil,
+							types.A,
+						),
+					),
+				),
+			),
+		),
+		types.A,
+	),
+}
+
+// ObjectUnion creates a new object that is the asymmetric union of two objects
+var ObjectUnion = &Builtin{
+	Name: "object.union",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(
+				nil,
+				types.NewDynamicProperty(types.A, types.A),
+			),
+			types.NewObject(
+				nil,
+				types.NewDynamicProperty(types.A, types.A),
+			),
+		),
+		types.A,
+	),
+}
+
+// ObjectRemove Removes specified keys from an object
+var ObjectRemove = &Builtin{
+	Name: "object.remove",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(
+				nil,
+				types.NewDynamicProperty(types.A, types.A),
+			),
+			types.NewAny(
+				types.NewArray(nil, types.A),
+				types.NewSet(types.A),
+				types.NewObject(nil, types.NewDynamicProperty(types.A, types.A)),
+			),
+		),
+		types.A,
+	),
+}
+
+// ObjectFilter filters the object by keeping only specified keys
+var ObjectFilter = &Builtin{
+	Name: "object.filter",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(
+				nil,
+				types.NewDynamicProperty(types.A, types.A),
+			),
+			types.NewAny(
+				types.NewArray(nil, types.A),
+				types.NewSet(types.A),
+				types.NewObject(nil, types.NewDynamicProperty(types.A, types.A)),
+			),
+		),
 		types.A,
 	),
 }
@@ -1030,6 +1195,34 @@ var JWTDecodeVerify = &Builtin{
 	),
 }
 
+// JWTEncodeSignRaw encodes and optionally sign  a JSON Web Token.
+// Inputs are protected headers, payload, secret
+var JWTEncodeSignRaw = &Builtin{
+	Name: "io.jwt.encode_sign_raw",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+			types.S,
+			types.S,
+		),
+		types.S,
+	),
+}
+
+// JWTEncodeSign encodes and optionally sign  a JSON Web Token.
+// Inputs are protected headers, payload, secret
+var JWTEncodeSign = &Builtin{
+	Name: "io.jwt.encode_sign",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(nil, types.NewDynamicProperty(types.S, types.A)),
+			types.NewObject(nil, types.NewDynamicProperty(types.S, types.A)),
+			types.NewObject(nil, types.NewDynamicProperty(types.S, types.A)),
+		),
+		types.S,
+	),
+}
+
 /**
  * Time
  */
@@ -1078,7 +1271,12 @@ var ParseDurationNanos = &Builtin{
 var Date = &Builtin{
 	Name: "time.date",
 	Decl: types.NewFunction(
-		types.Args(types.N),
+		types.Args(
+			types.NewAny(
+				types.N,
+				types.NewArray([]types.Type{types.N, types.S}, nil),
+			),
+		),
 		types.NewArray([]types.Type{types.N, types.N, types.N}, nil),
 	),
 }
@@ -1087,7 +1285,12 @@ var Date = &Builtin{
 var Clock = &Builtin{
 	Name: "time.clock",
 	Decl: types.NewFunction(
-		types.Args(types.N),
+		types.Args(
+			types.NewAny(
+				types.N,
+				types.NewArray([]types.Type{types.N, types.S}, nil),
+			),
+		),
 		types.NewArray([]types.Type{types.N, types.N, types.N}, nil),
 	),
 }
@@ -1096,7 +1299,12 @@ var Clock = &Builtin{
 var Weekday = &Builtin{
 	Name: "time.weekday",
 	Decl: types.NewFunction(
-		types.Args(types.N),
+		types.Args(
+			types.NewAny(
+				types.N,
+				types.NewArray([]types.Type{types.N, types.S}, nil),
+			),
+		),
 		types.S,
 	),
 }
@@ -1113,6 +1321,33 @@ var CryptoX509ParseCertificates = &Builtin{
 	Decl: types.NewFunction(
 		types.Args(types.S),
 		types.NewArray(nil, types.NewObject(nil, types.NewDynamicProperty(types.S, types.A))),
+	),
+}
+
+// CryptoMd5 returns a string representing the input string hashed with the md5 function
+var CryptoMd5 = &Builtin{
+	Name: "crypto.md5",
+	Decl: types.NewFunction(
+		types.Args(types.S),
+		types.S,
+	),
+}
+
+// CryptoSha1 returns a string representing the input string hashed with the sha1 function
+var CryptoSha1 = &Builtin{
+	Name: "crypto.sha1",
+	Decl: types.NewFunction(
+		types.Args(types.S),
+		types.S,
+	),
+}
+
+// CryptoSha256 returns a string representing the input string hashed with the sha256 function
+var CryptoSha256 = &Builtin{
+	Name: "crypto.sha256",
+	Decl: types.NewFunction(
+		types.Args(types.S),
+		types.S,
 	),
 }
 
@@ -1384,6 +1619,17 @@ var NetCIDRIntersects = &Builtin{
 	),
 }
 
+// NetCIDRExpand returns a set of hosts inside the specified cidr.
+var NetCIDRExpand = &Builtin{
+	Name: "net.cidr_expand",
+	Decl: types.NewFunction(
+		types.Args(
+			types.S,
+		),
+		types.NewSet(types.S),
+	),
+}
+
 // NetCIDRContains checks if a cidr or ip is contained within another cidr and returns true or false
 var NetCIDRContains = &Builtin{
 	Name: "net.cidr_contains",
@@ -1421,6 +1667,79 @@ var NetCIDROverlap = &Builtin{
 			types.S,
 		),
 		types.B,
+	),
+}
+
+// CastArray checks the underlying type of the input. If it is array or set, an array
+// containing the values is returned. If it is not an array, an error is thrown.
+var CastArray = &Builtin{
+	Name: "cast_array",
+	Decl: types.NewFunction(
+		types.Args(types.A),
+		types.NewArray(nil, types.A),
+	),
+}
+
+// CastSet checks the underlying type of the input.
+// If it is a set, the set is returned.
+// If it is an array, the array is returned in set form (all duplicates removed)
+// If neither, an error is thrown
+var CastSet = &Builtin{
+	Name: "cast_set",
+	Decl: types.NewFunction(
+		types.Args(types.A),
+		types.NewSet(types.A),
+	),
+}
+
+// CastString returns input if it is a string; if not returns error.
+// For formatting variables, see sprintf
+var CastString = &Builtin{
+	Name: "cast_string",
+	Decl: types.NewFunction(
+		types.Args(types.A),
+		types.S,
+	),
+}
+
+// CastBoolean returns input if it is a boolean; if not returns error.
+var CastBoolean = &Builtin{
+	Name: "cast_boolean",
+	Decl: types.NewFunction(
+		types.Args(types.A),
+		types.B,
+	),
+}
+
+// CastNull returns null if input is null; if not returns error.
+var CastNull = &Builtin{
+	Name: "cast_null",
+	Decl: types.NewFunction(
+		types.Args(types.A),
+		types.NewNull(),
+	),
+}
+
+// CastObject returns the given object if it is null; throws an error otherwise
+var CastObject = &Builtin{
+	Name: "cast_object",
+	Decl: types.NewFunction(
+		types.Args(types.A),
+		types.NewObject(nil, types.NewDynamicProperty(types.A, types.A)),
+	),
+}
+
+// ObjectGet returns takes an object and returns a value under its key if
+// present, otherwise it returns the default.
+var ObjectGet = &Builtin{
+	Name: "object.get",
+	Decl: types.NewFunction(
+		types.Args(
+			types.NewObject(nil, types.NewDynamicProperty(types.A, types.A)),
+			types.A,
+			types.A,
+		),
+		types.A,
 	),
 }
 

@@ -100,7 +100,11 @@ func makeImport(loc *Location, path, alias interface{}) (interface{}, error) {
 	return imp, nil
 }
 
-func makeDefaultRule(loc *Location, name, value interface{}) (interface{}, error) {
+func makeDefaultRule(loc *Location, name, operator, value interface{}) (interface{}, error) {
+
+	if string(operator.([]uint8)) == Assign.Infix {
+		return nil, fmt.Errorf("default rules must use = operator (not := operator)")
+	}
 
 	term := value.(*Term)
 	var err error
@@ -119,7 +123,7 @@ func makeDefaultRule(loc *Location, name, value interface{}) (interface{}, error
 		return false
 	})
 
-	Walk(vis, term)
+	vis.Walk(term)
 
 	if err != nil {
 		return nil, err
@@ -165,6 +169,10 @@ func makeRule(loc *Location, head, rest interface{}) (interface{}, error) {
 
 		next := elem.([]interface{})
 		re := next[1].(ruleExt)
+
+		if rules[0].Head.Assign {
+			return nil, errElseAssignOperator
+		}
 
 		if re.term == nil {
 			if ordered {
@@ -222,6 +230,17 @@ func makeRuleHead(loc *Location, name, args, key, value interface{}) (interface{
 
 	if value != nil {
 		valueSlice := value.([]interface{})
+		operator := string(valueSlice[1].([]uint8))
+
+		if operator == Assign.Infix {
+			if head.Key != nil {
+				return nil, errPartialRuleAssignOperator
+			} else if len(head.Args) > 0 {
+				return nil, errFunctionAssignOperator
+			}
+			head.Assign = true
+		}
+
 		// Head definition above describes the "value" slice. We care about the "Term" element.
 		head.Value = valueSlice[len(valueSlice)-1].(*Term)
 	}
@@ -503,6 +522,10 @@ func makeRef(loc *Location, head, rest interface{}) (interface{}, error) {
 
 	headTerm := head.(*Term)
 	ifaceSlice := rest.([]interface{})
+
+	if len(ifaceSlice) == 0 {
+		return headTerm, nil
+	}
 
 	ref := make(Ref, len(ifaceSlice)+1)
 	ref[0] = headTerm
