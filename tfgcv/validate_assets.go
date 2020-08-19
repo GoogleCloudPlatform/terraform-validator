@@ -55,8 +55,10 @@ func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, polic
 		}
 	}
 
+	pbSplitAssets := splitAssets(pbAssets)
+
 	auditResult := &validator.AuditResponse{}
-	for _, asset := range pbAssets {
+	for _, asset := range pbSplitAssets {
 		violations, err := valid.ReviewAsset(context.Background(), asset)
 
 		if err != nil {
@@ -66,4 +68,44 @@ func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, polic
 	}
 
 	return auditResult, nil
+}
+
+// splitAssets split assets because for the GCP target Constraint
+// Framework ReviewAsset call an asset must have only one of:
+// resource, iam policy, org policy or access context policy
+func splitAssets(pbAssets []*validator.Asset) []*validator.Asset {
+
+	pbSplitAssets := make([]*validator.Asset, 0)
+
+	for _, asset := range pbAssets {
+		if asset.Resource != nil {
+			splitAsset := *asset
+			splitAsset.IamPolicy = nil
+			splitAsset.OrgPolicy = nil
+			splitAsset.AccessContextPolicy = nil
+			pbSplitAssets = append(pbSplitAssets, &splitAsset)
+		}
+		if asset.IamPolicy != nil {
+			splitAsset := *asset
+			splitAsset.Resource = nil
+			splitAsset.OrgPolicy = nil
+			splitAsset.AccessContextPolicy = nil
+			pbSplitAssets = append(pbSplitAssets, &splitAsset)
+		}
+		if asset.OrgPolicy != nil {
+			splitAsset := *asset
+			splitAsset.Resource = nil
+			splitAsset.IamPolicy = nil
+			splitAsset.AccessContextPolicy = nil
+			pbSplitAssets = append(pbSplitAssets, &splitAsset)
+		}
+		if asset.AccessContextPolicy != nil {
+			splitAsset := *asset
+			splitAsset.Resource = nil
+			splitAsset.IamPolicy = nil
+			splitAsset.OrgPolicy = nil
+			pbSplitAssets = append(pbSplitAssets, &splitAsset)
+		}
+	}
+	return pbSplitAssets
 }
