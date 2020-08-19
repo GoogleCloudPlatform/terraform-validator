@@ -172,9 +172,31 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "create"
+          "no-op"
         ],
-        "before": null,
+        "before": {
+          "allow": [
+            {
+              "ports": [
+                "8181"
+              ],
+              "protocol": "udp"
+            }
+          ],
+          "deny": [],
+          "description": null,
+          "disabled": null,
+          "name": "server-fiewall",
+          "network": "default",
+          "priority": 1000,
+          "source_service_accounts": null,
+          "source_tags": [
+            "server"
+          ],
+          "target_service_accounts": null,
+          "target_tags": null,
+          "timeouts": null
+        },
         "after": {
           "allow": [
             {

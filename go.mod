@@ -5,6 +5,7 @@ require (
 	github.com/forseti-security/config-validator v0.0.0-20191121204425-eb1b299ab838
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.2
+	github.com/google/go-cmp v0.3.1
 	github.com/hashicorp/terraform-plugin-sdk v1.4.0
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
