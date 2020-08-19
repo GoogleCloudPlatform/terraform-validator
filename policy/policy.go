@@ -24,7 +24,7 @@ import (
 )
 
 // Overlay contains the policies that have changed in the plan.
-// It is a map from the resource path to the current policy.
+// It is a map from the resource path to the new policy.
 // Only resources with a change in policy are included.
 type Overlay map[string]*google.IAMPolicy
 
