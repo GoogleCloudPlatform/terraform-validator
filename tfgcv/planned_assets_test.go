@@ -14,19 +14,20 @@ const (
 	testAncestryName = "ancestry"
 )
 
-func TestReadPlannedAssets(t *testing.T) {
-	type args struct {
-		file     string
-		project  string
-		ancestry string
-	}
-	type testcase struct {
-		name    string
-		args    args
-		want    int
-		wantErr bool
-	}
 
+type args struct {
+	file     string
+	project  string
+	ancestry string
+}
+type testcase struct {
+	name    string
+	args    args
+	want    int
+	wantErr bool
+}
+
+func testCases(t *testing.T) []testcase {
 	var tests []testcase
 
 	if version.Supported(version.TF12) {
@@ -53,7 +54,6 @@ func TestReadPlannedAssets(t *testing.T) {
 			},
 		}...)
 	}
-
 	if version.Supported(version.TF11) {
 		tests = append(tests, []testcase{
 			{
@@ -72,8 +72,11 @@ func TestReadPlannedAssets(t *testing.T) {
 			// },
 		}...)
 	}
+	return tests
+}
 
-	for _, tt := range tests {
+func TestReadPlannedAssets(t *testing.T) {
+	for _, tt := range testCases(t) {
 		t.Run(tt.name, func(t *testing.T) {
 			testFile := filepath.Join(testDataDir, tt.args.file)
 			var offline bool
@@ -88,6 +91,27 @@ func TestReadPlannedAssets(t *testing.T) {
 			}
 			if len(got) != tt.want {
 				t.Errorf("ReadPlannedAssets() = %v, want %v", len(got), tt.want)
+			}
+		})
+	}
+}
+
+func TestReadCurrentAssets(t *testing.T) {
+	for _, tt := range testCases(t) {
+		t.Run(tt.name, func(t *testing.T) {
+			testFile := filepath.Join(testDataDir, tt.args.file)
+			var offline bool
+			if version.Supported(version.TF12) {
+				offline = true
+			}
+			ctx := context.Background()
+			got, err := ReadCurrentAssets(ctx, testFile, tt.args.project, tt.args.ancestry, offline)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadCurrentAssets() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if len(got) != tt.want {
+				t.Errorf("ReadCurrentAssets() = %v, want %v", len(got), tt.want)
 			}
 		})
 	}

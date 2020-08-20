@@ -1,0 +1,336 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.12.25",
+  "planned_values": {
+    "root_module": {}
+  },
+  "resource_changes": [
+    {
+      "address": "google_folder.example_tf_folder",
+      "mode": "managed",
+      "type": "google_folder",
+      "name": "example_tf_folder",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "create_time": "2020-08-01T01:04:57.985Z",
+          "display_name": "example-tf-folder",
+          "id": "folders/123456789",
+          "lifecycle_state": "ACTIVE",
+          "name": "folders/123456789",
+          "parent": "organizations/123456789",
+          "timeouts": null
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_folder_iam_policy.policy",
+      "mode": "managed",
+      "type": "google_folder_iam_policy",
+      "name": "policy",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "etag": "BwWrxn+Sq/k=",
+          "folder": "folders/123456789",
+          "id": "folders/123456789",
+          "policy_data": "{\"bindings\":[{\"members\":[\"user:user2@example.com\"],\"role\":\"roles/bigquery.admin\"},{\"members\":[\"user:user1@example.com\"],\"role\":\"roles/editor\"}]}"
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_organization_iam_binding.binding",
+      "mode": "managed",
+      "type": "google_organization_iam_binding",
+      "name": "binding",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "etag": "BwWrxnDz7Zc=",
+          "id": "123456789/roles/editor",
+          "members": [
+            "user:user1@example.com"
+          ],
+          "org_id": "123456789",
+          "role": "roles/editor"
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_organization_iam_member.member",
+      "mode": "managed",
+      "type": "google_organization_iam_member",
+      "name": "member",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "etag": "BwWrxnDz7Zc=",
+          "id": "123456789/roles/bigquery.admin/user:user2@example.com",
+          "member": "user:user2@example.com",
+          "org_id": "123456789",
+          "role": "roles/bigquery.admin"
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_project.example_tf_project",
+      "mode": "managed",
+      "type": "google_project",
+      "name": "example_tf_project",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "app_engine": [],
+          "auto_create_network": true,
+          "billing_account": "123456-ABCDEF-987654",
+          "folder_id": "123456789",
+          "id": "example-tf-project",
+          "labels": null,
+          "name": "example-tf-project",
+          "number": "123456789",
+          "org_id": "",
+          "policy_data": null,
+          "policy_etag": null,
+          "project_id": "example-tf-project",
+          "skip_delete": null,
+          "timeouts": null
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_project_iam_policy.policy",
+      "mode": "managed",
+      "type": "google_project_iam_policy",
+      "name": "policy",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "authoritative": null,
+          "disable_project": null,
+          "etag": "BwWrxn9rU1A=",
+          "id": "example-tf-project",
+          "policy_data": "{\"bindings\":[{\"members\":[\"user:user2@example.com\"],\"role\":\"roles/bigquery.admin\"},{\"members\":[\"user:user1@example.com\"],\"role\":\"roles/editor\"}]}",
+          "project": "example-tf-project",
+          "restore_policy": null
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    }
+  ],
+  "prior_state": {
+    "format_version": "0.1",
+    "terraform_version": "0.12.25",
+    "values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "data.google_iam_policy.example",
+            "mode": "data",
+            "type": "google_iam_policy",
+            "name": "example",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "audit_config": null,
+              "binding": [
+                {
+                  "members": [
+                    "user:user1@example.com"
+                  ],
+                  "role": "roles/editor"
+                },
+                {
+                  "members": [
+                    "user:user2@example.com"
+                  ],
+                  "role": "roles/bigquery.admin"
+                }
+              ],
+              "id": "123456789",
+              "policy_data": "{\"bindings\":[{\"members\":[\"user:user2@example.com\"],\"role\":\"roles/bigquery.admin\"},{\"members\":[\"user:user1@example.com\"],\"role\":\"roles/editor\"}]}"
+            }
+          },
+          {
+            "address": "data.google_organization.assist",
+            "mode": "data",
+            "type": "google_organization",
+            "name": "assist",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "create_time": "2020-01-13T17:05:56.627Z",
+              "directory_customer_id": "C04jvfuw8",
+              "domain": "iam-assist-test.joonix.net",
+              "id": "123456789",
+              "lifecycle_state": "ACTIVE",
+              "name": "organizations/123456789",
+              "organization": "organizations/123456789"
+            }
+          },
+          {
+            "address": "google_folder.example_tf_folder",
+            "mode": "managed",
+            "type": "google_folder",
+            "name": "example_tf_folder",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "create_time": "2020-08-01T01:04:57.985Z",
+              "display_name": "example-tf-folder",
+              "id": "folders/123456789",
+              "lifecycle_state": "ACTIVE",
+              "name": "folders/123456789",
+              "parent": "organizations/123456789",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_folder_iam_policy.policy",
+            "mode": "managed",
+            "type": "google_folder_iam_policy",
+            "name": "policy",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "etag": "BwWrxn+Sq/k=",
+              "folder": "folders/123456789",
+              "id": "folders/123456789",
+              "policy_data": "{\"bindings\":[{\"members\":[\"user:user2@example.com\"],\"role\":\"roles/bigquery.admin\"},{\"members\":[\"user:user1@example.com\"],\"role\":\"roles/editor\"}]}"
+            },
+            "depends_on": [
+              "google_folder.example_tf_folder"
+            ]
+          },
+          {
+            "address": "google_organization_iam_binding.binding",
+            "mode": "managed",
+            "type": "google_organization_iam_binding",
+            "name": "binding",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "etag": "BwWrxnDz7Zc=",
+              "id": "123456789/roles/editor",
+              "members": [
+                "user:user1@example.com"
+              ],
+              "org_id": "123456789",
+              "role": "roles/editor"
+            }
+          },
+          {
+            "address": "google_organization_iam_member.member",
+            "mode": "managed",
+            "type": "google_organization_iam_member",
+            "name": "member",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "etag": "BwWrxnDz7Zc=",
+              "id": "123456789/roles/bigquery.admin/user:user2@example.com",
+              "member": "user:user2@example.com",
+              "org_id": "123456789",
+              "role": "roles/bigquery.admin"
+            }
+          },
+          {
+            "address": "google_project.example_tf_project",
+            "mode": "managed",
+            "type": "google_project",
+            "name": "example_tf_project",
+            "provider_name": "google",
+            "schema_version": 1,
+            "values": {
+              "app_engine": [],
+              "auto_create_network": true,
+              "billing_account": "123456-ABCDEF-987654",
+              "folder_id": "123456789",
+              "id": "example-tf-project",
+              "labels": null,
+              "name": "example-tf-project",
+              "number": "123456789",
+              "org_id": "",
+              "policy_data": null,
+              "policy_etag": null,
+              "project_id": "example-tf-project",
+              "skip_delete": null,
+              "timeouts": null
+            },
+            "depends_on": [
+              "google_folder.example_tf_folder"
+            ]
+          },
+          {
+            "address": "google_project_iam_policy.policy",
+            "mode": "managed",
+            "type": "google_project_iam_policy",
+            "name": "policy",
+            "provider_name": "google",
+            "schema_version": 0,
+            "values": {
+              "authoritative": null,
+              "disable_project": null,
+              "etag": "BwWrxn9rU1A=",
+              "id": "example-tf-project",
+              "policy_data": "{\"bindings\":[{\"members\":[\"user:user2@example.com\"],\"role\":\"roles/bigquery.admin\"},{\"members\":[\"user:user1@example.com\"],\"role\":\"roles/editor\"}]}",
+              "project": "example-tf-project",
+              "restore_policy": null
+            },
+            "depends_on": [
+              "google_folder.example_tf_folder",
+              "google_project.example_tf_project"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "configuration": {
+    "provider_config": {
+      "google": {
+        "name": "google",
+        "expressions": {
+          "project": {
+            "constant_value": "tf-validator"
+          },
+          "region": {
+            "constant_value": "us-central1"
+          },
+          "zone": {
+            "constant_value": "us-central1-a"
+          }
+        }
+      }
+    },
+    "root_module": {}
+  }
+}
