@@ -21,30 +21,37 @@ spec:
     spec:
       names:
         kind: GCPAlwaysViolatesConstraintV1
-        plural: gcpalwaysviolatesconstraintsv1
       validation:
         openAPIV3Schema:
           properties: {}
   targets:
-    - target: validation.gcp.forsetisecurity.org
-      rego: |
-        package templates.gcp.GCPAlwaysViolatesConstraintV1
-        get_constraint_info(constraint) = info {
-         info := {
-           "name": constraint.metadata.name,
-           "kind": constraint.kind,
-         }
-        }
-        deny[{
-         "msg": message,
-         "details": metadata,
-        }] {
-         constraint := input.constraint
-         get_constraint_info(constraint, info)
-         asset := input.asset
-         message := sprintf("%v violates on all resources.", [info.name])
-         metadata := {
-           "constraint": info,
-           "asset": asset,
-         }
-        }
+   validation.gcp.forsetisecurity.org:
+      rego: | #INLINE("validator/always_violates.rego")
+           #
+           # Copyright 2018 Google LLC
+           #
+           # Licensed under the Apache License, Version 2.0 (the "License");
+           # you may not use this file except in compliance with the License.
+           # You may obtain a copy of the License at
+           #
+           #      http://www.apache.org/licenses/LICENSE-2.0
+           #
+           # Unless required by applicable law or agreed to in writing, software
+           # distributed under the License is distributed on an "AS IS" BASIS,
+           # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+           # See the License for the specific language governing permissions and
+           # limitations under the License.
+           #
+           
+           package templates.gcp.GCPAlwaysViolatesConstraintV1
+           
+           import data.validator.gcp.lib as lib
+           
+           deny[{
+           	"msg": message,
+           	"details": metadata,
+           }] {
+           	message := "violates on all resources."
+           	metadata := {"asset": input.asset}
+           }
+           #ENDINLINE

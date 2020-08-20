@@ -16,9 +16,12 @@ apiVersion: constraints.gatekeeper.sh/v1alpha1
 kind: GCPAlwaysViolatesConstraintV1
 metadata:
   name: always_violates_all
+  annotations:
+    description: Testing policy, will always violate.
 spec:
+  constraintVersion: 0.1.0
   severity: high
   match:
-    gcp:
-      target: ["organization/*"]
+    target:
+    - "organizations/**"
   parameters: {}

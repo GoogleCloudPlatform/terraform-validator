@@ -1,18 +1,114 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
 require (
+	cloud.google.com/go/bigtable v1.1.0
+	cloud.google.com/go/storage v1.0.0
+	github.com/Azure/go-autorest v11.1.2+incompatible // indirect
+	github.com/BurntSushi/toml v0.3.1
 	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03
-	github.com/forseti-security/config-validator v0.0.0-20191121204425-eb1b299ab838
+	github.com/OneOfOne/xxhash v1.2.5
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+	github.com/agext/levenshtein v1.2.2
+	github.com/apparentlymart/go-cidr v1.0.1
+	github.com/apparentlymart/go-textseg v1.0.0
+	github.com/aws/aws-sdk-go v1.25.3
+	github.com/danielkermode/gvm v1.0.0 // indirect
+	github.com/davecgh/go-spew v1.1.1
+	github.com/forseti-security/config-validator v0.0.0-20200812033229-7388761cc9ca
+	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4
+	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92
+	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/spec v0.19.4
+	github.com/go-openapi/strfmt v0.19.3
+	github.com/go-openapi/validate v0.19.4
+	github.com/go-stack/stack v1.8.0
+	github.com/gobwas/glob v0.2.3
+	github.com/gogo/protobuf v1.3.0
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.3
 	github.com/google/go-cmp v0.3.1
+	github.com/google/gofuzz v1.0.0
+	github.com/google/uuid v1.1.1
+	github.com/googleapis/gax-go/v2 v2.0.5
+	github.com/hashicorp/errwrap v1.0.0
+	github.com/hashicorp/go-cleanhttp v0.5.1
+	github.com/hashicorp/go-getter v1.4.0
+	github.com/hashicorp/go-hclog v0.9.2
+	github.com/hashicorp/go-multierror v1.0.0
+	github.com/hashicorp/go-plugin v1.0.1
+	github.com/hashicorp/go-uuid v1.0.1
+	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/golang-lru v0.5.1
+	github.com/hashicorp/hcl v1.0.0
+	github.com/hashicorp/hcl/v2 v2.0.0
+	github.com/hashicorp/logutils v1.0.0
+	github.com/hashicorp/terraform-config-inspect v0.0.0-20191115094559-17f92b0546e8
 	github.com/hashicorp/terraform-plugin-sdk v1.4.0
+	github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596
+	github.com/imdario/mergo v0.3.7
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+	github.com/json-iterator/go v1.1.7
+	github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e
+	github.com/mattn/go-colorable v0.1.2
+	github.com/mattn/go-isatty v0.0.8
+	github.com/mitchellh/cli v1.0.0
+	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
+	github.com/mitchellh/copystructure v1.0.0
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/go-wordwrap v1.0.0
+	github.com/mitchellh/hashstructure v1.0.0
+	github.com/mitchellh/mapstructure v1.1.2
+	github.com/mitchellh/reflectwalk v1.0.1
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+	github.com/modern-go/reflect2 v1.0.1
+	github.com/open-policy-agent/frameworks v0.0.0-20200803193800-bcb6432d79b7 // indirect
+	github.com/open-policy-agent/frameworks/constraint v0.0.0-20200127222620-69dff9b895a2
+	github.com/open-policy-agent/gatekeeper v0.0.0-20200130050101-a7990e5bc83a
+	github.com/open-policy-agent/opa v0.17.2
 	github.com/pkg/errors v0.8.1
+	github.com/pmezard/go-difflib v1.0.0
+	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
-	github.com/stretchr/testify v1.3.0
+	github.com/spf13/pflag v1.0.3
+	github.com/stoewer/go-strcase v1.0.2
+	github.com/stretchr/testify v1.4.0
 	github.com/terraform-providers/terraform-provider-google v1.20.1-0.20200228174759-ed183996d331
+	github.com/ulikunitz/xz v0.5.5
+	github.com/vmihailenco/msgpack v4.0.1+incompatible
+	github.com/yashtewari/glob-intersection v0.0.0-20180916065949-5c77d914dd0b
+	github.com/zclconf/go-cty v1.1.0
+	github.com/zclconf/go-cty-yaml v1.0.1
+	go.mongodb.org/mongo-driver v1.1.1
+	go.opencensus.io v0.22.2
+	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/exp v0.0.0-20191029154019-8994fa331a53
+	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
+	golang.org/x/text v0.3.2
+	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
+	golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
 	google.golang.org/api v0.16.0
-	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6
+	google.golang.org/appengine v1.6.1
+	google.golang.org/genproto v0.0.0-20200319113533-08878b785e9c
+	google.golang.org/grpc v1.27.0
+	gopkg.in/inf.v0 v0.9.1
+	gopkg.in/yaml.v2 v2.2.4
+	honnef.co/go/tools v0.0.1-2019.2.3
+	k8s.io/api v0.16.4
+	k8s.io/apiextensions-apiserver v0.16.4
+	k8s.io/apimachinery v0.16.4
+	k8s.io/apiserver v0.16.4
+	k8s.io/client-go v0.16.4
+	k8s.io/component-base v0.16.4
+	k8s.io/klog v1.0.0
+	k8s.io/kubectl v0.16.4
+	k8s.io/utils v0.0.0-20190920012459-5008bf6f8cd6
+	sigs.k8s.io/controller-runtime v0.4.0
+	sigs.k8s.io/yaml v1.1.0
 )
 
 go 1.13
