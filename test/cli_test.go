@@ -46,7 +46,7 @@ func TestCLI(t *testing.T) {
 	}
 	// Currently, we only test one rule. Moving forward, resource specific rules
 	// should be added to increase the coverage.
-	alwaysViolate := constraint{name: "always_violate", wantViolation: true, wantOutputRegex: "Constraint always_violates_all on resource"}
+	alwaysViolate := constraint{name: "always_violate", wantViolation: true, wantOutputRegex: "Constraint GCPAlwaysViolatesConstraintV1.always_violates_all on resource"}
 
 	// Test cases for each type of resource is defined here.
 	cases := []struct {
