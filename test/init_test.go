@@ -2,7 +2,6 @@ package test
 
 import (
 	"encoding/json"
-	"flag"
 	"log"
 	"os"
 	"path/filepath"
@@ -48,7 +47,6 @@ type testData struct {
 // environment variables, the parsing of those are only done once.
 func init() {
 	// don't raise errors in glog
-	flag.CommandLine.Parse([]string{})
 
 	cwd, err := os.Getwd()
 	if err != nil {

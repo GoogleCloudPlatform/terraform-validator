@@ -37,6 +37,7 @@ import (
 func TestCLI(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode.")
+		return
 	}
 	// Define the reusable constraints to be use for the test cases.
 	type constraint struct {

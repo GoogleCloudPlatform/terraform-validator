@@ -20,6 +20,11 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 	if !version.Supported(version.TF12) {
 		t.Skipf("TestReadPlannedAssetsCoverage runs on terraform v0.12 or above.")
 	}
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode.")
+		return
+	}
+
 	cases := []struct {
 		name string
 	}{

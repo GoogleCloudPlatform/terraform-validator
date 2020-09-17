@@ -24,8 +24,7 @@
         "networkPolicy": null,
         "nodeConfig": null,
         "podSecurityPolicyConfig": null,
-        "privateClusterConfig": null,
-        "workloadIdentityConfig": null
+        "privateClusterConfig": null
       }
     }
   },

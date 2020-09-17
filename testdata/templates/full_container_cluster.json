@@ -106,9 +106,6 @@
           "enablePrivateNodes": true,
           "masterIpv4CidrBlock": "127.0.0.0/28"
         },
-        "workloadIdentityConfig": {
-          "workloadPool": "testproject.svc.id.goog"
-        },
         "resourceLabels": {
           "test-resource_labels-key": "test-resource_labels-value"
         },
