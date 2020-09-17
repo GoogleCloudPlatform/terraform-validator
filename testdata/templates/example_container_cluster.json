@@ -22,7 +22,9 @@
         "name": "my-gke-cluster",
         "network": "projects/{{.Provider.project}}/global/networks/default",
         "networkPolicy": null,
-        "nodeConfig": null
+        "nodeConfig": null,
+        "podSecurityPolicyConfig": null,
+        "privateClusterConfig": null
       }
     }
   },
