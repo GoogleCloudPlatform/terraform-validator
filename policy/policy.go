@@ -17,6 +17,7 @@ package policy
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
@@ -78,7 +79,7 @@ func extractOverlay(before, after []google.Asset) Overlay {
 				// a policy deletion, even if more than the policy is being deleted.
 				overlay[name] = emptyPolicy()
 			}
-		case a.IAMPolicy != b.IAMPolicy:
+		case !reflect.DeepEqual(a.IAMPolicy, b.IAMPolicy):
 			if a.IAMPolicy != nil {
 				overlay[name] = a.IAMPolicy
 			} else {
