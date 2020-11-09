@@ -168,6 +168,21 @@ func TestOverlayWithDeletes(t *testing.T) {
 	}
 }
 
+// TestOverlayNoChanges ensures a plan with no changes results in an empty overlay.
+func TestOverlayNoChanges(t *testing.T){
+	wantOverlay := Overlay{}
+
+	file := filepath.Join(testDataDir, "tf12plan_no_change.json")
+	got, err := BuildOverlay(file, testProjectName, testAncestryName, true)
+	sortOverlay(got)
+	if err != nil {
+		t.Fatalf("BuildOverly(%s) error: %v", file, err)
+	}
+	if diff := cmp.Diff(wantOverlay, got); diff != "" {
+		t.Fatalf("BuildOverlay(%s)) diff (-want +got): %s", file, diff)
+	}
+}
+
 // sortBindings provides a deterministic sorting of all fields in the Overlay.
 // Sorting is done in place.
 func sortOverlay(overlay Overlay) {
