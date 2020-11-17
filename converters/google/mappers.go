@@ -46,15 +46,16 @@ type mapper struct {
 func mappers() map[string][]mapper {
 	return map[string][]mapper{
 		// TODO: Use a generated mapping once it lands in the conversion library.
-		"google_compute_firewall":      {{convert: converter.GetComputeFirewallCaiObject}},
-		"google_compute_disk":          {{convert: converter.GetComputeDiskCaiObject}},
-		"google_compute_instance":      {{convert: converter.GetComputeInstanceCaiObject}},
-		"google_storage_bucket":        {{convert: converter.GetStorageBucketCaiObject}},
-		"google_sql_database_instance": {{convert: converter.GetSQLDatabaseInstanceCaiObject}},
-		"google_container_cluster":     {{convert: converter.GetContainerClusterCaiObject}},
-		"google_container_node_pool":   {{convert: converter.GetContainerNodePoolCaiObject}},
-		"google_bigquery_dataset":      {{convert: converter.GetBigQueryDatasetCaiObject}},
-		"google_spanner_instance":      {{convert: converter.GetSpannerInstanceCaiObject}},
+		"google_compute_firewall":            {{convert: converter.GetComputeFirewallCaiObject}},
+		"google_compute_disk":                {{convert: converter.GetComputeDiskCaiObject}},
+		"google_compute_instance":            {{convert: converter.GetComputeInstanceCaiObject}},
+		"google_storage_bucket":              {{convert: converter.GetStorageBucketCaiObject}},
+		"google_sql_database_instance":       {{convert: converter.GetSQLDatabaseInstanceCaiObject}},
+		"google_container_cluster":           {{convert: converter.GetContainerClusterCaiObject}},
+		"google_container_node_pool":         {{convert: converter.GetContainerNodePoolCaiObject}},
+		"google_bigquery_dataset":            {{convert: converter.GetBigQueryDatasetCaiObject}},
+		"google_spanner_instance":            {{convert: converter.GetSpannerInstanceCaiObject}},
+		"google_project_organization_policy": {{convert: converter.GetProjectOrgPolicyCaiObject}},
 
 		// Terraform resources of type "google_project" have a 1:N relationship with CAI assets.
 		"google_project": {

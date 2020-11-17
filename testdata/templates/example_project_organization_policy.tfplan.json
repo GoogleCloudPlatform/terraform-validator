@@ -1,0 +1,107 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.12.29",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_project_organization_policy.serial_port_policy",
+          "mode": "managed",
+          "type": "google_project_organization_policy",
+          "name": "serial_port_policy",
+          "provider_name": "google",
+          "schema_version": 0,
+          "values": {
+            "boolean_policy": [
+              {
+                "enforced": true
+              }
+            ],
+            "constraint": "compute.disableSerialPortAccess",
+            "list_policy": [],
+            "project": "{{.Provider.project}}",
+            "restore_policy": [],
+            "timeouts": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "google_project_organization_policy.serial_port_policy",
+      "mode": "managed",
+      "type": "google_project_organization_policy",
+      "name": "serial_port_policy",
+      "provider_name": "google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "boolean_policy": [
+            {
+              "enforced": true
+            }
+          ],
+          "constraint": "compute.disableSerialPortAccess",
+          "list_policy": [],
+          "project": "{{.Provider.project}}",
+          "restore_policy": [],
+          "timeouts": null
+        },
+        "after_unknown": {
+          "boolean_policy": [
+            {}
+          ],
+          "etag": true,
+          "id": true,
+          "list_policy": [],
+          "restore_policy": [],
+          "update_time": true,
+          "version": true
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "google": {
+        "name": "google",
+        "expressions": {
+          "project": {
+            "constant_value": "{{.Provider.project}}"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_project_organization_policy.serial_port_policy",
+          "mode": "managed",
+          "type": "google_project_organization_policy",
+          "name": "serial_port_policy",
+          "provider_config_key": "google",
+          "expressions": {
+            "boolean_policy": [
+              {
+                "enforced": {
+                  "constant_value": true
+                }
+              }
+            ],
+            "constraint": {
+              "constant_value": "compute.disableSerialPortAccess"
+            },
+            "project": {
+              "constant_value": "{{.Provider.project}}"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

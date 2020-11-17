@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
@@ -56,6 +57,7 @@ type Asset struct {
 	Ancestry  string         `json:"ancestry_path"`
 	Resource  *AssetResource `json:"resource,omitempty"`
 	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
+	OrgPolicy []*OrgPolicy   `json:"org_policy,omitempty"`
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
@@ -80,6 +82,48 @@ type AssetResource struct {
 	DiscoveryName        string                 `json:"discovery_name"`
 	Parent               string                 `json:"parent"`
 	Data                 map[string]interface{} `json:"data"`
+}
+
+//OrgPolicy is for managing organization policies.
+type OrgPolicy struct {
+	Constraint     string          `json:"constraint,omitempty"`
+	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
+	BooleanPolicy  *BooleanPolicy  `json:"boolean_policy,omitempty"`
+	RestoreDefault *RestoreDefault `json:"restore_default,omitempty"`
+	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
+}
+
+type Timestamp struct {
+	Seconds int64 `json:"seconds,omitempty"`
+	Nanos   int64 `json:"nanos,omitempty"`
+}
+
+// ListPolicyAllValues is used to set `Policies` that apply to all possible
+// configuration values rather than specific values in `allowed_values` or
+// `denied_values`.
+type ListPolicyAllValues int32
+
+// ListPolicy can define specific values and subtrees of Cloud Resource
+// Manager resource hierarchy (`Organizations`, `Folders`, `Projects`) that
+// are allowed or denied by setting the `allowed_values` and `denied_values`
+// fields.
+type ListPolicy struct {
+	AllowedValues     []string            `json:"allowed_values,omitempty"`
+	DeniedValues      []string            `json:"denied_values,omitempty"`
+	AllValues         ListPolicyAllValues `json:"all_values,omitempty"`
+	SuggestedValue    string              `json:"suggested_value,omitempty"`
+	InheritFromParent bool                `json:"inherit_from_parent,omitempty"`
+}
+
+// BooleanPolicy If `true`, then the `Policy` is enforced. If `false`,
+// then any configuration is acceptable.
+type BooleanPolicy struct {
+	Enforced bool `json:"enforced,omitempty"`
+}
+
+//RestoreDefault determines if the default values of the `Constraints` are active for the
+// resources.
+type RestoreDefault struct {
 }
 
 // NewConverter is a factory function for Converter.
@@ -223,12 +267,51 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 		}
 	}
 
+	var orgPolicy []*OrgPolicy
+	if cai.OrgPolicy != nil {
+		for _, o := range cai.OrgPolicy {
+			var listPolicy *ListPolicy
+			var booleanPolicy *BooleanPolicy
+			var restoreDefault *RestoreDefault
+			if o.ListPolicy != nil {
+				listPolicy = &ListPolicy{
+					AllowedValues:     o.ListPolicy.AllowedValues,
+					AllValues:         ListPolicyAllValues(o.ListPolicy.AllValues),
+					DeniedValues:      o.ListPolicy.DeniedValues,
+					SuggestedValue:    o.ListPolicy.SuggestedValue,
+					InheritFromParent: o.ListPolicy.InheritFromParent,
+				}
+			}
+			if o.BooleanPolicy != nil {
+				booleanPolicy = &BooleanPolicy{
+					Enforced: o.BooleanPolicy.Enforced,
+				}
+			}
+			if o.RestoreDefault != nil {
+				restoreDefault = &RestoreDefault{}
+			}
+			currentTime := time.Now()
+			currentTime = currentTime.Round(time.Minute)
+			orgPolicy = append(orgPolicy, &OrgPolicy{
+				Constraint:     o.Constraint,
+				ListPolicy:     listPolicy,
+				BooleanPolicy:  booleanPolicy,
+				RestoreDefault: restoreDefault,
+				UpdateTime: &Timestamp{
+					Seconds: int64(currentTime.Unix()),
+					Nanos:   int64(currentTime.UnixNano()),
+				},
+			})
+		}
+	}
+
 	return Asset{
 		Name:           cai.Name,
 		Type:           cai.Type,
 		Ancestry:       ancestry,
 		Resource:       resource,
 		IAMPolicy:      policy,
+		OrgPolicy:      orgPolicy,
 		converterAsset: cai,
 	}, nil
 }

@@ -1,0 +1,19 @@
+[
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+    "asset_type": "cloudresourcemanager.googleapis.com/Project",
+    "org_policy": [
+      {
+        "constraint": "constraints/compute.disableSerialPortAccess",
+        "update_time": {
+          "seconds": {{.Time.timeSeconds}},
+      "nanos": {{.Time.timeNanos}}
+    },
+      "boolean_policy": {
+        "enforced": true
+      }
+      }
+    ],
+    "ancestry_path": "organization/{{.OrgID}}/folder/{{.FolderID}}/project/{{.Provider.project}}"
+  }
+]
