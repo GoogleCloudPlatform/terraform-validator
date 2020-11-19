@@ -290,6 +290,7 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 			if o.RestoreDefault != nil {
 				restoreDefault = &RestoreDefault{}
 			}
+			//As time is not information in terraform resource data, time is rounded for testing purposes
 			currentTime := time.Now()
 			currentTime = currentTime.Round(time.Minute)
 			orgPolicy = append(orgPolicy, &OrgPolicy{
