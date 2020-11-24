@@ -23,8 +23,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
+	"google.golang.org/api/spanner/v1"
 )
 
 func resourceSpannerInstance() *schema.Resource {
@@ -39,9 +40,9 @@ func resourceSpannerInstance() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(4 * time.Minute),
-			Update: schema.DefaultTimeout(4 * time.Minute),
-			Delete: schema.DefaultTimeout(4 * time.Minute),
+			Create: schema.DefaultTimeout(240 * time.Second),
+			Update: schema.DefaultTimeout(240 * time.Second),
+			Delete: schema.DefaultTimeout(240 * time.Second),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -49,49 +50,32 @@ func resourceSpannerInstance() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: compareSelfLinkOrResourceName,
-				Description: `The name of the instance's configuration (similar but not
-quite the same as a region) which defines defines the geographic placement and
-replication of your databases in this instance. It determines where your data
-is stored. Values are typically of the form 'regional-europe-west1' , 'us-central' etc.
-In order to obtain a valid list please consult the
-[Configuration section of the docs](https://cloud.google.com/spanner/docs/instances).`,
 			},
 			"display_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				Description: `The descriptive name for this instance as it appears in UIs. Must be
-unique per project and between 4 and 30 characters in length.`,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateRegexp(`^(?:[a-zA-Z](?:[- _a-zA-Z0-9]{2,28}[a-zA-Z0-9])?)$`),
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Computed:     true,
 				Optional:     true,
 				ForceNew:     true,
-				ValidateFunc: validateRegexp(`^[a-z][-a-z0-9]*[a-z0-9]$`),
-				Description: `A unique identifier for the instance, which cannot be changed after
-the instance is created. The name must be between 6 and 30 characters
-in length.
-
-
-If not provided, a random string starting with 'tf-' will be selected.`,
+				ValidateFunc: validateRegexp(`^(?:[a-z](?:[-_a-z0-9]{4,28}[a-z0-9])?)$`),
 			},
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
-				Description: `An object containing a list of "key": value pairs.
-Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.`,
-				Elem: &schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"num_nodes": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: `The number of nodes allocated to this instance.`,
-				Default:     1,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  1,
 			},
 			"state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: `Instance status: 'CREATING' or 'READY'.`,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"project": {
 				Type:     schema.TypeString,
@@ -125,7 +109,7 @@ func resourceSpannerInstanceCreate(d *schema.ResourceData, meta interface{}) err
 	} else if v, ok := d.GetOkExists("display_name"); !isEmptyValue(reflect.ValueOf(displayNameProp)) && (ok || !reflect.DeepEqual(v, displayNameProp)) {
 		obj["displayName"] = displayNameProp
 	}
-	nodeCountProp, err := expandSpannerInstanceNumNodes(d.Get("num_nodes"), d, config)
+	nodeCountProp, err := expandSpannerInstanceNum_nodes(d.Get("num_nodes"), d, config)
 	if err != nil {
 		return err
 	} else if v, ok := d.GetOkExists("num_nodes"); !isEmptyValue(reflect.ValueOf(nodeCountProp)) && (ok || !reflect.DeepEqual(v, nodeCountProp)) {
@@ -143,17 +127,13 @@ func resourceSpannerInstanceCreate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	url, err := replaceVars(d, config, "{{SpannerBasePath}}projects/{{project}}/instances")
+	url, err := replaceVars(d, config, "https://spanner.googleapis.com/v1/projects/{{project}}/instances")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Creating new Instance: %#v", obj)
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-	res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutCreate))
+	res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating Instance: %s", err)
 	}
@@ -165,35 +145,25 @@ func resourceSpannerInstanceCreate(d *schema.ResourceData, meta interface{}) err
 	}
 	d.SetId(id)
 
-	// Use the resource in the operation response to populate
-	// identity fields and d.Id() before read
-	var opRes map[string]interface{}
-	err = spannerOperationWaitTimeWithResponse(
-		config, res, &opRes, project, "Creating Instance",
-		int(d.Timeout(schema.TimeoutCreate).Minutes()))
+	project, err := getProject(d, config)
 	if err != nil {
-		// The resource didn't actually create
-		d.SetId("")
-		return fmt.Errorf("Error waiting to create Instance: %s", err)
+		return err
 	}
-
-	opRes, err = resourceSpannerInstanceDecoder(d, meta, opRes)
+	op := &spanner.Operation{}
+	err = Convert(res, op)
 	if err != nil {
-		return fmt.Errorf("Error decoding response from operation: %s", err)
-	}
-	if opRes == nil {
-		return fmt.Errorf("Error decoding response from operation, could not find object")
-	}
-	if err := d.Set("name", flattenSpannerInstanceName(opRes["name"], d, config)); err != nil {
 		return err
 	}
 
-	// This may have caused the ID to update - update it if so.
-	id, err = replaceVars(d, config, "{{project}}/{{name}}")
-	if err != nil {
-		return fmt.Errorf("Error constructing id: %s", err)
+	waitErr := spannerOperationWaitTime(
+		config.clientSpanner, op, project, "Creating Instance",
+		int(d.Timeout(schema.TimeoutCreate).Minutes()))
+
+	if waitErr != nil {
+		// The resource didn't actually create
+		d.SetId("")
+		return fmt.Errorf("Error waiting to create Instance: %s", waitErr)
 	}
-	d.SetId(id)
 
 	log.Printf("[DEBUG] Finished creating Instance %q: %#v", d.Id(), res)
 
@@ -208,16 +178,12 @@ func resourceSpannerInstanceCreate(d *schema.ResourceData, meta interface{}) err
 func resourceSpannerInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "{{SpannerBasePath}}projects/{{project}}/instances/{{name}}")
+	url, err := replaceVars(d, config, "https://spanner.googleapis.com/v1/projects/{{project}}/instances/{{name}}")
 	if err != nil {
 		return err
 	}
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-	res, err := sendRequest(config, "GET", project, url, nil)
+	res, err := sendRequest(config, "GET", url, nil)
 	if err != nil {
 		return handleNotFoundError(err, d, fmt.Sprintf("SpannerInstance %q", d.Id()))
 	}
@@ -227,33 +193,30 @@ func resourceSpannerInstanceRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	if res == nil {
-		// Decoding the object has resulted in it being gone. It may be marked deleted
-		log.Printf("[DEBUG] Removing SpannerInstance because it no longer exists.")
-		d.SetId("")
-		return nil
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
 	}
-
 	if err := d.Set("project", project); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
 
-	if err := d.Set("name", flattenSpannerInstanceName(res["name"], d, config)); err != nil {
+	if err := d.Set("name", flattenSpannerInstanceName(res["name"], d)); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
-	if err := d.Set("config", flattenSpannerInstanceConfig(res["config"], d, config)); err != nil {
+	if err := d.Set("config", flattenSpannerInstanceConfig(res["config"], d)); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
-	if err := d.Set("display_name", flattenSpannerInstanceDisplayName(res["displayName"], d, config)); err != nil {
+	if err := d.Set("display_name", flattenSpannerInstanceDisplayName(res["displayName"], d)); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
-	if err := d.Set("num_nodes", flattenSpannerInstanceNumNodes(res["nodeCount"], d, config)); err != nil {
+	if err := d.Set("num_nodes", flattenSpannerInstanceNum_nodes(res["nodeCount"], d)); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
-	if err := d.Set("labels", flattenSpannerInstanceLabels(res["labels"], d, config)); err != nil {
+	if err := d.Set("labels", flattenSpannerInstanceLabels(res["labels"], d)); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
-	if err := d.Set("state", flattenSpannerInstanceState(res["state"], d, config)); err != nil {
+	if err := d.Set("state", flattenSpannerInstanceState(res["state"], d)); err != nil {
 		return fmt.Errorf("Error reading Instance: %s", err)
 	}
 
@@ -262,11 +225,6 @@ func resourceSpannerInstanceRead(d *schema.ResourceData, meta interface{}) error
 
 func resourceSpannerInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
-
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 
 	obj := make(map[string]interface{})
 	configProp, err := expandSpannerInstanceConfig(d.Get("config"), d, config)
@@ -281,7 +239,7 @@ func resourceSpannerInstanceUpdate(d *schema.ResourceData, meta interface{}) err
 	} else if v, ok := d.GetOkExists("display_name"); !isEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, displayNameProp)) {
 		obj["displayName"] = displayNameProp
 	}
-	nodeCountProp, err := expandSpannerInstanceNumNodes(d.Get("num_nodes"), d, config)
+	nodeCountProp, err := expandSpannerInstanceNum_nodes(d.Get("num_nodes"), d, config)
 	if err != nil {
 		return err
 	} else if v, ok := d.GetOkExists("num_nodes"); !isEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, nodeCountProp)) {
@@ -295,24 +253,31 @@ func resourceSpannerInstanceUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	obj, err = resourceSpannerInstanceUpdateEncoder(d, meta, obj)
-	if err != nil {
-		return err
-	}
 
-	url, err := replaceVars(d, config, "{{SpannerBasePath}}projects/{{project}}/instances/{{name}}")
+	url, err := replaceVars(d, config, "https://spanner.googleapis.com/v1/projects/{{project}}/instances/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Updating Instance %q: %#v", d.Id(), obj)
-	res, err := sendRequestWithTimeout(config, "PATCH", project, url, obj, d.Timeout(schema.TimeoutUpdate))
+	res, err := sendRequestWithTimeout(config, "PATCH", url, obj, d.Timeout(schema.TimeoutUpdate))
 
 	if err != nil {
 		return fmt.Errorf("Error updating Instance %q: %s", d.Id(), err)
 	}
 
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+	op := &spanner.Operation{}
+	err = Convert(res, op)
+	if err != nil {
+		return err
+	}
+
 	err = spannerOperationWaitTime(
-		config, res, project, "Updating Instance",
+		config.clientSpanner, op, project, "Updating Instance",
 		int(d.Timeout(schema.TimeoutUpdate).Minutes()))
 
 	if err != nil {
@@ -325,22 +290,34 @@ func resourceSpannerInstanceUpdate(d *schema.ResourceData, meta interface{}) err
 func resourceSpannerInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-
-	url, err := replaceVars(d, config, "{{SpannerBasePath}}projects/{{project}}/instances/{{name}}")
+	url, err := replaceVars(d, config, "https://spanner.googleapis.com/v1/projects/{{project}}/instances/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	var obj map[string]interface{}
 	log.Printf("[DEBUG] Deleting Instance %q", d.Id())
-
-	res, err := sendRequestWithTimeout(config, "DELETE", project, url, obj, d.Timeout(schema.TimeoutDelete))
+	res, err := sendRequestWithTimeout(config, "DELETE", url, obj, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return handleNotFoundError(err, d, "Instance")
+	}
+
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+	op := &spanner.Operation{}
+	err = Convert(res, op)
+	if err != nil {
+		return err
+	}
+
+	err = spannerOperationWaitTime(
+		config.clientSpanner, op, project, "Deleting Instance",
+		int(d.Timeout(schema.TimeoutDelete).Minutes()))
+
+	if err != nil {
+		return err
 	}
 
 	log.Printf("[DEBUG] Finished deleting Instance %q: %#v", d.Id(), res)
@@ -349,11 +326,7 @@ func resourceSpannerInstanceDelete(d *schema.ResourceData, meta interface{}) err
 
 func resourceSpannerInstanceImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
-	if err := parseImportId([]string{
-		"projects/(?P<project>[^/]+)/instances/(?P<name>[^/]+)",
-		"(?P<project>[^/]+)/(?P<name>[^/]+)",
-		"(?P<name>[^/]+)",
-	}, d, config); err != nil {
+	if err := parseImportId([]string{"projects/(?P<project>[^/]+)/instances/(?P<name>[^/]+)", "(?P<project>[^/]+)/(?P<name>[^/]+)", "(?P<name>[^/]+)"}, d, config); err != nil {
 		return nil, err
 	}
 
@@ -367,25 +340,22 @@ func resourceSpannerInstanceImport(d *schema.ResourceData, meta interface{}) ([]
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenSpannerInstanceName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
-	if v == nil {
-		return v
-	}
-	return NameFromSelfLinkStateFunc(v)
+func flattenSpannerInstanceName(v interface{}, d *schema.ResourceData) interface{} {
+	return v
 }
 
-func flattenSpannerInstanceConfig(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenSpannerInstanceConfig(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
 	return ConvertSelfLinkToV1(v.(string))
 }
 
-func flattenSpannerInstanceDisplayName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenSpannerInstanceDisplayName(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenSpannerInstanceNumNodes(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenSpannerInstanceNum_nodes(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -395,19 +365,19 @@ func flattenSpannerInstanceNumNodes(v interface{}, d *schema.ResourceData, confi
 	return v
 }
 
-func flattenSpannerInstanceLabels(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenSpannerInstanceLabels(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenSpannerInstanceState(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenSpannerInstanceState(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func expandSpannerInstanceName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSpannerInstanceName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandSpannerInstanceConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSpannerInstanceConfig(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	r := regexp.MustCompile("projects/(.+)/instanceConfigs/(.+)")
 	if r.MatchString(v.(string)) {
 		return v.(string), nil
@@ -421,15 +391,15 @@ func expandSpannerInstanceConfig(v interface{}, d TerraformResourceData, config 
 	return fmt.Sprintf("projects/%s/instanceConfigs/%s", project, v.(string)), nil
 }
 
-func expandSpannerInstanceDisplayName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSpannerInstanceDisplayName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandSpannerInstanceNumNodes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandSpannerInstanceNum_nodes(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandSpannerInstanceLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+func expandSpannerInstanceLabels(v interface{}, d *schema.ResourceData, config *Config) (map[string]string, error) {
 	if v == nil {
 		return map[string]string{}, nil
 	}

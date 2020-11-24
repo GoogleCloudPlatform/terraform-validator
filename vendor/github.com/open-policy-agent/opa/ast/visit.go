@@ -7,13 +7,13 @@ package ast
 // Visitor defines the interface for iterating AST elements. The Visit function
 // can return a Visitor w which will be used to visit the children of the AST
 // element v. If the Visit function returns nil, the children will not be
-// visited. This is deprecated.
+// visited.
 type Visitor interface {
 	Visit(v interface{}) (w Visitor)
 }
 
-// BeforeAndAfterVisitor wraps Visitor to provide hooks for being called before
-// and after the AST has been visited. This is deprecated.
+// BeforeAndAfterVisitor wraps Visitor to provie hooks for being called before
+// and after the AST has been visited.
 type BeforeAndAfterVisitor interface {
 	Visitor
 	Before(x interface{})
@@ -21,24 +21,20 @@ type BeforeAndAfterVisitor interface {
 }
 
 // Walk iterates the AST by calling the Visit function on the Visitor
-// v for x before recursing. This is deprecated.
+// v for x before recursing.
 func Walk(v Visitor, x interface{}) {
-	if bav, ok := v.(BeforeAndAfterVisitor); !ok {
-		walk(v, x)
-	} else {
-		bav.Before(x)
-		defer bav.After(x)
-		walk(bav, x)
+	wrapped, ok := v.(BeforeAndAfterVisitor)
+	if !ok {
+		wrapped = noopBeforeAndAfterVisitor{v}
 	}
+	WalkBeforeAndAfter(wrapped, x)
 }
 
 // WalkBeforeAndAfter iterates the AST by calling the Visit function on the
-// Visitor v for x before recursing. This is deprecated.
+// Visitor v for x before recursing.
 func WalkBeforeAndAfter(v BeforeAndAfterVisitor, x interface{}) {
-	Walk(v, x)
-}
-
-func walk(v Visitor, x interface{}) {
+	v.Before(x)
+	defer v.After(x)
 	w := v.Visit(x)
 	if w == nil {
 		return
@@ -107,9 +103,9 @@ func walk(v Visitor, x interface{}) {
 			Walk(w, t)
 		}
 	case Object:
-		x.Foreach(func(k, vv *Term) {
+		x.Foreach(func(k, v *Term) {
 			Walk(w, k)
-			Walk(w, vv)
+			Walk(w, v)
 		})
 	case Array:
 		for _, t := range x {
@@ -145,7 +141,7 @@ func WalkVars(x interface{}, f func(Var) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkClosures calls the function f on all closures under x. If the function f
@@ -158,7 +154,7 @@ func WalkClosures(x interface{}, f func(interface{}) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkRefs calls the function f on all references under x. If the function f
@@ -170,7 +166,7 @@ func WalkRefs(x interface{}, f func(Ref) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkTerms calls the function f on all terms under x. If the function f
@@ -182,7 +178,7 @@ func WalkTerms(x interface{}, f func(*Term) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkWiths calls the function f on all with modifiers under x. If the function f
@@ -194,7 +190,7 @@ func WalkWiths(x interface{}, f func(*With) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkExprs calls the function f on all expressions under x. If the function f
@@ -206,7 +202,7 @@ func WalkExprs(x interface{}, f func(*Expr) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkBodies calls the function f on all bodies under x. If the function f
@@ -218,7 +214,7 @@ func WalkBodies(x interface{}, f func(Body) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkRules calls the function f on all rules under x. If the function f
@@ -226,16 +222,11 @@ func WalkBodies(x interface{}, f func(Body) bool) {
 func WalkRules(x interface{}, f func(*Rule) bool) {
 	vis := &GenericVisitor{func(x interface{}) bool {
 		if r, ok := x.(*Rule); ok {
-			stop := f(r)
-			// NOTE(tsandall): since rules cannot be embedded inside of queries
-			// we can stop early if there is no else block.
-			if stop || r.Else == nil {
-				return true
-			}
+			return f(r)
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
 // WalkNodes calls the function f on all nodes under x. If the function f
@@ -247,12 +238,12 @@ func WalkNodes(x interface{}, f func(Node) bool) {
 		}
 		return false
 	}}
-	vis.Walk(x)
+	Walk(vis, x)
 }
 
-// GenericVisitor provides a utility to walk over AST nodes using a
-// closure. If the closure returns true, the visitor will not walk
-// over AST nodes under x.
+// GenericVisitor implements the Visitor interface to provide
+// a utility to walk over AST nodes using a closure. If the closure
+// returns true, the visitor will not walk over AST nodes under x.
 type GenericVisitor struct {
 	f func(x interface{}) bool
 }
@@ -263,223 +254,12 @@ func NewGenericVisitor(f func(x interface{}) bool) *GenericVisitor {
 	return &GenericVisitor{f}
 }
 
-// Walk iterates the AST by calling the function f on the
-// GenericVisitor before recursing. Contrary to the generic Walk, this
-// does not require allocating the visitor from heap.
-func (vis *GenericVisitor) Walk(x interface{}) {
+// Visit calls the function f on the GenericVisitor.
+func (vis *GenericVisitor) Visit(x interface{}) Visitor {
 	if vis.f(x) {
-		return
+		return nil
 	}
-
-	switch x := x.(type) {
-	case *Module:
-		vis.Walk(x.Package)
-		for _, i := range x.Imports {
-			vis.Walk(i)
-		}
-		for _, r := range x.Rules {
-			vis.Walk(r)
-		}
-		for _, c := range x.Comments {
-			vis.Walk(c)
-		}
-	case *Package:
-		vis.Walk(x.Path)
-	case *Import:
-		vis.Walk(x.Path)
-		vis.Walk(x.Alias)
-	case *Rule:
-		vis.Walk(x.Head)
-		vis.Walk(x.Body)
-		if x.Else != nil {
-			vis.Walk(x.Else)
-		}
-	case *Head:
-		vis.Walk(x.Name)
-		vis.Walk(x.Args)
-		if x.Key != nil {
-			vis.Walk(x.Key)
-		}
-		if x.Value != nil {
-			vis.Walk(x.Value)
-		}
-	case Body:
-		for _, e := range x {
-			vis.Walk(e)
-		}
-	case Args:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case *Expr:
-		switch ts := x.Terms.(type) {
-		case *SomeDecl:
-			vis.Walk(ts)
-		case []*Term:
-			for _, t := range ts {
-				vis.Walk(t)
-			}
-		case *Term:
-			vis.Walk(ts)
-		}
-		for i := range x.With {
-			vis.Walk(x.With[i])
-		}
-	case *With:
-		vis.Walk(x.Target)
-		vis.Walk(x.Value)
-	case *Term:
-		vis.Walk(x.Value)
-	case Ref:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case Object:
-		for _, k := range x.Keys() {
-			vis.Walk(k)
-			vis.Walk(x.Get(k))
-		}
-	case Array:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case Set:
-		for _, t := range x.Slice() {
-			vis.Walk(t)
-		}
-	case *ArrayComprehension:
-		vis.Walk(x.Term)
-		vis.Walk(x.Body)
-	case *ObjectComprehension:
-		vis.Walk(x.Key)
-		vis.Walk(x.Value)
-		vis.Walk(x.Body)
-	case *SetComprehension:
-		vis.Walk(x.Term)
-		vis.Walk(x.Body)
-	case Call:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	}
-}
-
-// BeforeAfterVisitor provides a utility to walk over AST nodes using
-// closures. If the before closure returns true, the visitor will not
-// walk over AST nodes under x. The after closure is invoked always
-// after visiting a node.
-type BeforeAfterVisitor struct {
-	before func(x interface{}) bool
-	after  func(x interface{})
-}
-
-// NewBeforeAfterVisitor returns a new BeforeAndAfterVisitor that
-// will invoke the functions before and after AST nodes.
-func NewBeforeAfterVisitor(before func(x interface{}) bool, after func(x interface{})) *BeforeAfterVisitor {
-	return &BeforeAfterVisitor{before, after}
-}
-
-// Walk iterates the AST by calling the functions on the
-// BeforeAndAfterVisitor before and after recursing. Contrary to the
-// generic Walk, this does not require allocating the visitor from
-// heap.
-func (vis *BeforeAfterVisitor) Walk(x interface{}) {
-	defer vis.after(x)
-	if vis.before(x) {
-		return
-	}
-
-	switch x := x.(type) {
-	case *Module:
-		vis.Walk(x.Package)
-		for _, i := range x.Imports {
-			vis.Walk(i)
-		}
-		for _, r := range x.Rules {
-			vis.Walk(r)
-		}
-		for _, c := range x.Comments {
-			vis.Walk(c)
-		}
-	case *Package:
-		vis.Walk(x.Path)
-	case *Import:
-		vis.Walk(x.Path)
-		vis.Walk(x.Alias)
-	case *Rule:
-		vis.Walk(x.Head)
-		vis.Walk(x.Body)
-		if x.Else != nil {
-			vis.Walk(x.Else)
-		}
-	case *Head:
-		vis.Walk(x.Name)
-		vis.Walk(x.Args)
-		if x.Key != nil {
-			vis.Walk(x.Key)
-		}
-		if x.Value != nil {
-			vis.Walk(x.Value)
-		}
-	case Body:
-		for _, e := range x {
-			vis.Walk(e)
-		}
-	case Args:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case *Expr:
-		switch ts := x.Terms.(type) {
-		case *SomeDecl:
-			vis.Walk(ts)
-		case []*Term:
-			for _, t := range ts {
-				vis.Walk(t)
-			}
-		case *Term:
-			vis.Walk(ts)
-		}
-		for i := range x.With {
-			vis.Walk(x.With[i])
-		}
-	case *With:
-		vis.Walk(x.Target)
-		vis.Walk(x.Value)
-	case *Term:
-		vis.Walk(x.Value)
-	case Ref:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case Object:
-		for _, k := range x.Keys() {
-			vis.Walk(k)
-			vis.Walk(x.Get(k))
-		}
-	case Array:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case Set:
-		for _, t := range x.Slice() {
-			vis.Walk(t)
-		}
-	case *ArrayComprehension:
-		vis.Walk(x.Term)
-		vis.Walk(x.Body)
-	case *ObjectComprehension:
-		vis.Walk(x.Key)
-		vis.Walk(x.Value)
-		vis.Walk(x.Body)
-	case *SetComprehension:
-		vis.Walk(x.Term)
-		vis.Walk(x.Body)
-	case Call:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	}
+	return vis
 }
 
 // VarVisitor walks AST nodes under a given node and collects all encountered
@@ -518,38 +298,39 @@ func (vis *VarVisitor) Vars() VarSet {
 	return vis.vars
 }
 
-func (vis *VarVisitor) visit(v interface{}) bool {
+// Visit is called to walk the AST node v.
+func (vis *VarVisitor) Visit(v interface{}) Visitor {
 	if vis.params.SkipObjectKeys {
 		if o, ok := v.(Object); ok {
-			for _, k := range o.Keys() {
-				vis.Walk(o.Get(k))
-			}
-			return true
+			o.Foreach(func(_, v *Term) {
+				Walk(vis, v)
+			})
+			return nil
 		}
 	}
 	if vis.params.SkipRefHead {
 		if r, ok := v.(Ref); ok {
 			for _, t := range r[1:] {
-				vis.Walk(t)
+				Walk(vis, t)
 			}
-			return true
+			return nil
 		}
 	}
 	if vis.params.SkipClosures {
 		switch v.(type) {
 		case *ArrayComprehension, *ObjectComprehension, *SetComprehension:
-			return true
+			return nil
 		}
 	}
 	if vis.params.SkipWithTarget {
 		if v, ok := v.(*With); ok {
-			vis.Walk(v.Value)
-			return true
+			Walk(vis, v.Value)
+			return nil
 		}
 	}
 	if vis.params.SkipSets {
 		if _, ok := v.(Set); ok {
-			return true
+			return nil
 		}
 	}
 	if vis.params.SkipRefCallHead {
@@ -557,130 +338,36 @@ func (vis *VarVisitor) visit(v interface{}) bool {
 		case *Expr:
 			if terms, ok := v.Terms.([]*Term); ok {
 				for _, t := range terms[0].Value.(Ref)[1:] {
-					vis.Walk(t)
+					Walk(vis, t)
 				}
 				for i := 1; i < len(terms); i++ {
-					vis.Walk(terms[i])
+					Walk(vis, terms[i])
 				}
 				for _, w := range v.With {
-					vis.Walk(w)
+					Walk(vis, w)
 				}
-				return true
+				return nil
 			}
 		case Call:
 			operator := v[0].Value.(Ref)
 			for i := 1; i < len(operator); i++ {
-				vis.Walk(operator[i])
+				Walk(vis, operator[i])
 			}
 			for i := 1; i < len(v); i++ {
-				vis.Walk(v[i])
+				Walk(vis, v[i])
 			}
-			return true
+			return nil
 		}
 	}
 	if v, ok := v.(Var); ok {
 		vis.vars.Add(v)
 	}
-	return false
+	return vis
 }
 
-// Walk iterates the AST by calling the function f on the
-// GenericVisitor before recursing. Contrary to the generic Walk, this
-// does not require allocating the visitor from heap.
-func (vis *VarVisitor) Walk(x interface{}) {
-	if vis.visit(x) {
-		return
-	}
-
-	switch x := x.(type) {
-	case *Module:
-		vis.Walk(x.Package)
-		for _, i := range x.Imports {
-			vis.Walk(i)
-		}
-		for _, r := range x.Rules {
-			vis.Walk(r)
-		}
-		for _, c := range x.Comments {
-			vis.Walk(c)
-		}
-	case *Package:
-		vis.Walk(x.Path)
-	case *Import:
-		vis.Walk(x.Path)
-		vis.Walk(x.Alias)
-	case *Rule:
-		vis.Walk(x.Head)
-		vis.Walk(x.Body)
-		if x.Else != nil {
-			vis.Walk(x.Else)
-		}
-	case *Head:
-		vis.Walk(x.Name)
-		vis.Walk(x.Args)
-		if x.Key != nil {
-			vis.Walk(x.Key)
-		}
-		if x.Value != nil {
-			vis.Walk(x.Value)
-		}
-	case Body:
-		for _, e := range x {
-			vis.Walk(e)
-		}
-	case Args:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case *Expr:
-		switch ts := x.Terms.(type) {
-		case *SomeDecl:
-			vis.Walk(ts)
-		case []*Term:
-			for _, t := range ts {
-				vis.Walk(t)
-			}
-		case *Term:
-			vis.Walk(ts)
-		}
-		for i := range x.With {
-			vis.Walk(x.With[i])
-		}
-	case *With:
-		vis.Walk(x.Target)
-		vis.Walk(x.Value)
-	case *Term:
-		vis.Walk(x.Value)
-	case Ref:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case Object:
-		for _, k := range x.Keys() {
-			vis.Walk(k)
-			vis.Walk(x.Get(k))
-		}
-	case Array:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	case Set:
-		for _, t := range x.Slice() {
-			vis.Walk(t)
-		}
-	case *ArrayComprehension:
-		vis.Walk(x.Term)
-		vis.Walk(x.Body)
-	case *ObjectComprehension:
-		vis.Walk(x.Key)
-		vis.Walk(x.Value)
-		vis.Walk(x.Body)
-	case *SetComprehension:
-		vis.Walk(x.Term)
-		vis.Walk(x.Body)
-	case Call:
-		for _, t := range x {
-			vis.Walk(t)
-		}
-	}
+type noopBeforeAndAfterVisitor struct {
+	Visitor
 }
+
+func (noopBeforeAndAfterVisitor) Before(interface{}) {}
+func (noopBeforeAndAfterVisitor) After(interface{})  {}

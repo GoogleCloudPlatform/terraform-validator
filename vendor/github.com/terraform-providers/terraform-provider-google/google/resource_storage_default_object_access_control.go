@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceStorageDefaultObjectAccessControl() *schema.Resource {
@@ -37,9 +37,9 @@ func resourceStorageDefaultObjectAccessControl() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(4 * time.Minute),
-			Update: schema.DefaultTimeout(4 * time.Minute),
-			Delete: schema.DefaultTimeout(4 * time.Minute),
+			Create: schema.DefaultTimeout(240 * time.Second),
+			Update: schema.DefaultTimeout(240 * time.Second),
+			Delete: schema.DefaultTimeout(240 * time.Second),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -47,69 +47,50 @@ func resourceStorageDefaultObjectAccessControl() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: compareSelfLinkOrResourceName,
-				Description:      `The name of the bucket.`,
 			},
 			"entity": {
 				Type:     schema.TypeString,
 				Required: true,
-				Description: `The entity holding the permission, in one of the following forms:
-  * user-{{userId}}
-  * user-{{email}} (such as "user-liz@example.com")
-  * group-{{groupId}}
-  * group-{{email}} (such as "group-example@googlegroups.com")
-  * domain-{{domain}} (such as "domain-example.com")
-  * project-team-{{projectId}}
-  * allUsers
-  * allAuthenticatedUsers`,
 			},
 			"role": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"OWNER", "READER"}, false),
-				Description:  `The access permission for the entity.`,
 			},
 			"object": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: `The name of the object, if applied to an object.`,
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"domain": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: `The domain associated with the entity.`,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"email": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: `The email address associated with the entity.`,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"entity_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: `The ID for the entity`,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"generation": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: `The content generation of the object, if applied to an object.`,
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"project_team": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: `The project team associated with the entity`,
-				MaxItems:    1,
+				Type:     schema.TypeList,
+				Computed: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project_number": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: `The project team associated with the entity`,
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 						"team": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							ValidateFunc: validation.StringInSlice([]string{"editors", "owners", "viewers", ""}, false),
-							Description:  `The team.`,
 						},
 					},
 				},
@@ -147,20 +128,13 @@ func resourceStorageDefaultObjectAccessControlCreate(d *schema.ResourceData, met
 		obj["role"] = roleProp
 	}
 
-	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
-	if err != nil {
-		return err
-	}
-	mutexKV.Lock(lockName)
-	defer mutexKV.Unlock(lockName)
-
-	url, err := replaceVars(d, config, "{{StorageBasePath}}b/{{bucket}}/defaultObjectAcl")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/storage/v1/b/{{bucket}}/defaultObjectAcl")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Creating new DefaultObjectAccessControl: %#v", obj)
-	res, err := sendRequestWithTimeout(config, "POST", "", url, obj, d.Timeout(schema.TimeoutCreate))
+	res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating DefaultObjectAccessControl: %s", err)
 	}
@@ -180,38 +154,38 @@ func resourceStorageDefaultObjectAccessControlCreate(d *schema.ResourceData, met
 func resourceStorageDefaultObjectAccessControlRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "{{StorageBasePath}}b/{{bucket}}/defaultObjectAcl/{{entity}}")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/storage/v1/b/{{bucket}}/defaultObjectAcl/{{entity}}")
 	if err != nil {
 		return err
 	}
 
-	res, err := sendRequest(config, "GET", "", url, nil)
+	res, err := sendRequest(config, "GET", url, nil)
 	if err != nil {
 		return handleNotFoundError(err, d, fmt.Sprintf("StorageDefaultObjectAccessControl %q", d.Id()))
 	}
 
-	if err := d.Set("domain", flattenStorageDefaultObjectAccessControlDomain(res["domain"], d, config)); err != nil {
+	if err := d.Set("domain", flattenStorageDefaultObjectAccessControlDomain(res["domain"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("email", flattenStorageDefaultObjectAccessControlEmail(res["email"], d, config)); err != nil {
+	if err := d.Set("email", flattenStorageDefaultObjectAccessControlEmail(res["email"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("entity", flattenStorageDefaultObjectAccessControlEntity(res["entity"], d, config)); err != nil {
+	if err := d.Set("entity", flattenStorageDefaultObjectAccessControlEntity(res["entity"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("entity_id", flattenStorageDefaultObjectAccessControlEntityId(res["entityId"], d, config)); err != nil {
+	if err := d.Set("entity_id", flattenStorageDefaultObjectAccessControlEntityId(res["entityId"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("generation", flattenStorageDefaultObjectAccessControlGeneration(res["generation"], d, config)); err != nil {
+	if err := d.Set("generation", flattenStorageDefaultObjectAccessControlGeneration(res["generation"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("object", flattenStorageDefaultObjectAccessControlObject(res["object"], d, config)); err != nil {
+	if err := d.Set("object", flattenStorageDefaultObjectAccessControlObject(res["object"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("project_team", flattenStorageDefaultObjectAccessControlProjectTeam(res["projectTeam"], d, config)); err != nil {
+	if err := d.Set("project_team", flattenStorageDefaultObjectAccessControlProjectTeam(res["projectTeam"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
-	if err := d.Set("role", flattenStorageDefaultObjectAccessControlRole(res["role"], d, config)); err != nil {
+	if err := d.Set("role", flattenStorageDefaultObjectAccessControlRole(res["role"], d)); err != nil {
 		return fmt.Errorf("Error reading DefaultObjectAccessControl: %s", err)
 	}
 
@@ -247,20 +221,13 @@ func resourceStorageDefaultObjectAccessControlUpdate(d *schema.ResourceData, met
 		obj["role"] = roleProp
 	}
 
-	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
-	if err != nil {
-		return err
-	}
-	mutexKV.Lock(lockName)
-	defer mutexKV.Unlock(lockName)
-
-	url, err := replaceVars(d, config, "{{StorageBasePath}}b/{{bucket}}/defaultObjectAcl/{{entity}}")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/storage/v1/b/{{bucket}}/defaultObjectAcl/{{entity}}")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Updating DefaultObjectAccessControl %q: %#v", d.Id(), obj)
-	_, err = sendRequestWithTimeout(config, "PUT", "", url, obj, d.Timeout(schema.TimeoutUpdate))
+	_, err = sendRequestWithTimeout(config, "PUT", url, obj, d.Timeout(schema.TimeoutUpdate))
 
 	if err != nil {
 		return fmt.Errorf("Error updating DefaultObjectAccessControl %q: %s", d.Id(), err)
@@ -272,22 +239,14 @@ func resourceStorageDefaultObjectAccessControlUpdate(d *schema.ResourceData, met
 func resourceStorageDefaultObjectAccessControlDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
-	if err != nil {
-		return err
-	}
-	mutexKV.Lock(lockName)
-	defer mutexKV.Unlock(lockName)
-
-	url, err := replaceVars(d, config, "{{StorageBasePath}}b/{{bucket}}/defaultObjectAcl/{{entity}}")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/storage/v1/b/{{bucket}}/defaultObjectAcl/{{entity}}")
 	if err != nil {
 		return err
 	}
 
 	var obj map[string]interface{}
 	log.Printf("[DEBUG] Deleting DefaultObjectAccessControl %q", d.Id())
-
-	res, err := sendRequestWithTimeout(config, "DELETE", "", url, obj, d.Timeout(schema.TimeoutDelete))
+	res, err := sendRequestWithTimeout(config, "DELETE", url, obj, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return handleNotFoundError(err, d, "DefaultObjectAccessControl")
 	}
@@ -298,9 +257,7 @@ func resourceStorageDefaultObjectAccessControlDelete(d *schema.ResourceData, met
 
 func resourceStorageDefaultObjectAccessControlImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
-	if err := parseImportId([]string{
-		"(?P<bucket>[^/]+)/(?P<entity>[^/]+)",
-	}, d, config); err != nil {
+	if err := parseImportId([]string{"(?P<bucket>[^/]+)/(?P<entity>[^/]+)"}, d, config); err != nil {
 		return nil, err
 	}
 
@@ -314,23 +271,23 @@ func resourceStorageDefaultObjectAccessControlImport(d *schema.ResourceData, met
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenStorageDefaultObjectAccessControlDomain(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlDomain(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlEmail(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlEmail(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlEntity(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlEntity(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlEntityId(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlEntityId(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlGeneration(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlGeneration(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -340,11 +297,11 @@ func flattenStorageDefaultObjectAccessControlGeneration(v interface{}, d *schema
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlObject(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlObject(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlProjectTeam(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlProjectTeam(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -354,35 +311,35 @@ func flattenStorageDefaultObjectAccessControlProjectTeam(v interface{}, d *schem
 	}
 	transformed := make(map[string]interface{})
 	transformed["project_number"] =
-		flattenStorageDefaultObjectAccessControlProjectTeamProjectNumber(original["projectNumber"], d, config)
+		flattenStorageDefaultObjectAccessControlProjectTeamProjectNumber(original["projectNumber"], d)
 	transformed["team"] =
-		flattenStorageDefaultObjectAccessControlProjectTeamTeam(original["team"], d, config)
+		flattenStorageDefaultObjectAccessControlProjectTeamTeam(original["team"], d)
 	return []interface{}{transformed}
 }
-func flattenStorageDefaultObjectAccessControlProjectTeamProjectNumber(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlProjectTeamProjectNumber(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlProjectTeamTeam(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlProjectTeamTeam(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenStorageDefaultObjectAccessControlRole(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenStorageDefaultObjectAccessControlRole(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func expandStorageDefaultObjectAccessControlBucket(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandStorageDefaultObjectAccessControlBucket(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandStorageDefaultObjectAccessControlEntity(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandStorageDefaultObjectAccessControlEntity(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandStorageDefaultObjectAccessControlObject(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandStorageDefaultObjectAccessControlObject(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandStorageDefaultObjectAccessControlRole(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandStorageDefaultObjectAccessControlRole(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

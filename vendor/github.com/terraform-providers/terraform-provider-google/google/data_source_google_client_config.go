@@ -3,7 +3,7 @@ package google
 import (
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func dataSourceGoogleClientConfig() *schema.Resource {
@@ -16,11 +16,6 @@ func dataSourceGoogleClientConfig() *schema.Resource {
 			},
 
 			"region": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"zone": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -40,7 +35,6 @@ func dataSourceClientConfigRead(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(time.Now().UTC().String())
 	d.Set("project", config.Project)
 	d.Set("region", config.Region)
-	d.Set("zone", config.Zone)
 
 	token, err := config.tokenSource.Token()
 	if err != nil {

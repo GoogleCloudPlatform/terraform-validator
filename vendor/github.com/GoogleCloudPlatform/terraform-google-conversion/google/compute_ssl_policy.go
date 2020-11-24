@@ -15,13 +15,14 @@
 package google
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func sslPolicyCustomizeDiff(diff *schema.ResourceDiff, v interface{}) error {
+func sslPolicyCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 	profile := diff.Get("profile")
 	customFeaturesCount := diff.Get("custom_features.#")
 

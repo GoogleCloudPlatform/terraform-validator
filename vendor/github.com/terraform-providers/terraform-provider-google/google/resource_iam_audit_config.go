@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
 
@@ -38,20 +38,42 @@ var iamAuditConfigSchema = map[string]*schema.Schema{
 	},
 }
 
-func ResourceIamAuditConfig(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
-	return ResourceIamAuditConfigWithBatching(parentSpecificSchema, newUpdaterFunc, resourceIdParser, IamBatchingDisabled)
+func ResourceIamAuditConfig(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc) *schema.Resource {
+	return &schema.Resource{
+		Create: resourceIamAuditConfigCreate(newUpdaterFunc),
+		Read:   resourceIamAuditConfigRead(newUpdaterFunc),
+		Update: resourceIamAuditConfigUpdate(newUpdaterFunc),
+		Delete: resourceIamAuditConfigDelete(newUpdaterFunc),
+		Schema: mergeSchemas(iamAuditConfigSchema, parentSpecificSchema),
+	}
 }
 
-func ResourceIamAuditConfigWithBatching(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc, enableBatching bool) *schema.Resource {
-	return &schema.Resource{
-		Create: resourceIamAuditConfigCreateUpdate(newUpdaterFunc, enableBatching),
-		Read:   resourceIamAuditConfigRead(newUpdaterFunc),
-		Update: resourceIamAuditConfigCreateUpdate(newUpdaterFunc, enableBatching),
-		Delete: resourceIamAuditConfigDelete(newUpdaterFunc, enableBatching),
-		Schema: mergeSchemas(iamAuditConfigSchema, parentSpecificSchema),
-		Importer: &schema.ResourceImporter{
-			State: iamAuditConfigImport(resourceIdParser),
-		},
+func ResourceIamAuditConfigWithImport(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
+	r := ResourceIamAuditConfig(parentSpecificSchema, newUpdaterFunc)
+	r.Importer = &schema.ResourceImporter{
+		State: iamAuditConfigImport(resourceIdParser),
+	}
+	return r
+}
+
+func resourceIamAuditConfigCreate(newUpdaterFunc newResourceIamUpdaterFunc) schema.CreateFunc {
+	return func(d *schema.ResourceData, meta interface{}) error {
+		config := meta.(*Config)
+		updater, err := newUpdaterFunc(d, config)
+		if err != nil {
+			return err
+		}
+
+		p := getResourceIamAuditConfig(d)
+		err = iamPolicyReadModifyWrite(updater, func(ep *cloudresourcemanager.Policy) error {
+			ep.AuditConfigs = mergeAuditConfigs(append(ep.AuditConfigs, p))
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		d.SetId(updater.GetResourceId() + "/audit_config/" + p.Service)
+		return resourceIamAuditConfigRead(newUpdaterFunc)(d, meta)
 	}
 }
 
@@ -64,9 +86,15 @@ func resourceIamAuditConfigRead(newUpdaterFunc newResourceIamUpdaterFunc) schema
 		}
 
 		eAuditConfig := getResourceIamAuditConfig(d)
-		p, err := iamPolicyReadWithRetry(updater)
+		p, err := updater.GetResourceIamPolicy()
 		if err != nil {
-			return handleNotFoundError(err, d, fmt.Sprintf("AuditConfig for %s on %q", eAuditConfig.Service, updater.DescribeResource()))
+			if isGoogleApiErrorWithCode(err, 404) {
+				log.Printf("[DEBUG]: AuditConfig for service %q not found for non-existent resource %s, removing from state file.", eAuditConfig.Service, updater.DescribeResource())
+				d.SetId("")
+				return nil
+			}
+
+			return err
 		}
 		log.Printf("[DEBUG]: Retrieved policy for %s: %+v", updater.DescribeResource(), p)
 
@@ -83,7 +111,6 @@ func resourceIamAuditConfigRead(newUpdaterFunc newResourceIamUpdaterFunc) schema
 			d.SetId("")
 			return nil
 		}
-
 		d.Set("etag", p.Etag)
 		err = d.Set("audit_log_config", flattenAuditLogConfigs(ac.AuditLogConfigs))
 		if err != nil {
@@ -122,7 +149,7 @@ func iamAuditConfigImport(resourceIdParser resourceIdParserFunc) schema.StateFun
 	}
 }
 
-func resourceIamAuditConfigCreateUpdate(newUpdaterFunc newResourceIamUpdaterFunc, enableBatching bool) func(*schema.ResourceData, interface{}) error {
+func resourceIamAuditConfigUpdate(newUpdaterFunc newResourceIamUpdaterFunc) schema.UpdateFunc {
 	return func(d *schema.ResourceData, meta interface{}) error {
 		config := meta.(*Config)
 		updater, err := newUpdaterFunc(d, config)
@@ -131,26 +158,30 @@ func resourceIamAuditConfigCreateUpdate(newUpdaterFunc newResourceIamUpdaterFunc
 		}
 
 		ac := getResourceIamAuditConfig(d)
-		modifyF := func(ep *cloudresourcemanager.Policy) error {
-			cleaned := removeAllAuditConfigsWithService(ep.AuditConfigs, ac.Service)
-			ep.AuditConfigs = append(cleaned, ac)
+		err = iamPolicyReadModifyWrite(updater, func(p *cloudresourcemanager.Policy) error {
+			var found bool
+			for pos, b := range p.AuditConfigs {
+				if b.Service != ac.Service {
+					continue
+				}
+				found = true
+				p.AuditConfigs[pos] = ac
+				break
+			}
+			if !found {
+				p.AuditConfigs = append(p.AuditConfigs, ac)
+			}
 			return nil
-		}
-		if enableBatching {
-			err = BatchRequestModifyIamPolicy(updater, modifyF, config, fmt.Sprintf(
-				"Overwrite audit config for service %s on resource %q", ac.Service, updater.DescribeResource()))
-		} else {
-			err = iamPolicyReadModifyWrite(updater, modifyF)
-		}
+		})
 		if err != nil {
 			return err
 		}
-		d.SetId(updater.GetResourceId() + "/audit_config/" + ac.Service)
+
 		return resourceIamAuditConfigRead(newUpdaterFunc)(d, meta)
 	}
 }
 
-func resourceIamAuditConfigDelete(newUpdaterFunc newResourceIamUpdaterFunc, enableBatching bool) schema.DeleteFunc {
+func resourceIamAuditConfigDelete(newUpdaterFunc newResourceIamUpdaterFunc) schema.DeleteFunc {
 	return func(d *schema.ResourceData, meta interface{}) error {
 		config := meta.(*Config)
 		updater, err := newUpdaterFunc(d, config)
@@ -159,18 +190,29 @@ func resourceIamAuditConfigDelete(newUpdaterFunc newResourceIamUpdaterFunc, enab
 		}
 
 		ac := getResourceIamAuditConfig(d)
-		modifyF := func(ep *cloudresourcemanager.Policy) error {
-			ep.AuditConfigs = removeAllAuditConfigsWithService(ep.AuditConfigs, ac.Service)
+		err = iamPolicyReadModifyWrite(updater, func(p *cloudresourcemanager.Policy) error {
+			toRemove := -1
+			for pos, b := range p.AuditConfigs {
+				if b.Service != ac.Service {
+					continue
+				}
+				toRemove = pos
+				break
+			}
+			if toRemove < 0 {
+				log.Printf("[DEBUG]: Policy audit configs for %s did not include an audit config for service %q", updater.DescribeResource(), ac.Service)
+				return nil
+			}
+
+			p.AuditConfigs = append(p.AuditConfigs[:toRemove], p.AuditConfigs[toRemove+1:]...)
 			return nil
-		}
-		if enableBatching {
-			err = BatchRequestModifyIamPolicy(updater, modifyF, config, fmt.Sprintf(
-				"Delete audit config for service %s on resource %q", ac.Service, updater.DescribeResource()))
-		} else {
-			err = iamPolicyReadModifyWrite(updater, modifyF)
-		}
+		})
 		if err != nil {
-			return handleNotFoundError(err, d, fmt.Sprintf("Resource %s with IAM audit config %q", updater.DescribeResource(), d.Id()))
+			if isGoogleApiErrorWithCode(err, 404) {
+				log.Printf("[DEBUG]: Resource %s is missing or deleted, marking policy audit config as deleted", updater.DescribeResource())
+				return nil
+			}
+			return err
 		}
 
 		return resourceIamAuditConfigRead(newUpdaterFunc)(d, meta)
@@ -194,13 +236,11 @@ func getResourceIamAuditConfig(d *schema.ResourceData) *cloudresourcemanager.Aud
 }
 
 func flattenAuditLogConfigs(configs []*cloudresourcemanager.AuditLogConfig) *schema.Set {
-	auditLogConfigSchema := iamAuditConfigSchema["audit_log_config"].Elem.(*schema.Resource)
-	exemptedMemberSchema := auditLogConfigSchema.Schema["exempted_members"].Elem.(*schema.Schema)
-	res := schema.NewSet(schema.HashResource(auditLogConfigSchema), []interface{}{})
+	res := schema.NewSet(schema.HashResource(iamAuditConfigSchema["audit_log_config"].Elem.(*schema.Resource)), []interface{}{})
 	for _, conf := range configs {
 		res.Add(map[string]interface{}{
 			"log_type":         conf.LogType,
-			"exempted_members": schema.NewSet(schema.HashSchema(exemptedMemberSchema), convertStringArrToInterface(conf.ExemptedMembers)),
+			"exempted_members": schema.NewSet(schema.HashSchema(iamAuditConfigSchema["audit_log_config"].Elem.(*schema.Resource).Schema["exempted_members"].Elem.(*schema.Schema)), convertStringArrToInterface(conf.ExemptedMembers)),
 		})
 	}
 	return res

@@ -3,7 +3,7 @@ package google
 import (
 	"fmt"
 
-	"google.golang.org/api/dataproc/v1beta2"
+	"google.golang.org/api/dataproc/v1"
 )
 
 type DataprocClusterOperationWaiter struct {
@@ -20,7 +20,7 @@ func (w *DataprocClusterOperationWaiter) QueryOp() (interface{}, error) {
 
 func dataprocClusterOperationWait(config *Config, op *dataproc.Operation, activity string, timeoutMinutes int) error {
 	w := &DataprocClusterOperationWaiter{
-		Service: config.clientDataprocBeta,
+		Service: config.clientDataproc,
 	}
 	if err := w.SetOp(op); err != nil {
 		return err

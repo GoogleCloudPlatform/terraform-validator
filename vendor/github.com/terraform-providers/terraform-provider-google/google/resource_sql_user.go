@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	sqladmin "google.golang.org/api/sqladmin/v1beta4"
 )
 
@@ -79,13 +79,8 @@ func resourceSqlUserCreate(d *schema.ResourceData, meta interface{}) error {
 
 	mutexKV.Lock(instanceMutexKey(project, instance))
 	defer mutexKV.Unlock(instanceMutexKey(project, instance))
-	var op *sqladmin.Operation
-	insertFunc := func() error {
-		op, err = config.clientSqlAdmin.Users.Insert(project, instance,
-			user).Do()
-		return err
-	}
-	err = retryTimeDuration(insertFunc, d.Timeout(schema.TimeoutCreate))
+	op, err := config.clientSqlAdmin.Users.Insert(project, instance,
+		user).Do()
 
 	if err != nil {
 		return fmt.Errorf("Error, failed to insert "+
@@ -96,7 +91,7 @@ func resourceSqlUserCreate(d *schema.ResourceData, meta interface{}) error {
 	// for which user.Host is an empty string.  That's okay.
 	d.SetId(fmt.Sprintf("%s/%s/%s", user.Name, user.Host, user.Instance))
 
-	err = sqlAdminOperationWait(config, op, project, "Insert User")
+	err = sqladminOperationWait(config, op, project, "Insert User")
 
 	if err != nil {
 		return fmt.Errorf("Error, failure waiting for insertion of %s "+
@@ -130,13 +125,11 @@ func resourceSqlUserRead(d *schema.ResourceData, meta interface{}) error {
 
 	var user *sqladmin.User
 	for _, currentUser := range users.Items {
-		if currentUser.Name == name {
-			// Host can only be empty for postgres instances,
-			// so don't compare the host if the API host is empty.
-			if currentUser.Host == "" || currentUser.Host == host {
-				user = currentUser
-				break
-			}
+		// The second part of this conditional is irrelevant for postgres instances because
+		// host and currentUser.Host will always both be empty.
+		if currentUser.Name == name && currentUser.Host == host {
+			user = currentUser
+			break
 		}
 	}
 
@@ -166,30 +159,27 @@ func resourceSqlUserUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		name := d.Get("name").(string)
 		instance := d.Get("instance").(string)
-		password := d.Get("password").(string)
 		host := d.Get("host").(string)
+		password := d.Get("password").(string)
 
 		user := &sqladmin.User{
 			Name:     name,
 			Instance: instance,
 			Password: password,
+			Host:     host,
 		}
 
 		mutexKV.Lock(instanceMutexKey(project, instance))
 		defer mutexKV.Unlock(instanceMutexKey(project, instance))
-		var op *sqladmin.Operation
-		updateFunc := func() error {
-			op, err = config.clientSqlAdmin.Users.Update(project, instance, user).Host(host).Name(name).Do()
-			return err
-		}
-		err = retryTimeDuration(updateFunc, d.Timeout(schema.TimeoutUpdate))
+		op, err := config.clientSqlAdmin.Users.Update(project, instance, name,
+			user).Do()
 
 		if err != nil {
 			return fmt.Errorf("Error, failed to update"+
 				"user %s into user %s: %s", name, instance, err)
 		}
 
-		err = sqlAdminOperationWait(config, op, project, "Insert User")
+		err = sqladminOperationWait(config, op, project, "Insert User")
 
 		if err != nil {
 			return fmt.Errorf("Error, failure waiting for update of %s "+
@@ -211,15 +201,15 @@ func resourceSqlUserDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	name := d.Get("name").(string)
-	host := d.Get("host").(string)
 	instance := d.Get("instance").(string)
+	host := d.Get("host").(string)
 
 	mutexKV.Lock(instanceMutexKey(project, instance))
 	defer mutexKV.Unlock(instanceMutexKey(project, instance))
 
 	var op *sqladmin.Operation
 	err = retryTimeDuration(func() error {
-		op, err = config.clientSqlAdmin.Users.Delete(project, instance).Host(host).Name(name).Do()
+		op, err = config.clientSqlAdmin.Users.Delete(project, instance, host, name).Do()
 		return err
 	}, d.Timeout(schema.TimeoutDelete))
 
@@ -229,7 +219,7 @@ func resourceSqlUserDelete(d *schema.ResourceData, meta interface{}) error {
 			instance, err)
 	}
 
-	err = sqlAdminOperationWait(config, op, project, "Delete User")
+	err = sqladminOperationWait(config, op, project, "Delete User")
 
 	if err != nil {
 		return fmt.Errorf("Error, failure waiting for deletion of %s "+

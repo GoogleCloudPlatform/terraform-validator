@@ -121,6 +121,13 @@ func expandMonitoringAlertPolicyConditions(v interface{}, d TerraformResourceDat
 			transformed["name"] = transformedName
 		}
 
+		transformedConditionMonitoringQueryLanguage, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguage(original["condition_monitoring_query_language"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedConditionMonitoringQueryLanguage); val.IsValid() && !isEmptyValue(val) {
+			transformed["conditionMonitoringQueryLanguage"] = transformedConditionMonitoringQueryLanguage
+		}
+
 		transformedConditionThreshold, err := expandMonitoringAlertPolicyConditionsConditionThreshold(original["condition_threshold"], d, config)
 		if err != nil {
 			return nil, err
@@ -282,6 +289,81 @@ func expandMonitoringAlertPolicyConditionsConditionAbsentFilter(v interface{}, d
 }
 
 func expandMonitoringAlertPolicyConditionsName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguage(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedQuery, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageQuery(original["query"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedQuery); val.IsValid() && !isEmptyValue(val) {
+		transformed["query"] = transformedQuery
+	}
+
+	transformedDuration, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageDuration(original["duration"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDuration); val.IsValid() && !isEmptyValue(val) {
+		transformed["duration"] = transformedDuration
+	}
+
+	transformedTrigger, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTrigger(original["trigger"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTrigger); val.IsValid() && !isEmptyValue(val) {
+		transformed["trigger"] = transformedTrigger
+	}
+
+	return transformed, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageQuery(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageDuration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTrigger(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPercent, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTriggerPercent(original["percent"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPercent); val.IsValid() && !isEmptyValue(val) {
+		transformed["percent"] = transformedPercent
+	}
+
+	transformedCount, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTriggerCount(original["count"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCount); val.IsValid() && !isEmptyValue(val) {
+		transformed["count"] = transformedCount
+	}
+
+	return transformed, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTriggerPercent(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTriggerCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

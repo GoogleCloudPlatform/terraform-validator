@@ -28,10 +28,6 @@ func (w *DataprocJobOperationWaiter) Error() error {
 	return nil
 }
 
-func (w *DataprocJobOperationWaiter) IsRetryable(error) bool {
-	return false
-}
-
 func (w *DataprocJobOperationWaiter) SetOp(job interface{}) error {
 	// The "operation" is just the job. Instead of holding onto the whole job
 	// object, we only care about the state, which gets set in QueryOp, so this

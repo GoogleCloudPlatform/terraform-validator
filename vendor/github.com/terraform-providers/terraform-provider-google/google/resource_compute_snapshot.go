@@ -21,7 +21,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
+	"google.golang.org/api/compute/v1"
 )
 
 func resourceComputeSnapshot() *schema.Resource {
@@ -36,9 +37,9 @@ func resourceComputeSnapshot() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
-			Delete: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(300 * time.Second),
+			Update: schema.DefaultTimeout(300 * time.Second),
+			Delete: schema.DefaultTimeout(300 * time.Second),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -46,55 +47,39 @@ func resourceComputeSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				Description: `Name of the resource; provided by the client when the resource is
-created. The name must be 1-63 characters long, and comply with
-RFC1035. Specifically, the name must be 1-63 characters long and match
-the regular expression '[a-z]([-a-z0-9]*[a-z0-9])?' which means the
-first character must be a lowercase letter, and all following
-characters must be a dash, lowercase letter, or digit, except the last
-character, which cannot be a dash.`,
 			},
 			"source_disk": {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: compareSelfLinkOrResourceName,
-				Description:      `A reference to the disk used to create this snapshot.`,
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: `An optional description of this resource.`,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 			},
 			"labels": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: `Labels to apply to this Snapshot.`,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"snapshot_encryption_key": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
-				Description: `The customer-supplied encryption key of the snapshot. Required if the
-source snapshot is protected by a customer-supplied encryption key.`,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"raw_key": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
-							Description: `Specifies a 256-bit customer-supplied encryption key, encoded in
-RFC 4648 base64 to either encrypt or decrypt this resource.`,
+							Type:      schema.TypeString,
+							Optional:  true,
+							ForceNew:  true,
 							Sensitive: true,
 						},
 						"sha256": {
 							Type:     schema.TypeString,
 							Computed: true,
-							Description: `The RFC 4648 base64 encoded SHA-256 hash of the customer-supplied
-encryption key that protects this resource.`,
 						},
 					},
 				},
@@ -103,18 +88,13 @@ encryption key that protects this resource.`,
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
-				Description: `The customer-supplied encryption key of the source snapshot. Required
-if the source snapshot is protected by a customer-supplied encryption
-key.`,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"raw_key": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-							Description: `Specifies a 256-bit customer-supplied encryption key, encoded in
-RFC 4648 base64 to either encrypt or decrypt this resource.`,
+							Type:      schema.TypeString,
+							Optional:  true,
+							ForceNew:  true,
 							Sensitive: true,
 						},
 					},
@@ -126,51 +106,64 @@ RFC 4648 base64 to either encrypt or decrypt this resource.`,
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: compareSelfLinkOrResourceName,
-				Description:      `A reference to the zone where the disk is hosted.`,
 			},
 			"creation_timestamp": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: `Creation timestamp in RFC3339 text format.`,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"disk_size_gb": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: `Size of the snapshot, specified in GB.`,
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"label_fingerprint": {
 				Type:     schema.TypeString,
 				Computed: true,
-				Description: `The fingerprint used for optimistic locking of this resource. Used
-internally during updates.`,
 			},
 			"licenses": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Description: `A list of public visible licenses that apply to this snapshot. This
-can be because the original image had licenses attached (such as a
-Windows image).  snapshotEncryptionKey nested object Encrypts the
-snapshot using a customer-supplied encryption key.`,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					DiffSuppressFunc: compareSelfLinkOrResourceName,
 				},
 			},
 			"snapshot_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: `The unique identifier for the resource.`,
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"storage_bytes": {
 				Type:     schema.TypeInt,
 				Computed: true,
-				Description: `A size of the the storage used by the snapshot. As snapshots share
-storage, this number is expected to change with snapshot
-creation/deletion.`,
 			},
 			"source_disk_link": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			"snapshot_encryption_key_raw": {
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
+				Removed:   "Use snapshot_encryption_key.raw_key instead.",
+			},
+
+			"snapshot_encryption_key_sha256": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Removed:  "Use snapshot_encryption_key.sha256 instead.",
+			},
+
+			"source_disk_encryption_key_raw": {
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
+				Removed:   "Use source_disk_encryption_key.raw_key instead.",
+			},
+
+			"source_disk_encryption_key_sha256": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Removed:  "Use source_disk_encryption_key.sha256 instead.",
 			},
 			"project": {
 				Type:     schema.TypeString,
@@ -239,36 +232,42 @@ func resourceComputeSnapshotCreate(d *schema.ResourceData, meta interface{}) err
 		obj["sourceDiskEncryptionKey"] = sourceDiskEncryptionKeyProp
 	}
 
-	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/zones/{{zone}}/disks/{{source_disk}}/createSnapshot")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/zones/{{zone}}/disks/{{source_disk}}/createSnapshot")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Creating new Snapshot: %#v", obj)
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-	res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutCreate))
+	res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating Snapshot: %s", err)
 	}
 
 	// Store the ID now
-	id, err := replaceVars(d, config, "projects/{{project}}/global/snapshots/{{name}}")
+	id, err := replaceVars(d, config, "{{name}}")
 	if err != nil {
 		return fmt.Errorf("Error constructing id: %s", err)
 	}
 	d.SetId(id)
 
-	err = computeOperationWaitTime(
-		config, res, project, "Creating Snapshot",
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+	op := &compute.Operation{}
+	err = Convert(res, op)
+	if err != nil {
+		return err
+	}
+
+	waitErr := computeOperationWaitTime(
+		config.clientCompute, op, project, "Creating Snapshot",
 		int(d.Timeout(schema.TimeoutCreate).Minutes()))
 
-	if err != nil {
+	if waitErr != nil {
 		// The resource didn't actually create
 		d.SetId("")
-		return fmt.Errorf("Error waiting to create Snapshot: %s", err)
+		return fmt.Errorf("Error waiting to create Snapshot: %s", waitErr)
 	}
 
 	log.Printf("[DEBUG] Finished creating Snapshot %q: %#v", d.Id(), res)
@@ -279,16 +278,12 @@ func resourceComputeSnapshotCreate(d *schema.ResourceData, meta interface{}) err
 func resourceComputeSnapshotRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/snapshots/{{name}}")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/snapshots/{{name}}")
 	if err != nil {
 		return err
 	}
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-	res, err := sendRequest(config, "GET", project, url, nil)
+	res, err := sendRequest(config, "GET", url, nil)
 	if err != nil {
 		return handleNotFoundError(err, d, fmt.Sprintf("ComputeSnapshot %q", d.Id()))
 	}
@@ -298,48 +293,45 @@ func resourceComputeSnapshotRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	if res == nil {
-		// Decoding the object has resulted in it being gone. It may be marked deleted
-		log.Printf("[DEBUG] Removing ComputeSnapshot because it no longer exists.")
-		d.SetId("")
-		return nil
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
 	}
-
 	if err := d.Set("project", project); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
 
-	if err := d.Set("creation_timestamp", flattenComputeSnapshotCreationTimestamp(res["creationTimestamp"], d, config)); err != nil {
+	if err := d.Set("creation_timestamp", flattenComputeSnapshotCreationTimestamp(res["creationTimestamp"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("snapshot_id", flattenComputeSnapshotSnapshotId(res["id"], d, config)); err != nil {
+	if err := d.Set("snapshot_id", flattenComputeSnapshotSnapshot_id(res["id"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("disk_size_gb", flattenComputeSnapshotDiskSizeGb(res["diskSizeGb"], d, config)); err != nil {
+	if err := d.Set("disk_size_gb", flattenComputeSnapshotDiskSizeGb(res["diskSizeGb"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("name", flattenComputeSnapshotName(res["name"], d, config)); err != nil {
+	if err := d.Set("name", flattenComputeSnapshotName(res["name"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("description", flattenComputeSnapshotDescription(res["description"], d, config)); err != nil {
+	if err := d.Set("description", flattenComputeSnapshotDescription(res["description"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("storage_bytes", flattenComputeSnapshotStorageBytes(res["storageBytes"], d, config)); err != nil {
+	if err := d.Set("storage_bytes", flattenComputeSnapshotStorageBytes(res["storageBytes"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("licenses", flattenComputeSnapshotLicenses(res["licenses"], d, config)); err != nil {
+	if err := d.Set("licenses", flattenComputeSnapshotLicenses(res["licenses"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("labels", flattenComputeSnapshotLabels(res["labels"], d, config)); err != nil {
+	if err := d.Set("labels", flattenComputeSnapshotLabels(res["labels"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("label_fingerprint", flattenComputeSnapshotLabelFingerprint(res["labelFingerprint"], d, config)); err != nil {
+	if err := d.Set("label_fingerprint", flattenComputeSnapshotLabelFingerprint(res["labelFingerprint"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("source_disk", flattenComputeSnapshotSourceDisk(res["sourceDisk"], d, config)); err != nil {
+	if err := d.Set("source_disk", flattenComputeSnapshotSourceDisk(res["sourceDisk"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
-	if err := d.Set("snapshot_encryption_key", flattenComputeSnapshotSnapshotEncryptionKey(res["snapshotEncryptionKey"], d, config)); err != nil {
+	if err := d.Set("snapshot_encryption_key", flattenComputeSnapshotSnapshotEncryptionKey(res["snapshotEncryptionKey"], d)); err != nil {
 		return fmt.Errorf("Error reading Snapshot: %s", err)
 	}
 	if err := d.Set("self_link", ConvertSelfLinkToV1(res["selfLink"].(string))); err != nil {
@@ -352,16 +344,10 @@ func resourceComputeSnapshotRead(d *schema.ResourceData, meta interface{}) error
 func resourceComputeSnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-
 	d.Partial(true)
 
 	if d.HasChange("labels") || d.HasChange("label_fingerprint") {
 		obj := make(map[string]interface{})
-
 		labelsProp, err := expandComputeSnapshotLabels(d.Get("labels"), d, config)
 		if err != nil {
 			return err
@@ -375,18 +361,29 @@ func resourceComputeSnapshotUpdate(d *schema.ResourceData, meta interface{}) err
 			obj["labelFingerprint"] = labelFingerprintProp
 		}
 
-		url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/snapshots/{{name}}/setLabels")
+		url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/snapshots/{{name}}/setLabels")
 		if err != nil {
 			return err
 		}
-		res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutUpdate))
+		res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return fmt.Errorf("Error updating Snapshot %q: %s", d.Id(), err)
 		}
 
+		project, err := getProject(d, config)
+		if err != nil {
+			return err
+		}
+		op := &compute.Operation{}
+		err = Convert(res, op)
+		if err != nil {
+			return err
+		}
+
 		err = computeOperationWaitTime(
-			config, res, project, "Updating Snapshot",
+			config.clientCompute, op, project, "Updating Snapshot",
 			int(d.Timeout(schema.TimeoutUpdate).Minutes()))
+
 		if err != nil {
 			return err
 		}
@@ -403,26 +400,30 @@ func resourceComputeSnapshotUpdate(d *schema.ResourceData, meta interface{}) err
 func resourceComputeSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-
-	url, err := replaceVars(d, config, "{{ComputeBasePath}}projects/{{project}}/global/snapshots/{{name}}")
+	url, err := replaceVars(d, config, "https://www.googleapis.com/compute/v1/projects/{{project}}/global/snapshots/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	var obj map[string]interface{}
 	log.Printf("[DEBUG] Deleting Snapshot %q", d.Id())
-
-	res, err := sendRequestWithTimeout(config, "DELETE", project, url, obj, d.Timeout(schema.TimeoutDelete))
+	res, err := sendRequestWithTimeout(config, "DELETE", url, obj, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return handleNotFoundError(err, d, "Snapshot")
 	}
 
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
+	op := &compute.Operation{}
+	err = Convert(res, op)
+	if err != nil {
+		return err
+	}
+
 	err = computeOperationWaitTime(
-		config, res, project, "Deleting Snapshot",
+		config.clientCompute, op, project, "Deleting Snapshot",
 		int(d.Timeout(schema.TimeoutDelete).Minutes()))
 
 	if err != nil {
@@ -435,16 +436,12 @@ func resourceComputeSnapshotDelete(d *schema.ResourceData, meta interface{}) err
 
 func resourceComputeSnapshotImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
-	if err := parseImportId([]string{
-		"projects/(?P<project>[^/]+)/global/snapshots/(?P<name>[^/]+)",
-		"(?P<project>[^/]+)/(?P<name>[^/]+)",
-		"(?P<name>[^/]+)",
-	}, d, config); err != nil {
+	if err := parseImportId([]string{"projects/(?P<project>[^/]+)/global/snapshots/(?P<name>[^/]+)", "(?P<project>[^/]+)/(?P<name>[^/]+)", "(?P<name>[^/]+)"}, d, config); err != nil {
 		return nil, err
 	}
 
 	// Replace import id for the resource id
-	id, err := replaceVars(d, config, "projects/{{project}}/global/snapshots/{{name}}")
+	id, err := replaceVars(d, config, "{{name}}")
 	if err != nil {
 		return nil, fmt.Errorf("Error constructing id: %s", err)
 	}
@@ -453,11 +450,11 @@ func resourceComputeSnapshotImport(d *schema.ResourceData, meta interface{}) ([]
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenComputeSnapshotCreationTimestamp(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotCreationTimestamp(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenComputeSnapshotSnapshotId(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotSnapshot_id(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -467,7 +464,7 @@ func flattenComputeSnapshotSnapshotId(v interface{}, d *schema.ResourceData, con
 	return v
 }
 
-func flattenComputeSnapshotDiskSizeGb(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotDiskSizeGb(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -477,15 +474,15 @@ func flattenComputeSnapshotDiskSizeGb(v interface{}, d *schema.ResourceData, con
 	return v
 }
 
-func flattenComputeSnapshotName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotName(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenComputeSnapshotDescription(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotDescription(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenComputeSnapshotStorageBytes(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotStorageBytes(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -495,29 +492,29 @@ func flattenComputeSnapshotStorageBytes(v interface{}, d *schema.ResourceData, c
 	return v
 }
 
-func flattenComputeSnapshotLicenses(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotLicenses(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
 	return convertAndMapStringArr(v.([]interface{}), ConvertSelfLinkToV1)
 }
 
-func flattenComputeSnapshotLabels(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotLabels(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenComputeSnapshotLabelFingerprint(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotLabelFingerprint(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenComputeSnapshotSourceDisk(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotSourceDisk(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
 	return NameFromSelfLinkStateFunc(v)
 }
 
-func flattenComputeSnapshotSnapshotEncryptionKey(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotSnapshotEncryptionKey(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -527,28 +524,28 @@ func flattenComputeSnapshotSnapshotEncryptionKey(v interface{}, d *schema.Resour
 	}
 	transformed := make(map[string]interface{})
 	transformed["raw_key"] =
-		flattenComputeSnapshotSnapshotEncryptionKeyRawKey(original["rawKey"], d, config)
+		flattenComputeSnapshotSnapshotEncryptionKeyRawKey(original["rawKey"], d)
 	transformed["sha256"] =
-		flattenComputeSnapshotSnapshotEncryptionKeySha256(original["sha256"], d, config)
+		flattenComputeSnapshotSnapshotEncryptionKeySha256(original["sha256"], d)
 	return []interface{}{transformed}
 }
-func flattenComputeSnapshotSnapshotEncryptionKeyRawKey(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotSnapshotEncryptionKeyRawKey(v interface{}, d *schema.ResourceData) interface{} {
 	return d.Get("snapshot_encryption_key.0.raw_key")
 }
 
-func flattenComputeSnapshotSnapshotEncryptionKeySha256(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenComputeSnapshotSnapshotEncryptionKeySha256(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func expandComputeSnapshotName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeSnapshotDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotDescription(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeSnapshotLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+func expandComputeSnapshotLabels(v interface{}, d *schema.ResourceData, config *Config) (map[string]string, error) {
 	if v == nil {
 		return map[string]string{}, nil
 	}
@@ -559,11 +556,11 @@ func expandComputeSnapshotLabels(v interface{}, d TerraformResourceData, config 
 	return m, nil
 }
 
-func expandComputeSnapshotLabelFingerprint(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotLabelFingerprint(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeSnapshotSourceDisk(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotSourceDisk(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	f, err := parseZonalFieldValue("disks", v.(string), "project", "zone", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for source_disk: %s", err)
@@ -571,7 +568,7 @@ func expandComputeSnapshotSourceDisk(v interface{}, d TerraformResourceData, con
 	return f.RelativeLink(), nil
 }
 
-func expandComputeSnapshotZone(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotZone(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	f, err := parseGlobalFieldValue("zones", v.(string), "project", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for zone: %s", err)
@@ -579,7 +576,7 @@ func expandComputeSnapshotZone(v interface{}, d TerraformResourceData, config *C
 	return f.RelativeLink(), nil
 }
 
-func expandComputeSnapshotSnapshotEncryptionKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotSnapshotEncryptionKey(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -605,15 +602,15 @@ func expandComputeSnapshotSnapshotEncryptionKey(v interface{}, d TerraformResour
 	return transformed, nil
 }
 
-func expandComputeSnapshotSnapshotEncryptionKeyRawKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotSnapshotEncryptionKeyRawKey(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeSnapshotSnapshotEncryptionKeySha256(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotSnapshotEncryptionKeySha256(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandComputeSnapshotSourceDiskEncryptionKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotSourceDiskEncryptionKey(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -632,7 +629,7 @@ func expandComputeSnapshotSourceDiskEncryptionKey(v interface{}, d TerraformReso
 	return transformed, nil
 }
 
-func expandComputeSnapshotSourceDiskEncryptionKeyRawKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandComputeSnapshotSourceDiskEncryptionKeyRawKey(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

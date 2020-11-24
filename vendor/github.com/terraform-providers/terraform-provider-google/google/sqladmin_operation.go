@@ -3,7 +3,6 @@ package google
 import (
 	"bytes"
 	"fmt"
-	"log"
 
 	sqladmin "google.golang.org/api/sqladmin/v1beta4"
 )
@@ -15,11 +14,7 @@ type SqlAdminOperationWaiter struct {
 }
 
 func (w *SqlAdminOperationWaiter) State() string {
-	if w == nil {
-		return "Operation Waiter is nil!"
-	}
-
-	if w.Op == nil {
+	if w == nil || w.Op == nil {
 		return "Operation is nil!"
 	}
 
@@ -33,18 +28,9 @@ func (w *SqlAdminOperationWaiter) Error() error {
 	return nil
 }
 
-func (w *SqlAdminOperationWaiter) IsRetryable(error) bool {
-	return false
-}
-
 func (w *SqlAdminOperationWaiter) SetOp(op interface{}) error {
-	if op == nil {
-		// Starting as a log statement, this may be a useful error in the future
-		log.Printf("[DEBUG] attempted to set nil op")
-	}
-
-	sqlOp, ok := op.(*sqladmin.Operation)
-	w.Op = sqlOp
+	var ok bool
+	w.Op, ok = op.(*sqladmin.Operation)
 	if !ok {
 		return fmt.Errorf("Unable to set operation. Bad type!")
 	}
@@ -53,41 +39,19 @@ func (w *SqlAdminOperationWaiter) SetOp(op interface{}) error {
 }
 
 func (w *SqlAdminOperationWaiter) QueryOp() (interface{}, error) {
-	if w == nil {
-		return nil, fmt.Errorf("Cannot query operation, waiter is unset or nil.")
-	}
-
-	if w.Op == nil {
+	if w == nil || w.Op == nil {
 		return nil, fmt.Errorf("Cannot query operation, it's unset or nil.")
 	}
-
 	if w.Service == nil {
 		return nil, fmt.Errorf("Cannot query operation, service is nil.")
 	}
-
-	var op interface{}
-	var err error
-	err = retryTimeDuration(
-		func() error {
-			op, err = w.Service.Operations.Get(w.Project, w.Op.Name).Do()
-			return err
-		},
-
-		DefaultRequestTimeout,
-	)
-
-	return op, err
+	return w.Service.Operations.Get(w.Project, w.Op.Name).Do()
 }
 
 func (w *SqlAdminOperationWaiter) OpName() string {
-	if w == nil {
-		return "<nil waiter>"
+	if w == nil || w.Op == nil {
+		return "<nil>"
 	}
-
-	if w.Op == nil {
-		return "<nil op>"
-	}
-
 	return w.Op.Name
 }
 
@@ -99,17 +63,11 @@ func (w *SqlAdminOperationWaiter) TargetStates() []string {
 	return []string{"DONE"}
 }
 
-func sqlAdminOperationWait(config *Config, res interface{}, project, activity string) error {
-	return sqlAdminOperationWaitTime(config, res, project, activity, 10)
+func sqladminOperationWait(config *Config, op *sqladmin.Operation, project, activity string) error {
+	return sqladminOperationWaitTime(config, op, project, activity, 10)
 }
 
-func sqlAdminOperationWaitTime(config *Config, res interface{}, project, activity string, timeoutMinutes int) error {
-	op := &sqladmin.Operation{}
-	err := Convert(res, op)
-	if err != nil {
-		return err
-	}
-
+func sqladminOperationWaitTime(config *Config, op *sqladmin.Operation, project, activity string, timeoutMinutes int) error {
 	w := &SqlAdminOperationWaiter{
 		Service: config.clientSqlAdmin,
 		Op:      op,

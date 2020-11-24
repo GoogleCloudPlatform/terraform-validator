@@ -2,34 +2,14 @@ package google
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
+	"google.golang.org/api/googleapi"
 	"google.golang.org/api/storagetransfer/v1"
 	"log"
 	"strings"
 	"time"
-)
-
-var (
-	objectConditionsKeys = []string{
-		"transfer_spec.0.object_conditions.0.min_time_elapsed_since_last_modification",
-		"transfer_spec.0.object_conditions.0.max_time_elapsed_since_last_modification",
-		"transfer_spec.0.object_conditions.0.include_prefixes",
-		"transfer_spec.0.object_conditions.0.exclude_prefixes",
-	}
-
-	transferOptionsKeys = []string{
-		"transfer_spec.0.transfer_options.0.overwrite_objects_already_existing_in_sink",
-		"transfer_spec.0.transfer_options.0.delete_objects_unique_in_sink",
-		"transfer_spec.0.transfer_options.0.delete_objects_from_source_after_transfer",
-	}
-
-	transferSpecDataSourceKeys = []string{
-		"transfer_spec.0.gcs_data_source",
-		"transfer_spec.0.aws_s3_data_source",
-		"transfer_spec.0.http_data_source",
-	}
 )
 
 func resourceStorageTransferJob() *schema.Resource {
@@ -73,25 +53,25 @@ func resourceStorageTransferJob() *schema.Resource {
 							Elem:     gcsDataSchema(),
 						},
 						"gcs_data_source": {
-							Type:         schema.TypeList,
-							Optional:     true,
-							MaxItems:     1,
-							Elem:         gcsDataSchema(),
-							ExactlyOneOf: transferSpecDataSourceKeys,
+							Type:          schema.TypeList,
+							Optional:      true,
+							MaxItems:      1,
+							Elem:          gcsDataSchema(),
+							ConflictsWith: []string{"transfer_spec.aws_s3_data_source", "transfer_spec.http_data_source"},
 						},
 						"aws_s3_data_source": {
-							Type:         schema.TypeList,
-							Optional:     true,
-							MaxItems:     1,
-							Elem:         awsS3DataSchema(),
-							ExactlyOneOf: transferSpecDataSourceKeys,
+							Type:          schema.TypeList,
+							Optional:      true,
+							MaxItems:      1,
+							Elem:          awsS3DataSchema(),
+							ConflictsWith: []string{"transfer_spec.gcs_data_source", "transfer_spec.http_data_source"},
 						},
 						"http_data_source": {
-							Type:         schema.TypeList,
-							Optional:     true,
-							MaxItems:     1,
-							Elem:         httpDataSchema(),
-							ExactlyOneOf: transferSpecDataSourceKeys,
+							Type:          schema.TypeList,
+							Optional:      true,
+							MaxItems:      1,
+							Elem:          httpDataSchema(),
+							ConflictsWith: []string{"transfer_spec.aws_s3_data_source", "transfer_spec.gcs_data_source"},
 						},
 					},
 				},
@@ -117,12 +97,11 @@ func resourceStorageTransferJob() *schema.Resource {
 							Elem:     dateObjectSchema(),
 						},
 						"start_time_of_day": {
-							Type:             schema.TypeList,
-							Optional:         true,
-							ForceNew:         true,
-							MaxItems:         1,
-							Elem:             timeObjectSchema(),
-							DiffSuppressFunc: diffSuppressEmptyStartTimeOfDay,
+							Type:     schema.TypeList,
+							Optional: true,
+							ForceNew: true,
+							MaxItems: 1,
+							Elem:     timeObjectSchema(),
 						},
 					},
 				},
@@ -160,27 +139,23 @@ func objectConditionsSchema() *schema.Schema {
 					Type:         schema.TypeString,
 					ValidateFunc: validateDuration(),
 					Optional:     true,
-					AtLeastOneOf: objectConditionsKeys,
 				},
 				"max_time_elapsed_since_last_modification": {
 					Type:         schema.TypeString,
 					ValidateFunc: validateDuration(),
 					Optional:     true,
-					AtLeastOneOf: objectConditionsKeys,
 				},
 				"include_prefixes": {
-					Type:         schema.TypeList,
-					Optional:     true,
-					AtLeastOneOf: objectConditionsKeys,
+					Type:     schema.TypeList,
+					Optional: true,
 					Elem: &schema.Schema{
 						MaxItems: 1000,
 						Type:     schema.TypeString,
 					},
 				},
 				"exclude_prefixes": {
-					Type:         schema.TypeList,
-					Optional:     true,
-					AtLeastOneOf: objectConditionsKeys,
+					Type:     schema.TypeList,
+					Optional: true,
 					Elem: &schema.Schema{
 						MaxItems: 1000,
 						Type:     schema.TypeString,
@@ -199,20 +174,17 @@ func transferOptionsSchema() *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"overwrite_objects_already_existing_in_sink": {
-					Type:         schema.TypeBool,
-					Optional:     true,
-					AtLeastOneOf: transferOptionsKeys,
+					Type:     schema.TypeBool,
+					Optional: true,
 				},
 				"delete_objects_unique_in_sink": {
 					Type:          schema.TypeBool,
 					Optional:      true,
-					AtLeastOneOf:  transferOptionsKeys,
 					ConflictsWith: []string{"transfer_spec.transfer_options.delete_objects_from_source_after_transfer"},
 				},
 				"delete_objects_from_source_after_transfer": {
 					Type:          schema.TypeBool,
 					Optional:      true,
-					AtLeastOneOf:  transferOptionsKeys,
 					ConflictsWith: []string{"transfer_spec.transfer_options.delete_objects_unique_in_sink"},
 				},
 			},
@@ -330,10 +302,6 @@ func httpDataSchema() *schema.Resource {
 	}
 }
 
-func diffSuppressEmptyStartTimeOfDay(k, old, new string, d *schema.ResourceData) bool {
-	return k == "schedule.0.start_time_of_day.#" && old == "1" && new == "0"
-}
-
 func resourceStorageTransferJobCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
@@ -397,7 +365,7 @@ func resourceStorageTransferJobRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	err = d.Set("transfer_spec", flattenTransferSpec(res.TransferSpec, d))
+	d.Set("transfer_spec", flattenTransferSpec(res.TransferSpec, d))
 	if err != nil {
 		return err
 	}
@@ -490,7 +458,9 @@ func resourceStorageTransferJobDelete(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			return resource.RetryableError(err)
 		}
-
+		if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 429 {
+			return resource.RetryableError(gerr)
+		}
 		return nil
 	})
 
@@ -521,22 +491,12 @@ func expandDates(dates []interface{}) *storagetransfer.Date {
 		return nil
 	}
 
-	dateMap := dates[0].(map[string]interface{})
-	date := &storagetransfer.Date{}
-	if v, ok := dateMap["day"]; ok {
-		date.Day = int64(v.(int))
+	date := dates[0].([]interface{})
+	return &storagetransfer.Date{
+		Day:   int64(extractFirstMapConfig(date)["day"].(int)),
+		Month: int64(extractFirstMapConfig(date)["month"].(int)),
+		Year:  int64(extractFirstMapConfig(date)["year"].(int)),
 	}
-
-	if v, ok := dateMap["month"]; ok {
-		date.Month = int64(v.(int))
-	}
-
-	if v, ok := dateMap["year"]; ok {
-		date.Year = int64(v.(int))
-	}
-
-	log.Printf("[DEBUG] not nil date: %#v", dates)
-	return date
 }
 
 func flattenDate(date *storagetransfer.Date) []map[string]interface{} {
@@ -554,25 +514,13 @@ func expandTimeOfDays(times []interface{}) *storagetransfer.TimeOfDay {
 		return nil
 	}
 
-	timeMap := times[0].(map[string]interface{})
-	time := &storagetransfer.TimeOfDay{}
-	if v, ok := timeMap["hours"]; ok {
-		time.Hours = int64(v.(int))
+	time := times[0].([]interface{})
+	return &storagetransfer.TimeOfDay{
+		Hours:   int64(extractFirstMapConfig(time)["hours"].(int)),
+		Minutes: int64(extractFirstMapConfig(time)["minutes"].(int)),
+		Seconds: int64(extractFirstMapConfig(time)["seconds"].(int)),
+		Nanos:   int64(extractFirstMapConfig(time)["nanos"].(int)),
 	}
-
-	if v, ok := timeMap["minutes"]; ok {
-		time.Minutes = int64(v.(int))
-	}
-
-	if v, ok := timeMap["seconds"]; ok {
-		time.Seconds = int64(v.(int))
-	}
-
-	if v, ok := timeMap["nanos"]; ok {
-		time.Nanos = int64(v.(int))
-	}
-
-	return time
 }
 
 func flattenTimeOfDay(timeOfDay *storagetransfer.TimeOfDay) []map[string]interface{} {
@@ -593,9 +541,9 @@ func expandTransferSchedules(transferSchedules []interface{}) *storagetransfer.S
 
 	schedule := transferSchedules[0].(map[string]interface{})
 	return &storagetransfer.Schedule{
-		ScheduleStartDate: expandDates(schedule["schedule_start_date"].([]interface{})),
-		ScheduleEndDate:   expandDates(schedule["schedule_end_date"].([]interface{})),
-		StartTimeOfDay:    expandTimeOfDays(schedule["start_time_of_day"].([]interface{})),
+		ScheduleStartDate: expandDates([]interface{}{schedule["schedule_start_date"]}),
+		ScheduleEndDate:   expandDates([]interface{}{schedule["schedule_end_date"]}),
+		StartTimeOfDay:    expandTimeOfDays([]interface{}{schedule["start_time_of_day"]}),
 	}
 }
 

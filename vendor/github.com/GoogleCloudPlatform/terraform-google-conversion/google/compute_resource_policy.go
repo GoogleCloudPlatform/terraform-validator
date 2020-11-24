@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func GetComputeResourcePolicyCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -55,6 +55,12 @@ func GetComputeResourcePolicyApiObject(d TerraformResourceData, config *Config) 
 		return nil, err
 	} else if v, ok := d.GetOkExists("snapshot_schedule_policy"); !isEmptyValue(reflect.ValueOf(snapshotSchedulePolicyProp)) && (ok || !reflect.DeepEqual(v, snapshotSchedulePolicyProp)) {
 		obj["snapshotSchedulePolicy"] = snapshotSchedulePolicyProp
+	}
+	groupPlacementPolicyProp, err := expandComputeResourcePolicyGroupPlacementPolicy(d.Get("group_placement_policy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("group_placement_policy"); !isEmptyValue(reflect.ValueOf(groupPlacementPolicyProp)) && (ok || !reflect.DeepEqual(v, groupPlacementPolicyProp)) {
+		obj["groupPlacementPolicy"] = groupPlacementPolicyProp
 	}
 	regionProp, err := expandComputeResourcePolicyRegion(d.Get("region"), d, config)
 	if err != nil {
@@ -345,6 +351,51 @@ func expandComputeResourcePolicySnapshotSchedulePolicySnapshotPropertiesStorageL
 }
 
 func expandComputeResourcePolicySnapshotSchedulePolicySnapshotPropertiesGuestFlush(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeResourcePolicyGroupPlacementPolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedVmCount, err := expandComputeResourcePolicyGroupPlacementPolicyVmCount(original["vm_count"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedVmCount); val.IsValid() && !isEmptyValue(val) {
+		transformed["vmCount"] = transformedVmCount
+	}
+
+	transformedAvailabilityDomainCount, err := expandComputeResourcePolicyGroupPlacementPolicyAvailabilityDomainCount(original["availability_domain_count"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAvailabilityDomainCount); val.IsValid() && !isEmptyValue(val) {
+		transformed["availabilityDomainCount"] = transformedAvailabilityDomainCount
+	}
+
+	transformedCollocation, err := expandComputeResourcePolicyGroupPlacementPolicyCollocation(original["collocation"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCollocation); val.IsValid() && !isEmptyValue(val) {
+		transformed["collocation"] = transformedCollocation
+	}
+
+	return transformed, nil
+}
+
+func expandComputeResourcePolicyGroupPlacementPolicyVmCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeResourcePolicyGroupPlacementPolicyAvailabilityDomainCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeResourcePolicyGroupPlacementPolicyCollocation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

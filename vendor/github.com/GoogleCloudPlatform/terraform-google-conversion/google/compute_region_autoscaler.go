@@ -114,6 +114,20 @@ func expandComputeRegionAutoscalerAutoscalingPolicy(v interface{}, d TerraformRe
 		transformed["coolDownPeriodSec"] = transformedCooldownPeriod
 	}
 
+	transformedMode, err := expandComputeRegionAutoscalerAutoscalingPolicyMode(original["mode"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMode); val.IsValid() && !isEmptyValue(val) {
+		transformed["mode"] = transformedMode
+	}
+
+	transformedScaleInControl, err := expandComputeRegionAutoscalerAutoscalingPolicyScaleInControl(original["scale_in_control"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedScaleInControl); val.IsValid() && !isEmptyValue(val) {
+		transformed["scaleInControl"] = transformedScaleInControl
+	}
+
 	transformedCpuUtilization, err := expandComputeRegionAutoscalerAutoscalingPolicyCpuUtilization(original["cpu_utilization"], d, config)
 	if err != nil {
 		return nil, err
@@ -147,6 +161,74 @@ func expandComputeRegionAutoscalerAutoscalingPolicyMaxReplicas(v interface{}, d 
 }
 
 func expandComputeRegionAutoscalerAutoscalingPolicyCooldownPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRegionAutoscalerAutoscalingPolicyMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRegionAutoscalerAutoscalingPolicyScaleInControl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedMaxScaledInReplicas, err := expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlMaxScaledInReplicas(original["max_scaled_in_replicas"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMaxScaledInReplicas); val.IsValid() && !isEmptyValue(val) {
+		transformed["maxScaledInReplicas"] = transformedMaxScaledInReplicas
+	}
+
+	transformedTimeWindowSec, err := expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlTimeWindowSec(original["time_window_sec"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTimeWindowSec); val.IsValid() && !isEmptyValue(val) {
+		transformed["timeWindowSec"] = transformedTimeWindowSec
+	}
+
+	return transformed, nil
+}
+
+func expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlMaxScaledInReplicas(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedFixed, err := expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlMaxScaledInReplicasFixed(original["fixed"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedFixed); val.IsValid() && !isEmptyValue(val) {
+		transformed["fixed"] = transformedFixed
+	}
+
+	transformedPercent, err := expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlMaxScaledInReplicasPercent(original["percent"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPercent); val.IsValid() && !isEmptyValue(val) {
+		transformed["percent"] = transformedPercent
+	}
+
+	return transformed, nil
+}
+
+func expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlMaxScaledInReplicasFixed(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlMaxScaledInReplicasPercent(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRegionAutoscalerAutoscalingPolicyScaleInControlTimeWindowSec(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

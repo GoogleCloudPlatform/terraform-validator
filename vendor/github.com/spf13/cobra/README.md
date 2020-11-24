@@ -23,7 +23,6 @@ Many of the most widely used Go projects are built using Cobra, such as:
 [Istio](https://istio.io),
 [Prototool](https://github.com/uber/prototool),
 [mattermost-server](https://github.com/mattermost/mattermost-server),
-[Gardener](https://github.com/gardener/gardenctl),
 etc.
 
 [![Build Status](https://travis-ci.org/spf13/cobra.svg "Travis CI status")](https://travis-ci.org/spf13/cobra)
@@ -49,7 +48,6 @@ etc.
   * [Suggestions when "unknown command" happens](#suggestions-when-unknown-command-happens)
   * [Generating documentation for your command](#generating-documentation-for-your-command)
   * [Generating bash completions](#generating-bash-completions)
-  * [Generating zsh completions](#generating-zsh-completions)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -338,7 +336,7 @@ rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose out
 A flag can also be assigned locally which will only apply to that specific command.
 
 ```go
-localCmd.Flags().StringVarP(&Source, "source", "s", "", "Source directory to read from")
+rootCmd.Flags().StringVarP(&Source, "source", "s", "", "Source directory to read from")
 ```
 
 ### Local Flag on Parent Commands
@@ -720,11 +718,6 @@ Cobra can generate documentation based on subcommands, flags, etc. in the follow
 ## Generating bash completions
 
 Cobra can generate a bash-completion file. If you add more information to your command, these completions can be amazingly powerful and flexible.  Read more about it in [Bash Completions](bash_completions.md).
-
-## Generating zsh completions
-
-Cobra can generate zsh-completion file. Read more about it in
-[Zsh Completions](zsh_completions.md).
 
 # Contributing
 

@@ -3,7 +3,7 @@ package google
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"google.golang.org/api/compute/v1"
 )
 
@@ -14,14 +14,14 @@ func dataSourceGoogleComputeSubnetwork() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
-			"self_link": {
+
+			"description": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
-			"description": {
+			"self_link": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -75,10 +75,15 @@ func dataSourceGoogleComputeSubnetwork() *schema.Resource {
 func dataSourceGoogleComputeSubnetworkRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	project, region, name, err := GetRegionalResourcePropertiesFromSelfLinkOrSchema(d, config)
+	project, err := getProject(d, config)
 	if err != nil {
 		return err
 	}
+	region, err := getRegion(d, config)
+	if err != nil {
+		return err
+	}
+	name := d.Get("name").(string)
 
 	subnetwork, err := config.clientCompute.Subnetworks.Get(project, region, name).Do()
 	if err != nil {
@@ -93,10 +98,12 @@ func dataSourceGoogleComputeSubnetworkRead(d *schema.ResourceData, meta interfac
 	d.Set("network", subnetwork.Network)
 	d.Set("project", project)
 	d.Set("region", region)
-	d.Set("name", name)
+	// Flattening code defined in resource_compute_subnetwork.go
 	d.Set("secondary_ip_range", flattenSecondaryRanges(subnetwork.SecondaryIpRanges))
 
-	d.SetId(fmt.Sprintf("projects/%s/regions/%s/subnetworks/%s", project, region, name))
+	//Subnet id creation is defined in resource_compute_subnetwork.go
+	subnetwork.Region = region
+	d.SetId(createSubnetID(subnetwork))
 	return nil
 }
 
@@ -111,4 +118,8 @@ func flattenSecondaryRanges(secondaryRanges []*compute.SubnetworkSecondaryRange)
 		secondaryRangesSchema = append(secondaryRangesSchema, data)
 	}
 	return secondaryRangesSchema
+}
+
+func createSubnetID(s *compute.Subnetwork) string {
+	return fmt.Sprintf("%s/%s", s.Region, s.Name)
 }

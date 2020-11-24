@@ -14,10 +14,43 @@
 
 package google
 
-import "reflect"
+import (
+	"context"
+	"fmt"
+	"reflect"
+	"regexp"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func revisionNameCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+	autogen := diff.Get("autogenerate_revision_name").(bool)
+	if autogen && diff.HasChange("template.0.metadata.0.name") {
+		return fmt.Errorf("google_cloud_run_service: `template.metadata.name` cannot be set while `autogenerate_revision_name` is true. Please remove the field or set `autogenerate_revision_name` to false.")
+	}
+	return nil
+}
+
+var cloudRunGoogleProvidedAnnotations = regexp.MustCompile("serving\\.knative\\.dev/(?:(?:creator)|(?:lastModifier))$")
+
+func cloudrunAnnotationDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	// Suppress diffs for the annotations provided by Google
+	if cloudRunGoogleProvidedAnnotations.MatchString(k) && new == "" {
+		return true
+	}
+
+	// Let diff be determined by annotations (above)
+	if strings.Contains(k, "annotations.%") {
+		return true
+	}
+
+	// For other keys, don't suppress diff.
+	return false
+}
 
 func GetCloudRunServiceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := assetName(d, config, "//cloudrun.googleapis.com/apis/serving.knative.dev/v1/namespaces/{{project}}/services/{{name}}")
+	name, err := assetName(d, config, "//cloudrun.googleapis.com/apis/serving.knative.dev/namespaces/{{project}}/services/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
@@ -26,8 +59,8 @@ func GetCloudRunServiceCaiObject(d TerraformResourceData, config *Config) (Asset
 			Name: name,
 			Type: "cloudrun.googleapis.com/Service",
 			Resource: &AssetResource{
-				Version:              "{{location}}-run.googleapis.com",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/cloudrun/{{location}}-run.googleapis.com/rest",
+				Version:              "v1",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/cloudrun/v1/rest",
 				DiscoveryName:        "Service",
 				Data:                 obj,
 			},
@@ -280,6 +313,9 @@ func expandCloudRunServiceSpecTemplateMetadataAnnotations(v interface{}, d Terra
 }
 
 func expandCloudRunServiceSpecTemplateMetadataName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	if d.Get("autogenerate_revision_name") == true {
+		return nil, nil
+	}
 	return v, nil
 }
 
@@ -304,6 +340,13 @@ func expandCloudRunServiceSpecTemplateSpec(v interface{}, d TerraformResourceDat
 		return nil, err
 	} else if val := reflect.ValueOf(transformedContainerConcurrency); val.IsValid() && !isEmptyValue(val) {
 		transformed["containerConcurrency"] = transformedContainerConcurrency
+	}
+
+	transformedTimeoutSeconds, err := expandCloudRunServiceSpecTemplateSpecTimeoutSeconds(original["timeout_seconds"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTimeoutSeconds); val.IsValid() && !isEmptyValue(val) {
+		transformed["timeoutSeconds"] = transformedTimeoutSeconds
 	}
 
 	transformedServiceAccountName, err := expandCloudRunServiceSpecTemplateSpecServiceAccountName(original["service_account_name"], d, config)
@@ -373,6 +416,13 @@ func expandCloudRunServiceSpecTemplateSpecContainers(v interface{}, d TerraformR
 			return nil, err
 		} else if val := reflect.ValueOf(transformedEnv); val.IsValid() && !isEmptyValue(val) {
 			transformed["env"] = transformedEnv
+		}
+
+		transformedPorts, err := expandCloudRunServiceSpecTemplateSpecContainersPorts(original["ports"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedPorts); val.IsValid() && !isEmptyValue(val) {
+			transformed["ports"] = transformedPorts
 		}
 
 		transformedResources, err := expandCloudRunServiceSpecTemplateSpecContainersResources(original["resources"], d, config)
@@ -586,6 +636,54 @@ func expandCloudRunServiceSpecTemplateSpecContainersEnvValue(v interface{}, d Te
 	return v, nil
 }
 
+func expandCloudRunServiceSpecTemplateSpecContainersPorts(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedName, err := expandCloudRunServiceSpecTemplateSpecContainersPortsName(original["name"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedName); val.IsValid() && !isEmptyValue(val) {
+			transformed["name"] = transformedName
+		}
+
+		transformedProtocol, err := expandCloudRunServiceSpecTemplateSpecContainersPortsProtocol(original["protocol"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedProtocol); val.IsValid() && !isEmptyValue(val) {
+			transformed["protocol"] = transformedProtocol
+		}
+
+		transformedContainerPort, err := expandCloudRunServiceSpecTemplateSpecContainersPortsContainerPort(original["container_port"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedContainerPort); val.IsValid() && !isEmptyValue(val) {
+			transformed["containerPort"] = transformedContainerPort
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandCloudRunServiceSpecTemplateSpecContainersPortsName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunServiceSpecTemplateSpecContainersPortsProtocol(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunServiceSpecTemplateSpecContainersPortsContainerPort(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
 func expandCloudRunServiceSpecTemplateSpecContainersResources(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
@@ -635,6 +733,10 @@ func expandCloudRunServiceSpecTemplateSpecContainersResourcesRequests(v interfac
 }
 
 func expandCloudRunServiceSpecTemplateSpecContainerConcurrency(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunServiceSpecTemplateSpecTimeoutSeconds(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

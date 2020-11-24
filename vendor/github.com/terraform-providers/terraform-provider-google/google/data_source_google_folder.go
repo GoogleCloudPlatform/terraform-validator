@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
+
+	resourceManagerV2Beta1 "google.golang.org/api/cloudresourcemanager/v2beta1"
 )
 
 func dataSourceGoogleFolder() *schema.Resource {
@@ -51,17 +53,24 @@ func dataSourceGoogleFolder() *schema.Resource {
 func dataSourceFolderRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	d.SetId(canonicalFolderName(d.Get("folder").(string)))
-	if err := resourceGoogleFolderRead(d, meta); err != nil {
-		return err
-	}
-	// If resource doesn't exist, read will not set ID and we should return error.
-	if d.Id() == "" {
-		return nil
+	folderName := d.Get("folder").(string)
+
+	folder, err := config.clientResourceManagerV2Beta1.Folders.Get(canonicalFolderName(folderName)).Do()
+
+	if err != nil {
+		return handleNotFoundError(err, d, fmt.Sprintf("Folder Not Found : %s", folderName))
 	}
 
+	d.SetId(GetResourceNameFromSelfLink(folder.Name))
+	d.Set("name", folder.Name)
+	d.Set("parent", folder.Parent)
+	d.Set("display_name", folder.DisplayName)
+	d.Set("lifecycle_state", folder.LifecycleState)
+	d.Set("create_time", folder.CreateTime)
+
 	if v, ok := d.GetOk("lookup_organization"); ok && v.(bool) {
-		organization, err := lookupOrganizationName(d.Id(), d, config)
+		organization, err := lookupOrganizationName(folder, config)
+
 		if err != nil {
 			return err
 		}
@@ -80,16 +89,20 @@ func canonicalFolderName(ba string) string {
 	return "folders/" + ba
 }
 
-func lookupOrganizationName(parent string, d *schema.ResourceData, config *Config) (string, error) {
+func lookupOrganizationName(folder *resourceManagerV2Beta1.Folder, config *Config) (string, error) {
+	parent := folder.Parent
+
 	if parent == "" || strings.HasPrefix(parent, "organizations/") {
 		return parent, nil
 	} else if strings.HasPrefix(parent, "folders/") {
-		parentFolder, err := getGoogleFolder(parent, d, config)
+		parentFolder, err := config.clientResourceManagerV2Beta1.Folders.Get(parent).Do()
+
 		if err != nil {
 			return "", fmt.Errorf("Error getting parent folder '%s': %s", parent, err)
 		}
-		return lookupOrganizationName(parentFolder.Parent, d, config)
+
+		return lookupOrganizationName(parentFolder, config)
 	} else {
-		return "", fmt.Errorf("Unknown parent type '%s' on folder '%s'", parent, d.Id())
+		return "", fmt.Errorf("Unknown parent type '%s' on folder '%s'", parent, folder.Name)
 	}
 }

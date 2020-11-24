@@ -1,11 +1,11 @@
 package google
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func dataSourceGoogleKmsCryptoKey() *schema.Resource {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceKMSCryptoKey().Schema)
+	dsSchema := datasourceSchemaFromResourceSchema(resourceKmsCryptoKey().Schema)
 	addRequiredFieldsToSchema(dsSchema, "name")
 	addRequiredFieldsToSchema(dsSchema, "key_ring")
 
@@ -31,5 +31,5 @@ func dataSourceGoogleKmsCryptoKeyRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(cryptoKeyId.cryptoKeyId())
 
-	return resourceKMSCryptoKeyRead(d, meta)
+	return resourceKmsCryptoKeyRead(d, meta)
 }

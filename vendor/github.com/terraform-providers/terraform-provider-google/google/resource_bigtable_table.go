@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceBigtableTable() *schema.Resource {
@@ -13,10 +13,6 @@ func resourceBigtableTable() *schema.Resource {
 		Create: resourceBigtableTableCreate,
 		Read:   resourceBigtableTableRead,
 		Delete: resourceBigtableTableDestroy,
-
-		Importer: &schema.ResourceImporter{
-			State: resourceBigtableTableImport,
-		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -111,11 +107,7 @@ func resourceBigtableTableCreate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
-	id, err := replaceVars(d, config, "projects/{{project}}/instances/{{instance_name}}/tables/{{name}}")
-	if err != nil {
-		return fmt.Errorf("Error constructing id: %s", err)
-	}
-	d.SetId(id)
+	d.SetId(name)
 
 	return resourceBigtableTableRead(d, meta)
 }
@@ -137,12 +129,12 @@ func resourceBigtableTableRead(d *schema.ResourceData, meta interface{}) error {
 
 	defer c.Close()
 
-	name := d.Get("name").(string)
+	name := d.Id()
 	table, err := c.TableInfo(ctx, name)
 	if err != nil {
 		log.Printf("[WARN] Removing %s because it's gone", name)
 		d.SetId("")
-		return nil
+		return fmt.Errorf("Error retrieving table. Could not find %s in %s. %s", name, instanceName, err)
 	}
 
 	d.Set("project", project)
@@ -189,25 +181,4 @@ func flattenColumnFamily(families []string) []map[string]interface{} {
 	}
 
 	return result
-}
-
-//TODO(rileykarson): Fix the stored import format after rebasing 3.0.0
-func resourceBigtableTableImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	config := meta.(*Config)
-	if err := parseImportId([]string{
-		"projects/(?P<project>[^/]+)/instances/(?P<instance_name>[^/]+)/tables/(?P<name>[^/]+)",
-		"(?P<project>[^/]+)/(?P<instance_name>[^/]+)/(?P<name>[^/]+)",
-		"(?P<instance_name>[^/]+)/(?P<name>[^/]+)",
-	}, d, config); err != nil {
-		return nil, err
-	}
-
-	// Replace import id for the resource id
-	id, err := replaceVars(d, config, "projects/{{project}}/instances/{{instance_name}}/tables/{{name}}")
-	if err != nil {
-		return nil, fmt.Errorf("Error constructing id: %s", err)
-	}
-	d.SetId(id)
-
-	return []*schema.ResourceData{d}, nil
 }

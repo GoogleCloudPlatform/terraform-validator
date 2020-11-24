@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func GetSpannerInstanceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -83,7 +83,9 @@ func resourceSpannerInstanceEncoder(d TerraformResourceData, meta interface{}, o
 	newObj := make(map[string]interface{})
 	newObj["instance"] = obj
 	if obj["name"] == nil {
-		d.Set("name", resource.PrefixedUniqueId("tfgen-spanid-")[:30])
+		if err := d.Set("name", resource.PrefixedUniqueId("tfgen-spanid-")[:30]); err != nil {
+			return nil, fmt.Errorf("Error setting name: %s", err)
+		}
 		newObj["instanceId"] = d.Get("name").(string)
 	} else {
 		newObj["instanceId"] = obj["name"]

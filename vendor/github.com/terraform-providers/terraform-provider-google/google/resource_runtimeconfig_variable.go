@@ -2,10 +2,9 @@ package google
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/schema"
+	"google.golang.org/api/runtimeconfig/v1beta1"
 	"regexp"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	runtimeconfig "google.golang.org/api/runtimeconfig/v1beta1"
 )
 
 func resourceRuntimeconfigVariable() *schema.Resource {
@@ -131,9 +130,7 @@ func resourceRuntimeconfigVariableDelete(d *schema.ResourceData, meta interface{
 
 func resourceRuntimeconfigVariableImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
-	if err := parseImportId([]string{"projects/(?P<project>[^/]+)/configs/(?P<parent>[^/]+)/variables/(?P<name>[^/]+)", "(?P<parent>[^/]+)/(?P<name>[^/]+)"}, d, config); err != nil {
-		return nil, err
-	}
+	parseImportId([]string{"projects/(?P<project>[^/]+)/configs/(?P<parent>[^/]+)/variables/(?P<name>[^/]+)", "(?P<parent>[^/]+)/(?P<name>[^/]+)"}, d, config)
 
 	// Replace import id for the resource id
 	id, err := replaceVars(d, config, "projects/{{project}}/configs/{{parent}}/variables/{{name}}")

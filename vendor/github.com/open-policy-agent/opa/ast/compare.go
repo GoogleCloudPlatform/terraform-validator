@@ -5,7 +5,6 @@
 package ast
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/big"
 )
@@ -39,18 +38,16 @@ func Compare(a, b interface{}) int {
 
 	if t, ok := a.(*Term); ok {
 		if t == nil {
-			a = nil
-		} else {
-			a = t.Value
+			return Compare(nil, b)
 		}
+		return Compare(t.Value, b)
 	}
 
 	if t, ok := b.(*Term); ok {
 		if t == nil {
-			b = nil
-		} else {
-			b = t.Value
+			return Compare(a, nil)
 		}
+		return Compare(a, t.Value)
 	}
 
 	if a == nil {
@@ -85,18 +82,6 @@ func Compare(a, b interface{}) int {
 		}
 		return 1
 	case Number:
-		if ai, err := json.Number(a).Int64(); err == nil {
-			if bi, err := json.Number(b.(Number)).Int64(); err == nil {
-				if ai == bi {
-					return 0
-				}
-				if ai < bi {
-					return -1
-				}
-				return 1
-			}
-		}
-
 		bigA, ok := new(big.Float).SetString(string(a))
 		if !ok {
 			panic("illegal value")

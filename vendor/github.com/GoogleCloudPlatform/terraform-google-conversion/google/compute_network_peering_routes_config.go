@@ -48,13 +48,13 @@ func GetComputeNetworkPeeringRoutesConfigApiObject(d TerraformResourceData, conf
 	exportCustomRoutesProp, err := expandComputeNetworkPeeringRoutesConfigExportCustomRoutes(d.Get("export_custom_routes"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("export_custom_routes"); !isEmptyValue(reflect.ValueOf(exportCustomRoutesProp)) && (ok || !reflect.DeepEqual(v, exportCustomRoutesProp)) {
+	} else if v, ok := d.GetOkExists("export_custom_routes"); ok || !reflect.DeepEqual(v, exportCustomRoutesProp) {
 		obj["exportCustomRoutes"] = exportCustomRoutesProp
 	}
 	importCustomRoutesProp, err := expandComputeNetworkPeeringRoutesConfigImportCustomRoutes(d.Get("import_custom_routes"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("import_custom_routes"); !isEmptyValue(reflect.ValueOf(importCustomRoutesProp)) && (ok || !reflect.DeepEqual(v, importCustomRoutesProp)) {
+	} else if v, ok := d.GetOkExists("import_custom_routes"); ok || !reflect.DeepEqual(v, importCustomRoutesProp) {
 		obj["importCustomRoutes"] = importCustomRoutesProp
 	}
 

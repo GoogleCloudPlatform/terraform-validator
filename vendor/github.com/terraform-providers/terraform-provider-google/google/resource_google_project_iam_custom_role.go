@@ -2,10 +2,9 @@ package google
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"google.golang.org/api/iam/v1"
 )
 
@@ -22,10 +21,9 @@ func resourceGoogleProjectIamCustomRole() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"role_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validateIAMCustomRoleID,
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 			"title": {
 				Type:     schema.TypeString,
@@ -108,16 +106,13 @@ func resourceGoogleProjectIamCustomRoleCreate(d *schema.ResourceData, meta inter
 	return resourceGoogleProjectIamCustomRoleRead(d, meta)
 }
 
-func extractProjectFromProjectIamCustomRoleID(id string) string {
-	parts := strings.Split(id, "/")
-
-	return parts[1]
-}
-
 func resourceGoogleProjectIamCustomRoleRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	project := extractProjectFromProjectIamCustomRoleID(d.Id())
+	project, err := getProject(d, config)
+	if err != nil {
+		return err
+	}
 
 	role, err := config.clientIAM.Projects.Roles.Get(d.Id()).Do()
 	if err != nil {

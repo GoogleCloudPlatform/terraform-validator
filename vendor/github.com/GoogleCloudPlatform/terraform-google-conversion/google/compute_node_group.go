@@ -66,6 +66,18 @@ func GetComputeNodeGroupApiObject(d TerraformResourceData, config *Config) (map[
 	} else if v, ok := d.GetOkExists("size"); ok || !reflect.DeepEqual(v, sizeProp) {
 		obj["size"] = sizeProp
 	}
+	maintenancePolicyProp, err := expandComputeNodeGroupMaintenancePolicy(d.Get("maintenance_policy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("maintenance_policy"); !isEmptyValue(reflect.ValueOf(maintenancePolicyProp)) && (ok || !reflect.DeepEqual(v, maintenancePolicyProp)) {
+		obj["maintenancePolicy"] = maintenancePolicyProp
+	}
+	autoscalingPolicyProp, err := expandComputeNodeGroupAutoscalingPolicy(d.Get("autoscaling_policy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("autoscaling_policy"); !isEmptyValue(reflect.ValueOf(autoscalingPolicyProp)) && (ok || !reflect.DeepEqual(v, autoscalingPolicyProp)) {
+		obj["autoscalingPolicy"] = autoscalingPolicyProp
+	}
 	zoneProp, err := expandComputeNodeGroupZone(d.Get("zone"), d, config)
 	if err != nil {
 		return nil, err
@@ -93,6 +105,55 @@ func expandComputeNodeGroupNodeTemplate(v interface{}, d TerraformResourceData, 
 }
 
 func expandComputeNodeGroupSize(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNodeGroupMaintenancePolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNodeGroupAutoscalingPolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedMode, err := expandComputeNodeGroupAutoscalingPolicyMode(original["mode"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMode); val.IsValid() && !isEmptyValue(val) {
+		transformed["mode"] = transformedMode
+	}
+
+	transformedMinNodes, err := expandComputeNodeGroupAutoscalingPolicyMinNodes(original["min_nodes"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMinNodes); val.IsValid() && !isEmptyValue(val) {
+		transformed["minNodes"] = transformedMinNodes
+	}
+
+	transformedMaxNodes, err := expandComputeNodeGroupAutoscalingPolicyMaxNodes(original["max_nodes"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMaxNodes); val.IsValid() && !isEmptyValue(val) {
+		transformed["maxNodes"] = transformedMaxNodes
+	}
+
+	return transformed, nil
+}
+
+func expandComputeNodeGroupAutoscalingPolicyMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNodeGroupAutoscalingPolicyMinNodes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNodeGroupAutoscalingPolicyMaxNodes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

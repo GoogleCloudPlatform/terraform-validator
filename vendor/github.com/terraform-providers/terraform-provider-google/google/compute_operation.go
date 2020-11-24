@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	computeBeta "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/compute/v1"
 )
 
@@ -26,17 +27,6 @@ func (w *ComputeOperationWaiter) Error() error {
 		return ComputeOperationError(*w.Op.Error)
 	}
 	return nil
-}
-
-func (w *ComputeOperationWaiter) IsRetryable(err error) bool {
-	if oe, ok := err.(ComputeOperationError); ok {
-		for _, e := range oe.Errors {
-			if e.Code == "RESOURCE_NOT_READY" {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func (w *ComputeOperationWaiter) SetOp(op interface{}) error {
@@ -78,19 +68,13 @@ func (w *ComputeOperationWaiter) TargetStates() []string {
 	return []string{"DONE"}
 }
 
-func computeOperationWait(config *Config, res interface{}, project, activity string) error {
-	return computeOperationWaitTime(config, res, project, activity, 4)
+func computeOperationWait(client *compute.Service, op *compute.Operation, project, activity string) error {
+	return computeOperationWaitTime(client, op, project, activity, 4)
 }
 
-func computeOperationWaitTime(config *Config, res interface{}, project, activity string, timeoutMinutes int) error {
-	op := &compute.Operation{}
-	err := Convert(res, op)
-	if err != nil {
-		return err
-	}
-
+func computeOperationWaitTime(client *compute.Service, op *compute.Operation, project, activity string, timeoutMinutes int) error {
 	w := &ComputeOperationWaiter{
-		Service: config.clientCompute,
+		Service: client,
 		Op:      op,
 		Project: project,
 	}
@@ -99,6 +83,16 @@ func computeOperationWaitTime(config *Config, res interface{}, project, activity
 		return err
 	}
 	return OperationWait(w, activity, timeoutMinutes)
+}
+
+func computeBetaOperationWaitTime(client *compute.Service, op *computeBeta.Operation, project, activity string, timeoutMin int) error {
+	opV1 := &compute.Operation{}
+	err := Convert(op, opV1)
+	if err != nil {
+		return err
+	}
+
+	return computeOperationWaitTime(client, opV1, project, activity, timeoutMin)
 }
 
 // ComputeOperationError wraps compute.OperationError and implements the

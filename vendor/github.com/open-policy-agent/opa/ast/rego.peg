@@ -20,20 +20,16 @@ Import <- "import" ws path:(Ref / Var) alias:(ws "as" ws Var)? {
 
 Rules <- DefaultRules / NormalRules
 
-DefaultRules <- "default" ws name:Var _ operator:( ":=" / "=" ) _ value:Term {
-    return makeDefaultRule(currentLocation(c), name, operator, value)
+DefaultRules <- "default" ws name:Var _ "=" _ value:Term {
+    return makeDefaultRule(currentLocation(c), name, value)
 }
 
-NormalRules <- head:(PartialRuleHead / RuleHead) _ rest:(NonEmptyBraceEnclosedBody ( _ RuleExt)* ) {
+NormalRules <- head:RuleHead _ rest:(NonEmptyBraceEnclosedBody ( _ RuleExt)* ) {
     return makeRule(currentLocation(c), head, rest)
 }
 
-PartialRuleHead <- name:Var args:( _ "(" _ Args _ ")" _ ) value:( _ ( ":=" / "=" ) _ ExprTerm )? {
-    return makeRuleHead(currentLocation(c), name, args, nil, value)
-}
-
-RuleHead <- name:Var key:( _ "[" _ ExprTerm _ "]" _ )? value:( _ ( ":=" / "=" ) _ ExprTerm )? {
-    return makeRuleHead(currentLocation(c), name, nil, key, value)
+RuleHead <- name:Var args:( _ "(" _ Args _ ")" _ )? key:( _ "[" _ ExprTerm _ "]" _ )? value:( _ "=" _ ExprTerm )? {
+    return makeRuleHead(currentLocation(c), name, args, key, value)
 }
 
 Args <- list:ExprTermList {
@@ -171,8 +167,8 @@ Call <- operator:(Ref / Var) "(" _ args:ExprTermList _ ")" {
     return makeCall(currentLocation(c), operator, args)
 }
 
-Term <- val:( Comprehension / Composite / Scalar / Call / Var ) refs:RefOperand* {
-    return makeRef(currentLocation(c), val, refs)
+Term <- val:( Comprehension / Composite / Scalar / Call / Ref / Var ) {
+    return val, nil
 }
 
 TermPair <- key:Term _ ":" _ value:Term {
@@ -216,7 +212,7 @@ SetNonEmpty <- '{' _ list:ExprTermList _ '}' {
     return makeSet(currentLocation(c), list)
 }
 
-Ref <- head:(Composite / Var) rest:RefOperand+ {
+Ref <- head:Var rest:RefOperand+ {
     return makeRef(currentLocation(c), head, rest)
 }
 
@@ -238,7 +234,7 @@ VarChecked <- val:VarUnchecked !{
     return IsKeyword(string(val.(*Term).Value.(Var))), nil
 }
 
-VarUnchecked <- VarStart VarChar* {
+VarUnchecked <- AsciiLetter (AsciiLetter / DecimalDigit)* {
     return makeVar(currentLocation(c), c.text)
 }
 
@@ -270,17 +266,13 @@ RawString <- '`' [^`]* '`' {
     return makeRawString(currentLocation(c), c.text)
 }
 
-Bool <- val:("true" / "false") !VarChar {
+Bool <- val:("true" / "false") {
     return makeBool(currentLocation(c), c.text)
 }
 
-Null <- "null" !VarChar {
+Null <- "null" {
     return makeNull(currentLocation(c))
 }
-
-VarStart <- AsciiLetter
-
-VarChar <- AsciiLetter / DecimalDigit
 
 AsciiLetter <- [A-Za-z_]
 
