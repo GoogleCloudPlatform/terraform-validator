@@ -36,6 +36,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03 h1:/HPRmq0efjPQ1eURcymk9JW/Z+4bMslXF9BkIFtMXRo=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03/go.mod h1:b0GkEVKI9wUxN73hyjSuuDNm8P8OcYa7zvC8IEpDuGw=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124163654-f879c81c3537 h1:azDxeygwpGRr/NqX0ovCsA7la9O3U3ECUXkMd+rX41A=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124163654-f879c81c3537/go.mod h1:b0GkEVKI9wUxN73hyjSuuDNm8P8OcYa7zvC8IEpDuGw=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
