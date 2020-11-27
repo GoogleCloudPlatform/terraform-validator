@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // validatePeerAddr returns false if a tunnel's peer_ip property
@@ -110,10 +110,10 @@ var invalidPeerAddrs = []struct {
 	},
 }
 
-func getVpnTunnelLink(config *Config, project, region, tunnel, userAgent string) (string, error) {
+func getVpnTunnelLink(config *Config, project string, region string, tunnel string) (string, error) {
 	if !strings.Contains(tunnel, "/") {
 		// Tunnel value provided is just the name, lookup the tunnel SelfLink
-		tunnelData, err := config.NewComputeClient(userAgent).VpnTunnels.Get(
+		tunnelData, err := config.clientCompute.VpnTunnels.Get(
 			project, region, tunnel).Do()
 		if err != nil {
 			return "", fmt.Errorf("Error reading tunnel: %s", err)
@@ -165,36 +165,6 @@ func GetComputeVpnTunnelApiObject(d TerraformResourceData, config *Config) (map[
 		return nil, err
 	} else if v, ok := d.GetOkExists("target_vpn_gateway"); !isEmptyValue(reflect.ValueOf(targetVpnGatewayProp)) && (ok || !reflect.DeepEqual(v, targetVpnGatewayProp)) {
 		obj["targetVpnGateway"] = targetVpnGatewayProp
-	}
-	vpnGatewayProp, err := expandComputeVpnTunnelVpnGateway(d.Get("vpn_gateway"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("vpn_gateway"); !isEmptyValue(reflect.ValueOf(vpnGatewayProp)) && (ok || !reflect.DeepEqual(v, vpnGatewayProp)) {
-		obj["vpnGateway"] = vpnGatewayProp
-	}
-	vpnGatewayInterfaceProp, err := expandComputeVpnTunnelVpnGatewayInterface(d.Get("vpn_gateway_interface"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("vpn_gateway_interface"); ok || !reflect.DeepEqual(v, vpnGatewayInterfaceProp) {
-		obj["vpnGatewayInterface"] = vpnGatewayInterfaceProp
-	}
-	peerExternalGatewayProp, err := expandComputeVpnTunnelPeerExternalGateway(d.Get("peer_external_gateway"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("peer_external_gateway"); !isEmptyValue(reflect.ValueOf(peerExternalGatewayProp)) && (ok || !reflect.DeepEqual(v, peerExternalGatewayProp)) {
-		obj["peerExternalGateway"] = peerExternalGatewayProp
-	}
-	peerExternalGatewayInterfaceProp, err := expandComputeVpnTunnelPeerExternalGatewayInterface(d.Get("peer_external_gateway_interface"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("peer_external_gateway_interface"); ok || !reflect.DeepEqual(v, peerExternalGatewayInterfaceProp) {
-		obj["peerExternalGatewayInterface"] = peerExternalGatewayInterfaceProp
-	}
-	peerGcpGatewayProp, err := expandComputeVpnTunnelPeerGcpGateway(d.Get("peer_gcp_gateway"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("peer_gcp_gateway"); !isEmptyValue(reflect.ValueOf(peerGcpGatewayProp)) && (ok || !reflect.DeepEqual(v, peerGcpGatewayProp)) {
-		obj["peerGcpGateway"] = peerGcpGatewayProp
 	}
 	routerProp, err := expandComputeVpnTunnelRouter(d.Get("router"), d, config)
 	if err != nil {
@@ -249,14 +219,10 @@ func resourceComputeVpnTunnelEncoder(d TerraformResourceData, meta interface{}, 
 		return nil, err
 	}
 	if _, ok := d.GetOk("project"); !ok {
-		if err := d.Set("project", f.Project); err != nil {
-			return nil, fmt.Errorf("Error setting project: %s", err)
-		}
+		d.Set("project", f.Project)
 	}
 	if _, ok := d.GetOk("region"); !ok {
-		if err := d.Set("region", f.Region); err != nil {
-			return nil, fmt.Errorf("Error setting region: %s", err)
-		}
+		d.Set("region", f.Region)
 	}
 	return obj, nil
 }
@@ -273,38 +239,6 @@ func expandComputeVpnTunnelTargetVpnGateway(v interface{}, d TerraformResourceDa
 	f, err := parseRegionalFieldValue("targetVpnGateways", v.(string), "project", "region", "zone", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for target_vpn_gateway: %s", err)
-	}
-	return f.RelativeLink(), nil
-}
-
-func expandComputeVpnTunnelVpnGateway(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	f, err := parseRegionalFieldValue("vpnGateways", v.(string), "project", "region", "zone", d, config, true)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid value for vpn_gateway: %s", err)
-	}
-	return f.RelativeLink(), nil
-}
-
-func expandComputeVpnTunnelVpnGatewayInterface(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeVpnTunnelPeerExternalGateway(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	f, err := parseGlobalFieldValue("externalVpnGateways", v.(string), "project", d, config, true)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid value for peer_external_gateway: %s", err)
-	}
-	return f.RelativeLink(), nil
-}
-
-func expandComputeVpnTunnelPeerExternalGatewayInterface(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeVpnTunnelPeerGcpGateway(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	f, err := parseRegionalFieldValue("vpnGateways", v.(string), "project", "region", "zone", d, config, true)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid value for peer_gcp_gateway: %s", err)
 	}
 	return f.RelativeLink(), nil
 }

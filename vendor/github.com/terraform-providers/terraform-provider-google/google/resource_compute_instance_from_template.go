@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	strcase "github.com/stoewer/go-strcase"
 	computeBeta "google.golang.org/api/compute/v0.beta"
 	compute "google.golang.org/api/compute/v1"
@@ -37,10 +37,21 @@ func computeInstanceFromTemplateSchema() map[string]*schema.Schema {
 		s[field].Optional = true
 	}
 
+	// schema.SchemaConfigModeAttr allows these fields to be removed in Terraform 0.12.
+	// Passing field_name = [] in this mode differentiates between an intentionally empty
+	// block vs an ignored computed block.
+	nic := s["network_interface"].Elem.(*schema.Resource)
+	nic.Schema["alias_ip_range"].ConfigMode = schema.SchemaConfigModeAttr
+	nic.Schema["access_config"].ConfigMode = schema.SchemaConfigModeAttr
+
+	for _, field := range []string{"attached_disk", "guest_accelerator", "service_account", "scratch_disk"} {
+		s[field].ConfigMode = schema.SchemaConfigModeAttr
+	}
+
 	// Remove deprecated/removed fields that are never d.Set. We can't
-	// programatically remove all of them, because some of them still have d.Set
+	// programmatically remove all of them, because some of them still have d.Set
 	// calls.
-	for _, field := range []string{"create_timeout", "disk", "network"} {
+	for _, field := range []string{"disk", "network"} {
 		delete(s, field)
 	}
 
@@ -95,7 +106,7 @@ func resourceComputeInstanceFromTemplateCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("Error loading zone '%s': %s", z, err)
 	}
 
-	instance, err := expandComputeInstance(project, zone, d, config)
+	instance, err := expandComputeInstance(project, d, config)
 	if err != nil {
 		return err
 	}
@@ -116,7 +127,6 @@ func resourceComputeInstanceFromTemplateCreate(d *schema.ResourceData, meta inte
 	}
 
 	// Force send all top-level fields that have been set in case they're overridden to zero values.
-	// TODO: consider doing so for nested fields as well.
 	// Initialize ForceSendFields to empty so we don't get things that the instance resource
 	// always force-sends.
 	instance.ForceSendFields = []string{}
@@ -143,10 +153,11 @@ func resourceComputeInstanceFromTemplateCreate(d *schema.ResourceData, meta inte
 	}
 
 	// Store the ID now
-	d.SetId(instance.Name)
+	d.SetId(fmt.Sprintf("projects/%s/zones/%s/instances/%s", project, z, instance.Name))
 
 	// Wait for the operation to complete
-	waitErr := computeSharedOperationWaitTime(config.clientCompute, op, project, int(d.Timeout(schema.TimeoutCreate).Minutes()), "instance to create")
+	waitErr := computeOperationWaitTime(config, op, project,
+		"instance to create", int(d.Timeout(schema.TimeoutCreate).Minutes()))
 	if waitErr != nil {
 		// The resource didn't actually create
 		d.SetId("")
@@ -161,7 +172,7 @@ func resourceComputeInstanceFromTemplateCreate(d *schema.ResourceData, meta inte
 func adjustInstanceFromTemplateDisks(d *schema.ResourceData, config *Config, it *computeBeta.InstanceTemplate, zone *compute.Zone, project string) ([]*computeBeta.AttachedDisk, error) {
 	disks := []*computeBeta.AttachedDisk{}
 	if _, hasBootDisk := d.GetOk("boot_disk"); hasBootDisk {
-		bootDisk, err := expandBootDisk(d, config, zone, project)
+		bootDisk, err := expandBootDisk(d, config, project)
 		if err != nil {
 			return nil, err
 		}
@@ -170,10 +181,16 @@ func adjustInstanceFromTemplateDisks(d *schema.ResourceData, config *Config, it 
 		// boot disk was not overridden, so use the one from the instance template
 		for _, disk := range it.Properties.Disks {
 			if disk.Boot {
-				if dt := disk.InitializeParams.DiskType; dt != "" {
-					// Instances need a URL for the disk type, but instance templates
-					// only have the name (since they're global).
-					disk.InitializeParams.DiskType = fmt.Sprintf("zones/%s/diskTypes/%s", zone.Name, dt)
+				if disk.Source != "" {
+					// Instances need a URL for the disk, but instance templates only have the name
+					disk.Source = fmt.Sprintf("projects/%s/zones/%s/disks/%s", project, zone.Name, disk.Source)
+				}
+				if disk.InitializeParams != nil {
+					if dt := disk.InitializeParams.DiskType; dt != "" {
+						// Instances need a URL for the disk type, but instance templates
+						// only have the name (since they're global).
+						disk.InitializeParams.DiskType = fmt.Sprintf("zones/%s/diskTypes/%s", zone.Name, dt)
+					}
 				}
 				disks = append(disks, disk)
 				break
@@ -182,7 +199,7 @@ func adjustInstanceFromTemplateDisks(d *schema.ResourceData, config *Config, it 
 	}
 
 	if _, hasScratchDisk := d.GetOk("scratch_disk"); hasScratchDisk {
-		scratchDisks, err := expandScratchDisks(d, config, zone, project)
+		scratchDisks, err := expandScratchDisks(d, config, project)
 		if err != nil {
 			return nil, err
 		}
@@ -191,6 +208,13 @@ func adjustInstanceFromTemplateDisks(d *schema.ResourceData, config *Config, it 
 		// scratch disks were not overridden, so use the ones from the instance template
 		for _, disk := range it.Properties.Disks {
 			if disk.Type == "SCRATCH" {
+				if disk.InitializeParams != nil {
+					if dt := disk.InitializeParams.DiskType; dt != "" {
+						// Instances need a URL for the disk type, but instance templates
+						// only have the name (since they're global).
+						disk.InitializeParams.DiskType = fmt.Sprintf("zones/%s/diskTypes/%s", zone.Name, dt)
+					}
+				}
 				disks = append(disks, disk)
 			}
 		}
@@ -215,6 +239,13 @@ func adjustInstanceFromTemplateDisks(d *schema.ResourceData, config *Config, it 
 					// Instances need a URL for the disk source, but instance templates
 					// only have the name (since they're global).
 					disk.Source = fmt.Sprintf("zones/%s/disks/%s", zone.Name, s)
+				}
+				if disk.InitializeParams != nil {
+					if dt := disk.InitializeParams.DiskType; dt != "" {
+						// Instances need a URL for the disk type, but instance templates
+						// only have the name (since they're global).
+						disk.InitializeParams.DiskType = fmt.Sprintf("zones/%s/diskTypes/%s", zone.Name, dt)
+					}
 				}
 				disks = append(disks, disk)
 			}

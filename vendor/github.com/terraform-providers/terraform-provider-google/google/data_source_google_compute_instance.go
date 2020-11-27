@@ -3,7 +3,7 @@ package google
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceGoogleComputeInstance() *schema.Resource {
@@ -101,6 +101,7 @@ func dataSourceGoogleComputeInstanceRead(d *schema.ResourceData, meta interface{
 			}
 			if key := disk.DiskEncryptionKey; key != nil {
 				di["disk_encryption_key_sha256"] = key.Sha256
+				di["kms_key_self_link"] = key.KmsKeyName
 			}
 			attachedDisks = append(attachedDisks, di)
 		}
@@ -134,6 +135,16 @@ func dataSourceGoogleComputeInstanceRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
+	err = d.Set("shielded_instance_config", flattenShieldedVmConfig(instance.ShieldedVmConfig))
+	if err != nil {
+		return err
+	}
+
+	err = d.Set("enable_display", flattenEnableDisplay(instance.DisplayDevice))
+	if err != nil {
+		return err
+	}
+
 	d.Set("attached_disk", ads)
 	d.Set("cpu_platform", instance.CpuPlatform)
 	d.Set("min_cpu_platform", instance.MinCpuPlatform)
@@ -143,6 +154,6 @@ func dataSourceGoogleComputeInstanceRead(d *schema.ResourceData, meta interface{
 	d.Set("project", project)
 	d.Set("zone", GetResourceNameFromSelfLink(instance.Zone))
 	d.Set("name", instance.Name)
-	d.SetId(ConvertSelfLinkToV1(instance.SelfLink))
+	d.SetId(fmt.Sprintf("projects/%s/zones/%s/instances/%s", project, instance.Zone, instance.Name))
 	return nil
 }

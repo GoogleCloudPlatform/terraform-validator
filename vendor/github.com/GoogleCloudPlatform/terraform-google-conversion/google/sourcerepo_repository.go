@@ -15,29 +15,10 @@
 package google
 
 import (
-	"bytes"
-	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
-
-func resourceSourceRepoRepositoryPubSubConfigsHash(v interface{}) int {
-	if v == nil {
-		return 0
-	}
-
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-
-	buf.WriteString(fmt.Sprintf("%s-", GetResourceNameFromSelfLink(m["topic"].(string))))
-	buf.WriteString(fmt.Sprintf("%s-", m["message_format"].(string)))
-	if v, ok := m["service_account_email"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
-	}
-
-	return hashcode(buf.String())
-}
 
 func GetSourceRepoRepositoryCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//sourcerepo.googleapis.com/projects/{{project}}/repos/{{name}}")
@@ -94,22 +75,15 @@ func expandSourceRepoRepositoryPubsubConfigs(v interface{}, d TerraformResourceD
 		transformedMessageFormat, err := expandSourceRepoRepositoryPubsubConfigsMessageFormat(original["message_format"], d, config)
 		if err != nil {
 			return nil, err
-		} else if val := reflect.ValueOf(transformedMessageFormat); val.IsValid() && !isEmptyValue(val) {
-			transformed["messageFormat"] = transformedMessageFormat
 		}
-
+		transformed["messageFormat"] = transformedMessageFormat
 		transformedServiceAccountEmail, err := expandSourceRepoRepositoryPubsubConfigsServiceAccountEmail(original["service_account_email"], d, config)
 		if err != nil {
 			return nil, err
-		} else if val := reflect.ValueOf(transformedServiceAccountEmail); val.IsValid() && !isEmptyValue(val) {
-			transformed["serviceAccountEmail"] = transformedServiceAccountEmail
 		}
+		transformed["serviceAccountEmail"] = transformedServiceAccountEmail
 
-		transformedTopic, err := expandSourceRepoRepositoryPubsubConfigsTopic(original["topic"], d, config)
-		if err != nil {
-			return nil, err
-		}
-		m[transformedTopic] = transformed
+		m[original["topic"].(string)] = transformed
 	}
 	return m, nil
 }

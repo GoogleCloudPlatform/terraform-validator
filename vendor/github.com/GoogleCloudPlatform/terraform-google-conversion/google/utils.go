@@ -5,12 +5,11 @@ package google
 import (
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"google.golang.org/api/googleapi"
 )
 
@@ -22,15 +21,12 @@ type TerraformResourceData interface {
 	Set(string, interface{}) error
 	SetId(string)
 	Id() string
-	GetProviderMeta(interface{}) error
 }
 
 type TerraformResourceDiff interface {
-	HasChange(string) bool
 	GetChange(string) (interface{}, interface{})
 	Get(string) interface{}
 	Clear(string) error
-	ForceNew(string) error
 }
 
 // getRegionFromZone returns the region from a zone for Google cloud.
@@ -56,12 +52,6 @@ func getRegion(d TerraformResourceData, config *Config) (string, error) {
 // given, an error is returned.
 func getProject(d TerraformResourceData, config *Config) (string, error) {
 	return getProjectFromSchema("project", d, config)
-}
-
-// getBillingProject reads the "billing_project" field from the given resource data and falls
-// back to the provider's value if not given. If no value is found, an error is returned.
-func getBillingProject(d TerraformResourceData, config *Config) (string, error) {
-	return getBillingProjectFromSchema("billing_project", d, config)
 }
 
 // getProjectFromDiff reads the "project" field from the given diff and falls
@@ -91,8 +81,7 @@ func handleNotFoundError(err error, d *schema.ResourceData, resource string) err
 		return nil
 	}
 
-	return errwrap.Wrapf(
-		fmt.Sprintf("Error when reading or editing %s: {{err}}", resource), err)
+	return fmt.Errorf("Error reading %s: %s", resource, err)
 }
 
 func isGoogleApiErrorWithCode(err error, errCode int) bool {
@@ -160,11 +149,6 @@ func expandEnvironmentVariables(d *schema.ResourceData) map[string]string {
 	return expandStringMap(d, "environment_variables")
 }
 
-// expandBuildEnvironmentVariables pulls the value of "build_environment_variables" out of a schema.ResourceData as a map[string]string.
-func expandBuildEnvironmentVariables(d *schema.ResourceData) map[string]string {
-	return expandStringMap(d, "build_environment_variables")
-}
-
 // expandStringMap pulls the value of key out of a TerraformResourceData as a map[string]string.
 func expandStringMap(d TerraformResourceData, key string) map[string]string {
 	v, ok := d.GetOk(key)
@@ -220,8 +204,6 @@ func convertStringSet(set *schema.Set) []string {
 	for _, v := range set.List() {
 		s = append(s, v.(string))
 	}
-	sort.Strings(s)
-
 	return s
 }
 
@@ -239,7 +221,6 @@ func stringSliceFromGolangSet(sset map[string]struct{}) []string {
 	for s := range sset {
 		ls = append(ls, s)
 	}
-	sort.Strings(ls)
 
 	return ls
 }
@@ -354,8 +335,8 @@ func serviceAccountFQN(serviceAccount string, d TerraformResourceData, config *C
 	return fmt.Sprintf("projects/-/serviceAccounts/%s@%s.iam.gserviceaccount.com", serviceAccount, project), nil
 }
 
-func paginatedListRequest(project, baseUrl, userAgent string, config *Config, flattener func(map[string]interface{}) []interface{}) ([]interface{}, error) {
-	res, err := sendRequest(config, "GET", project, baseUrl, userAgent, nil)
+func paginatedListRequest(project, baseUrl string, config *Config, flattener func(map[string]interface{}) []interface{}) ([]interface{}, error) {
+	res, err := sendRequest(config, "GET", project, baseUrl, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +348,7 @@ func paginatedListRequest(project, baseUrl, userAgent string, config *Config, fl
 			break
 		}
 		url := fmt.Sprintf("%s?pageToken=%s", baseUrl, pageToken.(string))
-		res, err = sendRequest(config, "GET", project, url, userAgent, nil)
+		res, err = sendRequest(config, "GET", project, url, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -378,9 +359,9 @@ func paginatedListRequest(project, baseUrl, userAgent string, config *Config, fl
 	return ls, nil
 }
 
-func getInterconnectAttachmentLink(config *Config, project, region, ic, userAgent string) (string, error) {
+func getInterconnectAttachmentLink(config *Config, project, region, ic string) (string, error) {
 	if !strings.Contains(ic, "/") {
-		icData, err := config.NewComputeClient(userAgent).InterconnectAttachments.Get(
+		icData, err := config.clientCompute.InterconnectAttachments.Get(
 			project, region, ic).Do()
 		if err != nil {
 			return "", fmt.Errorf("Error reading interconnect attachment: %s", err)
@@ -436,36 +417,4 @@ func stringInSlice(arr []string, str string) bool {
 
 func migrateStateNoop(v int, is *terraform.InstanceState, meta interface{}) (*terraform.InstanceState, error) {
 	return is, nil
-}
-
-func expandString(v interface{}, d TerraformResourceData, config *Config) (string, error) {
-	return v.(string), nil
-}
-
-func changeFieldSchemaToForceNew(sch *schema.Schema) {
-	sch.ForceNew = true
-	switch sch.Type {
-	case schema.TypeList:
-	case schema.TypeSet:
-		if nestedR, ok := sch.Elem.(*schema.Resource); ok {
-			for _, nestedSch := range nestedR.Schema {
-				changeFieldSchemaToForceNew(nestedSch)
-			}
-		}
-	}
-}
-
-func generateUserAgentString(d TerraformResourceData, currentUserAgent string) (string, error) {
-	var m providerMeta
-
-	err := d.GetProviderMeta(&m)
-	if err != nil {
-		return currentUserAgent, err
-	}
-
-	if m.ModuleName != "" {
-		return strings.Join([]string{currentUserAgent, m.ModuleName}, " "), nil
-	}
-
-	return currentUserAgent, nil
 }

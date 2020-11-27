@@ -1,13 +1,13 @@
 package google
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"google.golang.org/api/cloudresourcemanager/v1"
-	"log"
 )
 
 var IamPolicyBaseSchema = map[string]*schema.Schema{
@@ -37,7 +37,7 @@ func iamPolicyImport(resourceIdParser resourceIdParserFunc) schema.StateFunc {
 	}
 }
 
-func ResourceIamPolicy(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc) *schema.Resource {
+func ResourceIamPolicy(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
 	return &schema.Resource{
 		Create: ResourceIamPolicyCreate(newUpdaterFunc),
 		Read:   ResourceIamPolicyRead(newUpdaterFunc),
@@ -45,15 +45,10 @@ func ResourceIamPolicy(parentSpecificSchema map[string]*schema.Schema, newUpdate
 		Delete: ResourceIamPolicyDelete(newUpdaterFunc),
 
 		Schema: mergeSchemas(IamPolicyBaseSchema, parentSpecificSchema),
+		Importer: &schema.ResourceImporter{
+			State: iamPolicyImport(resourceIdParser),
+		},
 	}
-}
-
-func ResourceIamPolicyWithImport(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
-	r := ResourceIamPolicy(parentSpecificSchema, newUpdaterFunc)
-	r.Importer = &schema.ResourceImporter{
-		State: iamPolicyImport(resourceIdParser),
-	}
-	return r
 }
 
 func ResourceIamPolicyCreate(newUpdaterFunc newResourceIamUpdaterFunc) schema.CreateFunc {
@@ -81,13 +76,9 @@ func ResourceIamPolicyRead(newUpdaterFunc newResourceIamUpdaterFunc) schema.Read
 			return err
 		}
 
-		policy, err := updater.GetResourceIamPolicy()
+		policy, err := iamPolicyReadWithRetry(updater)
 		if err != nil {
-			if isGoogleApiErrorWithCode(err, 404) {
-				log.Printf("[DEBUG]: Policy does not exist for non-existent resource %q", updater.GetResourceId())
-				return nil
-			}
-			return err
+			return handleNotFoundError(err, d, fmt.Sprintf("Resource %q with IAM Policy", updater.DescribeResource()))
 		}
 
 		d.Set("etag", policy.Etag)
@@ -124,7 +115,12 @@ func ResourceIamPolicyDelete(newUpdaterFunc newResourceIamUpdaterFunc) schema.De
 		}
 
 		// Set an empty policy to delete the attached policy.
-		err = updater.SetResourceIamPolicy(&cloudresourcemanager.Policy{})
+		pol := &cloudresourcemanager.Policy{}
+		if v, ok := d.GetOk("etag"); ok {
+			pol.Etag = v.(string)
+		}
+		pol.Version = iamPolicyVersion
+		err = updater.SetResourceIamPolicy(pol)
 		if err != nil {
 			return err
 		}
@@ -138,6 +134,7 @@ func setIamPolicyData(d *schema.ResourceData, updater ResourceIamUpdater) error 
 	if err != nil {
 		return fmt.Errorf("'policy_data' is not valid for %s: %s", updater.DescribeResource(), err)
 	}
+	policy.Version = iamPolicyVersion
 
 	err = updater.SetResourceIamPolicy(policy)
 	if err != nil {
@@ -149,7 +146,8 @@ func setIamPolicyData(d *schema.ResourceData, updater ResourceIamUpdater) error 
 
 func marshalIamPolicy(policy *cloudresourcemanager.Policy) string {
 	pdBytes, _ := json.Marshal(&cloudresourcemanager.Policy{
-		Bindings: policy.Bindings,
+		AuditConfigs: policy.AuditConfigs,
+		Bindings:     policy.Bindings,
 	})
 	return string(pdBytes)
 }

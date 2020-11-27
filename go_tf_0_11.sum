@@ -27,8 +27,6 @@ github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538-710bfbc3d74a/go.mod h1:h6B4mW5ReeQWi4BLswuDHcRe8oRH1RdmwSEpbd1iKt0=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190517181531-30d4358dc839 h1:mVWFcWpP2aE8hPHYLtVj3eE/Pj0qzZPWyCtKbOwbMJU=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190517181531-30d4358dc839/go.mod h1:f6m1zQRQrAiGbGErm7Dl8MF9UyzykcTb12oiAWm5ric=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124231328-f0e44e8b2041 h1:0hq11SIOUgTMt5tgXmwvNIgxYRwG2hQ/Cc1IATNOi7E=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124231328-f0e44e8b2041/go.mod h1:b0GkEVKI9wUxN73hyjSuuDNm8P8OcYa7zvC8IEpDuGw=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OneOfOne/xxhash v1.2.5 h1:zl/OfRA6nftbBK9qTohYBJ5xvw6C/oNKizR7cZGl3cI=
 github.com/OneOfOne/xxhash v1.2.5/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=

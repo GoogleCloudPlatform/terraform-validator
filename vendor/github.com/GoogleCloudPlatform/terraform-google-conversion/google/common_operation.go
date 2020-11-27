@@ -5,18 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 )
-
-// Wraps Op.Error in an implementation of built-in Error
-type CommonOpError struct {
-	*cloudresourcemanager.Status
-}
-
-func (e *CommonOpError) Error() string {
-	return fmt.Sprintf("Error code %v, message: %s", e.Code, e.Message)
-}
 
 type Waiter interface {
 	// State returns the current status of the operation.
@@ -65,7 +56,7 @@ func (w *CommonOperationWaiter) State() string {
 
 func (w *CommonOperationWaiter) Error() error {
 	if w != nil && w.Op.Error != nil {
-		return &CommonOpError{w.Op.Error}
+		return fmt.Errorf("Error code %v, message: %s", w.Op.Error.Code, w.Op.Error.Message)
 	}
 	return nil
 }
@@ -135,7 +126,7 @@ func CommonRefreshFunc(w Waiter) resource.StateRefreshFunc {
 	}
 }
 
-func OperationWait(w Waiter, activity string, timeout time.Duration, pollInterval time.Duration) error {
+func OperationWait(w Waiter, activity string, timeoutMinutes int) error {
 	if OperationDone(w) {
 		if w.Error() != nil {
 			return w.Error()
@@ -144,12 +135,11 @@ func OperationWait(w Waiter, activity string, timeout time.Duration, pollInterva
 	}
 
 	c := &resource.StateChangeConf{
-		Pending:      w.PendingStates(),
-		Target:       w.TargetStates(),
-		Refresh:      CommonRefreshFunc(w),
-		Timeout:      timeout,
-		MinTimeout:   2 * time.Second,
-		PollInterval: pollInterval,
+		Pending:    w.PendingStates(),
+		Target:     w.TargetStates(),
+		Refresh:    CommonRefreshFunc(w),
+		Timeout:    time.Duration(timeoutMinutes) * time.Minute,
+		MinTimeout: 2 * time.Second,
 	}
 	opRaw, err := c.WaitForState()
 	if err != nil {

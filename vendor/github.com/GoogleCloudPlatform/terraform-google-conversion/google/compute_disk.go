@@ -15,17 +15,16 @@
 package google
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"reflect"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // Is the new disk size smaller than the old one?
-func isDiskShrinkage(_ context.Context, old, new, _ interface{}) bool {
+func isDiskShrinkage(old, new, _ interface{}) bool {
 	// It's okay to remove size entirely.
 	if old == nil || new == nil {
 		return false
@@ -327,12 +326,6 @@ func resourceComputeDiskEncoder(d TerraformResourceData, meta interface{}, obj m
 	if err != nil {
 		return nil, err
 	}
-
-	userAgent, err := generateUserAgentString(d, config.userAgent)
-	if err != nil {
-		return nil, err
-	}
-
 	if v, ok := d.GetOk("type"); ok {
 		log.Printf("[DEBUG] Loading disk type: %s", v.(string))
 		diskType, err := readDiskType(config, d, v.(string))
@@ -347,7 +340,7 @@ func resourceComputeDiskEncoder(d TerraformResourceData, meta interface{}, obj m
 
 	if v, ok := d.GetOk("image"); ok {
 		log.Printf("[DEBUG] Resolving image name: %s", v.(string))
-		imageUrl, err := resolveImage(config, project, v.(string), userAgent)
+		imageUrl, err := resolveImage(config, project, v.(string))
 		if err != nil {
 			return nil, fmt.Errorf(
 				"Error resolving image name '%s': %s",
@@ -442,13 +435,6 @@ func expandComputeDiskSourceImageEncryptionKey(v interface{}, d TerraformResourc
 		transformed["kmsKeyName"] = transformedKmsKeySelfLink
 	}
 
-	transformedKmsKeyServiceAccount, err := expandComputeDiskSourceImageEncryptionKeyKmsKeyServiceAccount(original["kms_key_service_account"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedKmsKeyServiceAccount); val.IsValid() && !isEmptyValue(val) {
-		transformed["kmsKeyServiceAccount"] = transformedKmsKeyServiceAccount
-	}
-
 	return transformed, nil
 }
 
@@ -461,10 +447,6 @@ func expandComputeDiskSourceImageEncryptionKeySha256(v interface{}, d TerraformR
 }
 
 func expandComputeDiskSourceImageEncryptionKeyKmsKeySelfLink(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeDiskSourceImageEncryptionKeyKmsKeyServiceAccount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -498,13 +480,6 @@ func expandComputeDiskDiskEncryptionKey(v interface{}, d TerraformResourceData, 
 		transformed["kmsKeyName"] = transformedKmsKeySelfLink
 	}
 
-	transformedKmsKeyServiceAccount, err := expandComputeDiskDiskEncryptionKeyKmsKeyServiceAccount(original["kms_key_service_account"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedKmsKeyServiceAccount); val.IsValid() && !isEmptyValue(val) {
-		transformed["kmsKeyServiceAccount"] = transformedKmsKeyServiceAccount
-	}
-
 	return transformed, nil
 }
 
@@ -517,10 +492,6 @@ func expandComputeDiskDiskEncryptionKeySha256(v interface{}, d TerraformResource
 }
 
 func expandComputeDiskDiskEncryptionKeyKmsKeySelfLink(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeDiskDiskEncryptionKeyKmsKeyServiceAccount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -562,13 +533,6 @@ func expandComputeDiskSourceSnapshotEncryptionKey(v interface{}, d TerraformReso
 		transformed["sha256"] = transformedSha256
 	}
 
-	transformedKmsKeyServiceAccount, err := expandComputeDiskSourceSnapshotEncryptionKeyKmsKeyServiceAccount(original["kms_key_service_account"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedKmsKeyServiceAccount); val.IsValid() && !isEmptyValue(val) {
-		transformed["kmsKeyServiceAccount"] = transformedKmsKeyServiceAccount
-	}
-
 	return transformed, nil
 }
 
@@ -581,9 +545,5 @@ func expandComputeDiskSourceSnapshotEncryptionKeyKmsKeySelfLink(v interface{}, d
 }
 
 func expandComputeDiskSourceSnapshotEncryptionKeySha256(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeDiskSourceSnapshotEncryptionKeyKmsKeyServiceAccount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

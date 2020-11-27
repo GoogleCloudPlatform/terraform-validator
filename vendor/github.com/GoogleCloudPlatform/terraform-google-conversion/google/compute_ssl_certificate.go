@@ -15,10 +15,9 @@
 package google
 
 import (
-	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func GetComputeSslCertificateCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -91,9 +90,7 @@ func expandComputeSslCertificateName(v interface{}, d TerraformResourceData, con
 	}
 
 	// We need to get the {{name}} into schema to set the ID using ReplaceVars
-	if err := d.Set("name", certName); err != nil {
-		return nil, fmt.Errorf("Error setting name: %s", err)
-	}
+	d.Set("name", certName)
 
 	return certName, nil
 }

@@ -15,44 +15,9 @@
 package google
 
 import (
-	"context"
 	"fmt"
 	"reflect"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-// customizeDiff func for additional checks on google_spanner_database properties:
-func resourceSpannerDBDdlCustomDiffFunc(diff TerraformResourceDiff) error {
-	old, new := diff.GetChange("ddl")
-	oldDdls := old.([]interface{})
-	newDdls := new.([]interface{})
-	var err error
-
-	if len(newDdls) < len(oldDdls) {
-		err = diff.ForceNew("ddl")
-		if err != nil {
-			return fmt.Errorf("ForceNew failed for ddl, old - %v and new - %v", oldDdls, newDdls)
-		}
-		return nil
-	}
-
-	for i := range oldDdls {
-		if newDdls[i].(string) != oldDdls[i].(string) {
-			err = diff.ForceNew("ddl")
-			if err != nil {
-				return fmt.Errorf("ForceNew failed for ddl, old - %v and new - %v", oldDdls, newDdls)
-			}
-			return nil
-		}
-	}
-	return nil
-}
-
-func resourceSpannerDBDdlCustomDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-	// separate func to allow unit testing
-	return resourceSpannerDBDdlCustomDiffFunc(diff)
-}
 
 func GetSpannerDatabaseCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//spanner.googleapis.com/projects/{{project}}/instances/{{instance}}/databases/{{name}}")

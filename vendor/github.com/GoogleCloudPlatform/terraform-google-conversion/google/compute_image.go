@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func GetComputeImageCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -103,18 +103,6 @@ func GetComputeImageApiObject(d TerraformResourceData, config *Config) (map[stri
 		return nil, err
 	} else if v, ok := d.GetOkExists("source_disk"); !isEmptyValue(reflect.ValueOf(sourceDiskProp)) && (ok || !reflect.DeepEqual(v, sourceDiskProp)) {
 		obj["sourceDisk"] = sourceDiskProp
-	}
-	sourceImageProp, err := expandComputeImageSourceImage(d.Get("source_image"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("source_image"); !isEmptyValue(reflect.ValueOf(sourceImageProp)) && (ok || !reflect.DeepEqual(v, sourceImageProp)) {
-		obj["sourceImage"] = sourceImageProp
-	}
-	sourceSnapshotProp, err := expandComputeImageSourceSnapshot(d.Get("source_snapshot"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("source_snapshot"); !isEmptyValue(reflect.ValueOf(sourceSnapshotProp)) && (ok || !reflect.DeepEqual(v, sourceSnapshotProp)) {
-		obj["sourceSnapshot"] = sourceSnapshotProp
 	}
 
 	return obj, nil
@@ -243,22 +231,6 @@ func expandComputeImageSourceDisk(v interface{}, d TerraformResourceData, config
 	f, err := parseZonalFieldValue("disks", v.(string), "project", "zone", d, config, true)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid value for source_disk: %s", err)
-	}
-	return f.RelativeLink(), nil
-}
-
-func expandComputeImageSourceImage(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	f, err := parseGlobalFieldValue("images", v.(string), "project", d, config, true)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid value for source_image: %s", err)
-	}
-	return f.RelativeLink(), nil
-}
-
-func expandComputeImageSourceSnapshot(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	f, err := parseGlobalFieldValue("snapshots", v.(string), "project", d, config, true)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid value for source_snapshot: %s", err)
 	}
 	return f.RelativeLink(), nil
 }

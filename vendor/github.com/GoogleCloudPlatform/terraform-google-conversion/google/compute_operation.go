@@ -2,11 +2,7 @@ package google
 
 import (
 	"bytes"
-	"context"
-	"errors"
 	"fmt"
-	"log"
-	"time"
 
 	"google.golang.org/api/compute/v1"
 )
@@ -14,7 +10,6 @@ import (
 type ComputeOperationWaiter struct {
 	Service *compute.Service
 	Op      *compute.Operation
-	Context context.Context
 	Project string
 }
 
@@ -57,15 +52,6 @@ func (w *ComputeOperationWaiter) QueryOp() (interface{}, error) {
 	if w == nil || w.Op == nil {
 		return nil, fmt.Errorf("Cannot query operation, it's unset or nil.")
 	}
-	if w.Context != nil {
-		select {
-		case <-w.Context.Done():
-			log.Println("[WARN] request has been cancelled early")
-			return w.Op, errors.New("unable to finish polling, context has been cancelled")
-		default:
-			// default must be here to keep the previous case from blocking
-		}
-	}
 	if w.Op.Zone != "" {
 		zone := GetResourceNameFromSelfLink(w.Op.Zone)
 		return w.Service.ZoneOperations.Get(w.Project, zone, w.Op.Name).Do()
@@ -92,7 +78,11 @@ func (w *ComputeOperationWaiter) TargetStates() []string {
 	return []string{"DONE"}
 }
 
-func computeOperationWaitTime(config *Config, res interface{}, project, activity, userAgent string, timeout time.Duration) error {
+func computeOperationWait(config *Config, res interface{}, project, activity string) error {
+	return computeOperationWaitTime(config, res, project, activity, 4)
+}
+
+func computeOperationWaitTime(config *Config, res interface{}, project, activity string, timeoutMinutes int) error {
 	op := &compute.Operation{}
 	err := Convert(res, op)
 	if err != nil {
@@ -100,8 +90,7 @@ func computeOperationWaitTime(config *Config, res interface{}, project, activity
 	}
 
 	w := &ComputeOperationWaiter{
-		Service: config.NewComputeClient(userAgent),
-		Context: config.context,
+		Service: config.clientCompute,
 		Op:      op,
 		Project: project,
 	}
@@ -109,7 +98,7 @@ func computeOperationWaitTime(config *Config, res interface{}, project, activity
 	if err := w.SetOp(op); err != nil {
 		return err
 	}
-	return OperationWait(w, activity, timeout, config.PollInterval)
+	return OperationWait(w, activity, timeoutMinutes)
 }
 
 // ComputeOperationError wraps compute.OperationError and implements the

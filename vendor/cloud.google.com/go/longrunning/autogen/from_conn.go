@@ -1,4 +1,4 @@
-// Copyright 2020, Google LLC
+// Copyright 2017, Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,16 +15,20 @@
 package longrunning
 
 import (
-	"context"
-
-	"google.golang.org/api/option"
+	longrunningpb "google.golang.org/genproto/googleapis/longrunning"
 	"google.golang.org/grpc"
 )
 
-// InternalFromConn is for use by the Google Cloud Libraries only.
+// InternalFromConn is for use by the google Cloud Libraries only.
 //
-// Deprecated. Use `NewOperationsClient(ctx, option.WithGRPCConn(conn))` instead.
+// InternalFromConn creates OperationsClient from available connection.
 func InternalFromConn(conn *grpc.ClientConn) *OperationsClient {
-	c, _ := NewOperationsClient(context.Background(), option.WithGRPCConn(conn))
+	c := &OperationsClient{
+		conn:        conn,
+		CallOptions: defaultOperationsCallOptions(),
+
+		operationsClient: longrunningpb.NewOperationsClient(conn),
+	}
+	c.SetGoogleClientInfo()
 	return c
 }

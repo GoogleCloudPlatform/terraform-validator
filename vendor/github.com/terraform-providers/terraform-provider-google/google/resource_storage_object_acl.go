@@ -2,10 +2,11 @@ package google
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
-	"google.golang.org/api/storage/v1"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"google.golang.org/api/storage/v1"
 )
 
 func resourceStorageObjectAcl() *schema.Resource {
@@ -57,10 +58,20 @@ func resourceStorageObjectAcl() *schema.Resource {
 // makes configs with or without that line indistinguishable.
 func resourceStorageObjectAclDiff(diff *schema.ResourceDiff, meta interface{}) error {
 	config := meta.(*Config)
-	bucket := diff.Get("bucket").(string)
-	object := diff.Get("object").(string)
+	bucket, ok := diff.GetOk("bucket")
+	if !ok {
+		// During `plan` when this is interpolated from a resource that hasn't been created yet
+		// required fields may not be present yet
+		return nil
+	}
+	object, ok := diff.GetOk("object")
+	if !ok {
+		// During `plan` when this is interpolated from a resource that hasn't been created yet
+		// required fields may not be present yet
+		return nil
+	}
 
-	sObject, err := config.clientStorage.Objects.Get(bucket, object).Projection("full").Do()
+	sObject, err := config.clientStorage.Objects.Get(bucket.(string), object.(string)).Projection("full").Do()
 	if err != nil {
 		// Failing here is OK! Generally, it means we are at Create although it could mean the resource is gone.
 		// Create won't show the object owner being given
@@ -103,6 +114,13 @@ func resourceStorageObjectAclCreate(d *schema.ResourceData, meta interface{}) er
 	bucket := d.Get("bucket").(string)
 	object := d.Get("object").(string)
 
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}/objects/{{object}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
+
 	// If we're using a predefined acl we just use the canned api.
 	if predefinedAcl, ok := d.GetOk("predefined_acl"); ok {
 		res, err := config.clientStorage.Objects.Get(bucket, object).Do()
@@ -110,7 +128,7 @@ func resourceStorageObjectAclCreate(d *schema.ResourceData, meta interface{}) er
 			return fmt.Errorf("Error reading object %s in %s: %v", object, bucket, err)
 		}
 
-		res, err = config.clientStorage.Objects.Update(bucket, object, res).PredefinedAcl(predefinedAcl.(string)).Do()
+		_, err = config.clientStorage.Objects.Update(bucket, object, res).PredefinedAcl(predefinedAcl.(string)).Do()
 		if err != nil {
 			return fmt.Errorf("Error updating object %s in %s: %v", object, bucket, err)
 		}
@@ -150,6 +168,13 @@ func resourceStorageObjectAclRead(d *schema.ResourceData, meta interface{}) erro
 	bucket := d.Get("bucket").(string)
 	object := d.Get("object").(string)
 
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}/objects/{{object}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
+
 	roleEntities, err := getRoleEntitiesAsStringsFromApi(config, bucket, object)
 	if err != nil {
 		return handleNotFoundError(err, d, fmt.Sprintf("Storage Object ACL for Bucket %q", d.Get("bucket").(string)))
@@ -170,13 +195,20 @@ func resourceStorageObjectAclUpdate(d *schema.ResourceData, meta interface{}) er
 	bucket := d.Get("bucket").(string)
 	object := d.Get("object").(string)
 
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}/objects/{{object}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
+
 	if _, ok := d.GetOk("predefined_acl"); d.HasChange("predefined_acl") && ok {
 		res, err := config.clientStorage.Objects.Get(bucket, object).Do()
 		if err != nil {
 			return fmt.Errorf("Error reading object %s in %s: %v", object, bucket, err)
 		}
 
-		res, err = config.clientStorage.Objects.Update(bucket, object, res).PredefinedAcl(d.Get("predefined_acl").(string)).Do()
+		_, err = config.clientStorage.Objects.Update(bucket, object, res).PredefinedAcl(d.Get("predefined_acl").(string)).Do()
 		if err != nil {
 			return fmt.Errorf("Error updating object %s in %s: %v", object, bucket, err)
 		}
@@ -214,12 +246,19 @@ func resourceStorageObjectAclDelete(d *schema.ResourceData, meta interface{}) er
 	bucket := d.Get("bucket").(string)
 	object := d.Get("object").(string)
 
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}/objects/{{object}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
+
 	res, err := config.clientStorage.Objects.Get(bucket, object).Do()
 	if err != nil {
 		return fmt.Errorf("Error reading object %s in %s: %v", object, bucket, err)
 	}
 
-	res, err = config.clientStorage.Objects.Update(bucket, object, res).PredefinedAcl("private").Do()
+	_, err = config.clientStorage.Objects.Update(bucket, object, res).PredefinedAcl("private").Do()
 	if err != nil {
 		return fmt.Errorf("Error updating object %s in %s: %v", object, bucket, err)
 	}

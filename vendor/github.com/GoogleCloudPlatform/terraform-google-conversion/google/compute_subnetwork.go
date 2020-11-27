@@ -15,17 +15,15 @@
 package google
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"reflect"
 
 	"github.com/apparentlymart/go-cidr/cidr"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Whether the IP CIDR change shrinks the block.
-func isShrinkageIpCidr(_ context.Context, old, new, _ interface{}) bool {
+func isShrinkageIpCidr(old, new, _ interface{}) bool {
 	_, oldCidr, oldErr := net.ParseCIDR(old.(string))
 	_, newCidr, newErr := net.ParseCIDR(new.(string))
 
@@ -102,12 +100,6 @@ func GetComputeSubnetworkApiObject(d TerraformResourceData, config *Config) (map
 		return nil, err
 	} else if v, ok := d.GetOkExists("private_ip_google_access"); !isEmptyValue(reflect.ValueOf(privateIpGoogleAccessProp)) && (ok || !reflect.DeepEqual(v, privateIpGoogleAccessProp)) {
 		obj["privateIpGoogleAccess"] = privateIpGoogleAccessProp
-	}
-	privateIpv6GoogleAccessProp, err := expandComputeSubnetworkPrivateIpv6GoogleAccess(d.Get("private_ipv6_google_access"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("private_ipv6_google_access"); !isEmptyValue(reflect.ValueOf(privateIpv6GoogleAccessProp)) && (ok || !reflect.DeepEqual(v, privateIpv6GoogleAccessProp)) {
-		obj["privateIpv6GoogleAccess"] = privateIpv6GoogleAccessProp
 	}
 	regionProp, err := expandComputeSubnetworkRegion(d.Get("region"), d, config)
 	if err != nil {
@@ -186,10 +178,6 @@ func expandComputeSubnetworkPrivateIpGoogleAccess(v interface{}, d TerraformReso
 	return v, nil
 }
 
-func expandComputeSubnetworkPrivateIpv6GoogleAccess(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
 func expandComputeSubnetworkRegion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	f, err := parseGlobalFieldValue("regions", v.(string), "project", d, config, true)
 	if err != nil {
@@ -221,10 +209,6 @@ func expandComputeSubnetworkLogConfig(v interface{}, d TerraformResourceData, co
 	transformed["aggregationInterval"] = original["aggregation_interval"]
 	transformed["flowSampling"] = original["flow_sampling"]
 	transformed["metadata"] = original["metadata"]
-	transformed["filterExpr"] = original["filter_expr"]
-
-	// make it JSON marshallable
-	transformed["metadataFields"] = original["metadata_fields"].(*schema.Set).List()
 
 	return transformed, nil
 }

@@ -26,7 +26,6 @@
   },
   "id": "appengine:v1",
   "kind": "discovery#restDescription",
-  "mtlsRootUrl": "https://appengine.mtls.googleapis.com/",
   "name": "appengine",
   "ownerDomain": "google.com",
   "ownerName": "Google",
@@ -112,7 +111,7 @@
     "apps": {
       "methods": {
         "create": {
-          "description": "Creates an App Engine application for a Google Cloud Platform project. Required fields: id - The ID of the target Cloud Platform project. location - The region (https://cloud.google.com/appengine/docs/locations) where you want the App Engine application located.For more information about App Engine applications, see Managing Projects, Applications, and Billing (https://cloud.google.com/appengine/docs/standard/python/console/).",
+          "description": "Creates an App Engine application for a Google Cloud Platform project. Required fields:\nid - The ID of the target Cloud Platform project.\nlocation - The region (https://cloud.google.com/appengine/docs/locations) where you want the App Engine application located.For more information about App Engine applications, see Managing Projects, Applications, and Billing (https://cloud.google.com/appengine/docs/standard/python/console/).",
           "flatPath": "v1/apps",
           "httpMethod": "POST",
           "id": "appengine.apps.create",
@@ -156,7 +155,7 @@
           ]
         },
         "patch": {
-          "description": "Updates the specified Application resource. You can update the following fields: auth_domain - Google authentication domain for controlling user access to the application. default_cookie_expiration - Cookie expiration policy for the application.",
+          "description": "Updates the specified Application resource. You can update the following fields:\nauth_domain - Google authentication domain for controlling user access to the application.\ndefault_cookie_expiration - Cookie expiration policy for the application.",
           "flatPath": "v1/apps/{appsId}",
           "httpMethod": "PATCH",
           "id": "appengine.apps.patch",
@@ -305,10 +304,6 @@
                     "BASIC_CERTIFICATE",
                     "FULL_CERTIFICATE"
                   ],
-                  "enumDescriptions": [
-                    "Basic certificate information, including applicable domains and expiration date.",
-                    "The information from BASIC_CERTIFICATE, plus detailed information on the domain mappings that have this certificate mapped."
-                  ],
                   "location": "query",
                   "type": "string"
                 }
@@ -354,10 +349,6 @@
                   "enum": [
                     "BASIC_CERTIFICATE",
                     "FULL_CERTIFICATE"
-                  ],
-                  "enumDescriptions": [
-                    "Basic certificate information, including applicable domains and expiration date.",
-                    "The information from BASIC_CERTIFICATE, plus detailed information on the domain mappings that have this certificate mapped."
                   ],
                   "location": "query",
                   "type": "string"
@@ -479,11 +470,6 @@
                     "UNSPECIFIED_DOMAIN_OVERRIDE_STRATEGY",
                     "STRICT",
                     "OVERRIDE"
-                  ],
-                  "enumDescriptions": [
-                    "Strategy unspecified. Defaults to STRICT.",
-                    "Overrides not allowed. If a mapping already exists for the specified domain, the request will return an ALREADY_EXISTS (409).",
-                    "Overrides allowed. If a mapping already exists for the specified domain, the request will overwrite it. Note that this might stop another Google product from serving. For example, if the domain is mapped to another App Engine application, that app will no longer serve from that domain."
                   ],
                   "location": "query",
                   "type": "string"
@@ -1268,10 +1254,6 @@
                         "BASIC",
                         "FULL"
                       ],
-                      "enumDescriptions": [
-                        "Basic version information including scaling and inbound services, but not detailed deployment information.",
-                        "The information from BASIC, plus detailed information about the deployment. This format is required when creating resources, but is not returned in Get or List by default."
-                      ],
                       "location": "query",
                       "type": "string"
                     }
@@ -1325,10 +1307,6 @@
                         "BASIC",
                         "FULL"
                       ],
-                      "enumDescriptions": [
-                        "Basic version information including scaling and inbound services, but not detailed deployment information.",
-                        "The information from BASIC, plus detailed information about the deployment. This format is required when creating resources, but is not returned in Get or List by default."
-                      ],
                       "location": "query",
                       "type": "string"
                     }
@@ -1344,7 +1322,7 @@
                   ]
                 },
                 "patch": {
-                  "description": "Updates the specified Version resource. You can specify the following fields depending on the App Engine environment and type of scaling that the version resource uses:Standard environment instance_class (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.instance_class)automatic scaling in the standard environment: automatic_scaling.min_idle_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling) automatic_scaling.max_idle_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling) automaticScaling.standard_scheduler_settings.max_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings) automaticScaling.standard_scheduler_settings.min_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings) automaticScaling.standard_scheduler_settings.target_cpu_utilization (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings) automaticScaling.standard_scheduler_settings.target_throughput_utilization (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings)basic scaling or manual scaling in the standard environment: serving_status (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.serving_status) manual_scaling.instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#manualscaling)Flexible environment serving_status (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.serving_status)automatic scaling in the flexible environment: automatic_scaling.min_total_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling) automatic_scaling.max_total_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling) automatic_scaling.cool_down_period_sec (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling) automatic_scaling.cpu_utilization.target_utilization (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)manual scaling in the flexible environment: manual_scaling.instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#manualscaling)",
+                  "description": "Updates the specified Version resource. You can specify the following fields depending on the App Engine environment and type of scaling that the version resource uses:Standard environment\ninstance_class (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.instance_class)automatic scaling in the standard environment:\nautomatic_scaling.min_idle_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.max_idle_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomaticScaling.standard_scheduler_settings.max_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings)\nautomaticScaling.standard_scheduler_settings.min_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings)\nautomaticScaling.standard_scheduler_settings.target_cpu_utilization (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings)\nautomaticScaling.standard_scheduler_settings.target_throughput_utilization (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#StandardSchedulerSettings)basic scaling or manual scaling in the standard environment:\nserving_status (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.serving_status)Flexible environment\nserving_status (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.serving_status)automatic scaling in the flexible environment:\nautomatic_scaling.min_total_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.max_total_instances (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.cool_down_period_sec (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.cpu_utilization.target_utilization (https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions#Version.FIELDS.automatic_scaling)",
                   "flatPath": "v1/apps/{appsId}/services/{servicesId}/versions/{versionsId}",
                   "httpMethod": "PATCH",
                   "id": "appengine.apps.services.versions.patch",
@@ -1594,7 +1572,7 @@
       }
     }
   },
-  "revision": "20200914",
+  "revision": "20191114",
   "rootUrl": "https://appengine.googleapis.com/",
   "schemas": {
     "ApiConfigHandler": {
@@ -1681,22 +1659,6 @@
         },
         "codeBucket": {
           "description": "Google Cloud Storage bucket that can be used for storing files associated with this application. This bucket is associated with the application and can be used by the gcloud deployment commands.@OutputOnly",
-          "type": "string"
-        },
-        "databaseType": {
-          "description": "The type of the Cloud Firestore or Cloud Datastore database associated with this application.",
-          "enum": [
-            "DATABASE_TYPE_UNSPECIFIED",
-            "CLOUD_DATASTORE",
-            "CLOUD_FIRESTORE",
-            "CLOUD_DATASTORE_COMPATIBILITY"
-          ],
-          "enumDescriptions": [
-            "Database type is unspecified.",
-            "Cloud Datastore",
-            "Cloud Firestore Native",
-            "Cloud Firestore in Datastore Mode"
-          ],
           "type": "string"
         },
         "defaultBucket": {
@@ -1944,11 +1906,11 @@
       "id": "CertificateRawData",
       "properties": {
         "privateKey": {
-          "description": "Unencrypted PEM encoded RSA private key. This field is set once on certificate creation and then encrypted. The key size must be 2048 bits or fewer. Must include the header and footer. Example: -----BEGIN RSA PRIVATE KEY----- -----END RSA PRIVATE KEY----- @InputOnly",
+          "description": "Unencrypted PEM encoded RSA private key. This field is set once on certificate creation and then encrypted. The key size must be 2048 bits or fewer. Must include the header and footer. Example: \u003cpre\u003e -----BEGIN RSA PRIVATE KEY----- \u003cunencrypted_key_value\u003e -----END RSA PRIVATE KEY----- \u003c/pre\u003e @InputOnly",
           "type": "string"
         },
         "publicCertificate": {
-          "description": "PEM encoded x.509 public key certificate. This field is set once on certificate creation. Must include the header and footer. Example: -----BEGIN CERTIFICATE----- -----END CERTIFICATE----- ",
+          "description": "PEM encoded x.509 public key certificate. This field is set once on certificate creation. Must include the header and footer. Example: \u003cpre\u003e -----BEGIN CERTIFICATE----- \u003ccertificate_value\u003e -----END CERTIFICATE----- \u003c/pre\u003e",
           "type": "string"
         }
       },
@@ -2036,7 +1998,7 @@
       "id": "DebugInstanceRequest",
       "properties": {
         "sshKey": {
-          "description": "Public SSH key to add to the instance. Examples: [USERNAME]:ssh-rsa [KEY_VALUE] [USERNAME] [USERNAME]:ssh-rsa [KEY_VALUE] google-ssh {\"userName\":\"[USERNAME]\",\"expireOn\":\"[EXPIRE_TIME]\"}For more information, see Adding and Removing SSH Keys (https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys).",
+          "description": "Public SSH key to add to the instance. Examples:\n[USERNAME]:ssh-rsa [KEY_VALUE] [USERNAME]\n[USERNAME]:ssh-rsa [KEY_VALUE] google-ssh {\"userName\":\"[USERNAME]\",\"expireOn\":\"[EXPIRE_TIME]\"}For more information, see Adding and Removing SSH Keys (https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys).",
           "type": "string"
         }
       },
@@ -2122,7 +2084,7 @@
       "type": "object"
     },
     "Empty": {
-      "description": "A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance: service Foo { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); } The JSON representation for Empty is empty JSON object {}.",
+      "description": "A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance:\nservice Foo {\n  rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n}\nThe JSON representation for Empty is empty JSON object {}.",
       "id": "Empty",
       "properties": {},
       "type": "object"
@@ -2232,7 +2194,7 @@
           "type": "string"
         },
         "sourceUrl": {
-          "description": "URL source to use to fetch this file. Must be a URL to a resource in Google Cloud Storage in the form 'http(s)://storage.googleapis.com//'.",
+          "description": "URL source to use to fetch this file. Must be a URL to a resource in Google Cloud Storage in the form 'http(s)://storage.googleapis.com/\u003cbucket\u003e/\u003cobject\u003e'.",
           "type": "string"
         }
       },
@@ -2266,7 +2228,7 @@
           "type": "integer"
         },
         "sourceRange": {
-          "description": "IP address or range, defined using CIDR notation, of requests that this rule applies to. You can use the wildcard character \"*\" to match all IPs equivalent to \"0/0\" and \"::/0\" together. Examples: 192.168.1.1 or 192.168.0.0/16 or 2001:db8::/32 or 2001:0db8:0000:0042:0000:8a2e:0370:7334. Truncation will be silently performed on addresses which are not properly truncated. For example, 1.2.3.4/24 is accepted as the same address as 1.2.3.0/24. Similarly, for IPv6, 2001:db8::1/32 is accepted as the same address as 2001:db8::/32.",
+          "description": "IP address or range, defined using CIDR notation, of requests that this rule applies to. You can use the wildcard character \"*\" to match all IPs equivalent to \"0/0\" and \"::/0\" together. Examples: 192.168.1.1 or 192.168.0.0/16 or 2001:db8::/32  or 2001:0db8:0000:0042:0000:8a2e:0370:7334.\u003cp\u003eTruncation will be silently performed on addresses which are not properly truncated. For example, 1.2.3.4/24 is accepted as the same address as 1.2.3.0/24. Similarly, for IPv6, 2001:db8::1/32 is accepted as the same address as 2001:db8::/32.",
           "type": "string"
         }
       },
@@ -2340,12 +2302,11 @@
       "id": "Instance",
       "properties": {
         "appEngineRelease": {
-          "description": "Output only. App Engine release this instance is running on.",
-          "readOnly": true,
+          "description": "App Engine release this instance is running on.@OutputOnly",
           "type": "string"
         },
         "availability": {
-          "description": "Output only. Availability of the instance.",
+          "description": "Availability of the instance.@OutputOnly",
           "enum": [
             "UNSPECIFIED",
             "RESIDENT",
@@ -2356,83 +2317,68 @@
             "",
             ""
           ],
-          "readOnly": true,
           "type": "string"
         },
         "averageLatency": {
-          "description": "Output only. Average latency (ms) over the last minute.",
+          "description": "Average latency (ms) over the last minute.@OutputOnly",
           "format": "int32",
-          "readOnly": true,
           "type": "integer"
         },
         "errors": {
-          "description": "Output only. Number of errors since this instance was started.",
+          "description": "Number of errors since this instance was started.@OutputOnly",
           "format": "int32",
-          "readOnly": true,
           "type": "integer"
         },
         "id": {
-          "description": "Output only. Relative name of the instance within the version. Example: instance-1.",
-          "readOnly": true,
+          "description": "Relative name of the instance within the version. Example: instance-1.@OutputOnly",
           "type": "string"
         },
         "memoryUsage": {
-          "description": "Output only. Total memory in use (bytes).",
+          "description": "Total memory in use (bytes).@OutputOnly",
           "format": "int64",
-          "readOnly": true,
           "type": "string"
         },
         "name": {
-          "description": "Output only. Full path to the Instance resource in the API. Example: apps/myapp/services/default/versions/v1/instances/instance-1.",
-          "readOnly": true,
+          "description": "Full path to the Instance resource in the API. Example: apps/myapp/services/default/versions/v1/instances/instance-1.@OutputOnly",
           "type": "string"
         },
         "qps": {
-          "description": "Output only. Average queries per second (QPS) over the last minute.",
+          "description": "Average queries per second (QPS) over the last minute.@OutputOnly",
           "format": "float",
-          "readOnly": true,
           "type": "number"
         },
         "requests": {
-          "description": "Output only. Number of requests since this instance was started.",
+          "description": "Number of requests since this instance was started.@OutputOnly",
           "format": "int32",
-          "readOnly": true,
           "type": "integer"
         },
         "startTime": {
-          "description": "Output only. Time that this instance was started.@OutputOnly",
+          "description": "Time that this instance was started.@OutputOnly",
           "format": "google-datetime",
-          "readOnly": true,
           "type": "string"
         },
         "vmDebugEnabled": {
-          "description": "Output only. Whether this instance is in debug mode. Only applicable for instances in App Engine flexible environment.",
-          "readOnly": true,
+          "description": "Whether this instance is in debug mode. Only applicable for instances in App Engine flexible environment.@OutputOnly",
           "type": "boolean"
         },
         "vmId": {
-          "description": "Output only. Virtual machine ID of this instance. Only applicable for instances in App Engine flexible environment.",
-          "readOnly": true,
+          "description": "Virtual machine ID of this instance. Only applicable for instances in App Engine flexible environment.@OutputOnly",
           "type": "string"
         },
         "vmIp": {
-          "description": "Output only. The IP address of this instance. Only applicable for instances in App Engine flexible environment.",
-          "readOnly": true,
+          "description": "The IP address of this instance. Only applicable for instances in App Engine flexible environment.@OutputOnly",
           "type": "string"
         },
         "vmName": {
-          "description": "Output only. Name of the virtual machine where this instance lives. Only applicable for instances in App Engine flexible environment.",
-          "readOnly": true,
+          "description": "Name of the virtual machine where this instance lives. Only applicable for instances in App Engine flexible environment.@OutputOnly",
           "type": "string"
         },
         "vmStatus": {
-          "description": "Output only. Status of the virtual machine where this instance lives. Only applicable for instances in App Engine flexible environment.",
-          "readOnly": true,
+          "description": "Status of the virtual machine where this instance lives. Only applicable for instances in App Engine flexible environment.@OutputOnly",
           "type": "string"
         },
         "vmZoneName": {
-          "description": "Output only. Zone where the virtual machine is located. Only applicable for instances in App Engine flexible environment.",
-          "readOnly": true,
+          "description": "Zone where the virtual machine is located. Only applicable for instances in App Engine flexible environment.@OutputOnly",
           "type": "string"
         }
       },
@@ -2667,7 +2613,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Cross-service attributes for the location. For example {\"cloud.googleapis.com/region\": \"us-east1\"} ",
+          "description": "Cross-service attributes for the location. For example\n{\"cloud.googleapis.com/region\": \"us-east1\"}\n",
           "type": "object"
         },
         "locationId": {
@@ -2730,7 +2676,7 @@
             "Certificate is under active attempts to acquire or renew.",
             "Most recent renewal failed due to an invalid DNS setup and will be retried. Renewal attempts will continue to fail until the certificate domain's DNS configuration is fixed. The last successfully provisioned certificate may still be serving.",
             "All renewal attempts have been exhausted, likely due to an invalid DNS setup.",
-            "Most recent renewal failed due to an explicit CAA record that does not include one of the in-use CAs (Google CA and Let's Encrypt). Renewals will continue to fail until the CAA is reconfigured. The last successfully provisioned certificate may still be serving.",
+            "Most recent renewal failed due to an explicit CAA record that does not include the in-use CA, Let's Encrypt. Renewals will continue to fail until the CAA is reconfigured. The last successfully provisioned certificate may still be serving.",
             "Most recent renewal failed due to a CAA retrieval failure. This means that the domain's DNS provider does not properly handle CAA records, failing requests for CAA records when no CAA records are defined. Renewals will continue to fail until the DNS provider is changed or a CAA record is added for the given domain. The last successfully provisioned certificate may still be serving."
           ],
           "type": "string"
@@ -2774,30 +2720,7 @@
           "type": "boolean"
         },
         "subnetworkName": {
-          "description": "Google Cloud Platform sub-network where the virtual machines are created. Specify the short name, not the resource path.If a subnetwork name is specified, a network name will also be required unless it is for the default network. If the network that the instance is being created in is a Legacy network, then the IP address is allocated from the IPv4Range. If the network that the instance is being created in is an auto Subnet Mode Network, then only network name should be specified (not the subnetwork_name) and the IP address is created from the IPCidrRange of the subnetwork that exists in that zone for that network. If the network that the instance is being created in is a custom Subnet Mode Network, then the subnetwork_name must be specified and the IP address is created from the IPCidrRange of the subnetwork.If specified, the subnetwork must exist in the same region as the App Engine flexible environment application.",
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "NetworkSettings": {
-      "description": "A NetworkSettings resource is a container for ingress settings for a version or service.",
-      "id": "NetworkSettings",
-      "properties": {
-        "ingressTrafficAllowed": {
-          "description": "The ingress settings for version or service.",
-          "enum": [
-            "INGRESS_TRAFFIC_ALLOWED_UNSPECIFIED",
-            "INGRESS_TRAFFIC_ALLOWED_ALL",
-            "INGRESS_TRAFFIC_ALLOWED_INTERNAL_ONLY",
-            "INGRESS_TRAFFIC_ALLOWED_INTERNAL_AND_LB"
-          ],
-          "enumDescriptions": [
-            "Unspecified",
-            "Allow HTTP traffic from public and private sources.",
-            "Allow HTTP traffic from only private VPC sources.",
-            "Allow HTTP traffic from private VPC sources and through load balancers."
-          ],
+          "description": "Google Cloud Platform sub-network where the virtual machines are created. Specify the short name, not the resource path.If a subnetwork name is specified, a network name will also be required unless it is for the default network.\nIf the network that the instance is being created in is a Legacy network, then the IP address is allocated from the IPv4Range.\nIf the network that the instance is being created in is an auto Subnet Mode Network, then only network name should be specified (not the subnetwork_name) and the IP address is created from the IPCidrRange of the subnetwork that exists in that zone for that network.\nIf the network that the instance is being created in is a custom Subnet Mode Network, then the subnetwork_name must be specified and the IP address is created from the IPCidrRange of the subnetwork.If specified, the subnetwork must exist in the same region as the App Engine flexible environment application.",
           "type": "string"
         }
       },
@@ -3102,10 +3025,6 @@
           "format": "double",
           "type": "number"
         },
-        "kmsKeyReference": {
-          "description": "The name of the encryption key that is stored in Google Cloud KMS. Only should be used by Cloud Composer to encrypt the vm disk",
-          "type": "string"
-        },
         "memoryGb": {
           "description": "Memory (GB) needed.",
           "format": "double",
@@ -3143,10 +3062,6 @@
         "name": {
           "description": "Full path to the Service resource in the API. Example: apps/myapp/services/default.@OutputOnly",
           "type": "string"
-        },
-        "networkSettings": {
-          "$ref": "NetworkSettings",
-          "description": "Ingress settings for this service. Will apply to all versions."
         },
         "split": {
           "$ref": "TrafficSplit",
@@ -3426,7 +3341,7 @@
         },
         "automaticScaling": {
           "$ref": "AutomaticScaling",
-          "description": "Automatic scaling is based on request rate, response latencies, and other application metrics. Instances are dynamically created and destroyed as needed in order to handle traffic."
+          "description": "Automatic scaling is based on request rate, response latencies, and other application metrics."
         },
         "basicScaling": {
           "$ref": "BasicScaling",
@@ -3437,13 +3352,6 @@
             "type": "string"
           },
           "description": "Metadata settings that are supplied to this version to enable beta runtime features.",
-          "type": "object"
-        },
-        "buildEnvVariables": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Environment variables available to the build environment.Only returned in GET requests if view=FULL is set.",
           "type": "object"
         },
         "createTime": {
@@ -3512,6 +3420,17 @@
         },
         "inboundServices": {
           "description": "Before an application can receive email or XMPP messages, the application must be configured to enable the service.",
+          "enumDescriptions": [
+            "Not specified.",
+            "Allows an application to receive mail.",
+            "Allows an application to receive email-bound notifications.",
+            "Allows an application to receive error stanzas.",
+            "Allows an application to receive instant messages.",
+            "Allows an application to receive user subscription POSTs.",
+            "Allows an application to receive a user's chat presence.",
+            "Registers an application for notifications when a client connects or disconnects from a channel.",
+            "Enables warmup requests."
+          ],
           "items": {
             "enum": [
               "INBOUND_SERVICE_UNSPECIFIED",
@@ -3524,23 +3443,12 @@
               "INBOUND_SERVICE_CHANNEL_PRESENCE",
               "INBOUND_SERVICE_WARMUP"
             ],
-            "enumDescriptions": [
-              "Not specified.",
-              "Allows an application to receive mail.",
-              "Allows an application to receive email-bound notifications.",
-              "Allows an application to receive error stanzas.",
-              "Allows an application to receive instant messages.",
-              "Allows an application to receive user subscription POSTs.",
-              "Allows an application to receive a user's chat presence.",
-              "Registers an application for notifications when a client connects or disconnects from a channel.",
-              "Enables warmup requests."
-            ],
             "type": "string"
           },
           "type": "array"
         },
         "instanceClass": {
-          "description": "Instance class that is used to run this version. Valid values are: AutomaticScaling: F1, F2, F4, F4_1G ManualScaling or BasicScaling: B1, B2, B4, B8, B4_1GDefaults to F1 for AutomaticScaling and B1 for ManualScaling or BasicScaling.",
+          "description": "Instance class that is used to run this version. Valid values are:\nAutomaticScaling: F1, F2, F4, F4_1G\nManualScaling or BasicScaling: B1, B2, B4, B8, B4_1GDefaults to F1 for AutomaticScaling and B1 for ManualScaling or BasicScaling.",
           "type": "string"
         },
         "libraries": {
@@ -3556,7 +3464,7 @@
         },
         "manualScaling": {
           "$ref": "ManualScaling",
-          "description": "A service with manual scaling runs continuously, allowing you to perform complex initialization and rely on the state of its memory over time. Manually scaled versions are sometimes referred to as \"backends\"."
+          "description": "A service with manual scaling runs continuously, allowing you to perform complex initialization and rely on the state of its memory over time."
         },
         "name": {
           "description": "Full path to the Version resource in the API. Example: apps/myapp/services/default/versions/v1.@OutputOnly",
@@ -3583,7 +3491,7 @@
           "type": "string"
         },
         "runtimeApiVersion": {
-          "description": "The version of the API in the given runtime environment. Please see the app.yaml reference for valid values at https://cloud.google.com/appengine/docs/standard//config/appref",
+          "description": "The version of the API in the given runtime environment. Please see the app.yaml reference for valid values at https://cloud.google.com/appengine/docs/standard/\u003clanguage\u003e/config/appref",
           "type": "string"
         },
         "runtimeChannel": {
@@ -3675,7 +3583,7 @@
           "type": "integer"
         },
         "sourceUrl": {
-          "description": "URL of the zip file to deploy from. Must be a URL to a resource in Google Cloud Storage in the form 'http(s)://storage.googleapis.com//'.",
+          "description": "URL of the zip file to deploy from. Must be a URL to a resource in Google Cloud Storage in the form 'http(s)://storage.googleapis.com/\u003cbucket\u003e/\u003cobject\u003e'.",
           "type": "string"
         }
       },

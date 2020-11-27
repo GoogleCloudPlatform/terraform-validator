@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"crypto/md5"
 	"encoding/base64"
@@ -72,6 +72,7 @@ func resourceStorageBucketObject() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"source"},
+				Sensitive:     true,
 			},
 
 			"crc32c": {
@@ -82,13 +83,6 @@ func resourceStorageBucketObject() *schema.Resource {
 			"md5hash": {
 				Type:     schema.TypeString,
 				Computed: true,
-			},
-
-			"predefined_acl": {
-				Type:     schema.TypeString,
-				Removed:  "Please use resource \"storage_object_acl.predefined_acl\" instead.",
-				Optional: true,
-				ForceNew: true,
 			},
 
 			"source": {
@@ -145,6 +139,13 @@ func resourceStorageBucketObject() *schema.Resource {
 				Computed: true,
 			},
 
+			"metadata": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				ForceNew: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"self_link": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -171,7 +172,7 @@ func resourceStorageBucketObjectCreate(d *schema.ResourceData, meta interface{})
 	var media io.Reader
 
 	if v, ok := d.GetOk("source"); ok {
-		err := error(nil)
+		var err error
 		media, err = os.Open(v.(string))
 		if err != nil {
 			return err
@@ -292,6 +293,8 @@ func getFileMd5Hash(filename string) string {
 
 func getContentMd5Hash(content []byte) string {
 	h := md5.New()
-	h.Write(content)
+	if _, err := h.Write(content); err != nil {
+		log.Printf("[WARN] Failed to compute md5 hash for content: %v", err)
+	}
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }

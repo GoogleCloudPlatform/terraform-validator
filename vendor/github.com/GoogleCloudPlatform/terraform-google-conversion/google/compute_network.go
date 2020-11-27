@@ -63,12 +63,6 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("routing_config"); !isEmptyValue(reflect.ValueOf(routingConfigProp)) && (ok || !reflect.DeepEqual(v, routingConfigProp)) {
 		obj["routingConfig"] = routingConfigProp
 	}
-	mtuProp, err := expandComputeNetworkMtu(d.Get("mtu"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("mtu"); !isEmptyValue(reflect.ValueOf(mtuProp)) && (ok || !reflect.DeepEqual(v, mtuProp)) {
-		obj["mtu"] = mtuProp
-	}
 
 	return obj, nil
 }
@@ -98,9 +92,5 @@ func expandComputeNetworkRoutingConfig(v interface{}, d TerraformResourceData, c
 }
 
 func expandComputeNetworkRoutingConfigRoutingMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeNetworkMtu(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

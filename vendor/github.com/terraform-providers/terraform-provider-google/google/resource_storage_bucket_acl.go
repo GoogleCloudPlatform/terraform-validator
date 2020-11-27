@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"google.golang.org/api/storage/v1"
 )
@@ -70,6 +70,11 @@ func resourceStorageRoleEntityCustomizeDiff(diff *schema.ResourceDiff, meta inte
 	}
 	for k := range state {
 		if _, ok := conf[k]; !ok {
+			// project-owners- is explicitly stripped from the roles that this
+			// resource will delete
+			if strings.Contains(k, "OWNER:project-owners-") {
+				continue
+			}
 			return nil
 		}
 	}
@@ -115,6 +120,13 @@ func resourceStorageBucketAclCreate(d *schema.ResourceData, meta interface{}) er
 		default_acl = v.(string)
 	}
 
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
+
 	if len(predefined_acl) > 0 {
 		res, err := config.clientStorage.Buckets.Get(bucket).Do()
 
@@ -122,7 +134,7 @@ func resourceStorageBucketAclCreate(d *schema.ResourceData, meta interface{}) er
 			return fmt.Errorf("Error reading bucket %s: %v", bucket, err)
 		}
 
-		res, err = config.clientStorage.Buckets.Update(bucket,
+		_, err = config.clientStorage.Buckets.Update(bucket,
 			res).PredefinedAcl(predefined_acl).Do()
 
 		if err != nil {
@@ -175,7 +187,7 @@ func resourceStorageBucketAclCreate(d *schema.ResourceData, meta interface{}) er
 			return fmt.Errorf("Error reading bucket %s: %v", bucket, err)
 		}
 
-		res, err = config.clientStorage.Buckets.Update(bucket,
+		_, err = config.clientStorage.Buckets.Update(bucket,
 			res).PredefinedDefaultObjectAcl(default_acl).Do()
 
 		if err != nil {
@@ -192,6 +204,13 @@ func resourceStorageBucketAclRead(d *schema.ResourceData, meta interface{}) erro
 	config := meta.(*Config)
 
 	bucket := d.Get("bucket").(string)
+
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
 
 	// The API offers no way to retrieve predefined ACLs,
 	// and we can't tell which access controls were created
@@ -227,6 +246,13 @@ func resourceStorageBucketAclUpdate(d *schema.ResourceData, meta interface{}) er
 	config := meta.(*Config)
 
 	bucket := d.Get("bucket").(string)
+
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
 
 	if d.HasChange("role_entity") {
 		bkt, err := config.clientStorage.Buckets.Get(bucket).Do()
@@ -274,7 +300,7 @@ func resourceStorageBucketAclUpdate(d *schema.ResourceData, meta interface{}) er
 
 		for entity, role := range old_re_map {
 			if entity == fmt.Sprintf("project-owners-%s", project) && role == "OWNER" {
-				log.Printf("Skipping %s-%s; not deleting owner ACL.", role, entity)
+				log.Printf("[WARN]: Skipping %s-%s; not deleting owner ACL.", role, entity)
 				continue
 			}
 			log.Printf("[DEBUG]: removing entity %s", entity)
@@ -297,7 +323,7 @@ func resourceStorageBucketAclUpdate(d *schema.ResourceData, meta interface{}) er
 			return fmt.Errorf("Error reading bucket %s: %v", bucket, err)
 		}
 
-		res, err = config.clientStorage.Buckets.Update(bucket,
+		_, err = config.clientStorage.Buckets.Update(bucket,
 			res).PredefinedDefaultObjectAcl(default_acl).Do()
 
 		if err != nil {
@@ -315,6 +341,13 @@ func resourceStorageBucketAclDelete(d *schema.ResourceData, meta interface{}) er
 
 	bucket := d.Get("bucket").(string)
 
+	lockName, err := replaceVars(d, config, "storage/buckets/{{bucket}}")
+	if err != nil {
+		return err
+	}
+	mutexKV.Lock(lockName)
+	defer mutexKV.Unlock(lockName)
+
 	bkt, err := config.clientStorage.Buckets.Get(bucket).Do()
 	if err != nil {
 		return fmt.Errorf("Error retrieving bucket %q: %v", bucket, err)
@@ -329,7 +362,7 @@ func resourceStorageBucketAclDelete(d *schema.ResourceData, meta interface{}) er
 		}
 
 		if res.Entity == fmt.Sprintf("project-owners-%s", project) && res.Role == "OWNER" {
-			log.Printf("Skipping %s-%s; not deleting owner ACL.", res.Role, res.Entity)
+			log.Printf("[WARN]: Skipping %s-%s; not deleting owner ACL.", res.Role, res.Entity)
 			continue
 		}
 

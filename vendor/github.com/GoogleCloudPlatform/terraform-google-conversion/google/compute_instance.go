@@ -15,8 +15,6 @@ import (
 
 	computeBeta "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/googleapi"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func GetComputeInstanceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -133,24 +131,24 @@ func expandComputeInstance(project string, d TerraformResourceData, config *Conf
 
 	// Create the instance information
 	return &computeBeta.Instance{
-		CanIpForward:           d.Get("can_ip_forward").(bool),
-		Description:            d.Get("description").(string),
-		Disks:                  disks,
-		MachineType:            machineTypeUrl,
-		Metadata:               metadata,
-		Name:                   d.Get("name").(string),
-		NetworkInterfaces:      networkInterfaces,
-		Tags:                   resourceInstanceTags(d),
-		Labels:                 expandLabels(d),
-		ServiceAccounts:        expandServiceAccounts(d.Get("service_account").([]interface{})),
-		GuestAccelerators:      accels,
-		MinCpuPlatform:         d.Get("min_cpu_platform").(string),
-		Scheduling:             scheduling,
-		DeletionProtection:     d.Get("deletion_protection").(bool),
-		Hostname:               d.Get("hostname").(string),
-		ForceSendFields:        []string{"CanIpForward", "DeletionProtection"},
-		ShieldedInstanceConfig: expandShieldedVmConfigs(d),
-		DisplayDevice:          expandDisplayDevice(d),
+		CanIpForward:       d.Get("can_ip_forward").(bool),
+		Description:        d.Get("description").(string),
+		Disks:              disks,
+		MachineType:        machineTypeUrl,
+		Metadata:           metadata,
+		Name:               d.Get("name").(string),
+		NetworkInterfaces:  networkInterfaces,
+		Tags:               resourceInstanceTags(d),
+		Labels:             expandLabels(d),
+		ServiceAccounts:    expandServiceAccounts(d.Get("service_account").([]interface{})),
+		GuestAccelerators:  accels,
+		MinCpuPlatform:     d.Get("min_cpu_platform").(string),
+		Scheduling:         scheduling,
+		DeletionProtection: d.Get("deletion_protection").(bool),
+		Hostname:           d.Get("hostname").(string),
+		ForceSendFields:    []string{"CanIpForward", "DeletionProtection"},
+		ShieldedVmConfig:   expandShieldedVmConfigs(d),
+		DisplayDevice:      expandDisplayDevice(d),
 	}, nil
 }
 
@@ -236,11 +234,6 @@ func expandInstanceGuestAccelerators(d TerraformResourceData, config *Config) ([
 }
 
 func expandBootDisk(d TerraformResourceData, config *Config, project string) (*computeBeta.AttachedDisk, error) {
-	userAgent, err := generateUserAgentString(d.(*schema.ResourceData), config.userAgent)
-	if err != nil {
-		return nil, err
-	}
-
 	disk := &computeBeta.AttachedDisk{
 		AutoDelete: d.Get("boot_disk.0.auto_delete").(bool),
 		Boot:       true,
@@ -292,7 +285,7 @@ func expandBootDisk(d TerraformResourceData, config *Config, project string) (*c
 
 		if v, ok := d.GetOk("boot_disk.0.initialize_params.0.image"); ok {
 			imageName := v.(string)
-			imageUrl, err := resolveImage(config, project, imageName, userAgent)
+			imageUrl, err := resolveImage(config, project, imageName)
 			if err != nil {
 				return nil, fmt.Errorf("Error resolving image name '%s': %s", imageName, err)
 			}

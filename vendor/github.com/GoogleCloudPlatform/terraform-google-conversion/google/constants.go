@@ -2,6 +2,8 @@ package google
 
 import (
 	"errors"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
 )
 
 // ErrNoConversion can be returned if a conversion is unable to be returned
@@ -11,4 +13,4 @@ import (
 var ErrNoConversion = errors.New("no conversion")
 
 // Global MutexKV
-var mutexKV = NewMutexKV()
+var mutexKV = mutexkv.NewMutexKV()

@@ -3,45 +3,33 @@ package google
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
 	computeBeta "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/compute/v1"
 )
 
-const FINGERPRINT_RETRIES = 10
-
-var FINGERPRINT_FAIL_ERRORS = []string{"Invalid fingerprint.", "Supplied fingerprint does not match current metadata fingerprint."}
+const METADATA_FINGERPRINT_RETRIES = 10
 
 // Since the google compute API uses optimistic locking, there is a chance
 // we need to resubmit our updated metadata. To do this, you need to provide
 // an update function that attempts to submit your metadata
 func MetadataRetryWrapper(update func() error) error {
 	attempt := 0
-	for attempt < FINGERPRINT_RETRIES {
+	for attempt < METADATA_FINGERPRINT_RETRIES {
 		err := update()
 		if err == nil {
 			return nil
 		}
 
-		// Check to see if the error matches any of our fingerprint-related failure messages
-		var fingerprintError bool
-		for _, msg := range FINGERPRINT_FAIL_ERRORS {
-			if strings.Contains(err.Error(), msg) {
-				fingerprintError = true
-				break
-			}
-		}
-
-		if !fingerprintError {
+		if ok, _ := isFingerprintError(err); !ok {
 			// Something else went wrong, don't retry
 			return err
 		}
 
+		log.Printf("[DEBUG] Dismissed an error as retryable as a fingerprint mismatch: %s", err)
 		attempt++
 	}
-
 	return fmt.Errorf("Failed to update metadata after %d retries", attempt)
 }
 
@@ -145,11 +133,11 @@ func flattenMetadata(metadata *compute.Metadata) map[string]interface{} {
 	return metadataMap
 }
 
-func resourceInstanceMetadata(d *schema.ResourceData) (*computeBeta.Metadata, error) {
+func resourceInstanceMetadata(d TerraformResourceData) (*computeBeta.Metadata, error) {
 	m := &computeBeta.Metadata{}
 	mdMap := d.Get("metadata").(map[string]interface{})
 	if v, ok := d.GetOk("metadata_startup_script"); ok && v.(string) != "" {
-		if ss, ok := mdMap["startup-script"]; ok && ss != "" {
+		if _, ok := mdMap["startup-script"]; ok {
 			return nil, errors.New("Cannot provide both metadata_startup_script and metadata.startup-script.")
 		}
 		mdMap["startup-script"] = v

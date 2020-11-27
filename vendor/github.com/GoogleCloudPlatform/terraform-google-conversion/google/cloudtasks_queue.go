@@ -63,12 +63,6 @@ func GetCloudTasksQueueApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("retry_config"); !isEmptyValue(reflect.ValueOf(retryConfigProp)) && (ok || !reflect.DeepEqual(v, retryConfigProp)) {
 		obj["retryConfig"] = retryConfigProp
 	}
-	stackdriverLoggingConfigProp, err := expandCloudTasksQueueStackdriverLoggingConfig(d.Get("stackdriver_logging_config"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("stackdriver_logging_config"); !isEmptyValue(reflect.ValueOf(stackdriverLoggingConfigProp)) && (ok || !reflect.DeepEqual(v, stackdriverLoggingConfigProp)) {
-		obj["stackdriverLoggingConfig"] = stackdriverLoggingConfigProp
-	}
 
 	return obj, nil
 }
@@ -242,28 +236,5 @@ func expandCloudTasksQueueRetryConfigMaxBackoff(v interface{}, d TerraformResour
 }
 
 func expandCloudTasksQueueRetryConfigMaxDoublings(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandCloudTasksQueueStackdriverLoggingConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedSamplingRatio, err := expandCloudTasksQueueStackdriverLoggingConfigSamplingRatio(original["sampling_ratio"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedSamplingRatio); val.IsValid() && !isEmptyValue(val) {
-		transformed["samplingRatio"] = transformedSamplingRatio
-	}
-
-	return transformed, nil
-}
-
-func expandCloudTasksQueueStackdriverLoggingConfigSamplingRatio(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

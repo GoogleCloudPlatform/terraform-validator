@@ -14,26 +14,7 @@
 
 package google
 
-import (
-	"context"
-	"fmt"
-	"reflect"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-var sensitiveParams = []string{"secret_access_key"}
-
-func sensitiveParamCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-	for _, sp := range sensitiveParams {
-		mapLabel := diff.Get("params." + sp).(string)
-		authLabel := diff.Get("sensitive_params.0." + sp).(string)
-		if mapLabel != "" && authLabel != "" {
-			return fmt.Errorf("Sensitive param [%s] cannot be set in both `params` and the `sensitive_params` block.", sp)
-		}
-	}
-	return nil
-}
+import "reflect"
 
 func GetBigqueryDataTransferConfigCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//bigquerydatatransfer.googleapis.com/{{name}}")
@@ -82,24 +63,6 @@ func GetBigqueryDataTransferConfigApiObject(d TerraformResourceData, config *Con
 	} else if v, ok := d.GetOkExists("schedule"); !isEmptyValue(reflect.ValueOf(scheduleProp)) && (ok || !reflect.DeepEqual(v, scheduleProp)) {
 		obj["schedule"] = scheduleProp
 	}
-	scheduleOptionsProp, err := expandBigqueryDataTransferConfigScheduleOptions(d.Get("schedule_options"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("schedule_options"); !isEmptyValue(reflect.ValueOf(scheduleOptionsProp)) && (ok || !reflect.DeepEqual(v, scheduleOptionsProp)) {
-		obj["scheduleOptions"] = scheduleOptionsProp
-	}
-	emailPreferencesProp, err := expandBigqueryDataTransferConfigEmailPreferences(d.Get("email_preferences"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("email_preferences"); !isEmptyValue(reflect.ValueOf(emailPreferencesProp)) && (ok || !reflect.DeepEqual(v, emailPreferencesProp)) {
-		obj["emailPreferences"] = emailPreferencesProp
-	}
-	notificationPubsubTopicProp, err := expandBigqueryDataTransferConfigNotificationPubsubTopic(d.Get("notification_pubsub_topic"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("notification_pubsub_topic"); !isEmptyValue(reflect.ValueOf(notificationPubsubTopicProp)) && (ok || !reflect.DeepEqual(v, notificationPubsubTopicProp)) {
-		obj["notificationPubsubTopic"] = notificationPubsubTopicProp
-	}
 	dataRefreshWindowDaysProp, err := expandBigqueryDataTransferConfigDataRefreshWindowDays(d.Get("data_refresh_window_days"), d, config)
 	if err != nil {
 		return nil, err
@@ -119,26 +82,6 @@ func GetBigqueryDataTransferConfigApiObject(d TerraformResourceData, config *Con
 		obj["params"] = paramsProp
 	}
 
-	return resourceBigqueryDataTransferConfigEncoder(d, config, obj)
-}
-
-func resourceBigqueryDataTransferConfigEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
-	paramMap, ok := obj["params"]
-	if !ok {
-		paramMap = make(map[string]string)
-	}
-
-	var params map[string]string
-	params = paramMap.(map[string]string)
-
-	for _, sp := range sensitiveParams {
-		if auth, _ := d.GetOkExists("sensitive_params.0." + sp); auth != "" {
-			params[sp] = auth.(string)
-		}
-	}
-
-	obj["params"] = params
-
 	return obj, nil
 }
 
@@ -155,78 +98,6 @@ func expandBigqueryDataTransferConfigDataSourceId(v interface{}, d TerraformReso
 }
 
 func expandBigqueryDataTransferConfigSchedule(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandBigqueryDataTransferConfigScheduleOptions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedDisableAutoScheduling, err := expandBigqueryDataTransferConfigScheduleOptionsDisableAutoScheduling(original["disable_auto_scheduling"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedDisableAutoScheduling); val.IsValid() && !isEmptyValue(val) {
-		transformed["disableAutoScheduling"] = transformedDisableAutoScheduling
-	}
-
-	transformedStartTime, err := expandBigqueryDataTransferConfigScheduleOptionsStartTime(original["start_time"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedStartTime); val.IsValid() && !isEmptyValue(val) {
-		transformed["startTime"] = transformedStartTime
-	}
-
-	transformedEndTime, err := expandBigqueryDataTransferConfigScheduleOptionsEndTime(original["end_time"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedEndTime); val.IsValid() && !isEmptyValue(val) {
-		transformed["endTime"] = transformedEndTime
-	}
-
-	return transformed, nil
-}
-
-func expandBigqueryDataTransferConfigScheduleOptionsDisableAutoScheduling(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandBigqueryDataTransferConfigScheduleOptionsStartTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandBigqueryDataTransferConfigScheduleOptionsEndTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandBigqueryDataTransferConfigEmailPreferences(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedEnableFailureEmail, err := expandBigqueryDataTransferConfigEmailPreferencesEnableFailureEmail(original["enable_failure_email"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedEnableFailureEmail); val.IsValid() && !isEmptyValue(val) {
-		transformed["enableFailureEmail"] = transformedEnableFailureEmail
-	}
-
-	return transformed, nil
-}
-
-func expandBigqueryDataTransferConfigEmailPreferencesEnableFailureEmail(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandBigqueryDataTransferConfigNotificationPubsubTopic(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

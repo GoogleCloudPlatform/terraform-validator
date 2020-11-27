@@ -16,13 +16,13 @@ package google
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceComputeFirewallRuleHash(v interface{}) int {
@@ -41,35 +41,11 @@ func resourceComputeFirewallRuleHash(v interface{}) int {
 		}
 	}
 
-	return hashcode(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func compareCaseInsensitive(k, old, new string, d *schema.ResourceData) bool {
 	return strings.ToLower(old) == strings.ToLower(new)
-}
-
-func diffSuppressEnableLogging(k, old, new string, d *schema.ResourceData) bool {
-	if k == "log_config.#" {
-		if new == "0" && d.Get("enable_logging").(bool) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func resourceComputeFirewallEnableLoggingCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-	enableLogging, enableExists := diff.GetOkExists("enable_logging")
-	if !enableExists {
-		return nil
-	}
-
-	logConfigExists := diff.Get("log_config.#").(int) != 0
-	if logConfigExists && enableLogging == false {
-		return fmt.Errorf("log_config cannot be defined when enable_logging is false")
-	}
-
-	return nil
 }
 
 func GetComputeFirewallCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -131,10 +107,10 @@ func GetComputeFirewallApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("disabled"); ok || !reflect.DeepEqual(v, disabledProp) {
 		obj["disabled"] = disabledProp
 	}
-	logConfigProp, err := expandComputeFirewallLogConfig(d.Get("log_config"), d, config)
+	logConfigProp, err := expandComputeFirewallLogConfig(nil, d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("log_config"); ok || !reflect.DeepEqual(v, logConfigProp) {
+	} else if v, ok := d.GetOkExists("log_config"); !isEmptyValue(reflect.ValueOf(logConfigProp)) && (ok || !reflect.DeepEqual(v, logConfigProp)) {
 		obj["logConfig"] = logConfigProp
 	}
 	nameProp, err := expandComputeFirewallName(d.Get("name"), d, config)
@@ -283,23 +259,19 @@ func expandComputeFirewallDisabled(v interface{}, d TerraformResourceData, confi
 }
 
 func expandComputeFirewallLogConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
 	transformed := make(map[string]interface{})
-
-	if len(l) == 0 || l[0] == nil {
-		// send enable = enable_logging value to ensure correct logging status if there is no config
-		transformed["enable"] = d.Get("enable_logging").(bool)
-		return transformed, nil
+	transformedEnableLogging, err := expandComputeFirewallLogConfigEnableLogging(d.Get("enable_logging"), d, config)
+	if err != nil {
+		return nil, err
+	} else {
+		transformed["enable"] = transformedEnableLogging
 	}
 
-	raw := l[0]
-	original := raw.(map[string]interface{})
-
-	// The log_config block is specified, so logging should be enabled
-	transformed["enable"] = true
-	transformed["metadata"] = original["metadata"]
-
 	return transformed, nil
+}
+
+func expandComputeFirewallLogConfigEnableLogging(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandComputeFirewallName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

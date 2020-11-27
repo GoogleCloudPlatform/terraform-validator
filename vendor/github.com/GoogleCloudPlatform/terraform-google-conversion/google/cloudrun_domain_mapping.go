@@ -14,32 +14,10 @@
 
 package google
 
-import (
-	"reflect"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-const domainMappingGoogleProvidedLabel = "cloud.googleapis.com/location"
-
-func domainMappingLabelDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	// Suppress diffs for the label provided by Google
-	if strings.Contains(k, domainMappingGoogleProvidedLabel) && new == "" {
-		return true
-	}
-
-	// Let diff be determined by labels (above)
-	if strings.Contains(k, "labels.%") {
-		return true
-	}
-
-	// For other keys, don't suppress diff.
-	return false
-}
+import "reflect"
 
 func GetCloudRunDomainMappingCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
-	name, err := assetName(d, config, "//cloudrun.googleapis.com/apis/domains.cloudrun.com/namespaces/{{project}}/domainmappings/{{name}}")
+	name, err := assetName(d, config, "//cloudrun.googleapis.com/apis/domains.cloudrun.com/v1/namespaces/{{project}}/domainmappings/{{name}}")
 	if err != nil {
 		return Asset{}, err
 	}
@@ -48,8 +26,8 @@ func GetCloudRunDomainMappingCaiObject(d TerraformResourceData, config *Config) 
 			Name: name,
 			Type: "cloudrun.googleapis.com/DomainMapping",
 			Resource: &AssetResource{
-				Version:              "v1",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/cloudrun/v1/rest",
+				Version:              "{{location}}-run.googleapis.com",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/cloudrun/{{location}}-run.googleapis.com/rest",
 				DiscoveryName:        "DomainMapping",
 				Data:                 obj,
 			},

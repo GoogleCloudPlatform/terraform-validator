@@ -51,7 +51,7 @@ func GetComputeRegionHealthCheckApiObject(d TerraformResourceData, config *Confi
 	descriptionProp, err := expandComputeRegionHealthCheckDescription(d.Get("description"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("description"); ok || !reflect.DeepEqual(v, descriptionProp) {
+	} else if v, ok := d.GetOkExists("description"); !isEmptyValue(reflect.ValueOf(descriptionProp)) && (ok || !reflect.DeepEqual(v, descriptionProp)) {
 		obj["description"] = descriptionProp
 	}
 	healthyThresholdProp, err := expandComputeRegionHealthCheckHealthyThreshold(d.Get("healthy_threshold"), d, config)
@@ -107,12 +107,6 @@ func GetComputeRegionHealthCheckApiObject(d TerraformResourceData, config *Confi
 		return nil, err
 	} else if v, ok := d.GetOkExists("http2_health_check"); !isEmptyValue(reflect.ValueOf(http2HealthCheckProp)) && (ok || !reflect.DeepEqual(v, http2HealthCheckProp)) {
 		obj["http2HealthCheck"] = http2HealthCheckProp
-	}
-	grpcHealthCheckProp, err := expandComputeRegionHealthCheckGrpcHealthCheck(d.Get("grpc_health_check"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("grpc_health_check"); !isEmptyValue(reflect.ValueOf(grpcHealthCheckProp)) && (ok || !reflect.DeepEqual(v, grpcHealthCheckProp)) {
-		obj["grpcHealthCheck"] = grpcHealthCheckProp
 	}
 	regionProp, err := expandComputeRegionHealthCheckRegion(d.Get("region"), d, config)
 	if err != nil {
@@ -194,21 +188,6 @@ func resourceComputeRegionHealthCheckEncoder(d TerraformResourceData, meta inter
 			}
 		}
 		obj["type"] = "SSL"
-		return obj, nil
-	}
-
-	if _, ok := d.GetOk("grpc_health_check"); ok {
-		hc := d.Get("grpc_health_check").([]interface{})[0]
-		ps := hc.(map[string]interface{})["port_specification"]
-		pn := hc.(map[string]interface{})["port_name"]
-
-		if ps == "USE_FIXED_PORT" || (ps == "" && pn == "") {
-			m := obj["grpcHealthCheck"].(map[string]interface{})
-			if m["port"] == nil {
-				return nil, fmt.Errorf("error in HealthCheck %s: `port` must be set for GRPC health checks`.", d.Get("name").(string))
-			}
-		}
-		obj["type"] = "GRPC"
 		return obj, nil
 	}
 
@@ -659,62 +638,6 @@ func expandComputeRegionHealthCheckHttp2HealthCheckProxyHeader(v interface{}, d 
 }
 
 func expandComputeRegionHealthCheckHttp2HealthCheckPortSpecification(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeRegionHealthCheckGrpcHealthCheck(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedPort, err := expandComputeRegionHealthCheckGrpcHealthCheckPort(original["port"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedPort); val.IsValid() && !isEmptyValue(val) {
-		transformed["port"] = transformedPort
-	}
-
-	transformedPortName, err := expandComputeRegionHealthCheckGrpcHealthCheckPortName(original["port_name"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedPortName); val.IsValid() && !isEmptyValue(val) {
-		transformed["portName"] = transformedPortName
-	}
-
-	transformedPortSpecification, err := expandComputeRegionHealthCheckGrpcHealthCheckPortSpecification(original["port_specification"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedPortSpecification); val.IsValid() && !isEmptyValue(val) {
-		transformed["portSpecification"] = transformedPortSpecification
-	}
-
-	transformedGrpcServiceName, err := expandComputeRegionHealthCheckGrpcHealthCheckGrpcServiceName(original["grpc_service_name"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedGrpcServiceName); val.IsValid() && !isEmptyValue(val) {
-		transformed["grpcServiceName"] = transformedGrpcServiceName
-	}
-
-	return transformed, nil
-}
-
-func expandComputeRegionHealthCheckGrpcHealthCheckPort(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeRegionHealthCheckGrpcHealthCheckPortName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeRegionHealthCheckGrpcHealthCheckPortSpecification(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandComputeRegionHealthCheckGrpcHealthCheckGrpcServiceName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

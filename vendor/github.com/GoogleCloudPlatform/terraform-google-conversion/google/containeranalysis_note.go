@@ -14,11 +14,7 @@
 
 package google
 
-import (
-	"reflect"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
+import "reflect"
 
 func GetContainerAnalysisNoteCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//containeranalysis.googleapis.com/projects/{{project}}/notes/{{name}}")
@@ -49,36 +45,6 @@ func GetContainerAnalysisNoteApiObject(d TerraformResourceData, config *Config) 
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
-	shortDescriptionProp, err := expandContainerAnalysisNoteShortDescription(d.Get("short_description"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("short_description"); !isEmptyValue(reflect.ValueOf(shortDescriptionProp)) && (ok || !reflect.DeepEqual(v, shortDescriptionProp)) {
-		obj["shortDescription"] = shortDescriptionProp
-	}
-	longDescriptionProp, err := expandContainerAnalysisNoteLongDescription(d.Get("long_description"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("long_description"); !isEmptyValue(reflect.ValueOf(longDescriptionProp)) && (ok || !reflect.DeepEqual(v, longDescriptionProp)) {
-		obj["longDescription"] = longDescriptionProp
-	}
-	relatedUrlProp, err := expandContainerAnalysisNoteRelatedUrl(d.Get("related_url"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("related_url"); !isEmptyValue(reflect.ValueOf(relatedUrlProp)) && (ok || !reflect.DeepEqual(v, relatedUrlProp)) {
-		obj["relatedUrl"] = relatedUrlProp
-	}
-	expirationTimeProp, err := expandContainerAnalysisNoteExpirationTime(d.Get("expiration_time"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("expiration_time"); !isEmptyValue(reflect.ValueOf(expirationTimeProp)) && (ok || !reflect.DeepEqual(v, expirationTimeProp)) {
-		obj["expirationTime"] = expirationTimeProp
-	}
-	relatedNoteNamesProp, err := expandContainerAnalysisNoteRelatedNoteNames(d.Get("related_note_names"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("related_note_names"); !isEmptyValue(reflect.ValueOf(relatedNoteNamesProp)) && (ok || !reflect.DeepEqual(v, relatedNoteNamesProp)) {
-		obj["relatedNoteNames"] = relatedNoteNamesProp
-	}
 	attestationAuthorityProp, err := expandContainerAnalysisNoteAttestationAuthority(d.Get("attestation_authority"), d, config)
 	if err != nil {
 		return nil, err
@@ -98,61 +64,6 @@ func resourceContainerAnalysisNoteEncoder(d TerraformResourceData, meta interfac
 }
 
 func expandContainerAnalysisNoteName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandContainerAnalysisNoteShortDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandContainerAnalysisNoteLongDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandContainerAnalysisNoteRelatedUrl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	v = v.(*schema.Set).List()
-	l := v.([]interface{})
-	req := make([]interface{}, 0, len(l))
-	for _, raw := range l {
-		if raw == nil {
-			continue
-		}
-		original := raw.(map[string]interface{})
-		transformed := make(map[string]interface{})
-
-		transformedUrl, err := expandContainerAnalysisNoteRelatedUrlUrl(original["url"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedUrl); val.IsValid() && !isEmptyValue(val) {
-			transformed["url"] = transformedUrl
-		}
-
-		transformedLabel, err := expandContainerAnalysisNoteRelatedUrlLabel(original["label"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedLabel); val.IsValid() && !isEmptyValue(val) {
-			transformed["label"] = transformedLabel
-		}
-
-		req = append(req, transformed)
-	}
-	return req, nil
-}
-
-func expandContainerAnalysisNoteRelatedUrlUrl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandContainerAnalysisNoteRelatedUrlLabel(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandContainerAnalysisNoteExpirationTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandContainerAnalysisNoteRelatedNoteNames(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	v = v.(*schema.Set).List()
 	return v, nil
 }
 

@@ -14,26 +14,7 @@
 
 package google
 
-import (
-	"context"
-	"fmt"
-	"reflect"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-var sensitiveLabels = []string{"auth_token", "service_key", "password"}
-
-func sensitiveLabelCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-	for _, sl := range sensitiveLabels {
-		mapLabel := diff.Get("labels." + sl).(string)
-		authLabel := diff.Get("sensitive_labels.0." + sl).(string)
-		if mapLabel != "" && authLabel != "" {
-			return fmt.Errorf("Sensitive label [%s] cannot be set in both `labels` and the `sensitive_labels` block.", sl)
-		}
-	}
-	return nil
-}
+import "reflect"
 
 func GetMonitoringNotificationChannelCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
 	name, err := assetName(d, config, "//monitoring.googleapis.com/{{name}}")
@@ -94,26 +75,6 @@ func GetMonitoringNotificationChannelApiObject(d TerraformResourceData, config *
 	} else if v, ok := d.GetOkExists("enabled"); ok || !reflect.DeepEqual(v, enabledProp) {
 		obj["enabled"] = enabledProp
 	}
-
-	return resourceMonitoringNotificationChannelEncoder(d, config, obj)
-}
-
-func resourceMonitoringNotificationChannelEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
-	labelmap, ok := obj["labels"]
-	if !ok {
-		labelmap = make(map[string]string)
-	}
-
-	var labels map[string]string
-	labels = labelmap.(map[string]string)
-
-	for _, sl := range sensitiveLabels {
-		if auth, _ := d.GetOkExists("sensitive_labels.0." + sl); auth != "" {
-			labels[sl] = auth.(string)
-		}
-	}
-
-	obj["labels"] = labels
 
 	return obj, nil
 }

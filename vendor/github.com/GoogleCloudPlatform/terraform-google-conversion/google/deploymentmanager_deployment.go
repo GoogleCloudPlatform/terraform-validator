@@ -15,33 +15,26 @@
 package google
 
 import (
-	"context"
 	"log"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func customDiffDeploymentManagerDeployment(_ context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func customDiffDeploymentManagerDeployment(d *schema.ResourceDiff, meta interface{}) error {
 	if preview := d.Get("preview").(bool); preview {
 		log.Printf("[WARN] Deployment preview set to true - Terraform will treat Deployment as recreate-only")
 
 		if d.HasChange("preview") {
-			if err := d.ForceNew("preview"); err != nil {
-				return err
-			}
+			d.ForceNew("preview")
 		}
 
 		if d.HasChange("target") {
-			if err := d.ForceNew("target"); err != nil {
-				return err
-			}
+			d.ForceNew("target")
 		}
 
 		if d.HasChange("labels") {
-			if err := d.ForceNew("labels"); err != nil {
-				return err
-			}
+			d.ForceNew("labels")
 		}
 	}
 	return nil
