@@ -15,7 +15,7 @@ cloud.google.com/go/bigtable/internal/option
 cloud.google.com/go/storage
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
-# github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124163654-f879c81c3537
+# github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03
 github.com/GoogleCloudPlatform/terraform-google-conversion/google
 # github.com/OneOfOne/xxhash v1.2.5
 github.com/OneOfOne/xxhash
