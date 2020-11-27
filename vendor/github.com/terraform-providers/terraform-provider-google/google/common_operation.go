@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform/helper/resource"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 )
 
@@ -17,17 +17,12 @@ type Waiter interface {
 	// if the operation has no current error.
 	Error() error
 
-	// IsRetryable returns whether a given error should be retried.
-	IsRetryable(error) bool
-
 	// SetOp sets the operation we're waiting on in a Waiter struct so that it
 	// can be used in other methods.
 	SetOp(interface{}) error
 
 	// QueryOp sends a request to the server to get the current status of the
-	// operation. It's expected that QueryOp will return exactly one of an
-	// operation or an error as non-nil, and that requests will be retried by
-	// specific implementations of the method.
+	// operation.
 	QueryOp() (interface{}, error)
 
 	// OpName is the name of the operation and is used to log its status.
@@ -59,10 +54,6 @@ func (w *CommonOperationWaiter) Error() error {
 		return fmt.Errorf("Error code %v, message: %s", w.Op.Error.Code, w.Op.Error.Message)
 	}
 	return nil
-}
-
-func (w *CommonOperationWaiter) IsRetryable(error) bool {
-	return false
 }
 
 func (w *CommonOperationWaiter) SetOp(op interface{}) error {
@@ -99,29 +90,31 @@ func OperationDone(w Waiter) bool {
 
 func CommonRefreshFunc(w Waiter) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
+		// First, read the operation from the server.
 		op, err := w.QueryOp()
+
+		// If we got a non-retryable error, return it.
 		if err != nil {
-			// Retry 404 when getting operation (not resource state)
-			if isRetryableError(err, isNotFoundRetryableError("GET operation")) {
-				log.Printf("[DEBUG] Dismissed retryable error on GET operation %q: %s", w.OpName(), err)
-				return nil, "done: false", nil
+			if !isRetryableError(err) {
+				return nil, "", fmt.Errorf("Not retriable error: %s", err)
 			}
-			return nil, "", fmt.Errorf("error while retrieving operation: %s", err)
+			if op == nil {
+				return nil, "", fmt.Errorf("Cannot continue, Operation is nil. %s", err)
+			}
 		}
 
+		// Try to set the operation (so we can check it's Error/State),
+		// and fail if we can't.
 		if err = w.SetOp(op); err != nil {
-			return nil, "", fmt.Errorf("Cannot continue, unable to use operation: %s", err)
+			return nil, "", fmt.Errorf("Cannot continue %s", err)
 		}
 
+		// Fail if the operation object contains an error.
 		if err = w.Error(); err != nil {
-			if w.IsRetryable(err) {
-				log.Printf("[DEBUG] Retrying operation GET based on retryable err: %s", err)
-				return nil, w.State(), nil
-			}
 			return nil, "", err
 		}
-
 		log.Printf("[DEBUG] Got %v while polling for operation %s's status", w.State(), w.OpName())
+
 		return op, w.State(), nil
 	}
 }

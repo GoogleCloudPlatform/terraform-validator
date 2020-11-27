@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"google.golang.org/api/storage/v1"
 )
 
@@ -66,11 +66,6 @@ func resourceStorageNotification() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"notification_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"self_link": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -127,7 +122,6 @@ func resourceStorageNotificationRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("topic", res.Topic)
 	d.Set("object_name_prefix", res.ObjectNamePrefix)
 	d.Set("event_types", res.EventTypes)
-	d.Set("notification_id", notificationID)
 	d.Set("self_link", res.SelfLink)
 	d.Set("custom_attributes", res.CustomAttributes)
 

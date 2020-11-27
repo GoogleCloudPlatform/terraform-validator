@@ -6,7 +6,6 @@ package topdown
 
 import (
 	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/util"
 )
 
 type virtualCache struct {
@@ -15,7 +14,7 @@ type virtualCache struct {
 
 type virtualCacheElem struct {
 	value    *ast.Term
-	children *util.HashMap
+	children map[ast.Value]*virtualCacheElem
 }
 
 func newVirtualCache() *virtualCache {
@@ -35,11 +34,12 @@ func (c *virtualCache) Pop() {
 func (c *virtualCache) Get(ref ast.Ref) *ast.Term {
 	node := c.stack[len(c.stack)-1]
 	for i := 0; i < len(ref); i++ {
-		x, ok := node.children.Get(ref[i])
-		if !ok {
+		key := ref[i].Value
+		next := node.children[key]
+		if next == nil {
 			return nil
 		}
-		node = x.(*virtualCacheElem)
+		node = next
 	}
 	return node.value
 }
@@ -47,28 +47,21 @@ func (c *virtualCache) Get(ref ast.Ref) *ast.Term {
 func (c *virtualCache) Put(ref ast.Ref, value *ast.Term) {
 	node := c.stack[len(c.stack)-1]
 	for i := 0; i < len(ref); i++ {
-		x, ok := node.children.Get(ref[i])
-		if ok {
-			node = x.(*virtualCacheElem)
-		} else {
-			next := newVirtualCacheElem()
-			node.children.Put(ref[i], next)
-			node = next
+		key := ref[i].Value
+		next := node.children[key]
+		if next == nil {
+			next = newVirtualCacheElem()
+			node.children[key] = next
 		}
+		node = next
 	}
 	node.value = value
 }
 
 func newVirtualCacheElem() *virtualCacheElem {
-	return &virtualCacheElem{children: newVirtualCacheHashMap()}
-}
-
-func newVirtualCacheHashMap() *util.HashMap {
-	return util.NewHashMap(func(a, b util.T) bool {
-		return a.(*ast.Term).Equal(b.(*ast.Term))
-	}, func(x util.T) int {
-		return x.(*ast.Term).Hash()
-	})
+	return &virtualCacheElem{
+		children: map[ast.Value]*virtualCacheElem{},
+	}
 }
 
 // baseCache implements a trie structure to cache base documents read out of

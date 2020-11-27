@@ -21,9 +21,9 @@ import (
 	"sort"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/pathorcontents"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
 )
@@ -283,7 +283,7 @@ func (u *UrlData) SigningString() []byte {
 		buf.WriteString(fmt.Sprintf("%s:%s\n", k, u.HttpHeaders[k]))
 	}
 
-	// Storage Object path (includes bucketname)
+	// Storate Object path (includes bucketname)
 	buf.WriteString(u.Path)
 
 	return buf.Bytes()
@@ -348,9 +348,7 @@ func SignString(toSign []byte, cfg *jwt.Config) ([]byte, error) {
 
 	// Hash string
 	hasher := sha256.New()
-	if _, err := hasher.Write(toSign); err != nil {
-		return nil, errwrap.Wrapf("failed to calculate sha256: {{err}}", err)
-	}
+	hasher.Write(toSign)
 
 	// Sign string
 	signed, err := rsa.SignPKCS1v15(rand.Reader, pk, crypto.SHA256, hasher.Sum(nil))

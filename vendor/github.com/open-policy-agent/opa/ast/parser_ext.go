@@ -142,10 +142,6 @@ func ParseRuleFromExpr(module *Module, expr *Expr) (*Rule, error) {
 		return nil, fmt.Errorf("negated expressions cannot be used for rule head")
 	}
 
-	if _, ok := expr.Terms.(*SomeDecl); ok {
-		return nil, errors.New("some declarations cannot be used for rule head")
-	}
-
 	if term, ok := expr.Terms.(*Term); ok {
 		switch v := term.Value.(type) {
 		case Ref:
@@ -155,65 +151,26 @@ func ParseRuleFromExpr(module *Module, expr *Expr) (*Rule, error) {
 		}
 	}
 
-	if _, ok := expr.Terms.([]*Term); !ok {
-		// This is a defensive check in case other kinds of expression terms are
-		// introduced in the future.
-		return nil, errors.New("expression cannot be used for rule head")
-	}
-
-	if expr.IsAssignment() {
-
-		lhs, rhs := expr.Operand(0), expr.Operand(1)
-		rule, err := ParseCompleteDocRuleFromAssignmentExpr(module, lhs, rhs)
-
-		if err == nil {
-			return rule, nil
-		} else if _, ok := lhs.Value.(Call); ok {
-			return nil, errFunctionAssignOperator
-		} else if _, ok := lhs.Value.(Ref); ok {
-			return nil, errPartialRuleAssignOperator
+	if !expr.IsEquality() && expr.IsCall() {
+		if _, ok := BuiltinMap[expr.Operator().String()]; ok {
+			return nil, fmt.Errorf("rule name conflicts with built-in function")
 		}
-
-		return nil, errTermAssignOperator(lhs.Value)
+		return ParseRuleFromCallExpr(module, expr.Terms.([]*Term))
 	}
 
-	if expr.IsEquality() {
-
-		lhs, rhs := expr.Operand(0), expr.Operand(1)
-		rule, err := ParseCompleteDocRuleFromEqExpr(module, lhs, rhs)
-
-		if err == nil {
-			return rule, nil
-		}
-
-		rule, err = ParseRuleFromCallEqExpr(module, lhs, rhs)
-		if err == nil {
-			return rule, nil
-		}
-
-		return ParsePartialObjectDocRuleFromEqExpr(module, lhs, rhs)
-	}
-
-	if _, ok := BuiltinMap[expr.Operator().String()]; ok {
-		return nil, fmt.Errorf("rule name conflicts with built-in function")
-	}
-
-	return ParseRuleFromCallExpr(module, expr.Terms.([]*Term))
-}
-
-// ParseCompleteDocRuleFromAssignmentExpr returns a rule if the expression can
-// be interpreted as a complete document definition declared with the assignment
-// operator.
-func ParseCompleteDocRuleFromAssignmentExpr(module *Module, lhs, rhs *Term) (*Rule, error) {
+	lhs, rhs := expr.Operand(0), expr.Operand(1)
 
 	rule, err := ParseCompleteDocRuleFromEqExpr(module, lhs, rhs)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return rule, nil
 	}
 
-	rule.Head.Assign = true
+	rule, err = ParseRuleFromCallEqExpr(module, lhs, rhs)
+	if err == nil {
+		return rule, nil
+	}
 
-	return rule, nil
+	return ParsePartialObjectDocRuleFromEqExpr(module, lhs, rhs)
 }
 
 // ParseCompleteDocRuleFromEqExpr returns a rule if the expression can be
@@ -773,13 +730,12 @@ func (vt *varToRefTransformer) Transform(x interface{}) (interface{}, error) {
 	return x, nil
 }
 
-// ParserErrorDetail holds additional details for parser errors.
-type ParserErrorDetail struct {
-	Line string `json:"line"`
-	Idx  int    `json:"idx"`
+type parserErrorDetail struct {
+	line string
+	idx  int
 }
 
-func newParserErrorDetail(bs []byte, pos position) *ParserErrorDetail {
+func newParserErrorDetail(bs []byte, pos position) *parserErrorDetail {
 
 	offset := pos.offset
 
@@ -820,17 +776,16 @@ func newParserErrorDetail(bs []byte, pos position) *ParserErrorDetail {
 	line := bs[begin:end]
 	index := offset - begin
 
-	return &ParserErrorDetail{
-		Line: string(line),
-		Idx:  index,
+	return &parserErrorDetail{
+		line: string(line),
+		idx:  index,
 	}
 }
 
-// Lines returns the pretty formatted line output for the error details.
-func (d ParserErrorDetail) Lines() []string {
-	line := strings.TrimLeft(d.Line, "\t") // remove leading tabs
-	tabCount := len(d.Line) - len(line)
-	return []string{line, strings.Repeat(" ", d.Idx-tabCount) + "^"}
+func (d parserErrorDetail) Lines() []string {
+	line := strings.TrimLeft(d.line, "\t") // remove leading tabs
+	tabCount := len(d.line) - len(line)
+	return []string{line, strings.Repeat(" ", d.idx-tabCount) + "^"}
 }
 
 func isNewLineChar(b byte) bool {

@@ -4,10 +4,8 @@
 
 package util
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
+import "strings"
 
 // T is a concise way to refer to T.
 type T interface{}

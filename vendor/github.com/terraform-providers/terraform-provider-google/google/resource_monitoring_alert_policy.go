@@ -19,11 +19,10 @@ import (
 	"log"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceMonitoringAlertPolicy() *schema.Resource {
@@ -38,9 +37,9 @@ func resourceMonitoringAlertPolicy() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(4 * time.Minute),
-			Update: schema.DefaultTimeout(4 * time.Minute),
-			Delete: schema.DefaultTimeout(4 * time.Minute),
+			Create: schema.DefaultTimeout(240 * time.Second),
+			Update: schema.DefaultTimeout(240 * time.Second),
+			Delete: schema.DefaultTimeout(240 * time.Second),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -48,126 +47,43 @@ func resourceMonitoringAlertPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"AND", "OR", "AND_WITH_MATCHING_RESOURCE"}, false),
-				Description: `How to combine the results of multiple conditions to
-determine if an incident should be opened.`,
 			},
 			"conditions": {
 				Type:     schema.TypeList,
 				Required: true,
-				Description: `A list of conditions for the policy. The conditions are combined by
-AND or OR according to the combiner field. If the combined conditions
-evaluate to true, then an incident is created. A policy can have from
-one to six conditions.`,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"display_name": {
 							Type:     schema.TypeString,
 							Required: true,
-							Description: `A short name or phrase used to identify the
-condition in dashboards, notifications, and
-incidents. To avoid confusion, don't use the same
-display name for multiple conditions in the same
-policy.`,
 						},
 						"condition_absent": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Description: `A condition that checks that a time series
-continues to receive new data points.`,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"duration": {
 										Type:     schema.TypeString,
 										Required: true,
-										Description: `The amount of time that a time series must
-fail to report new data to be considered
-failing. Currently, only values that are a
-multiple of a minute--e.g. 60s, 120s, or 300s
---are supported.`,
 									},
 									"aggregations": {
 										Type:     schema.TypeList,
 										Optional: true,
-										Description: `Specifies the alignment of data points in
-individual time series as well as how to
-combine the retrieved time series together
-(such as when aggregating multiple streams
-on each resource to a single stream for each
-resource or when aggregating streams across
-all members of a group of resources).
-Multiple aggregations are applied in the
-order specified.`,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"alignment_period": {
 													Type:     schema.TypeString,
 													Optional: true,
-													Description: `The alignment period for per-time
-series alignment. If present,
-alignmentPeriod must be at least
-60 seconds. After per-time series
-alignment, each time series will
-contain data points only on the
-period boundaries. If
-perSeriesAligner is not specified
-or equals ALIGN_NONE, then this
-field is ignored. If
-perSeriesAligner is specified and
-does not equal ALIGN_NONE, then
-this field must be defined;
-otherwise an error is returned.`,
 												},
 												"cross_series_reducer": {
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice([]string{"REDUCE_NONE", "REDUCE_MEAN", "REDUCE_MIN", "REDUCE_MAX", "REDUCE_SUM", "REDUCE_STDDEV", "REDUCE_COUNT", "REDUCE_COUNT_TRUE", "REDUCE_COUNT_FALSE", "REDUCE_FRACTION_TRUE", "REDUCE_PERCENTILE_99", "REDUCE_PERCENTILE_95", "REDUCE_PERCENTILE_50", "REDUCE_PERCENTILE_05", ""}, false),
-													Description: `The approach to be used to combine
-time series. Not all reducer
-functions may be applied to all
-time series, depending on the
-metric type and the value type of
-the original time series.
-Reduction may change the metric
-type of value type of the time
-series.Time series data must be
-aligned in order to perform cross-
-time series reduction. If
-crossSeriesReducer is specified,
-then perSeriesAligner must be
-specified and not equal ALIGN_NONE
-and alignmentPeriod must be
-specified; otherwise, an error is
-returned.`,
 												},
 												"group_by_fields": {
 													Type:     schema.TypeList,
 													Optional: true,
-													Description: `The set of fields to preserve when
-crossSeriesReducer is specified.
-The groupByFields determine how
-the time series are partitioned
-into subsets prior to applying the
-aggregation function. Each subset
-contains time series that have the
-same value for each of the
-grouping fields. Each individual
-time series is a member of exactly
-one subset. The crossSeriesReducer
-is applied to each subset of time
-series. It is not possible to
-reduce across different resource
-types, so this field implicitly
-contains resource.type. Fields not
-specified in groupByFields are
-aggregated away. If groupByFields
-is not specified and all the time
-series have the same resource
-type, then the time series are
-aggregated into a single output
-time series. If crossSeriesReducer
-is not defined, this field is
-ignored.`,
 													Elem: &schema.Schema{
 														Type: schema.TypeString,
 													},
@@ -176,23 +92,6 @@ ignored.`,
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice([]string{"ALIGN_NONE", "ALIGN_DELTA", "ALIGN_RATE", "ALIGN_INTERPOLATE", "ALIGN_NEXT_OLDER", "ALIGN_MIN", "ALIGN_MAX", "ALIGN_MEAN", "ALIGN_COUNT", "ALIGN_SUM", "ALIGN_STDDEV", "ALIGN_COUNT_TRUE", "ALIGN_COUNT_FALSE", "ALIGN_FRACTION_TRUE", "ALIGN_PERCENTILE_99", "ALIGN_PERCENTILE_95", "ALIGN_PERCENTILE_50", "ALIGN_PERCENTILE_05", "ALIGN_PERCENT_CHANGE", ""}, false),
-													Description: `The approach to be used to align
-individual time series. Not all
-alignment functions may be applied
-to all time series, depending on
-the metric type and value type of
-the original time series.
-Alignment may change the metric
-type or the value type of the time
-series.Time series data must be
-aligned in order to perform cross-
-time series reduction. If
-crossSeriesReducer is specified,
-then perSeriesAligner must be
-specified and not equal ALIGN_NONE
-and alignmentPeriod must be
-specified; otherwise, an error is
-returned.`,
 												},
 											},
 										},
@@ -200,44 +99,20 @@ returned.`,
 									"filter": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Description: `A filter that identifies which time series
-should be compared with the threshold.The
-filter is similar to the one that is
-specified in the
-MetricService.ListTimeSeries request (that
-call is useful to verify the time series
-that will be retrieved / processed) and must
-specify the metric type and optionally may
-contain restrictions on resource type,
-resource labels, and metric labels. This
-field may not exceed 2048 Unicode characters
-in length.`,
 									},
 									"trigger": {
 										Type:     schema.TypeList,
 										Optional: true,
-										Description: `The number/percent of time series for which
-the comparison must hold in order for the
-condition to trigger. If unspecified, then
-the condition will trigger if the comparison
-is true for any of the time series that have
-been identified by filter and aggregations.`,
 										MaxItems: 1,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"count": {
 													Type:     schema.TypeInt,
 													Optional: true,
-													Description: `The absolute number of time series
-that must fail the predicate for the
-condition to be triggered.`,
 												},
 												"percent": {
 													Type:     schema.TypeFloat,
 													Optional: true,
-													Description: `The percentage of time series that
-must fail the predicate for the
-condition to be triggered.`,
 												},
 											},
 										},
@@ -248,8 +123,6 @@ condition to be triggered.`,
 						"condition_threshold": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Description: `A condition that compares a time series against a
-threshold.`,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -257,120 +130,28 @@ threshold.`,
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: validation.StringInSlice([]string{"COMPARISON_GT", "COMPARISON_GE", "COMPARISON_LT", "COMPARISON_LE", "COMPARISON_EQ", "COMPARISON_NE"}, false),
-										Description: `The comparison to apply between the time
-series (indicated by filter and aggregation)
-and the threshold (indicated by
-threshold_value). The comparison is applied
-on each time series, with the time series on
-the left-hand side and the threshold on the
-right-hand side. Only COMPARISON_LT and
-COMPARISON_GT are supported currently.`,
 									},
 									"duration": {
 										Type:     schema.TypeString,
 										Required: true,
-										Description: `The amount of time that a time series must
-violate the threshold to be considered
-failing. Currently, only values that are a
-multiple of a minute--e.g., 0, 60, 120, or
-300 seconds--are supported. If an invalid
-value is given, an error will be returned.
-When choosing a duration, it is useful to
-keep in mind the frequency of the underlying
-time series data (which may also be affected
-by any alignments specified in the
-aggregations field); a good duration is long
-enough so that a single outlier does not
-generate spurious alerts, but short enough
-that unhealthy states are detected and
-alerted on quickly.`,
 									},
 									"aggregations": {
 										Type:     schema.TypeList,
 										Optional: true,
-										Description: `Specifies the alignment of data points in
-individual time series as well as how to
-combine the retrieved time series together
-(such as when aggregating multiple streams
-on each resource to a single stream for each
-resource or when aggregating streams across
-all members of a group of resources).
-Multiple aggregations are applied in the
-order specified.This field is similar to the
-one in the MetricService.ListTimeSeries
-request. It is advisable to use the
-ListTimeSeries method when debugging this
-field.`,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"alignment_period": {
 													Type:     schema.TypeString,
 													Optional: true,
-													Description: `The alignment period for per-time
-series alignment. If present,
-alignmentPeriod must be at least
-60 seconds. After per-time series
-alignment, each time series will
-contain data points only on the
-period boundaries. If
-perSeriesAligner is not specified
-or equals ALIGN_NONE, then this
-field is ignored. If
-perSeriesAligner is specified and
-does not equal ALIGN_NONE, then
-this field must be defined;
-otherwise an error is returned.`,
 												},
 												"cross_series_reducer": {
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice([]string{"REDUCE_NONE", "REDUCE_MEAN", "REDUCE_MIN", "REDUCE_MAX", "REDUCE_SUM", "REDUCE_STDDEV", "REDUCE_COUNT", "REDUCE_COUNT_TRUE", "REDUCE_COUNT_FALSE", "REDUCE_FRACTION_TRUE", "REDUCE_PERCENTILE_99", "REDUCE_PERCENTILE_95", "REDUCE_PERCENTILE_50", "REDUCE_PERCENTILE_05", ""}, false),
-													Description: `The approach to be used to combine
-time series. Not all reducer
-functions may be applied to all
-time series, depending on the
-metric type and the value type of
-the original time series.
-Reduction may change the metric
-type of value type of the time
-series.Time series data must be
-aligned in order to perform cross-
-time series reduction. If
-crossSeriesReducer is specified,
-then perSeriesAligner must be
-specified and not equal ALIGN_NONE
-and alignmentPeriod must be
-specified; otherwise, an error is
-returned.`,
 												},
 												"group_by_fields": {
 													Type:     schema.TypeList,
 													Optional: true,
-													Description: `The set of fields to preserve when
-crossSeriesReducer is specified.
-The groupByFields determine how
-the time series are partitioned
-into subsets prior to applying the
-aggregation function. Each subset
-contains time series that have the
-same value for each of the
-grouping fields. Each individual
-time series is a member of exactly
-one subset. The crossSeriesReducer
-is applied to each subset of time
-series. It is not possible to
-reduce across different resource
-types, so this field implicitly
-contains resource.type. Fields not
-specified in groupByFields are
-aggregated away. If groupByFields
-is not specified and all the time
-series have the same resource
-type, then the time series are
-aggregated into a single output
-time series. If crossSeriesReducer
-is not defined, this field is
-ignored.`,
 													Elem: &schema.Schema{
 														Type: schema.TypeString,
 													},
@@ -379,23 +160,6 @@ ignored.`,
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice([]string{"ALIGN_NONE", "ALIGN_DELTA", "ALIGN_RATE", "ALIGN_INTERPOLATE", "ALIGN_NEXT_OLDER", "ALIGN_MIN", "ALIGN_MAX", "ALIGN_MEAN", "ALIGN_COUNT", "ALIGN_SUM", "ALIGN_STDDEV", "ALIGN_COUNT_TRUE", "ALIGN_COUNT_FALSE", "ALIGN_FRACTION_TRUE", "ALIGN_PERCENTILE_99", "ALIGN_PERCENTILE_95", "ALIGN_PERCENTILE_50", "ALIGN_PERCENTILE_05", "ALIGN_PERCENT_CHANGE", ""}, false),
-													Description: `The approach to be used to align
-individual time series. Not all
-alignment functions may be applied
-to all time series, depending on
-the metric type and value type of
-the original time series.
-Alignment may change the metric
-type or the value type of the time
-series.Time series data must be
-aligned in order to perform cross-
-time series reduction. If
-crossSeriesReducer is specified,
-then perSeriesAligner must be
-specified and not equal ALIGN_NONE
-and alignmentPeriod must be
-specified; otherwise, an error is
-returned.`,
 												},
 											},
 										},
@@ -403,92 +167,20 @@ returned.`,
 									"denominator_aggregations": {
 										Type:     schema.TypeList,
 										Optional: true,
-										Description: `Specifies the alignment of data points in
-individual time series selected by
-denominatorFilter as well as how to combine
-the retrieved time series together (such as
-when aggregating multiple streams on each
-resource to a single stream for each
-resource or when aggregating streams across
-all members of a group of resources).When
-computing ratios, the aggregations and
-denominator_aggregations fields must use the
-same alignment period and produce time
-series that have the same periodicity and
-labels.This field is similar to the one in
-the MetricService.ListTimeSeries request. It
-is advisable to use the ListTimeSeries
-method when debugging this field.`,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"alignment_period": {
 													Type:     schema.TypeString,
 													Optional: true,
-													Description: `The alignment period for per-time
-series alignment. If present,
-alignmentPeriod must be at least
-60 seconds. After per-time series
-alignment, each time series will
-contain data points only on the
-period boundaries. If
-perSeriesAligner is not specified
-or equals ALIGN_NONE, then this
-field is ignored. If
-perSeriesAligner is specified and
-does not equal ALIGN_NONE, then
-this field must be defined;
-otherwise an error is returned.`,
 												},
 												"cross_series_reducer": {
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice([]string{"REDUCE_NONE", "REDUCE_MEAN", "REDUCE_MIN", "REDUCE_MAX", "REDUCE_SUM", "REDUCE_STDDEV", "REDUCE_COUNT", "REDUCE_COUNT_TRUE", "REDUCE_COUNT_FALSE", "REDUCE_FRACTION_TRUE", "REDUCE_PERCENTILE_99", "REDUCE_PERCENTILE_95", "REDUCE_PERCENTILE_50", "REDUCE_PERCENTILE_05", ""}, false),
-													Description: `The approach to be used to combine
-time series. Not all reducer
-functions may be applied to all
-time series, depending on the
-metric type and the value type of
-the original time series.
-Reduction may change the metric
-type of value type of the time
-series.Time series data must be
-aligned in order to perform cross-
-time series reduction. If
-crossSeriesReducer is specified,
-then perSeriesAligner must be
-specified and not equal ALIGN_NONE
-and alignmentPeriod must be
-specified; otherwise, an error is
-returned.`,
 												},
 												"group_by_fields": {
 													Type:     schema.TypeList,
 													Optional: true,
-													Description: `The set of fields to preserve when
-crossSeriesReducer is specified.
-The groupByFields determine how
-the time series are partitioned
-into subsets prior to applying the
-aggregation function. Each subset
-contains time series that have the
-same value for each of the
-grouping fields. Each individual
-time series is a member of exactly
-one subset. The crossSeriesReducer
-is applied to each subset of time
-series. It is not possible to
-reduce across different resource
-types, so this field implicitly
-contains resource.type. Fields not
-specified in groupByFields are
-aggregated away. If groupByFields
-is not specified and all the time
-series have the same resource
-type, then the time series are
-aggregated into a single output
-time series. If crossSeriesReducer
-is not defined, this field is
-ignored.`,
 													Elem: &schema.Schema{
 														Type: schema.TypeString,
 													},
@@ -497,23 +189,6 @@ ignored.`,
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice([]string{"ALIGN_NONE", "ALIGN_DELTA", "ALIGN_RATE", "ALIGN_INTERPOLATE", "ALIGN_NEXT_OLDER", "ALIGN_MIN", "ALIGN_MAX", "ALIGN_MEAN", "ALIGN_COUNT", "ALIGN_SUM", "ALIGN_STDDEV", "ALIGN_COUNT_TRUE", "ALIGN_COUNT_FALSE", "ALIGN_FRACTION_TRUE", "ALIGN_PERCENTILE_99", "ALIGN_PERCENTILE_95", "ALIGN_PERCENTILE_50", "ALIGN_PERCENTILE_05", "ALIGN_PERCENT_CHANGE", ""}, false),
-													Description: `The approach to be used to align
-individual time series. Not all
-alignment functions may be applied
-to all time series, depending on
-the metric type and value type of
-the original time series.
-Alignment may change the metric
-type or the value type of the time
-series.Time series data must be
-aligned in order to perform cross-
-time series reduction. If
-crossSeriesReducer is specified,
-then perSeriesAligner must be
-specified and not equal ALIGN_NONE
-and alignmentPeriod must be
-specified; otherwise, an error is
-returned.`,
 												},
 											},
 										},
@@ -521,71 +196,28 @@ returned.`,
 									"denominator_filter": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Description: `A filter that identifies a time series that
-should be used as the denominator of a ratio
-that will be compared with the threshold. If
-a denominator_filter is specified, the time
-series specified by the filter field will be
-used as the numerator.The filter is similar
-to the one that is specified in the
-MetricService.ListTimeSeries request (that
-call is useful to verify the time series
-that will be retrieved / processed) and must
-specify the metric type and optionally may
-contain restrictions on resource type,
-resource labels, and metric labels. This
-field may not exceed 2048 Unicode characters
-in length.`,
 									},
 									"filter": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Description: `A filter that identifies which time series
-should be compared with the threshold.The
-filter is similar to the one that is
-specified in the
-MetricService.ListTimeSeries request (that
-call is useful to verify the time series
-that will be retrieved / processed) and must
-specify the metric type and optionally may
-contain restrictions on resource type,
-resource labels, and metric labels. This
-field may not exceed 2048 Unicode characters
-in length.`,
 									},
 									"threshold_value": {
 										Type:     schema.TypeFloat,
 										Optional: true,
-										Description: `A value against which to compare the time
-series.`,
 									},
 									"trigger": {
 										Type:     schema.TypeList,
 										Optional: true,
-										Description: `The number/percent of time series for which
-the comparison must hold in order for the
-condition to trigger. If unspecified, then
-the condition will trigger if the comparison
-is true for any of the time series that have
-been identified by filter and aggregations,
-or by the ratio, if denominator_filter and
-denominator_aggregations are specified.`,
 										MaxItems: 1,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"count": {
 													Type:     schema.TypeInt,
 													Optional: true,
-													Description: `The absolute number of time series
-that must fail the predicate for the
-condition to be triggered.`,
 												},
 												"percent": {
 													Type:     schema.TypeFloat,
 													Optional: true,
-													Description: `The percentage of time series that
-must fail the predicate for the
-condition to be triggered.`,
 												},
 											},
 										},
@@ -596,12 +228,6 @@ condition to be triggered.`,
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
-							Description: `The unique resource name for this condition.
-Its syntax is:
-projects/[PROJECT_ID]/alertPolicies/[POLICY_ID]/conditions/[CONDITION_ID]
-[CONDITION_ID] is assigned by Stackdriver Monitoring when
-the condition is created as part of a new or updated alerting
-policy.`,
 						},
 					},
 				},
@@ -609,98 +235,29 @@ policy.`,
 			"display_name": {
 				Type:     schema.TypeString,
 				Required: true,
-				Description: `A short name or phrase used to identify the policy in
-dashboards, notifications, and incidents. To avoid confusion, don't use
-the same display name for multiple policies in the same project. The
-name is limited to 512 Unicode characters.`,
 			},
 			"documentation": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Description: `A short name or phrase used to identify the policy in dashboards,
-notifications, and incidents. To avoid confusion, don't use the same
-display name for multiple policies in the same project. The name is
-limited to 512 Unicode characters.`,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"content": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Description: `The text of the documentation, interpreted according to mimeType.
-The content may not exceed 8,192 Unicode characters and may not
-exceed more than 10,240 bytes when encoded in UTF-8 format,
-whichever is smaller.`,
-							AtLeastOneOf: []string{"documentation.0.content", "documentation.0.mime_type"},
 						},
 						"mime_type": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Description: `The format of the content field. Presently, only the value
-"text/markdown" is supported.`,
-							Default:      "text/markdown",
-							AtLeastOneOf: []string{"documentation.0.content", "documentation.0.mime_type"},
+							Default:  "text/markdown",
 						},
 					},
 				},
 			},
 			"enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: `Whether or not the policy is enabled. The default is true.`,
-				Default:     true,
-			},
-			"notification_channels": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeBool,
 				Optional: true,
-				Description: `Identifies the notification channels to which notifications should be
-sent when incidents are opened or closed or when new violations occur
-on an already opened incident. Each element of this array corresponds
-to the name field in each of the NotificationChannel objects that are
-returned from the notificationChannels.list method. The syntax of the
-entries in this field is
-'projects/[PROJECT_ID]/notificationChannels/[CHANNEL_ID]'`,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"user_labels": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Description: `This field is intended to be used for organizing and identifying the AlertPolicy
-objects.The field can contain up to 64 entries. Each key and value is limited
-to 63 Unicode characters or 128 bytes, whichever is smaller. Labels and values
-can contain only lowercase letters, numerals, underscores, and dashes. Keys
-must begin with a letter.`,
-				Elem: &schema.Schema{Type: schema.TypeString},
-			},
-			"creation_record": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Description: `A read-only record of the creation of the alerting policy.
-If provided in a call to create or update, this field will
-be ignored.`,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"mutate_time": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: `When the change occurred.`,
-						},
-						"mutated_by": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: `The email address of the user making the change.`,
-						},
-					},
-				},
-			},
-			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Description: `The unique resource name for this policy.
-Its syntax is: projects/[PROJECT_ID]/alertPolicies/[ALERT_POLICY_ID]`,
+				Default:  true,
 			},
 			"labels": {
 				Type:     schema.TypeList,
@@ -708,7 +265,33 @@ Its syntax is: projects/[PROJECT_ID]/alertPolicies/[ALERT_POLICY_ID]`,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Removed:  "labels is removed as it was never used. See user_labels for the correct field",
+			},
+			"notification_channels": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"creation_record": {
+				Type:     schema.TypeList,
+				Computed: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"mutate_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"mutated_by": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"name": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"project": {
@@ -755,11 +338,11 @@ func resourceMonitoringAlertPolicyCreate(d *schema.ResourceData, meta interface{
 	} else if v, ok := d.GetOkExists("notification_channels"); !isEmptyValue(reflect.ValueOf(notificationChannelsProp)) && (ok || !reflect.DeepEqual(v, notificationChannelsProp)) {
 		obj["notificationChannels"] = notificationChannelsProp
 	}
-	userLabelsProp, err := expandMonitoringAlertPolicyUserLabels(d.Get("user_labels"), d, config)
+	labelsProp, err := expandMonitoringAlertPolicyLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return err
-	} else if v, ok := d.GetOkExists("user_labels"); !isEmptyValue(reflect.ValueOf(userLabelsProp)) && (ok || !reflect.DeepEqual(v, userLabelsProp)) {
-		obj["userLabels"] = userLabelsProp
+	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
+		obj["labels"] = labelsProp
 	}
 	documentationProp, err := expandMonitoringAlertPolicyDocumentation(d.Get("documentation"), d, config)
 	if err != nil {
@@ -775,17 +358,13 @@ func resourceMonitoringAlertPolicyCreate(d *schema.ResourceData, meta interface{
 	mutexKV.Lock(lockName)
 	defer mutexKV.Unlock(lockName)
 
-	url, err := replaceVars(d, config, "{{MonitoringBasePath}}projects/{{project}}/alertPolicies")
+	url, err := replaceVars(d, config, "https://monitoring.googleapis.com/v3/projects/{{project}}/alertPolicies")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Creating new AlertPolicy: %#v", obj)
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-	res, err := sendRequestWithTimeout(config, "POST", project, url, obj, d.Timeout(schema.TimeoutCreate), isMonitoringRetryableError)
+	res, err := sendRequestWithTimeout(config, "POST", url, obj, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Error creating AlertPolicy: %s", err)
 	}
@@ -813,61 +392,49 @@ func resourceMonitoringAlertPolicyCreate(d *schema.ResourceData, meta interface{
 func resourceMonitoringAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	url, err := replaceVars(d, config, "{{MonitoringBasePath}}{{name}}")
+	url, err := replaceVars(d, config, "https://monitoring.googleapis.com/v3/{{name}}")
 	if err != nil {
 		return err
+	}
+
+	res, err := sendRequest(config, "GET", url, nil)
+	if err != nil {
+		return handleNotFoundError(err, d, fmt.Sprintf("MonitoringAlertPolicy %q", d.Id()))
 	}
 
 	project, err := getProject(d, config)
 	if err != nil {
 		return err
 	}
-	res, err := sendRequest(config, "GET", project, url, nil, isMonitoringRetryableError)
-	if err != nil {
-		return handleNotFoundError(err, d, fmt.Sprintf("MonitoringAlertPolicy %q", d.Id()))
-	}
-
-	res, err = resourceMonitoringAlertPolicyDecoder(d, meta, res)
-	if err != nil {
-		return err
-	}
-
-	if res == nil {
-		// Decoding the object has resulted in it being gone. It may be marked deleted
-		log.Printf("[DEBUG] Removing MonitoringAlertPolicy because it no longer exists.")
-		d.SetId("")
-		return nil
-	}
-
 	if err := d.Set("project", project); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
 
-	if err := d.Set("name", flattenMonitoringAlertPolicyName(res["name"], d, config)); err != nil {
+	if err := d.Set("name", flattenMonitoringAlertPolicyName(res["name"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("display_name", flattenMonitoringAlertPolicyDisplayName(res["displayName"], d, config)); err != nil {
+	if err := d.Set("display_name", flattenMonitoringAlertPolicyDisplayName(res["displayName"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("combiner", flattenMonitoringAlertPolicyCombiner(res["combiner"], d, config)); err != nil {
+	if err := d.Set("combiner", flattenMonitoringAlertPolicyCombiner(res["combiner"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("creation_record", flattenMonitoringAlertPolicyCreationRecord(res["creationRecord"], d, config)); err != nil {
+	if err := d.Set("creation_record", flattenMonitoringAlertPolicyCreationRecord(res["creationRecord"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("enabled", flattenMonitoringAlertPolicyEnabled(res["enabled"], d, config)); err != nil {
+	if err := d.Set("enabled", flattenMonitoringAlertPolicyEnabled(res["enabled"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("conditions", flattenMonitoringAlertPolicyConditions(res["conditions"], d, config)); err != nil {
+	if err := d.Set("conditions", flattenMonitoringAlertPolicyConditions(res["conditions"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("notification_channels", flattenMonitoringAlertPolicyNotificationChannels(res["notificationChannels"], d, config)); err != nil {
+	if err := d.Set("notification_channels", flattenMonitoringAlertPolicyNotificationChannels(res["notificationChannels"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("user_labels", flattenMonitoringAlertPolicyUserLabels(res["userLabels"], d, config)); err != nil {
+	if err := d.Set("labels", flattenMonitoringAlertPolicyLabels(res["labels"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
-	if err := d.Set("documentation", flattenMonitoringAlertPolicyDocumentation(res["documentation"], d, config)); err != nil {
+	if err := d.Set("documentation", flattenMonitoringAlertPolicyDocumentation(res["documentation"], d)); err != nil {
 		return fmt.Errorf("Error reading AlertPolicy: %s", err)
 	}
 
@@ -876,11 +443,6 @@ func resourceMonitoringAlertPolicyRead(d *schema.ResourceData, meta interface{})
 
 func resourceMonitoringAlertPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
-
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
 
 	obj := make(map[string]interface{})
 	displayNameProp, err := expandMonitoringAlertPolicyDisplayName(d.Get("display_name"), d, config)
@@ -913,11 +475,11 @@ func resourceMonitoringAlertPolicyUpdate(d *schema.ResourceData, meta interface{
 	} else if v, ok := d.GetOkExists("notification_channels"); !isEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, notificationChannelsProp)) {
 		obj["notificationChannels"] = notificationChannelsProp
 	}
-	userLabelsProp, err := expandMonitoringAlertPolicyUserLabels(d.Get("user_labels"), d, config)
+	labelsProp, err := expandMonitoringAlertPolicyLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return err
-	} else if v, ok := d.GetOkExists("user_labels"); !isEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, userLabelsProp)) {
-		obj["userLabels"] = userLabelsProp
+	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
+		obj["labels"] = labelsProp
 	}
 	documentationProp, err := expandMonitoringAlertPolicyDocumentation(d.Get("documentation"), d, config)
 	if err != nil {
@@ -933,48 +495,13 @@ func resourceMonitoringAlertPolicyUpdate(d *schema.ResourceData, meta interface{
 	mutexKV.Lock(lockName)
 	defer mutexKV.Unlock(lockName)
 
-	url, err := replaceVars(d, config, "{{MonitoringBasePath}}{{name}}")
+	url, err := replaceVars(d, config, "https://monitoring.googleapis.com/v3/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	log.Printf("[DEBUG] Updating AlertPolicy %q: %#v", d.Id(), obj)
-	updateMask := []string{}
-
-	if d.HasChange("display_name") {
-		updateMask = append(updateMask, "displayName")
-	}
-
-	if d.HasChange("combiner") {
-		updateMask = append(updateMask, "combiner")
-	}
-
-	if d.HasChange("enabled") {
-		updateMask = append(updateMask, "enabled")
-	}
-
-	if d.HasChange("conditions") {
-		updateMask = append(updateMask, "conditions")
-	}
-
-	if d.HasChange("notification_channels") {
-		updateMask = append(updateMask, "notificationChannels")
-	}
-
-	if d.HasChange("user_labels") {
-		updateMask = append(updateMask, "userLabels")
-	}
-
-	if d.HasChange("documentation") {
-		updateMask = append(updateMask, "documentation")
-	}
-	// updateMask is a URL parameter but not present in the schema, so replaceVars
-	// won't set it
-	url, err = addQueryParams(url, map[string]string{"updateMask": strings.Join(updateMask, ",")})
-	if err != nil {
-		return err
-	}
-	_, err = sendRequestWithTimeout(config, "PATCH", project, url, obj, d.Timeout(schema.TimeoutUpdate), isMonitoringRetryableError)
+	_, err = sendRequestWithTimeout(config, "PATCH", url, obj, d.Timeout(schema.TimeoutUpdate))
 
 	if err != nil {
 		return fmt.Errorf("Error updating AlertPolicy %q: %s", d.Id(), err)
@@ -986,11 +513,6 @@ func resourceMonitoringAlertPolicyUpdate(d *schema.ResourceData, meta interface{
 func resourceMonitoringAlertPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	project, err := getProject(d, config)
-	if err != nil {
-		return err
-	}
-
 	lockName, err := replaceVars(d, config, "alertPolicy/{{project}}")
 	if err != nil {
 		return err
@@ -998,15 +520,14 @@ func resourceMonitoringAlertPolicyDelete(d *schema.ResourceData, meta interface{
 	mutexKV.Lock(lockName)
 	defer mutexKV.Unlock(lockName)
 
-	url, err := replaceVars(d, config, "{{MonitoringBasePath}}{{name}}")
+	url, err := replaceVars(d, config, "https://monitoring.googleapis.com/v3/{{name}}")
 	if err != nil {
 		return err
 	}
 
 	var obj map[string]interface{}
 	log.Printf("[DEBUG] Deleting AlertPolicy %q", d.Id())
-
-	res, err := sendRequestWithTimeout(config, "DELETE", project, url, obj, d.Timeout(schema.TimeoutDelete), isMonitoringRetryableError)
+	res, err := sendRequestWithTimeout(config, "DELETE", url, obj, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return handleNotFoundError(err, d, "AlertPolicy")
 	}
@@ -1019,27 +540,25 @@ func resourceMonitoringAlertPolicyImport(d *schema.ResourceData, meta interface{
 
 	config := meta.(*Config)
 
-	// current import_formats can't import fields with forward slashes in their value
-	if err := parseImportId([]string{"(?P<name>.+)"}, d, config); err != nil {
-		return nil, err
-	}
+	// current import_formats can't import id's with forward slashes in them.
+	parseImportId([]string{"(?P<name>.+)"}, d, config)
 
 	return []*schema.ResourceData{d}, nil
 }
 
-func flattenMonitoringAlertPolicyName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyName(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyDisplayName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyDisplayName(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyCombiner(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyCombiner(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyCreationRecord(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyCreationRecord(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -1049,24 +568,24 @@ func flattenMonitoringAlertPolicyCreationRecord(v interface{}, d *schema.Resourc
 	}
 	transformed := make(map[string]interface{})
 	transformed["mutate_time"] =
-		flattenMonitoringAlertPolicyCreationRecordMutateTime(original["mutateTime"], d, config)
+		flattenMonitoringAlertPolicyCreationRecordMutateTime(original["mutateTime"], d)
 	transformed["mutated_by"] =
-		flattenMonitoringAlertPolicyCreationRecordMutatedBy(original["mutatedBy"], d, config)
+		flattenMonitoringAlertPolicyCreationRecordMutatedBy(original["mutatedBy"], d)
 	return []interface{}{transformed}
 }
-func flattenMonitoringAlertPolicyCreationRecordMutateTime(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyCreationRecordMutateTime(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyCreationRecordMutatedBy(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyCreationRecordMutatedBy(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyEnabled(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyEnabled(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditions(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditions(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
@@ -1079,15 +598,15 @@ func flattenMonitoringAlertPolicyConditions(v interface{}, d *schema.ResourceDat
 			continue
 		}
 		transformed = append(transformed, map[string]interface{}{
-			"condition_absent":    flattenMonitoringAlertPolicyConditionsConditionAbsent(original["conditionAbsent"], d, config),
-			"name":                flattenMonitoringAlertPolicyConditionsName(original["name"], d, config),
-			"condition_threshold": flattenMonitoringAlertPolicyConditionsConditionThreshold(original["conditionThreshold"], d, config),
-			"display_name":        flattenMonitoringAlertPolicyConditionsDisplayName(original["displayName"], d, config),
+			"condition_absent":    flattenMonitoringAlertPolicyConditionsConditionAbsent(original["conditionAbsent"], d),
+			"name":                flattenMonitoringAlertPolicyConditionsName(original["name"], d),
+			"condition_threshold": flattenMonitoringAlertPolicyConditionsConditionThreshold(original["conditionThreshold"], d),
+			"display_name":        flattenMonitoringAlertPolicyConditionsDisplayName(original["displayName"], d),
 		})
 	}
 	return transformed
 }
-func flattenMonitoringAlertPolicyConditionsConditionAbsent(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsent(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -1097,16 +616,16 @@ func flattenMonitoringAlertPolicyConditionsConditionAbsent(v interface{}, d *sch
 	}
 	transformed := make(map[string]interface{})
 	transformed["aggregations"] =
-		flattenMonitoringAlertPolicyConditionsConditionAbsentAggregations(original["aggregations"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionAbsentAggregations(original["aggregations"], d)
 	transformed["trigger"] =
-		flattenMonitoringAlertPolicyConditionsConditionAbsentTrigger(original["trigger"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionAbsentTrigger(original["trigger"], d)
 	transformed["duration"] =
-		flattenMonitoringAlertPolicyConditionsConditionAbsentDuration(original["duration"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionAbsentDuration(original["duration"], d)
 	transformed["filter"] =
-		flattenMonitoringAlertPolicyConditionsConditionAbsentFilter(original["filter"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionAbsentFilter(original["filter"], d)
 	return []interface{}{transformed}
 }
-func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregations(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregations(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
@@ -1119,31 +638,31 @@ func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregations(v interfa
 			continue
 		}
 		transformed = append(transformed, map[string]interface{}{
-			"per_series_aligner":   flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsPerSeriesAligner(original["perSeriesAligner"], d, config),
-			"group_by_fields":      flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsGroupByFields(original["groupByFields"], d, config),
-			"alignment_period":     flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsAlignmentPeriod(original["alignmentPeriod"], d, config),
-			"cross_series_reducer": flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsCrossSeriesReducer(original["crossSeriesReducer"], d, config),
+			"per_series_aligner":   flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsPerSeriesAligner(original["perSeriesAligner"], d),
+			"group_by_fields":      flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsGroupByFields(original["groupByFields"], d),
+			"alignment_period":     flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsAlignmentPeriod(original["alignmentPeriod"], d),
+			"cross_series_reducer": flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsCrossSeriesReducer(original["crossSeriesReducer"], d),
 		})
 	}
 	return transformed
 }
-func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsGroupByFields(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsGroupByFields(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentTrigger(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentTrigger(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -1153,16 +672,16 @@ func flattenMonitoringAlertPolicyConditionsConditionAbsentTrigger(v interface{},
 	}
 	transformed := make(map[string]interface{})
 	transformed["percent"] =
-		flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerPercent(original["percent"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerPercent(original["percent"], d)
 	transformed["count"] =
-		flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(original["count"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(original["count"], d)
 	return []interface{}{transformed}
 }
-func flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerPercent(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerPercent(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -1172,19 +691,19 @@ func flattenMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(v interfa
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentDuration(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentDuration(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionAbsentFilter(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionAbsentFilter(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsName(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -1194,32 +713,32 @@ func flattenMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d *
 	}
 	transformed := make(map[string]interface{})
 	transformed["threshold_value"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdThresholdValue(original["thresholdValue"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdThresholdValue(original["thresholdValue"], d)
 	transformed["denominator_filter"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorFilter(original["denominatorFilter"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorFilter(original["denominatorFilter"], d)
 	transformed["denominator_aggregations"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregations(original["denominatorAggregations"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregations(original["denominatorAggregations"], d)
 	transformed["duration"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdDuration(original["duration"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdDuration(original["duration"], d)
 	transformed["comparison"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdComparison(original["comparison"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdComparison(original["comparison"], d)
 	transformed["trigger"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdTrigger(original["trigger"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdTrigger(original["trigger"], d)
 	transformed["aggregations"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdAggregations(original["aggregations"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdAggregations(original["aggregations"], d)
 	transformed["filter"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdFilter(original["filter"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdFilter(original["filter"], d)
 	return []interface{}{transformed}
 }
-func flattenMonitoringAlertPolicyConditionsConditionThresholdThresholdValue(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdThresholdValue(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorFilter(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorFilter(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregations(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregations(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
@@ -1232,39 +751,39 @@ func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregat
 			continue
 		}
 		transformed = append(transformed, map[string]interface{}{
-			"per_series_aligner":   flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsPerSeriesAligner(original["perSeriesAligner"], d, config),
-			"group_by_fields":      flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsGroupByFields(original["groupByFields"], d, config),
-			"alignment_period":     flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsAlignmentPeriod(original["alignmentPeriod"], d, config),
-			"cross_series_reducer": flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsCrossSeriesReducer(original["crossSeriesReducer"], d, config),
+			"per_series_aligner":   flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsPerSeriesAligner(original["perSeriesAligner"], d),
+			"group_by_fields":      flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsGroupByFields(original["groupByFields"], d),
+			"alignment_period":     flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsAlignmentPeriod(original["alignmentPeriod"], d),
+			"cross_series_reducer": flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsCrossSeriesReducer(original["crossSeriesReducer"], d),
 		})
 	}
 	return transformed
 }
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsGroupByFields(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsGroupByFields(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdDuration(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdDuration(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdComparison(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdComparison(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdTrigger(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdTrigger(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -1274,16 +793,16 @@ func flattenMonitoringAlertPolicyConditionsConditionThresholdTrigger(v interface
 	}
 	transformed := make(map[string]interface{})
 	transformed["percent"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerPercent(original["percent"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerPercent(original["percent"], d)
 	transformed["count"] =
-		flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(original["count"], d, config)
+		flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(original["count"], d)
 	return []interface{}{transformed}
 }
-func flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerPercent(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerPercent(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(v interface{}, d *schema.ResourceData) interface{} {
 	// Handles the string fixed64 format
 	if strVal, ok := v.(string); ok {
 		if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
@@ -1293,7 +812,7 @@ func flattenMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(v inte
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregations(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregations(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return v
 	}
@@ -1306,47 +825,47 @@ func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregations(v inte
 			continue
 		}
 		transformed = append(transformed, map[string]interface{}{
-			"per_series_aligner":   flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsPerSeriesAligner(original["perSeriesAligner"], d, config),
-			"group_by_fields":      flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsGroupByFields(original["groupByFields"], d, config),
-			"alignment_period":     flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsAlignmentPeriod(original["alignmentPeriod"], d, config),
-			"cross_series_reducer": flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSeriesReducer(original["crossSeriesReducer"], d, config),
+			"per_series_aligner":   flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsPerSeriesAligner(original["perSeriesAligner"], d),
+			"group_by_fields":      flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsGroupByFields(original["groupByFields"], d),
+			"alignment_period":     flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsAlignmentPeriod(original["alignmentPeriod"], d),
+			"cross_series_reducer": flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSeriesReducer(original["crossSeriesReducer"], d),
 		})
 	}
 	return transformed
 }
-func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsGroupByFields(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsGroupByFields(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsConditionThresholdFilter(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsConditionThresholdFilter(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyConditionsDisplayName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyConditionsDisplayName(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyNotificationChannels(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyNotificationChannels(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyUserLabels(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyLabels(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyDocumentation(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyDocumentation(v interface{}, d *schema.ResourceData) interface{} {
 	if v == nil {
 		return nil
 	}
@@ -1356,32 +875,32 @@ func flattenMonitoringAlertPolicyDocumentation(v interface{}, d *schema.Resource
 	}
 	transformed := make(map[string]interface{})
 	transformed["content"] =
-		flattenMonitoringAlertPolicyDocumentationContent(original["content"], d, config)
+		flattenMonitoringAlertPolicyDocumentationContent(original["content"], d)
 	transformed["mime_type"] =
-		flattenMonitoringAlertPolicyDocumentationMimeType(original["mimeType"], d, config)
+		flattenMonitoringAlertPolicyDocumentationMimeType(original["mimeType"], d)
 	return []interface{}{transformed}
 }
-func flattenMonitoringAlertPolicyDocumentationContent(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyDocumentationContent(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func flattenMonitoringAlertPolicyDocumentationMimeType(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+func flattenMonitoringAlertPolicyDocumentationMimeType(v interface{}, d *schema.ResourceData) interface{} {
 	return v
 }
 
-func expandMonitoringAlertPolicyDisplayName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyDisplayName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyCombiner(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyCombiner(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyEnabled(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyEnabled(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditions(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -1424,7 +943,7 @@ func expandMonitoringAlertPolicyConditions(v interface{}, d TerraformResourceDat
 	return req, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsent(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsent(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -1464,7 +983,7 @@ func expandMonitoringAlertPolicyConditionsConditionAbsent(v interface{}, d Terra
 	return transformed, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentAggregations(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentAggregations(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -1507,23 +1026,23 @@ func expandMonitoringAlertPolicyConditionsConditionAbsentAggregations(v interfac
 	return req, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsPerSeriesAligner(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsGroupByFields(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsGroupByFields(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsAlignmentPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsCrossSeriesReducer(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentTrigger(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentTrigger(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -1549,27 +1068,27 @@ func expandMonitoringAlertPolicyConditionsConditionAbsentTrigger(v interface{}, 
 	return transformed, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentTriggerPercent(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentTriggerPercent(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentTriggerCount(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentDuration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentDuration(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionAbsentFilter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionAbsentFilter(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -1637,15 +1156,15 @@ func expandMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d Te
 	return transformed, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdThresholdValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdThresholdValue(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorFilter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorFilter(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregations(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregations(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -1688,31 +1207,31 @@ func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregati
 	return req, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsPerSeriesAligner(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsGroupByFields(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsGroupByFields(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsAlignmentPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsCrossSeriesReducer(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDenominatorAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdDuration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdDuration(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdComparison(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdComparison(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdTrigger(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdTrigger(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -1738,15 +1257,15 @@ func expandMonitoringAlertPolicyConditionsConditionThresholdTrigger(v interface{
 	return transformed, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdTriggerPercent(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdTriggerPercent(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdTriggerCount(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdAggregations(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdAggregations(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	req := make([]interface{}, 0, len(l))
 	for _, raw := range l {
@@ -1789,46 +1308,39 @@ func expandMonitoringAlertPolicyConditionsConditionThresholdAggregations(v inter
 	return req, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsPerSeriesAligner(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsPerSeriesAligner(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsGroupByFields(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsGroupByFields(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsAlignmentPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsAlignmentPeriod(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSeriesReducer(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSeriesReducer(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsConditionThresholdFilter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsConditionThresholdFilter(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyConditionsDisplayName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyConditionsDisplayName(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyNotificationChannels(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyNotificationChannels(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyUserLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
-	if v == nil {
-		return map[string]string{}, nil
-	}
-	m := make(map[string]string)
-	for k, val := range v.(map[string]interface{}) {
-		m[k] = val.(string)
-	}
-	return m, nil
+func expandMonitoringAlertPolicyLabels(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
-func expandMonitoringAlertPolicyDocumentation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyDocumentation(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -1854,17 +1366,10 @@ func expandMonitoringAlertPolicyDocumentation(v interface{}, d TerraformResource
 	return transformed, nil
 }
 
-func expandMonitoringAlertPolicyDocumentationContent(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyDocumentationContent(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandMonitoringAlertPolicyDocumentationMimeType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandMonitoringAlertPolicyDocumentationMimeType(v interface{}, d *schema.ResourceData, config *Config) (interface{}, error) {
 	return v, nil
-}
-
-func resourceMonitoringAlertPolicyDecoder(d *schema.ResourceData, meta interface{}, res map[string]interface{}) (map[string]interface{}, error) {
-	if err := d.Set("labels", nil); err != nil {
-		return res, fmt.Errorf("Error ignoring Removed fields for AlertPolicy: %s", err)
-	}
-	return res, nil
 }

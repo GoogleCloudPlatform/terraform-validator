@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform/helper/schema"
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
 
@@ -22,12 +20,7 @@ var iamBindingSchema = map[string]*schema.Schema{
 		Type:     schema.TypeSet,
 		Required: true,
 		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			DiffSuppressFunc: caseDiffSuppress,
-			ValidateFunc:     validation.StringDoesNotMatch(regexp.MustCompile("^deleted:"), "Terraform does not support IAM bindings for deleted principals"),
-		},
-		Set: func(v interface{}) int {
-			return schema.HashString(strings.ToLower(v.(string)))
+			Type: schema.TypeString,
 		},
 	},
 	"etag": {
@@ -36,25 +29,25 @@ var iamBindingSchema = map[string]*schema.Schema{
 	},
 }
 
-func ResourceIamBinding(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
-	return ResourceIamBindingWithBatching(parentSpecificSchema, newUpdaterFunc, resourceIdParser, IamBatchingDisabled)
-}
-
-// Resource that batches requests to the same IAM policy across multiple IAM fine-grained resources
-func ResourceIamBindingWithBatching(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc, enableBatching bool) *schema.Resource {
+func ResourceIamBinding(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc) *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIamBindingCreateUpdate(newUpdaterFunc, enableBatching),
+		Create: resourceIamBindingCreateUpdate(newUpdaterFunc),
 		Read:   resourceIamBindingRead(newUpdaterFunc),
-		Update: resourceIamBindingCreateUpdate(newUpdaterFunc, enableBatching),
-		Delete: resourceIamBindingDelete(newUpdaterFunc, enableBatching),
+		Update: resourceIamBindingCreateUpdate(newUpdaterFunc),
+		Delete: resourceIamBindingDelete(newUpdaterFunc),
 		Schema: mergeSchemas(iamBindingSchema, parentSpecificSchema),
-		Importer: &schema.ResourceImporter{
-			State: iamBindingImport(newUpdaterFunc, resourceIdParser),
-		},
 	}
 }
 
-func resourceIamBindingCreateUpdate(newUpdaterFunc newResourceIamUpdaterFunc, enableBatching bool) func(*schema.ResourceData, interface{}) error {
+func ResourceIamBindingWithImport(parentSpecificSchema map[string]*schema.Schema, newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) *schema.Resource {
+	r := ResourceIamBinding(parentSpecificSchema, newUpdaterFunc)
+	r.Importer = &schema.ResourceImporter{
+		State: iamBindingImport(resourceIdParser),
+	}
+	return r
+}
+
+func resourceIamBindingCreateUpdate(newUpdaterFunc newResourceIamUpdaterFunc) func(*schema.ResourceData, interface{}) error {
 	return func(d *schema.ResourceData, meta interface{}) error {
 		config := meta.(*Config)
 		updater, err := newUpdaterFunc(d, config)
@@ -62,25 +55,15 @@ func resourceIamBindingCreateUpdate(newUpdaterFunc newResourceIamUpdaterFunc, en
 			return err
 		}
 
-		binding := getResourceIamBinding(d)
-		modifyF := func(ep *cloudresourcemanager.Policy) error {
-			cleaned := filterBindingsWithRoleAndCondition(ep.Bindings, binding.Role, binding.Condition)
-			ep.Bindings = append(cleaned, binding)
-			ep.Version = iamPolicyVersion
+		p := getResourceIamBinding(d)
+		err = iamPolicyReadModifyWrite(updater, func(ep *cloudresourcemanager.Policy) error {
+			ep.Bindings = overwriteBinding(ep.Bindings, p)
 			return nil
-		}
-
-		if enableBatching {
-			err = BatchRequestModifyIamPolicy(updater, modifyF, config, fmt.Sprintf(
-				"Set IAM Binding for role %q on %q", binding.Role, updater.DescribeResource()))
-		} else {
-			err = iamPolicyReadModifyWrite(updater, modifyF)
-		}
+		})
 		if err != nil {
 			return err
 		}
-
-		d.SetId(updater.GetResourceId() + "/" + binding.Role)
+		d.SetId(updater.GetResourceId() + "/" + p.Role)
 		return resourceIamBindingRead(newUpdaterFunc)(d, meta)
 	}
 }
@@ -94,50 +77,50 @@ func resourceIamBindingRead(newUpdaterFunc newResourceIamUpdaterFunc) schema.Rea
 		}
 
 		eBinding := getResourceIamBinding(d)
-		eCondition := conditionKeyFromCondition(eBinding.Condition)
-		p, err := iamPolicyReadWithRetry(updater)
+		p, err := updater.GetResourceIamPolicy()
 		if err != nil {
-			return handleNotFoundError(err, d, fmt.Sprintf("Resource %q with IAM Binding (Role %q)", updater.DescribeResource(), eBinding.Role))
+			if isGoogleApiErrorWithCode(err, 404) {
+				log.Printf("[DEBUG]: Binding for role %q not found for non-existent resource %s, removing from state file.", updater.DescribeResource(), eBinding.Role)
+				d.SetId("")
+				return nil
+			}
+
+			return err
 		}
-		log.Printf("[DEBUG] Retrieved policy for %s: %+v", updater.DescribeResource(), p)
-		log.Printf("[DEBUG] Looking for binding with role %q and condition %+v", eBinding.Role, eCondition)
+		log.Printf("[DEBUG]: Retrieved policy for %s: %+v", updater.DescribeResource(), p)
 
 		var binding *cloudresourcemanager.Binding
 		for _, b := range p.Bindings {
-			if b.Role == eBinding.Role && conditionKeyFromCondition(b.Condition) == eCondition {
-				binding = b
-				break
+			if b.Role != eBinding.Role {
+				continue
 			}
+			binding = b
+			break
 		}
-
 		if binding == nil {
-			log.Printf("[WARNING] Binding for role %q not found, assuming it has no members. If you expected existing members bound for this role, make sure your role is correctly formatted.", eBinding.Role)
-			log.Printf("[DEBUG] Binding for role %q and condition %+v not found in policy for %s, assuming it has no members.", eBinding.Role, eCondition, updater.DescribeResource())
-			d.Set("role", eBinding.Role)
-			d.Set("members", nil)
+			log.Printf("[DEBUG]: Binding for role %q not found in policy for %s, removing from state file.", eBinding.Role, updater.DescribeResource())
+			d.SetId("")
 			return nil
-		} else {
-			d.Set("role", binding.Role)
-			d.Set("members", binding.Members)
 		}
 		d.Set("etag", p.Etag)
+		d.Set("members", binding.Members)
+		d.Set("role", binding.Role)
 		return nil
 	}
 }
 
-func iamBindingImport(newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser resourceIdParserFunc) schema.StateFunc {
+func iamBindingImport(resourceIdParser resourceIdParserFunc) schema.StateFunc {
 	return func(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 		if resourceIdParser == nil {
 			return nil, errors.New("Import not supported for this IAM resource.")
 		}
 		config := m.(*Config)
 		s := strings.Fields(d.Id())
-		var id, role string
 		if len(s) != 2 {
 			d.SetId("")
 			return nil, fmt.Errorf("Wrong number of parts to Binding id %s; expected 'resource_name role'.", s)
 		}
-		id, role = s[0], s[1]
+		id, role := s[0], s[1]
 
 		// Set the ID only to the first part so all IAM types can share the same resourceIdParserFunc.
 		d.SetId(id)
@@ -150,7 +133,6 @@ func iamBindingImport(newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser
 		// Set the ID again so that the ID matches the ID it would have if it had been created via TF.
 		// Use the current ID in case it changed in the resourceIdParserFunc.
 		d.SetId(d.Id() + "/" + role)
-
 		// It is possible to return multiple bindings, since we can learn about all the bindings
 		// for this resource here.  Unfortunately, `terraform import` has some messy behavior here -
 		// there's no way to know at this point which resource is being imported, so it's not possible
@@ -165,7 +147,7 @@ func iamBindingImport(newUpdaterFunc newResourceIamUpdaterFunc, resourceIdParser
 	}
 }
 
-func resourceIamBindingDelete(newUpdaterFunc newResourceIamUpdaterFunc, enableBatching bool) schema.DeleteFunc {
+func resourceIamBindingDelete(newUpdaterFunc newResourceIamUpdaterFunc) schema.DeleteFunc {
 	return func(d *schema.ResourceData, meta interface{}) error {
 		config := meta.(*Config)
 		updater, err := newUpdaterFunc(d, config)
@@ -174,19 +156,29 @@ func resourceIamBindingDelete(newUpdaterFunc newResourceIamUpdaterFunc, enableBa
 		}
 
 		binding := getResourceIamBinding(d)
-		modifyF := func(p *cloudresourcemanager.Policy) error {
-			p.Bindings = filterBindingsWithRoleAndCondition(p.Bindings, binding.Role, binding.Condition)
-			return nil
-		}
+		err = iamPolicyReadModifyWrite(updater, func(p *cloudresourcemanager.Policy) error {
+			toRemove := -1
+			for pos, b := range p.Bindings {
+				if b.Role != binding.Role {
+					continue
+				}
+				toRemove = pos
+				break
+			}
+			if toRemove < 0 {
+				log.Printf("[DEBUG]: Policy bindings for %s did not include a binding for role %q", updater.DescribeResource(), binding.Role)
+				return nil
+			}
 
-		if enableBatching {
-			err = BatchRequestModifyIamPolicy(updater, modifyF, config, fmt.Sprintf(
-				"Delete IAM Binding for role %q on %q", binding.Role, updater.DescribeResource()))
-		} else {
-			err = iamPolicyReadModifyWrite(updater, modifyF)
-		}
+			p.Bindings = append(p.Bindings[:toRemove], p.Bindings[toRemove+1:]...)
+			return nil
+		})
 		if err != nil {
-			return handleNotFoundError(err, d, fmt.Sprintf("Resource %q for IAM binding with role %q", updater.DescribeResource(), binding.Role))
+			if isGoogleApiErrorWithCode(err, 404) {
+				log.Printf("[DEBUG]: Resource %s is missing or deleted, marking policy binding as deleted", updater.DescribeResource())
+				return nil
+			}
+			return err
 		}
 
 		return resourceIamBindingRead(newUpdaterFunc)(d, meta)
@@ -195,9 +187,8 @@ func resourceIamBindingDelete(newUpdaterFunc newResourceIamUpdaterFunc, enableBa
 
 func getResourceIamBinding(d *schema.ResourceData) *cloudresourcemanager.Binding {
 	members := d.Get("members").(*schema.Set).List()
-	b := &cloudresourcemanager.Binding{
+	return &cloudresourcemanager.Binding{
 		Members: convertStringArr(members),
 		Role:    d.Get("role").(string),
 	}
-	return b
 }

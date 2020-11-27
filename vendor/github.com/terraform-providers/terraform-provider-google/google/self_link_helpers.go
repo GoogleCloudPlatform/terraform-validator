@@ -7,14 +7,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/hashcode"
+	"github.com/hashicorp/terraform/helper/schema"
 )
-
-// Compare only the resource name of two self links/paths.
-func compareResourceNames(_, old, new string, _ *schema.ResourceData) bool {
-	return GetResourceNameFromSelfLink(old) == GetResourceNameFromSelfLink(new)
-}
 
 // Compare only the relative path of two self links.
 func compareSelfLinkRelativePaths(_, old, new string, _ *schema.ResourceData) bool {
@@ -111,7 +106,15 @@ func GetRegionalResourcePropertiesFromSelfLinkOrSchema(d *schema.ResourceData, c
 
 func getResourcePropertiesFromSelfLinkOrSchema(d *schema.ResourceData, config *Config, locationType LocationType) (string, string, string, error) {
 	if selfLink, ok := d.GetOk("self_link"); ok {
-		return GetLocationalResourcePropertiesFromSelfLinkString(selfLink.(string))
+		parsed, err := url.Parse(selfLink.(string))
+		if err != nil {
+			return "", "", "", err
+		}
+
+		s := strings.Split(parsed.Path, "/")
+		// https://www.googleapis.com/compute/beta/projects/project_name/regions/region_name/instanceGroups/foobarbaz
+		// =>  project_name, region_name, foobarbaz
+		return s[4], s[6], s[8], nil
 	} else {
 		project, err := getProject(d, config)
 		if err != nil {
@@ -138,35 +141,4 @@ func getResourcePropertiesFromSelfLinkOrSchema(d *schema.ResourceData, config *C
 		}
 		return project, location, name, nil
 	}
-}
-
-// given a full locational (non-global) self link, returns the project + region/zone + name or an error
-func GetLocationalResourcePropertiesFromSelfLinkString(selfLink string) (string, string, string, error) {
-	parsed, err := url.Parse(selfLink)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	s := strings.Split(parsed.Path, "/")
-
-	// This is a pretty bad way to tell if this is a self link, but stops us
-	// from accessing an index out of bounds and causing a panic. generally, we
-	// expect bad values to be partial URIs and names, so this will catch them
-	if len(s) < 9 {
-		return "", "", "", fmt.Errorf("value %s was not a self link", selfLink)
-	}
-
-	return s[4], s[6], s[8], nil
-}
-
-// return the region a selfLink is referring to
-func GetRegionFromRegionSelfLink(selfLink string) string {
-	re := regexp.MustCompile("/compute/[a-zA-Z0-9]*/projects/[a-zA-Z0-9-]*/regions/([a-zA-Z0-9-]*)")
-	switch {
-	case re.MatchString(selfLink):
-		if res := re.FindStringSubmatch(selfLink); len(res) == 2 && res[1] != "" {
-			return res[1]
-		}
-	}
-	return selfLink
 }

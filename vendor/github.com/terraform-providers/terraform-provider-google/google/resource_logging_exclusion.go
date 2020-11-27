@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"google.golang.org/api/logging/v2"
 )
 
@@ -54,11 +54,6 @@ func resourceLoggingExclusionCreate(newUpdaterFunc newResourceLoggingExclusionUp
 
 		id, exclusion := expandResourceLoggingExclusion(d, updater.GetResourceType(), updater.GetResourceId())
 
-		// Logging exclusions don't seem to be able to be mutated in parallel, see
-		// https://github.com/terraform-providers/terraform-provider-google/issues/4796
-		mutexKV.Lock(id.parent())
-		defer mutexKV.Unlock(id.parent())
-
 		err = updater.CreateLoggingExclusion(id.parent(), exclusion)
 		if err != nil {
 			return err
@@ -102,13 +97,7 @@ func resourceLoggingExclusionUpdate(newUpdaterFunc newResourceLoggingExclusionUp
 			return err
 		}
 
-		id, _ := expandResourceLoggingExclusion(d, updater.GetResourceType(), updater.GetResourceId())
 		exclusion, updateMask := expandResourceLoggingExclusionForUpdate(d)
-
-		// Logging exclusions don't seem to be able to be mutated in parallel, see
-		// https://github.com/terraform-providers/terraform-provider-google/issues/4796
-		mutexKV.Lock(id.parent())
-		defer mutexKV.Unlock(id.parent())
 
 		err = updater.UpdateLoggingExclusion(d.Id(), exclusion, updateMask)
 		if err != nil {
@@ -126,12 +115,6 @@ func resourceLoggingExclusionDelete(newUpdaterFunc newResourceLoggingExclusionUp
 		if err != nil {
 			return err
 		}
-
-		id, _ := expandResourceLoggingExclusion(d, updater.GetResourceType(), updater.GetResourceId())
-		// Logging exclusions don't seem to be able to be mutated in parallel, see
-		// https://github.com/terraform-providers/terraform-provider-google/issues/4796
-		mutexKV.Lock(id.parent())
-		defer mutexKV.Unlock(id.parent())
 
 		err = updater.DeleteLoggingExclusion(d.Id())
 		if err != nil {

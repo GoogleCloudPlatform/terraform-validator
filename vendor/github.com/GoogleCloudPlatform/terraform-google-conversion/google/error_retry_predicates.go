@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	"golang.org/x/oauth2"
 	"google.golang.org/api/googleapi"
+	sqladmin "google.golang.org/api/sqladmin/v1beta4"
 )
 
 type RetryErrorPredicateFunc func(error) (bool, string)
@@ -72,21 +72,7 @@ const connectionResetByPeerErr = ": connection reset by peer"
 
 func isConnectionResetNetworkError(err error) (bool, string) {
 	if strings.HasSuffix(err.Error(), connectionResetByPeerErr) {
-		//TODO(emilymye, TPG#3957): Remove these debug logs
-		log.Printf("[DEBUG] Found connection reset by peer error of type %T", err)
-		switch err.(type) {
-		case *url.Error:
-		case *net.OpError:
-			log.Printf("[DEBUG] Connection reset error returned from net/url")
-		case *googleapi.Error:
-			log.Printf("[DEBUG] Connection reset error wrapped by googleapi.Error")
-		case *oauth2.RetrieveError:
-			log.Printf("[DEBUG] Connection reset error wrapped by oauth2")
-		default:
-			log.Printf("[DEBUG] Connection reset error wrapped by %T", err)
-		}
-
-		return true, fmt.Sprintf("reset connection")
+		return true, fmt.Sprintf("reset connection error: %v", err)
 	}
 	return false, ""
 }
@@ -96,7 +82,7 @@ func isConnectionResetNetworkError(err error) (bool, string) {
 //
 //The only way right now to determine it is a retryable 409 due to
 // concurrent calls is to look at the contents of the error message.
-// See https://github.com/terraform-providers/terraform-provider-google/issues/3279
+// See https://github.com/hashicorp/terraform-provider-google/issues/3279
 func is409OperationInProgressError(err error) (bool, string) {
 	gerr, ok := err.(*googleapi.Error)
 	if !ok {
@@ -164,13 +150,29 @@ func iamMemberMissing(err error) (bool, string) {
 
 // Cloud PubSub returns a 400 error if a topic's parent project was recently created and an
 // organization policy has not propagated.
-// See https://github.com/terraform-providers/terraform-provider-google/issues/4349
+// See https://github.com/hashicorp/terraform-provider-google/issues/4349
 func pubsubTopicProjectNotReady(err error) (bool, string) {
 	if gerr, ok := err.(*googleapi.Error); ok {
 		if gerr.Code == 400 && strings.Contains(gerr.Body, "retry this operation") {
 			log.Printf("[DEBUG] Dismissed error as a retryable operation: %s", err)
 			return true, "Waiting for Pubsub topic's project to properly initialize with organiation policy"
 		}
+	}
+	return false, ""
+}
+
+// Retry if Cloud SQL operation returns a 429 with a specific message for
+// concurrent operations.
+func isSqlInternalError(err error) (bool, string) {
+	if gerr, ok := err.(*SqlAdminOperationError); ok {
+		// SqlAdminOperationError is a non-interface type so we need to cast it through
+		// a layer of interface{}.  :)
+		var ierr interface{}
+		ierr = gerr
+		if serr, ok := ierr.(*sqladmin.OperationErrors); ok && serr.Errors[0].Code == "INTERNAL_ERROR" {
+			return true, "Received an internal error, which is sometimes retryable for some SQL resources.  Optimistically retrying."
+		}
+
 	}
 	return false, ""
 }
@@ -188,23 +190,60 @@ func isSqlOperationInProgressError(err error) (bool, string) {
 	return false, ""
 }
 
-// Retry if Monitoring operation returns a 429 with a specific message for
-// concurrent operations.
-func isMonitoringRetryableError(err error) (bool, string) {
+// Retry if service usage decides you're activating the same service multiple
+// times. This can happen if a service and a dependent service aren't batched
+// together- eg container.googleapis.com in one request followed by compute.g.c
+// in the next (container relies on compute and implicitly activates it)
+func serviceUsageServiceBeingActivated(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 400 {
+		if strings.Contains(gerr.Body, "Another activation or deactivation is in progress") {
+			return true, "Waiting for same service activation/deactivation to finish"
+		}
+
+		return false, ""
+	}
+	return false, ""
+}
+
+// Retry if Bigquery operation returns a 403 with a specific message for
+// concurrent operations (which are implemented in terms of 'edit quota').
+func isBigqueryIAMQuotaError(err error) (bool, string) {
 	if gerr, ok := err.(*googleapi.Error); ok {
-		if gerr.Code == 409 && strings.Contains(strings.ToLower(gerr.Body), "too many concurrent edits") {
+		if gerr.Code == 403 && strings.Contains(strings.ToLower(gerr.Body), "exceeded rate limits") {
+			return true, "Waiting for Bigquery edit quota to refresh"
+		}
+	}
+	return false, ""
+}
+
+// Retry if Monitoring operation returns a 409 with a specific message for
+// concurrent operations.
+func isMonitoringConcurrentEditError(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok {
+		if gerr.Code == 409 && (strings.Contains(strings.ToLower(gerr.Body), "too many concurrent edits") ||
+			strings.Contains(strings.ToLower(gerr.Body), "could not fulfill the request")) {
 			return true, "Waiting for other Monitoring changes to finish"
 		}
 	}
 	return false, ""
 }
 
-// Retry if App Engine operation returns a 429 with a specific message for
+// Retry if App Engine operation returns a 409 with a specific message for
 // concurrent operations.
 func isAppEngineRetryableError(err error) (bool, string) {
 	if gerr, ok := err.(*googleapi.Error); ok {
 		if gerr.Code == 409 && strings.Contains(strings.ToLower(gerr.Body), "operation is already in progress") {
 			return true, "Waiting for other concurrent App Engine changes to finish"
+		}
+	}
+	return false, ""
+}
+
+// Retry if KMS CryptoKeyVersions returns a 400 for PENDING_GENERATION
+func isCryptoKeyVersionsPendingGeneration(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 400 {
+		if strings.Contains(gerr.Body, "PENDING_GENERATION") {
+			return true, "Waiting for pending key generation"
 		}
 	}
 	return false, ""
@@ -219,4 +258,56 @@ func isNotFoundRetryableError(opType string) RetryErrorPredicateFunc {
 		}
 		return false, ""
 	}
+}
+
+func isStoragePreconditionError(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 412 {
+		return true, fmt.Sprintf("Retry on storage precondition not met")
+	}
+	return false, ""
+}
+
+func isDataflowJobUpdateRetryableError(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok {
+		if gerr.Code == 404 && strings.Contains(gerr.Body, "in RUNNING OR DRAINING state") {
+			return true, "Waiting for job to be in a valid state"
+		}
+	}
+	return false, ""
+}
+
+func isPeeringOperationInProgress(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok {
+		if gerr.Code == 400 && strings.Contains(gerr.Body, "There is a peering operation in progress") {
+			return true, "Waiting peering operation to complete"
+		}
+	}
+	return false, ""
+}
+
+func isCloudFunctionsSourceCodeError(err error) (bool, string) {
+	if operr, ok := err.(*CommonOpError); ok {
+		if operr.Code == 3 && operr.Message == "Failed to retrieve function source code" {
+			return true, fmt.Sprintf("Retry on Function failing to pull code from GCS")
+		}
+	}
+	return false, ""
+}
+
+func datastoreIndex409Contention(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok {
+		if gerr.Code == 409 && strings.Contains(gerr.Body, "too much contention") {
+			return true, "too much contention - waiting for less activity"
+		}
+	}
+	return false, ""
+}
+
+func iapClient409Operation(err error) (bool, string) {
+	if gerr, ok := err.(*googleapi.Error); ok {
+		if gerr.Code == 409 && strings.Contains(strings.ToLower(gerr.Body), "operation was aborted") {
+			return true, "operation was aborted possibly due to concurrency issue - retrying"
+		}
+	}
+	return false, ""
 }

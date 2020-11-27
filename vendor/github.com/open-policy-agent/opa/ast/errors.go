@@ -6,7 +6,6 @@ package ast
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 )
 
@@ -30,21 +29,6 @@ func (e Errors) Error() string {
 	}
 
 	return fmt.Sprintf("%d errors occurred:\n%s", len(e), strings.Join(s, "\n"))
-}
-
-// Sort sorts the error slice by location. If the locations are equal then the
-// error message is compared.
-func (e Errors) Sort() {
-	sort.Slice(e, func(i, j int) bool {
-		a := e[i]
-		b := e[j]
-
-		if cmp := a.Location.Compare(b.Location); cmp != 0 {
-			return cmp < 0
-		}
-
-		return a.Error() < b.Error()
-	})
 }
 
 const (
@@ -120,14 +104,4 @@ func NewError(code string, loc *Location, f string, a ...interface{}) *Error {
 		Location: loc,
 		Message:  fmt.Sprintf(f, a...),
 	}
-}
-
-var (
-	errPartialRuleAssignOperator = fmt.Errorf("partial rules must use = operator (not := operator)")
-	errElseAssignOperator        = fmt.Errorf("else keyword cannot be used on rule declared with := operator")
-	errFunctionAssignOperator    = fmt.Errorf("functions must use = operator (not := operator)")
-)
-
-func errTermAssignOperator(x interface{}) error {
-	return fmt.Errorf("cannot assign to %v", TypeName(x))
 }

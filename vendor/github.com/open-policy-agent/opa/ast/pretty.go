@@ -18,7 +18,7 @@ func Pretty(w io.Writer, x interface{}) {
 		depth: -1,
 		w:     w,
 	}
-	NewBeforeAfterVisitor(pp.Before, pp.After).Walk(x)
+	WalkBeforeAndAfter(pp, x)
 }
 
 type prettyPrinter struct {
@@ -26,19 +26,29 @@ type prettyPrinter struct {
 	w     io.Writer
 }
 
-func (pp *prettyPrinter) Before(x interface{}) bool {
+func (pp *prettyPrinter) Before(x interface{}) {
 	switch x.(type) {
 	case *Term:
 	default:
 		pp.depth++
 	}
+}
 
+func (pp *prettyPrinter) After(x interface{}) {
+	switch x.(type) {
+	case *Term:
+	default:
+		pp.depth--
+	}
+}
+
+func (pp *prettyPrinter) Visit(x interface{}) Visitor {
 	switch x := x.(type) {
 	case *Term:
-		return false
+		return pp
 	case Args:
 		if len(x) == 0 {
-			return false
+			return pp
 		}
 		pp.writeType(x)
 	case *Expr:
@@ -53,15 +63,7 @@ func (pp *prettyPrinter) Before(x interface{}) bool {
 	default:
 		pp.writeType(x)
 	}
-	return false
-}
-
-func (pp *prettyPrinter) After(x interface{}) {
-	switch x.(type) {
-	case *Term:
-	default:
-		pp.depth--
-	}
+	return pp
 }
 
 func (pp *prettyPrinter) writeValue(x interface{}) {

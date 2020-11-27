@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func defaultBinaryAuthorizationPolicy(project string) map[string]interface{} {
@@ -140,20 +140,29 @@ func expandBinaryAuthorizationPolicyClusterAdmissionRules(v interface{}, d Terra
 		transformedEvaluationMode, err := expandBinaryAuthorizationPolicyClusterAdmissionRulesEvaluationMode(original["evaluation_mode"], d, config)
 		if err != nil {
 			return nil, err
+		} else if val := reflect.ValueOf(transformedEvaluationMode); val.IsValid() && !isEmptyValue(val) {
+			transformed["evaluationMode"] = transformedEvaluationMode
 		}
-		transformed["evaluationMode"] = transformedEvaluationMode
+
 		transformedRequireAttestationsBy, err := expandBinaryAuthorizationPolicyClusterAdmissionRulesRequireAttestationsBy(original["require_attestations_by"], d, config)
 		if err != nil {
 			return nil, err
+		} else if val := reflect.ValueOf(transformedRequireAttestationsBy); val.IsValid() && !isEmptyValue(val) {
+			transformed["requireAttestationsBy"] = transformedRequireAttestationsBy
 		}
-		transformed["requireAttestationsBy"] = transformedRequireAttestationsBy
+
 		transformedEnforcementMode, err := expandBinaryAuthorizationPolicyClusterAdmissionRulesEnforcementMode(original["enforcement_mode"], d, config)
 		if err != nil {
 			return nil, err
+		} else if val := reflect.ValueOf(transformedEnforcementMode); val.IsValid() && !isEmptyValue(val) {
+			transformed["enforcementMode"] = transformedEnforcementMode
 		}
-		transformed["enforcementMode"] = transformedEnforcementMode
 
-		m[original["cluster"].(string)] = transformed
+		transformedCluster, err := expandString(original["cluster"], d, config)
+		if err != nil {
+			return nil, err
+		}
+		m[transformedCluster] = transformed
 	}
 	return m, nil
 }

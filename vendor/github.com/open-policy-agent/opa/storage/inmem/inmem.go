@@ -81,10 +81,8 @@ type handle struct {
 
 func (db *store) NewTransaction(ctx context.Context, params ...storage.TransactionParams) (storage.Transaction, error) {
 	var write bool
-	var context *storage.Context
 	if len(params) > 0 {
 		write = params[0].Write
-		context = params[0].Context
 	}
 	xid := atomic.AddUint64(&db.xid, uint64(1))
 	if write {
@@ -92,22 +90,16 @@ func (db *store) NewTransaction(ctx context.Context, params ...storage.Transacti
 	} else {
 		db.rmu.RLock()
 	}
-	return newTransaction(xid, write, context, db), nil
+	return newTransaction(xid, write, db), nil
 }
 
 func (db *store) Commit(ctx context.Context, txn storage.Transaction) error {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return err
-	}
+	underlying := txn.(*transaction)
 	if underlying.write {
 		db.rmu.Lock()
 		event := underlying.Commit()
 		db.indices = newIndices()
 		db.runOnCommitTriggers(ctx, txn, event)
-		// Mark the transaction stale after executing triggers so they can
-		// perform store operations if needed.
-		underlying.stale = true
 		db.rmu.Unlock()
 		db.wmu.Unlock()
 	} else {
@@ -117,11 +109,7 @@ func (db *store) Commit(ctx context.Context, txn storage.Transaction) error {
 }
 
 func (db *store) Abort(ctx context.Context, txn storage.Transaction) {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		panic(err)
-	}
-	underlying.stale = true
+	underlying := txn.(*transaction)
 	if underlying.write {
 		db.wmu.Unlock()
 	} else {
@@ -130,34 +118,22 @@ func (db *store) Abort(ctx context.Context, txn storage.Transaction) {
 }
 
 func (db *store) ListPolicies(_ context.Context, txn storage.Transaction) ([]string, error) {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return nil, err
-	}
+	underlying := txn.(*transaction)
 	return underlying.ListPolicies(), nil
 }
 
 func (db *store) GetPolicy(_ context.Context, txn storage.Transaction, id string) ([]byte, error) {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return nil, err
-	}
+	underlying := txn.(*transaction)
 	return underlying.GetPolicy(id)
 }
 
 func (db *store) UpsertPolicy(_ context.Context, txn storage.Transaction, id string, bs []byte) error {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return err
-	}
+	underlying := txn.(*transaction)
 	return underlying.UpsertPolicy(id, bs)
 }
 
 func (db *store) DeletePolicy(_ context.Context, txn storage.Transaction, id string) error {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return err
-	}
+	underlying := txn.(*transaction)
 	if _, err := underlying.GetPolicy(id); err != nil {
 		return err
 	}
@@ -165,10 +141,7 @@ func (db *store) DeletePolicy(_ context.Context, txn storage.Transaction, id str
 }
 
 func (db *store) Register(ctx context.Context, txn storage.Transaction, config storage.TriggerConfig) (storage.TriggerHandle, error) {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return nil, err
-	}
+	underlying := txn.(*transaction)
 	if !underlying.write {
 		return nil, &storage.Error{
 			Code:    storage.InvalidTransactionErr,
@@ -181,18 +154,12 @@ func (db *store) Register(ctx context.Context, txn storage.Transaction, config s
 }
 
 func (db *store) Read(ctx context.Context, txn storage.Transaction, path storage.Path) (interface{}, error) {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return nil, err
-	}
+	underlying := txn.(*transaction)
 	return underlying.Read(path)
 }
 
 func (db *store) Write(ctx context.Context, txn storage.Transaction, op storage.PatchOp, path storage.Path, value interface{}) error {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return err
-	}
+	underlying := txn.(*transaction)
 	val := util.Reference(value)
 	if err := util.RoundTrip(val); err != nil {
 		return err
@@ -201,10 +168,7 @@ func (db *store) Write(ctx context.Context, txn storage.Transaction, op storage.
 }
 
 func (db *store) Build(ctx context.Context, txn storage.Transaction, ref ast.Ref) (storage.Index, error) {
-	underlying, err := db.underlying(txn)
-	if err != nil {
-		return nil, err
-	}
+	underlying := txn.(*transaction)
 	if underlying.write {
 		return nil, &storage.Error{
 			Code:    storage.IndexingNotSupportedErr,
@@ -215,15 +179,9 @@ func (db *store) Build(ctx context.Context, txn storage.Transaction, ref ast.Ref
 }
 
 func (h *handle) Unregister(ctx context.Context, txn storage.Transaction) {
-	underlying, err := h.db.underlying(txn)
-	if err != nil {
-		panic(err)
-	}
+	underlying := txn.(*transaction)
 	if !underlying.write {
-		panic(&storage.Error{
-			Code:    storage.InvalidTransactionErr,
-			Message: "triggers must be unregistered with a write transaction",
-		})
+		return
 	}
 	delete(h.db.triggers, h)
 }
@@ -232,29 +190,6 @@ func (db *store) runOnCommitTriggers(ctx context.Context, txn storage.Transactio
 	for _, t := range db.triggers {
 		t.OnCommit(ctx, txn, event)
 	}
-}
-
-func (db *store) underlying(txn storage.Transaction) (*transaction, error) {
-	underlying, ok := txn.(*transaction)
-	if !ok {
-		return nil, &storage.Error{
-			Code:    storage.InvalidTransactionErr,
-			Message: fmt.Sprintf("unexpected transaction type %T", txn),
-		}
-	}
-	if underlying.db != db {
-		return nil, &storage.Error{
-			Code:    storage.InvalidTransactionErr,
-			Message: "unknown transaction",
-		}
-	}
-	if underlying.stale {
-		return nil, &storage.Error{
-			Code:    storage.InvalidTransactionErr,
-			Message: "stale transaction",
-		}
-	}
-	return underlying, nil
 }
 
 var doesNotExistMsg = "document does not exist"

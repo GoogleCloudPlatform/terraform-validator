@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func GetComputeRouteCaiObject(d TerraformResourceData, config *Config) (Asset, error) {
@@ -158,7 +158,13 @@ func expandComputeRouteNextHopInstance(v interface{}, d TerraformResourceData, c
 	if err != nil {
 		return nil, err
 	}
-	nextInstance, err := config.clientCompute.Instances.Get(val.Project, val.Zone, val.Name).Do()
+
+	userAgent, err := generateUserAgentString(d.(*schema.ResourceData), config.userAgent)
+	if err != nil {
+		return nil, err
+	}
+
+	nextInstance, err := config.NewComputeClient(userAgent).Instances.Get(val.Project, val.Zone, val.Name).Do()
 	if err != nil {
 		return nil, err
 	}

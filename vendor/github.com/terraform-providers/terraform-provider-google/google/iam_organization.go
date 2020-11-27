@@ -3,7 +3,7 @@ package google
 import (
 	"fmt"
 	"github.com/hashicorp/errwrap"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/schema"
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
 
@@ -43,8 +43,7 @@ func (u *OrganizationIamUpdater) GetResourceIamPolicy() (*cloudresourcemanager.P
 
 func (u *OrganizationIamUpdater) SetResourceIamPolicy(policy *cloudresourcemanager.Policy) error {
 	_, err := u.Config.clientResourceManager.Organizations.SetIamPolicy("organizations/"+u.resourceId, &cloudresourcemanager.SetIamPolicyRequest{
-		Policy:     policy,
-		UpdateMask: "bindings,etag,auditConfigs",
+		Policy: policy,
 	}).Do()
 
 	if err != nil {

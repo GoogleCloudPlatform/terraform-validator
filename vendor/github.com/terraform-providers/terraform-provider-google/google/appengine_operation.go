@@ -1,7 +1,6 @@
 package google
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -29,40 +28,13 @@ func (w *AppEngineOperationWaiter) QueryOp() (interface{}, error) {
 	return w.Service.Apps.Operations.Get(w.AppId, matches[1]).Do()
 }
 
-func appEngineOperationWait(config *Config, res interface{}, appId, activity string) error {
-	return appEngineOperationWaitTime(config, res, appId, activity, 4)
+func appEngineOperationWait(client *appengine.APIService, op *appengine.Operation, appId, activity string) error {
+	return appEngineOperationWaitTime(client, op, appId, activity, 4)
 }
 
-func appEngineOperationWaitTimeWithResponse(config *Config, res interface{}, response *map[string]interface{}, appId, activity string, timeoutMinutes int) error {
-	op := &appengine.Operation{}
-	err := Convert(res, op)
-	if err != nil {
-		return err
-	}
-
+func appEngineOperationWaitTime(client *appengine.APIService, op *appengine.Operation, appId, activity string, timeoutMinutes int) error {
 	w := &AppEngineOperationWaiter{
-		Service: config.clientAppEngine,
-		AppId:   appId,
-	}
-
-	if err := w.SetOp(op); err != nil {
-		return err
-	}
-	if err := OperationWait(w, activity, timeoutMinutes); err != nil {
-		return err
-	}
-	return json.Unmarshal([]byte(w.CommonOperationWaiter.Op.Response), response)
-}
-
-func appEngineOperationWaitTime(config *Config, res interface{}, appId, activity string, timeoutMinutes int) error {
-	op := &appengine.Operation{}
-	err := Convert(res, op)
-	if err != nil {
-		return err
-	}
-
-	w := &AppEngineOperationWaiter{
-		Service: config.clientAppEngine,
+		Service: client,
 		AppId:   appId,
 	}
 

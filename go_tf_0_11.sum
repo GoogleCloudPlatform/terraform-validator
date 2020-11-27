@@ -17,6 +17,8 @@ github.com/Azure/go-autorest v9.10.0+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSW
 github.com/Azure/go-ntlmssp v0.0.0-20170803034930-c92175d54006/go.mod h1:chxPXzSsl7ZWRAuOIE23GDNzjWuZquvFlgA8xmpunjU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/ChrisTrenkamp/goxpath v0.0.0-20170625215350-4fe035839290/go.mod h1:nuWgzSkT5PnyOd+272uUmV0dnAnAn42Mk7PiQC5VzN4=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124163654-f879c81c3537 h1:azDxeygwpGRr/NqX0ovCsA7la9O3U3ECUXkMd+rX41A=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124163654-f879c81c3537/go.mod h1:b0GkEVKI9wUxN73hyjSuuDNm8P8OcYa7zvC8IEpDuGw=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190325171836-c132dda4b40e h1:7tnwcnO2rWMslyWBJ2AauLwyOFfe0/a05D9EJUrgDdA=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190325171836-c132dda4b40e/go.mod h1:h6B4mW5ReeQWi4BLswuDHcRe8oRH1RdmwSEpbd1iKt0=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190327232551-57edfa38874c h1:y1SJ2UPs8QfaLxYr+LDFeo5Sdpiy37kUYzHhKqhJGnA=
@@ -25,6 +27,8 @@ github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190403215538-710bfbc3d74a/go.mod h1:h6B4mW5ReeQWi4BLswuDHcRe8oRH1RdmwSEpbd1iKt0=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190517181531-30d4358dc839 h1:mVWFcWpP2aE8hPHYLtVj3eE/Pj0qzZPWyCtKbOwbMJU=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20190517181531-30d4358dc839/go.mod h1:f6m1zQRQrAiGbGErm7Dl8MF9UyzykcTb12oiAWm5ric=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124231328-f0e44e8b2041 h1:0hq11SIOUgTMt5tgXmwvNIgxYRwG2hQ/Cc1IATNOi7E=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124231328-f0e44e8b2041/go.mod h1:b0GkEVKI9wUxN73hyjSuuDNm8P8OcYa7zvC8IEpDuGw=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OneOfOne/xxhash v1.2.5 h1:zl/OfRA6nftbBK9qTohYBJ5xvw6C/oNKizR7cZGl3cI=
 github.com/OneOfOne/xxhash v1.2.5/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=

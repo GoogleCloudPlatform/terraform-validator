@@ -13,11 +13,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/open-policy-agent/opa/loader"
-	"github.com/open-policy-agent/opa/types"
-
-	"github.com/open-policy-agent/opa/bundle"
-
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/internal/compiler/wasm"
 	"github.com/open-policy-agent/opa/internal/ir"
@@ -48,26 +43,18 @@ type PartialQueries struct {
 // PartialResult represents the result of partial evaluation. The result can be
 // used to generate a new query that can be run when inputs are known.
 type PartialResult struct {
-	compiler     *ast.Compiler
-	store        storage.Store
-	body         ast.Body
-	builtinDecls map[string]*ast.Builtin
-	builtinFuncs map[string]*topdown.Builtin
+	compiler *ast.Compiler
+	store    storage.Store
+	body     ast.Body
 }
 
 // Rego returns an object that can be evaluated to produce a query result.
+// If rego.Rego#Prepare was used to create the PartialResult this may lose
+// the pre-parsed/compiled parts of the original Rego object. In those cases
+// using rego.PartialResult#Eval is likely to be more performant.
 func (pr PartialResult) Rego(options ...func(*Rego)) *Rego {
 	options = append(options, Compiler(pr.compiler), Store(pr.store), ParsedQuery(pr.body))
-	r := New(options...)
-
-	// Propagate any custom builtins.
-	for k, v := range pr.builtinDecls {
-		r.builtinDecls[k] = v
-	}
-	for k, v := range pr.builtinFuncs {
-		r.builtinFuncs[k] = v
-	}
-	return r
+	return New(options...)
 }
 
 // preparedQuery is a wrapper around a Rego object which has pre-processed
@@ -93,9 +80,7 @@ type EvalContext struct {
 	tracers          []topdown.Tracer
 	compiledQuery    compiledQuery
 	unknowns         []string
-	disableInlining  []ast.Ref
 	parsedUnknowns   []*ast.Term
-	indexing         bool
 }
 
 // EvalOption defines a function to set an option on an EvalConfig
@@ -164,14 +149,6 @@ func EvalUnknowns(unknowns []string) EvalOption {
 	}
 }
 
-// EvalDisableInlining returns an argument that adds a set of paths to exclude from
-// partial evaluation inlining.
-func EvalDisableInlining(paths []ast.Ref) EvalOption {
-	return func(e *EvalContext) {
-		e.disableInlining = paths
-	}
-}
-
 // EvalParsedUnknowns returns an argument that sets the values to treat
 // as unknown during partial evaluation.
 func EvalParsedUnknowns(unknowns []*ast.Term) EvalOption {
@@ -180,80 +157,37 @@ func EvalParsedUnknowns(unknowns []*ast.Term) EvalOption {
 	}
 }
 
-// EvalRuleIndexing will disable indexing optimizations for the
-// evaluation. This should only be used when tracing in debug mode.
-func EvalRuleIndexing(enabled bool) EvalOption {
-	return func(e *EvalContext) {
-		e.indexing = enabled
-	}
-}
-
-func (pq preparedQuery) Modules() map[string]*ast.Module {
-	mods := make(map[string]*ast.Module)
-
-	for name, mod := range pq.r.parsedModules {
-		mods[name] = mod
-	}
-
-	for path, b := range pq.r.bundles {
-		for name, mod := range b.ParsedModules(path) {
-			mods[name] = mod
-		}
-	}
-
-	return mods
-}
-
-// newEvalContext creates a new EvalContext overlaying any EvalOptions over top
-// the Rego object on the preparedQuery. The returned function should be called
-// once the evaluation is complete to close any transactions that might have
-// been opened.
-func (pq preparedQuery) newEvalContext(ctx context.Context, options []EvalOption) (*EvalContext, func(context.Context), error) {
+func (pq preparedQuery) newEvalContext(ctx context.Context, options []EvalOption) (*EvalContext, error) {
 	ectx := &EvalContext{
 		hasInput:         false,
 		rawInput:         nil,
 		parsedInput:      nil,
-		metrics:          nil,
-		txn:              nil,
-		instrument:       false,
-		instrumentation:  nil,
+		metrics:          pq.r.metrics,
+		txn:              pq.r.txn,
+		instrument:       pq.r.instrument,
+		instrumentation:  pq.r.instrumentation,
 		partialNamespace: pq.r.partialNamespace,
-		tracers:          nil,
+		tracers:          pq.r.tracers,
 		unknowns:         pq.r.unknowns,
 		parsedUnknowns:   pq.r.parsedUnknowns,
 		compiledQuery:    compiledQuery{},
-		indexing:         true,
 	}
 
 	for _, o := range options {
 		o(ectx)
 	}
 
-	if ectx.metrics == nil {
-		ectx.metrics = metrics.New()
-	}
-
 	if ectx.instrument {
 		ectx.instrumentation = topdown.NewInstrumentation(ectx.metrics)
 	}
 
-	// Default to an empty "finish" function
-	finishFunc := func(context.Context) {}
-
 	var err error
-	ectx.disableInlining, err = parseStringsToRefs(pq.r.disableInlining)
-	if err != nil {
-		return nil, finishFunc, err
-	}
-
 	if ectx.txn == nil {
 		ectx.txn, err = pq.r.store.NewTransaction(ctx)
 		if err != nil {
-			return nil, finishFunc, err
+			return nil, err
 		}
-		finishFunc = func(ctx context.Context) {
-			pq.r.store.Abort(ctx, ectx.txn)
-		}
+		defer pq.r.store.Abort(ctx, ectx.txn)
 	}
 
 	// If we didn't get an input specified in the Eval options
@@ -271,11 +205,11 @@ func (pq preparedQuery) newEvalContext(ctx context.Context, options []EvalOption
 		}
 		ectx.parsedInput, err = pq.r.parseRawInput(ectx.rawInput, ectx.metrics)
 		if err != nil {
-			return nil, finishFunc, err
+			return nil, err
 		}
 	}
 
-	return ectx, finishFunc, nil
+	return ectx, nil
 }
 
 // PreparedEvalQuery holds the prepared Rego state that has been pre-processed
@@ -287,14 +221,11 @@ type PreparedEvalQuery struct {
 // Eval evaluates this PartialResult's Rego object with additional eval options
 // and returns a ResultSet.
 // If options are provided they will override the original Rego options respective value.
-// The original Rego object transaction will *not* be re-used. A new transaction will be opened
-// if one is not provided with an EvalOption.
 func (pq PreparedEvalQuery) Eval(ctx context.Context, options ...EvalOption) (ResultSet, error) {
-	ectx, finish, err := pq.newEvalContext(ctx, options)
+	ectx, err := pq.newEvalContext(ctx, options)
 	if err != nil {
 		return nil, err
 	}
-	defer finish(ctx)
 
 	ectx.compiledQuery = pq.r.compiledQueries[evalQueryType]
 
@@ -308,14 +239,11 @@ type PreparedPartialQuery struct {
 }
 
 // Partial runs partial evaluation on the prepared query and returns the result.
-// The original Rego object transaction will *not* be re-used. A new transaction will be opened
-// if one is not provided with an EvalOption.
 func (pq PreparedPartialQuery) Partial(ctx context.Context, options ...EvalOption) (*PartialQueries, error) {
-	ectx, finish, err := pq.newEvalContext(ctx, options)
+	ectx, err := pq.newEvalContext(ctx, options)
 	if err != nil {
 		return nil, err
 	}
-	defer finish(ctx)
 
 	ectx.compiledQuery = pq.r.compiledQueries[partialQueryType]
 
@@ -348,17 +276,14 @@ type ExpressionValue struct {
 }
 
 func newExpressionValue(expr *ast.Expr, value interface{}) *ExpressionValue {
-	result := &ExpressionValue{
+	return &ExpressionValue{
 		Value: value,
-	}
-	if expr.Location != nil {
-		result.Text = string(expr.Location.Text)
-		result.Location = &Location{
+		Text:  string(expr.Location.Text),
+		Location: &Location{
 			Row: expr.Location.Row,
 			Col: expr.Location.Col,
-		}
+		},
 	}
-	return result
 }
 
 func (ev *ExpressionValue) String() string {
@@ -418,11 +343,6 @@ const (
 	compileQueryType       queryType = iota
 )
 
-type loadPaths struct {
-	paths  []string
-	filter loader.Filter
-}
-
 // Rego constructs a query and can be evaluated to obtain results.
 type Rego struct {
 	query            string
@@ -436,13 +356,11 @@ type Rego struct {
 	parsedInput      ast.Value
 	unknowns         []string
 	parsedUnknowns   []*ast.Term
-	disableInlining  []string
 	partialNamespace string
 	modules          []rawModule
 	parsedModules    map[string]*ast.Module
 	compiler         *ast.Compiler
 	store            storage.Store
-	ownStore         bool
 	txn              storage.Transaction
 	metrics          metrics.Metrics
 	tracers          []topdown.Tracer
@@ -454,139 +372,6 @@ type Rego struct {
 	termVarID        int
 	dump             io.Writer
 	runtime          *ast.Term
-	builtinDecls     map[string]*ast.Builtin
-	builtinFuncs     map[string]*topdown.Builtin
-	unsafeBuiltins   map[string]struct{}
-	loadPaths        loadPaths
-	bundlePaths      []string
-	bundles          map[string]*bundle.Bundle
-}
-
-// Function represents a built-in function that is callable in Rego.
-type Function struct {
-	Name    string
-	Decl    *types.Function
-	Memoize bool
-}
-
-// BuiltinContext contains additional attributes from the evaluator that
-// built-in functions can use, e.g., the request context.Context, caches, etc.
-type BuiltinContext = topdown.BuiltinContext
-
-type (
-	// Builtin1 defines a built-in function that accepts 1 argument.
-	Builtin1 func(bctx BuiltinContext, op1 *ast.Term) (*ast.Term, error)
-
-	// Builtin2 defines a built-in function that accepts 2 arguments.
-	Builtin2 func(bctx BuiltinContext, op1, op2 *ast.Term) (*ast.Term, error)
-
-	// Builtin3 defines a built-in function that accepts 3 argument.
-	Builtin3 func(bctx BuiltinContext, op1, op2, op3 *ast.Term) (*ast.Term, error)
-
-	// Builtin4 defines a built-in function that accepts 4 argument.
-	Builtin4 func(bctx BuiltinContext, op1, op2, op3, op4 *ast.Term) (*ast.Term, error)
-
-	// BuiltinDyn defines a built-in function  that accepts a list of arguments.
-	BuiltinDyn func(bctx BuiltinContext, terms []*ast.Term) (*ast.Term, error)
-)
-
-// Function1 returns an option that adds a built-in function to the Rego object.
-func Function1(decl *Function, f Builtin1) func(*Rego) {
-	return newFunction(decl, func(bctx BuiltinContext, terms []*ast.Term, iter func(*ast.Term) error) error {
-		result, err := memoize(decl, bctx, terms, func() (*ast.Term, error) { return f(bctx, terms[0]) })
-		return finishFunction(decl.Name, bctx, result, err, iter)
-	})
-}
-
-// Function2 returns an option that adds a built-in function to the Rego object.
-func Function2(decl *Function, f Builtin2) func(*Rego) {
-	return newFunction(decl, func(bctx BuiltinContext, terms []*ast.Term, iter func(*ast.Term) error) error {
-		result, err := memoize(decl, bctx, terms, func() (*ast.Term, error) { return f(bctx, terms[0], terms[1]) })
-		return finishFunction(decl.Name, bctx, result, err, iter)
-	})
-}
-
-// Function3 returns an option that adds a built-in function to the Rego object.
-func Function3(decl *Function, f Builtin3) func(*Rego) {
-	return newFunction(decl, func(bctx BuiltinContext, terms []*ast.Term, iter func(*ast.Term) error) error {
-		result, err := memoize(decl, bctx, terms, func() (*ast.Term, error) { return f(bctx, terms[0], terms[1], terms[2]) })
-		return finishFunction(decl.Name, bctx, result, err, iter)
-	})
-}
-
-// Function4 returns an option that adds a built-in function to the Rego object.
-func Function4(decl *Function, f Builtin4) func(*Rego) {
-	return newFunction(decl, func(bctx BuiltinContext, terms []*ast.Term, iter func(*ast.Term) error) error {
-		result, err := memoize(decl, bctx, terms, func() (*ast.Term, error) { return f(bctx, terms[0], terms[1], terms[2], terms[3]) })
-		return finishFunction(decl.Name, bctx, result, err, iter)
-	})
-}
-
-// FunctionDyn returns an option that adds a built-in function to the Rego object.
-func FunctionDyn(decl *Function, f BuiltinDyn) func(*Rego) {
-	return newFunction(decl, func(bctx BuiltinContext, terms []*ast.Term, iter func(*ast.Term) error) error {
-		result, err := memoize(decl, bctx, terms, func() (*ast.Term, error) { return f(bctx, terms) })
-		return finishFunction(decl.Name, bctx, result, err, iter)
-	})
-}
-
-// FunctionDecl returns an option that adds a custom-built-in function
-// __declaration__. NO implementation is provided. This is used for
-// non-interpreter execution envs (e.g., Wasm).
-func FunctionDecl(decl *Function) func(*Rego) {
-	return newDecl(decl)
-}
-
-func newDecl(decl *Function) func(*Rego) {
-	return func(r *Rego) {
-		r.builtinDecls[decl.Name] = &ast.Builtin{
-			Name: decl.Name,
-			Decl: decl.Decl,
-		}
-	}
-}
-
-type memo struct {
-	term *ast.Term
-	err  error
-}
-
-type memokey string
-
-func memoize(decl *Function, bctx BuiltinContext, terms []*ast.Term, ifEmpty func() (*ast.Term, error)) (*ast.Term, error) {
-
-	if !decl.Memoize {
-		return ifEmpty()
-	}
-
-	// NOTE(tsandall): we assume memoization is applied to infrequent built-in
-	// calls that do things like fetch data from remote locations. As such,
-	// converting the terms to strings is acceptable for now.
-	var b strings.Builder
-	if _, err := b.WriteString(decl.Name); err != nil {
-		return nil, err
-	}
-
-	// The term slice _may_ include an output term depending on how the caller
-	// referred to the built-in function. Only use the arguments as the cache
-	// key. Unification ensures we don't get false positive matches.
-	for i := 0; i < len(decl.Decl.Args()); i++ {
-		if _, err := b.WriteString(terms[i].String()); err != nil {
-			return nil, err
-		}
-	}
-
-	key := memokey(b.String())
-	hit, ok := bctx.Cache.Get(key)
-	var m memo
-	if ok {
-		m = hit.(memo)
-	} else {
-		m.term, m.err = ifEmpty()
-		bctx.Cache.Put(key, m)
-	}
-
-	return m.term, m.err
 }
 
 // Dump returns an argument that sets the writer to dump debugging information to.
@@ -672,13 +457,6 @@ func ParsedUnknowns(unknowns []*ast.Term) func(r *Rego) {
 	}
 }
 
-// DisableInlining adds a set of paths to exclude from partial evaluation inlining.
-func DisableInlining(paths []string) func(r *Rego) {
-	return func(r *Rego) {
-		r.disableInlining = paths
-	}
-}
-
 // PartialNamespace returns an argument that sets the namespace to use for
 // partial evaluation results. The namespace must be a valid package path
 // component.
@@ -698,51 +476,6 @@ func Module(filename, input string) func(r *Rego) {
 	}
 }
 
-// ParsedModule returns an argument that adds a parsed Rego module. If a string
-// module with the same filename name is added, it will override the parsed
-// module.
-func ParsedModule(module *ast.Module) func(*Rego) {
-	return func(r *Rego) {
-		var filename string
-		if module.Package.Location != nil {
-			filename = module.Package.Location.File
-		} else {
-			filename = fmt.Sprintf("module_%p.rego", module)
-		}
-		r.parsedModules[filename] = module
-	}
-}
-
-// Load returns an argument that adds a filesystem path to load data
-// and Rego modules from. Any file with a *.rego, *.yaml, or *.json
-// extension will be loaded. The path can be either a directory or file,
-// directories are loaded recursively. The optional ignore string patterns
-// can be used to filter which files are used.
-// The Load option can only be used once.
-// Note: Loading files will require a write transaction on the store.
-func Load(paths []string, filter loader.Filter) func(r *Rego) {
-	return func(r *Rego) {
-		r.loadPaths = loadPaths{paths, filter}
-	}
-}
-
-// LoadBundle returns an argument that adds a filesystem path to load
-// a bundle from. The path can be a compressed bundle file or a directory
-// to be loaded as a bundle.
-// Note: Loading bundles will require a write transaction on the store.
-func LoadBundle(path string) func(r *Rego) {
-	return func(r *Rego) {
-		r.bundlePaths = append(r.bundlePaths, path)
-	}
-}
-
-// ParsedBundle returns an argument that adds a bundle to be loaded.
-func ParsedBundle(name string, b *bundle.Bundle) func(r *Rego) {
-	return func(r *Rego) {
-		r.bundles[name] = b
-	}
-}
-
 // Compiler returns an argument that sets the Rego compiler.
 func Compiler(c *ast.Compiler) func(r *Rego) {
 	return func(r *Rego) {
@@ -751,10 +484,6 @@ func Compiler(c *ast.Compiler) func(r *Rego) {
 }
 
 // Store returns an argument that sets the policy engine's data storage layer.
-//
-// If using the Load, LoadBundle, or ParsedBundle options then a transaction
-// must also be provided via the Transaction() option. After loading files
-// or bundles the transaction should be aborted or committed.
 func Store(s storage.Store) func(r *Rego) {
 	return func(r *Rego) {
 		r.store = s
@@ -763,10 +492,6 @@ func Store(s storage.Store) func(r *Rego) {
 
 // Transaction returns an argument that sets the transaction to use for storage
 // layer operations.
-//
-// Requires the store associated with the transaction to be provided via the
-// Store() option. If using Load(), LoadBundle(), or ParsedBundle() options
-// the transaction will likely require write params.
 func Transaction(txn storage.Transaction) func(r *Rego) {
 	return func(r *Rego) {
 		r.txn = txn
@@ -821,26 +546,12 @@ func PrintTrace(w io.Writer, r *Rego) {
 	topdown.PrettyTrace(w, *r.tracebuf)
 }
 
-// UnsafeBuiltins sets the built-in functions to treat as unsafe and not allow.
-// This option is ignored for module compilation if the caller supplies the
-// compiler. This option is always honored for query compilation. Provide an
-// empty (non-nil) map to disable checks on queries.
-func UnsafeBuiltins(unsafeBuiltins map[string]struct{}) func(r *Rego) {
-	return func(r *Rego) {
-		r.unsafeBuiltins = unsafeBuiltins
-	}
-}
-
 // New returns a new Rego object.
 func New(options ...func(r *Rego)) *Rego {
 
 	r := &Rego{
-		parsedModules:   map[string]*ast.Module{},
 		capture:         map[*ast.Expr]ast.Var{},
 		compiledQueries: map[queryType]compiledQuery{},
-		builtinDecls:    map[string]*ast.Builtin{},
-		builtinFuncs:    map[string]*topdown.Builtin{},
-		bundles:         map[string]*bundle.Bundle{},
 	}
 
 	for _, option := range options {
@@ -848,16 +559,11 @@ func New(options ...func(r *Rego)) *Rego {
 	}
 
 	if r.compiler == nil {
-		r.compiler = ast.NewCompiler().
-			WithUnsafeBuiltins(r.unsafeBuiltins).
-			WithBuiltins(r.builtinDecls)
+		r.compiler = ast.NewCompiler()
 	}
 
 	if r.store == nil {
 		r.store = inmem.New()
-		r.ownStore = true
-	} else {
-		r.ownStore = false
 	}
 
 	if r.metrics == nil {
@@ -884,34 +590,20 @@ func New(options ...func(r *Rego)) *Rego {
 // Eval evaluates this Rego object and returns a ResultSet.
 func (r *Rego) Eval(ctx context.Context) (ResultSet, error) {
 	var err error
-	var txnClose transactionCloser
-	r.txn, txnClose, err = r.getTxn(ctx)
-	if err != nil {
-		return nil, err
+	if r.txn == nil {
+		r.txn, err = r.store.NewTransaction(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer r.store.Abort(ctx, r.txn)
 	}
 
 	pq, err := r.PrepareForEval(ctx)
 	if err != nil {
-		txnClose(ctx, err) // Ignore error
 		return nil, err
 	}
 
-	evalArgs := []EvalOption{
-		EvalTransaction(r.txn),
-		EvalMetrics(r.metrics),
-		EvalInstrument(r.instrument),
-	}
-
-	for _, t := range r.tracers {
-		evalArgs = append(evalArgs, EvalTracer(t))
-	}
-
-	rs, err := pq.Eval(ctx, evalArgs...)
-	txnErr := txnClose(ctx, err) // Always call closer
-	if err == nil {
-		err = txnErr
-	}
-	return rs, err
+	return pq.Eval(ctx)
 }
 
 // PartialEval has been deprecated and renamed to PartialResult.
@@ -922,27 +614,23 @@ func (r *Rego) PartialEval(ctx context.Context) (PartialResult, error) {
 // PartialResult partially evaluates this Rego object and returns a PartialResult.
 func (r *Rego) PartialResult(ctx context.Context) (PartialResult, error) {
 	var err error
-	var txnClose transactionCloser
-	r.txn, txnClose, err = r.getTxn(ctx)
-	if err != nil {
-		return PartialResult{}, err
+	if r.txn == nil {
+		r.txn, err = r.store.NewTransaction(ctx)
+		if err != nil {
+			return PartialResult{}, err
+		}
+		defer r.store.Abort(ctx, r.txn)
 	}
 
 	pq, err := r.PrepareForEval(ctx, WithPartialEval())
-	txnErr := txnClose(ctx, err) // Always call closer
 	if err != nil {
 		return PartialResult{}, err
 	}
-	if txnErr != nil {
-		return PartialResult{}, txnErr
-	}
 
 	pr := PartialResult{
-		compiler:     pq.r.compiler,
-		store:        pq.r.store,
-		body:         pq.r.parsedQuery,
-		builtinDecls: pq.r.builtinDecls,
-		builtinFuncs: pq.r.builtinFuncs,
+		compiler: pq.r.compiler,
+		store:    pq.r.store,
+		body:     pq.r.parsedQuery,
 	}
 
 	return pr, nil
@@ -951,34 +639,20 @@ func (r *Rego) PartialResult(ctx context.Context) (PartialResult, error) {
 // Partial runs partial evaluation on r and returns the result.
 func (r *Rego) Partial(ctx context.Context) (*PartialQueries, error) {
 	var err error
-	var txnClose transactionCloser
-	r.txn, txnClose, err = r.getTxn(ctx)
-	if err != nil {
-		return nil, err
+	if r.txn == nil {
+		r.txn, err = r.store.NewTransaction(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer r.store.Abort(ctx, r.txn)
 	}
 
 	pq, err := r.PrepareForPartial(ctx)
 	if err != nil {
-		txnClose(ctx, err) // Ignore error
 		return nil, err
 	}
 
-	evalArgs := []EvalOption{
-		EvalTransaction(r.txn),
-		EvalMetrics(r.metrics),
-		EvalInstrument(r.instrument),
-	}
-
-	for _, t := range r.tracers {
-		evalArgs = append(evalArgs, EvalTracer(t))
-	}
-
-	pqs, err := pq.Partial(ctx, evalArgs...)
-	txnErr := txnClose(ctx, err) // Always call closer
-	if err == nil {
-		err = txnErr
-	}
-	return pqs, err
+	return pq.Partial(ctx)
 }
 
 // CompileOption defines a function to set options on Compile calls.
@@ -1043,50 +717,40 @@ func (r *Rego) Compile(ctx context.Context, opts ...CompileOption) (*CompileResu
 			modules = append(modules, module)
 		}
 	} else {
-		var err error
-		// If creating a new transacation it should be closed before calling the
-		// planner to avoid holding open the transaction longer than needed.
+
+		// execute block inside a closure so that transaction is closed before
+		// planner runs.
 		//
 		// TODO(tsandall): in future, planner could make use of store, in which
 		// case this will need to change.
-		var txnClose transactionCloser
-		r.txn, txnClose, err = r.getTxn(ctx)
+		err := func() error {
+			var err error
+			if r.txn == nil {
+				r.txn, err = r.store.NewTransaction(ctx)
+				if err != nil {
+					return err
+				}
+				defer r.store.Abort(ctx, r.txn)
+			}
+
+			if err := r.prepare(ctx, r.txn, compileQueryType, nil); err != nil {
+				return err
+			}
+
+			for _, module := range r.compiler.Modules {
+				modules = append(modules, module)
+			}
+
+			queries = []ast.Body{r.compiledQueries[compileQueryType].query}
+			return nil
+		}()
+
 		if err != nil {
 			return nil, err
 		}
-
-		err = r.prepare(ctx, compileQueryType, nil)
-		txnErr := txnClose(ctx, err) // Always call closer
-		if err != nil {
-			return nil, err
-		}
-		if txnErr != nil {
-			return nil, err
-		}
-
-		for _, module := range r.compiler.Modules {
-			modules = append(modules, module)
-		}
-
-		queries = []ast.Body{r.compiledQueries[compileQueryType].query}
 	}
 
-	decls := make(map[string]*ast.Builtin, len(r.builtinDecls)+len(ast.BuiltinMap))
-
-	for k, v := range ast.BuiltinMap {
-		decls[k] = v
-	}
-
-	for k, v := range r.builtinDecls {
-		decls[k] = v
-	}
-
-	policy, err := planner.New().
-		WithQueries(queries).
-		WithModules(modules).
-		WithRewrittenVars(r.compiledQueries[compileQueryType].compiler.RewrittenVars()).
-		WithBuiltinDecls(decls).
-		Plan()
+	policy, err := planner.New().WithQueries(queries).WithModules(modules).Plan()
 	if err != nil {
 		return nil, err
 	}
@@ -1123,8 +787,7 @@ type PrepareOption func(*PrepareConfig)
 // PrepareConfig holds settings to control the behavior of the
 // Prepare call.
 type PrepareConfig struct {
-	doPartialEval   bool
-	disableInlining *[]string
+	doPartialEval bool
 }
 
 // WithPartialEval configures an option for PrepareForEval
@@ -1133,13 +796,6 @@ type PrepareConfig struct {
 func WithPartialEval() PrepareOption {
 	return func(p *PrepareConfig) {
 		p.doPartialEval = true
-	}
-}
-
-// WithNoInline adds a set of paths to exclude from partial evaluation inlining.
-func WithNoInline(paths []string) PrepareOption {
-	return func(p *PrepareConfig) {
-		p.disableInlining = &paths
 	}
 }
 
@@ -1155,33 +811,52 @@ func (r *Rego) PrepareForEval(ctx context.Context, opts ...PrepareOption) (Prepa
 		o(pCfg)
 	}
 
+	txn := r.txn
+
 	var err error
-	var txnClose transactionCloser
-	r.txn, txnClose, err = r.getTxn(ctx)
-	if err != nil {
-		return PreparedEvalQuery{}, err
+	if txn == nil {
+		txn, err = r.store.NewTransaction(ctx)
+		if err != nil {
+			return PreparedEvalQuery{}, err
+		}
+		defer r.store.Abort(ctx, txn)
 	}
 
 	// If the caller wanted to do partial evaluation as part of preparation
 	// do it now and use the new Rego object.
 	if pCfg.doPartialEval {
-
-		pr, err := r.partialResult(ctx, pCfg)
+		err := r.prepare(ctx, txn, partialResultQueryType, []extraStage{
+			{
+				after: "ResolveRefs",
+				stage: ast.QueryCompilerStageDefinition{
+					Name:       "RewriteForPartialEval",
+					MetricName: "query_compile_stage_rewrite_for_partial_eval",
+					Stage:      r.rewriteQueryForPartialEval,
+				},
+			},
+		})
 		if err != nil {
-			txnClose(ctx, err) // Ignore error
 			return PreparedEvalQuery{}, err
 		}
 
-		// Prepare the new query using the result of partial evaluation
-		pq, err := pr.Rego(Transaction(r.txn)).PrepareForEval(ctx)
-		txnErr := txnClose(ctx, err)
-		if err != nil {
-			return pq, err
+		ectx := &EvalContext{
+			parsedInput:      r.parsedInput,
+			metrics:          r.metrics,
+			txn:              txn,
+			partialNamespace: r.partialNamespace,
+			tracers:          r.tracers,
+			compiledQuery:    r.compiledQueries[partialResultQueryType],
 		}
-		return pq, txnErr
+
+		pr, err := r.partialResult(ctx, ectx, ast.Wildcard)
+		if err != nil {
+			return PreparedEvalQuery{}, err
+		}
+		// Prepare the new query
+		return pr.Rego().PrepareForEval(ctx)
 	}
 
-	err = r.prepare(ctx, evalQueryType, []extraStage{
+	err = r.prepare(ctx, txn, evalQueryType, []extraStage{
 		{
 			after: "ResolveRefs",
 			stage: ast.QueryCompilerStageDefinition{
@@ -1191,12 +866,8 @@ func (r *Rego) PrepareForEval(ctx context.Context, opts ...PrepareOption) (Prepa
 			},
 		},
 	})
-	txnErr := txnClose(ctx, err) // Always call closer
 	if err != nil {
 		return PreparedEvalQuery{}, err
-	}
-	if txnErr != nil {
-		return PreparedEvalQuery{}, txnErr
 	}
 
 	return PreparedEvalQuery{preparedQuery{r, pCfg}}, err
@@ -1214,14 +885,18 @@ func (r *Rego) PrepareForPartial(ctx context.Context, opts ...PrepareOption) (Pr
 		o(pCfg)
 	}
 
+	txn := r.txn
+
 	var err error
-	var txnClose transactionCloser
-	r.txn, txnClose, err = r.getTxn(ctx)
-	if err != nil {
-		return PreparedPartialQuery{}, err
+	if txn == nil {
+		txn, err = r.store.NewTransaction(ctx)
+		if err != nil {
+			return PreparedPartialQuery{}, err
+		}
+		defer r.store.Abort(ctx, txn)
 	}
 
-	err = r.prepare(ctx, partialQueryType, []extraStage{
+	err = r.prepare(ctx, txn, partialQueryType, []extraStage{
 		{
 			after: "CheckSafety",
 			stage: ast.QueryCompilerStageDefinition{
@@ -1231,42 +906,29 @@ func (r *Rego) PrepareForPartial(ctx context.Context, opts ...PrepareOption) (Pr
 			},
 		},
 	})
-	txnErr := txnClose(ctx, err) // Always call closer
+
 	if err != nil {
 		return PreparedPartialQuery{}, err
 	}
-	if txnErr != nil {
-		return PreparedPartialQuery{}, txnErr
-	}
+
 	return PreparedPartialQuery{preparedQuery{r, pCfg}}, err
 }
 
-func (r *Rego) prepare(ctx context.Context, qType queryType, extras []extraStage) error {
+func (r *Rego) prepare(ctx context.Context, txn storage.Transaction, qType queryType, extras []extraStage) error {
 	var err error
-
 	r.parsedInput, err = r.parseInput()
 	if err != nil {
 		return err
 	}
 
-	err = r.loadFiles(ctx, r.txn, r.metrics)
-	if err != nil {
-		return err
-	}
-
-	err = r.loadBundles(ctx, r.txn, r.metrics)
-	if err != nil {
-		return err
-	}
-
-	err = r.parseModules(ctx, r.txn, r.metrics)
+	r.parsedModules, err = r.parseModules(r.metrics)
 	if err != nil {
 		return err
 	}
 
 	// Compile the modules *before* the query, else functions
 	// defined in the module won't be found...
-	err = r.compileModules(ctx, r.txn, r.metrics)
+	err = r.compileModules(ctx, txn, r.parsedModules, r.metrics)
 	if err != nil {
 		return err
 	}
@@ -1276,108 +938,29 @@ func (r *Rego) prepare(ctx context.Context, qType queryType, extras []extraStage
 		return err
 	}
 
-	err = r.compileAndCacheQuery(qType, r.parsedQuery, r.metrics, extras)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.compileAndCacheQuery(qType, r.parsedQuery, r.metrics, extras)
 }
 
-func (r *Rego) parseModules(ctx context.Context, txn storage.Transaction, m metrics.Metrics) error {
-	if len(r.modules) == 0 {
-		return nil
-	}
-
+func (r *Rego) parseModules(m metrics.Metrics) (map[string]*ast.Module, error) {
 	m.Timer(metrics.RegoModuleParse).Start()
 	defer m.Timer(metrics.RegoModuleParse).Stop()
 	var errs Errors
-
-	// Parse any modules in the are saved to the store, but only if
-	// another compile step is going to occur (ie. we have parsed modules
-	// that need to be compiled).
-	ids, err := r.store.ListPolicies(ctx, txn)
-	if err != nil {
-		return err
-	}
-
-	for _, id := range ids {
-		// if it is already on the compiler we're using
-		// then don't bother to re-parse it from source
-		if _, haveMod := r.compiler.Modules[id]; haveMod {
-			continue
+	parsed := map[string]*ast.Module{}
+	if r.parsedModules != nil {
+		parsed = r.parsedModules
+	} else {
+		for _, module := range r.modules {
+			p, err := module.Parse()
+			if err != nil {
+				errs = append(errs, err)
+			}
+			parsed[module.filename] = p
 		}
-
-		bs, err := r.store.GetPolicy(ctx, txn, id)
-		if err != nil {
-			return err
-		}
-
-		parsed, err := ast.ParseModule(id, string(bs))
-		if err != nil {
-			errs = append(errs, err)
-		}
-
-		r.parsedModules[id] = parsed
-	}
-
-	// Parse any passed in as arguments to the Rego object
-	for _, module := range r.modules {
-		p, err := module.Parse()
-		if err != nil {
-			errs = append(errs, err)
-		}
-		r.parsedModules[module.filename] = p
-	}
-
-	if len(errs) > 0 {
-		return errs
-	}
-
-	return nil
-}
-
-func (r *Rego) loadFiles(ctx context.Context, txn storage.Transaction, m metrics.Metrics) error {
-	if len(r.loadPaths.paths) == 0 {
-		return nil
-	}
-
-	m.Timer(metrics.RegoLoadFiles).Start()
-	defer m.Timer(metrics.RegoLoadFiles).Stop()
-
-	result, err := loader.NewFileLoader().WithMetrics(m).Filtered(r.loadPaths.paths, r.loadPaths.filter)
-	if err != nil {
-		return err
-	}
-	for name, mod := range result.Modules {
-		r.parsedModules[name] = mod.Parsed
-	}
-
-	if len(result.Documents) > 0 {
-		err = r.store.Write(ctx, txn, storage.AddOp, storage.Path{}, result.Documents)
-		if err != nil {
-			return err
+		if len(errs) > 0 {
+			return nil, errors.New(errs.Error())
 		}
 	}
-	return nil
-}
-
-func (r *Rego) loadBundles(ctx context.Context, txn storage.Transaction, m metrics.Metrics) error {
-	if len(r.bundlePaths) == 0 {
-		return nil
-	}
-
-	m.Timer(metrics.RegoLoadBundles).Start()
-	defer m.Timer(metrics.RegoLoadBundles).Stop()
-
-	for _, path := range r.bundlePaths {
-		bndl, err := loader.NewFileLoader().WithMetrics(m).AsBundle(path)
-		if err != nil {
-			return fmt.Errorf("loading error: %s", err)
-		}
-		r.bundles[path] = bndl
-	}
-	return nil
+	return parsed, nil
 }
 
 func (r *Rego) parseInput() (ast.Value, error) {
@@ -1388,62 +971,60 @@ func (r *Rego) parseInput() (ast.Value, error) {
 }
 
 func (r *Rego) parseRawInput(rawInput *interface{}, m metrics.Metrics) (ast.Value, error) {
-	var input ast.Value
-
-	if rawInput == nil {
-		return input, nil
-	}
-
 	m.Timer(metrics.RegoInputParse).Start()
 	defer m.Timer(metrics.RegoInputParse).Stop()
-
-	rawPtr := util.Reference(rawInput)
-
-	// roundtrip through json: this turns slices (e.g. []string, []bool) into
-	// []interface{}, the only array type ast.InterfaceToValue can work with
-	if err := util.RoundTrip(rawPtr); err != nil {
-		return nil, err
+	var input ast.Value
+	if rawInput != nil {
+		rawPtr := util.Reference(rawInput)
+		// roundtrip through json: this turns slices (e.g. []string, []bool) into
+		// []interface{}, the only array type ast.InterfaceToValue can work with
+		if err := util.RoundTrip(rawPtr); err != nil {
+			return nil, err
+		}
+		val, err := ast.InterfaceToValue(*rawPtr)
+		if err != nil {
+			return nil, err
+		}
+		input = val
 	}
-
-	return ast.InterfaceToValue(*rawPtr)
+	return input, nil
 }
 
 func (r *Rego) parseQuery(m metrics.Metrics) (ast.Body, error) {
-	if r.parsedQuery != nil {
-		return r.parsedQuery, nil
-	}
-
 	m.Timer(metrics.RegoQueryParse).Start()
 	defer m.Timer(metrics.RegoQueryParse).Stop()
 
-	return ast.ParseBody(r.query)
-}
+	var query ast.Body
 
-func (r *Rego) compileModules(ctx context.Context, txn storage.Transaction, m metrics.Metrics) error {
-
-	// Only compile again if there are new modules.
-	if len(r.bundles) > 0 || len(r.parsedModules) > 0 {
-
-		// The bundle.Activate call will activate any bundles passed in
-		// (ie compile + handle data store changes), and include any of
-		// the additional modules passed in. If no bundles are provided
-		// it will only compile the passed in modules.
-		// Use this as the single-point of compiling everything only a
-		// single time.
-		opts := &bundle.ActivateOpts{
-			Ctx:          ctx,
-			Store:        r.store,
-			Txn:          txn,
-			Compiler:     r.compiler.WithPathConflictsCheck(storage.NonEmpty(ctx, r.store, txn)),
-			Metrics:      m,
-			Bundles:      r.bundles,
-			ExtraModules: r.parsedModules,
-		}
-		err := bundle.Activate(opts)
+	if r.parsedQuery != nil {
+		query = r.parsedQuery
+	} else {
+		var err error
+		query, err = ast.ParseBody(r.query)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
+
+	return query, nil
+}
+
+func (r *Rego) compileModules(ctx context.Context, txn storage.Transaction, modules map[string]*ast.Module, m metrics.Metrics) error {
+
+	m.Timer(metrics.RegoModuleCompile).Start()
+	defer m.Timer(metrics.RegoModuleCompile).Stop()
+
+	if len(modules) > 0 {
+		r.compiler.WithPathConflictsCheck(storage.NonEmpty(ctx, r.store, txn)).Compile(modules)
+		if r.compiler.Failed() {
+			var errs Errors
+			for _, err := range r.compiler.Errors {
+				errs = append(errs, err)
+			}
+			return errs
+		}
+	}
+
 	return nil
 }
 
@@ -1500,9 +1081,7 @@ func (r *Rego) compileQuery(query ast.Body, m metrics.Metrics, extras []extraSta
 		WithPackage(pkg).
 		WithImports(imports)
 
-	qc := r.compiler.QueryCompiler().
-		WithContext(qctx).
-		WithUnsafeBuiltins(r.unsafeBuiltins)
+	qc := r.compiler.QueryCompiler().WithContext(qctx)
 
 	for _, extra := range extras {
 		qc = qc.WithStageAfter(extra.after, extra.stage)
@@ -1514,18 +1093,27 @@ func (r *Rego) compileQuery(query ast.Body, m metrics.Metrics, extras []extraSta
 
 }
 
+func (r *Rego) evalContext(input ast.Value, txn storage.Transaction) EvalContext {
+	return EvalContext{
+		rawInput:        r.rawInput,
+		parsedInput:     input,
+		metrics:         r.metrics,
+		txn:             txn,
+		instrument:      r.instrument,
+		instrumentation: r.instrumentation,
+		tracers:         r.tracers,
+	}
+}
+
 func (r *Rego) eval(ctx context.Context, ectx *EvalContext) (ResultSet, error) {
 
 	q := topdown.NewQuery(ectx.compiledQuery.query).
-		WithQueryCompiler(ectx.compiledQuery.compiler).
 		WithCompiler(r.compiler).
 		WithStore(r.store).
 		WithTransaction(ectx.txn).
-		WithBuiltins(r.builtinFuncs).
 		WithMetrics(ectx.metrics).
 		WithInstrumentation(ectx.instrumentation).
-		WithRuntime(r.runtime).
-		WithIndexing(ectx.indexing)
+		WithRuntime(r.runtime)
 
 	for i := range ectx.tracers {
 		q = q.WithTracer(ectx.tracers[i])
@@ -1590,43 +1178,7 @@ func (r *Rego) eval(ctx context.Context, ectx *EvalContext) (ResultSet, error) {
 	return rs, nil
 }
 
-func (r *Rego) partialResult(ctx context.Context, pCfg *PrepareConfig) (PartialResult, error) {
-
-	err := r.prepare(ctx, partialResultQueryType, []extraStage{
-		{
-			after: "ResolveRefs",
-			stage: ast.QueryCompilerStageDefinition{
-				Name:       "RewriteForPartialEval",
-				MetricName: "query_compile_stage_rewrite_for_partial_eval",
-				Stage:      r.rewriteQueryForPartialEval,
-			},
-		},
-	})
-	if err != nil {
-		return PartialResult{}, err
-	}
-
-	ectx := &EvalContext{
-		parsedInput:      r.parsedInput,
-		metrics:          r.metrics,
-		txn:              r.txn,
-		partialNamespace: r.partialNamespace,
-		tracers:          r.tracers,
-		compiledQuery:    r.compiledQueries[partialResultQueryType],
-		instrumentation:  r.instrumentation,
-		indexing:         true,
-	}
-
-	disableInlining := r.disableInlining
-
-	if pCfg.disableInlining != nil {
-		disableInlining = *pCfg.disableInlining
-	}
-
-	ectx.disableInlining, err = parseStringsToRefs(disableInlining)
-	if err != nil {
-		return PartialResult{}, err
-	}
+func (r *Rego) partialResult(ctx context.Context, ectx *EvalContext, output *ast.Term) (PartialResult, error) {
 
 	pq, err := r.partial(ctx, ectx)
 	if err != nil {
@@ -1638,7 +1190,7 @@ func (r *Rego) partialResult(ctx context.Context, pCfg *PrepareConfig) (PartialR
 	module.Rules = make([]*ast.Rule, len(pq.Queries))
 	for i, body := range pq.Queries {
 		module.Rules[i] = &ast.Rule{
-			Head:   ast.NewHead(ast.Var("__result__"), nil, ast.Wildcard),
+			Head:   ast.NewHead(ast.Var("__result__"), nil, output),
 			Body:   body,
 			Module: module,
 		}
@@ -1650,20 +1202,15 @@ func (r *Rego) partialResult(ctx context.Context, pCfg *PrepareConfig) (PartialR
 		r.compiler.Modules[fmt.Sprintf("__partialsupport%d__", i)] = module
 	}
 
-	r.metrics.Timer(metrics.RegoModuleCompile).Start()
 	r.compiler.Compile(r.compiler.Modules)
-	r.metrics.Timer(metrics.RegoModuleCompile).Stop()
-
 	if r.compiler.Failed() {
 		return PartialResult{}, r.compiler.Errors
 	}
 
 	result := PartialResult{
-		compiler:     r.compiler,
-		store:        r.store,
-		body:         ast.MustParseBody(fmt.Sprintf("data.%v.__result__", ectx.partialNamespace)),
-		builtinDecls: r.builtinDecls,
-		builtinFuncs: r.builtinFuncs,
+		compiler: r.compiler,
+		store:    r.store,
+		body:     ast.MustParseBody(fmt.Sprintf("data.%v.__result__", ectx.partialNamespace)),
 	}
 
 	return result, nil
@@ -1697,20 +1244,16 @@ func (r *Rego) partial(ctx context.Context, ectx *EvalContext) (*PartialQueries,
 	}
 
 	q := topdown.NewQuery(ectx.compiledQuery.query).
-		WithQueryCompiler(ectx.compiledQuery.compiler).
 		WithCompiler(r.compiler).
 		WithStore(r.store).
 		WithTransaction(ectx.txn).
-		WithBuiltins(r.builtinFuncs).
 		WithMetrics(ectx.metrics).
 		WithInstrumentation(ectx.instrumentation).
 		WithUnknowns(unknowns).
-		WithDisableInlining(ectx.disableInlining).
-		WithRuntime(r.runtime).
-		WithIndexing(ectx.indexing)
+		WithRuntime(r.runtime)
 
 	for i := range ectx.tracers {
-		q = q.WithTracer(ectx.tracers[i])
+		q = q.WithTracer(r.tracers[i])
 	}
 
 	if ectx.parsedInput != nil {
@@ -1833,61 +1376,6 @@ func (r Rego) hasQuery() bool {
 	return len(r.query) != 0 || len(r.parsedQuery) != 0
 }
 
-type transactionCloser func(ctx context.Context, err error) error
-
-// getTxn will conditionally create a read or write transaction suitable for
-// the configured Rego object. The returned function should be used to close the txn
-// regardless of status.
-func (r *Rego) getTxn(ctx context.Context) (storage.Transaction, transactionCloser, error) {
-
-	noopCloser := func(ctx context.Context, err error) error {
-		return nil // no-op default
-	}
-
-	if r.txn != nil {
-		// Externally provided txn
-		return r.txn, noopCloser, nil
-	}
-
-	// Create a new transaction..
-	params := storage.TransactionParams{}
-
-	// Bundles and data paths may require writing data files or manifests to storage
-	if len(r.bundles) > 0 || len(r.bundlePaths) > 0 || len(r.loadPaths.paths) > 0 {
-
-		// If we were given a store we will *not* write to it, only do that on one
-		// which was created automatically on behalf of the user.
-		if !r.ownStore {
-			return nil, noopCloser, errors.New("unable to start write transaction when store was provided")
-		}
-
-		params.Write = true
-	}
-
-	txn, err := r.store.NewTransaction(ctx, params)
-	if err != nil {
-		return nil, noopCloser, err
-	}
-
-	// Setup a closer function that will abort or commit as needed.
-	closer := func(ctx context.Context, txnErr error) error {
-		var err error
-
-		if txnErr == nil && params.Write {
-			err = r.store.Commit(ctx, txn)
-		} else {
-			r.store.Abort(ctx, txn)
-		}
-
-		// Clear the auto created transaction now that it is closed.
-		r.txn = nil
-
-		return err
-	}
-
-	return txn, closer, nil
-}
-
 func isTermVar(v ast.Var) bool {
 	return strings.HasPrefix(string(v), ast.WildcardPrefix+"term")
 }
@@ -1946,52 +1434,7 @@ func iteration(x interface{}) bool {
 		return stopped
 	})
 
-	vis.Walk(x)
+	ast.Walk(vis, x)
 
 	return stopped
-}
-
-func parseStringsToRefs(s []string) ([]ast.Ref, error) {
-
-	refs := make([]ast.Ref, len(s))
-	for i := range refs {
-		var err error
-		refs[i], err = ast.ParseRef(s[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return refs, nil
-}
-
-// helper function to finish a built-in function call. If an error occured,
-// wrap the error and return it. Otherwise, invoke the iterator if the result
-// was defined.
-func finishFunction(name string, bctx topdown.BuiltinContext, result *ast.Term, err error, iter func(*ast.Term) error) error {
-	if err != nil {
-		return &topdown.Error{
-			Code:     topdown.BuiltinErr,
-			Message:  fmt.Sprintf("%v: %v", name, err.Error()),
-			Location: bctx.Location,
-		}
-	}
-	if result == nil {
-		return nil
-	}
-	return iter(result)
-}
-
-// helper function to return an option that sets a custom built-in function.
-func newFunction(decl *Function, f topdown.BuiltinFunc) func(*Rego) {
-	return func(r *Rego) {
-		r.builtinDecls[decl.Name] = &ast.Builtin{
-			Name: decl.Name,
-			Decl: decl.Decl,
-		}
-		r.builtinFuncs[decl.Name] = &topdown.Builtin{
-			Decl: r.builtinDecls[decl.Name],
-			Func: f,
-		}
-	}
 }

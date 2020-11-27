@@ -20,7 +20,6 @@ type (
 		Import   ImportSection
 		Function FunctionSection
 		Table    TableSection
-		Element  ElementSection
 		Global   GlobalSection
 		Export   ExportSection
 		Code     RawCodeSection
@@ -45,11 +44,6 @@ type (
 	// TableSection represents a WASM table section.
 	TableSection struct {
 		Tables []Table
-	}
-
-	// ElementSection represents a WASM element section.
-	ElementSection struct {
-		Segments []ElementSegment
 	}
 
 	// GlobalSection represents a WASM global section.
@@ -114,13 +108,6 @@ type (
 	TableImport struct {
 		Type types.ElementType
 		Lim  Limit
-	}
-
-	// ElementSegment represents a WASM element segment.
-	ElementSegment struct {
-		Index   uint32
-		Offset  Expr
-		Indices []uint32
 	}
 
 	// GlobalImport represents a WASM global variable import statement.

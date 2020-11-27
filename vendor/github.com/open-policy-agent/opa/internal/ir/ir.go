@@ -22,26 +22,18 @@ type (
 
 	// Static represents a static data segment that is indexed into by the policy.
 	Static struct {
-		Strings      []*StringConst
-		BuiltinFuncs []*BuiltinFunc
-	}
-
-	// BuiltinFunc represents a built-in function that may be required by the
-	// policy.
-	BuiltinFunc struct {
-		Name string
+		Strings []*StringConst
 	}
 
 	// Funcs represents a collection of planned functions to include in the
 	// policy.
 	Funcs struct {
-		Funcs []*Func
+		Funcs map[string]*Func
 	}
 
 	// Func represents a named plan (function) that can be invoked. Functions
 	// accept one or more parameters and return a value. By convention, the
-	// input document and data documents are always passed as the first and
-	// second arguments (respectively).
+	// input document is always passed as the first argument.
 	Func struct {
 		Name   string
 		Params []Local
@@ -49,8 +41,9 @@ type (
 		Blocks []*Block // TODO(tsandall): should this be a plan?
 	}
 
-	// Plan represents an ordered series of blocks to execute. Plan execution
-	// stops when a return statement is reached. Blocks are executed in-order.
+	// Plan represents an ordered series of blocks to execute. All plans contain a
+	// final block that returns indicating the plan result was undefined. Plan
+	// execution stops when a block returns a value. Blocks are executed in-order.
 	Plan struct {
 		Blocks []*Block
 	}
@@ -102,14 +95,28 @@ type (
 )
 
 const (
-	// Input is the local variable that refers to the global input document.
-	Input Local = iota
+	// Undefined represents an undefined return value. An undefined return value
+	// indicates the policy did not return a definitive answer.
+	Undefined int32 = iota
 
-	// Data is the local variable that refers to the global data document.
-	Data
+	// Defined represents a defined return value.
+	Defined
 
-	// Unused is the free local variable that can be allocated in a plan.
-	Unused
+	// Error indicates a runtime error occurred during evaluation.
+	Error
+)
+
+const (
+	// InputRaw refers to the local variable containing the address of the raw
+	// (serialized) input data.
+	InputRaw Local = 0
+
+	// InputLen refers to the local variable containing the length of the raw input.
+	InputLen Local = 1
+
+	// Input refers to the local variable containing the address of the deserialized
+	// input value.
+	Input Local = 2
 )
 
 func (a *Policy) String() string {
@@ -141,6 +148,12 @@ func (a *NullConst) typeMarker()    {}
 func (a *IntConst) typeMarker()     {}
 func (a *FloatConst) typeMarker()   {}
 func (a *StringConst) typeMarker()  {}
+
+// ReturnStmt represents a return statement. Return statements halt execution of
+// a plan with the given code.
+type ReturnStmt struct {
+	Code int32 // 32-bit integer for compatibility with languages like JavaScript.
+}
 
 // ReturnLocalStmt represents a return statement that yields a local value.
 type ReturnLocalStmt struct {
@@ -197,8 +210,10 @@ type ScanStmt struct {
 	Block  *Block
 }
 
-// NotStmt represents a negated statement.
+// NotStmt represents a negated statement. The last statement in the negation
+// block will set the condition to false.
 type NotStmt struct {
+	Cond  Local
 	Block *Block
 }
 
@@ -247,22 +262,9 @@ type MakeBooleanStmt struct {
 	Target Local
 }
 
-// MakeNumberFloatStmt constructs a local variable that refers to a
-// floating-point number value.
-type MakeNumberFloatStmt struct {
-	Value  float64
-	Target Local
-}
-
 // MakeNumberIntStmt constructs a local variable that refers to an integer value.
 type MakeNumberIntStmt struct {
 	Value  int64
-	Target Local
-}
-
-// MakeNumberRefStmt constructs a local variable that refers to a number stored as a string.
-type MakeNumberRefStmt struct {
-	Index  int
 	Target Local
 }
 
@@ -362,34 +364,8 @@ type ObjectInsertOnceStmt struct {
 	Object Local
 }
 
-// ObjectMergeStmt performs a recursive merge of two object values. If either of
-// the locals refer to non-object values this operation will abort with a
-// conflict error. Overlapping object keys are merged recursively.
-type ObjectMergeStmt struct {
-	A      Local
-	B      Local
-	Target Local
-}
-
 // SetAddStmt represents a dynamic add operation of an element into a set.
 type SetAddStmt struct {
 	Value Local
 	Set   Local
-}
-
-// WithStmt replaces the Local or a portion of the document referred to by the
-// Local with the Value and executes the contained block. If the Path is
-// non-empty, the Value is upserted into the Local. If the intermediate nodes in
-// the Local referred to by the Path do not exist, they will be created. When
-// the WithStmt finishes the Local is reset to it's original value.
-type WithStmt struct {
-	Local Local
-	Path  []int
-	Value Local
-	Block *Block
-}
-
-// ResultSetAdd adds a value into the result set returned by the query plan.
-type ResultSetAdd struct {
-	Value Local
 }

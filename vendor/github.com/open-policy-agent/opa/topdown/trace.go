@@ -44,23 +44,14 @@ const (
 	IndexOp Op = "Index"
 )
 
-// VarMetadata provides some user facing information about
-// a variable in some policy.
-type VarMetadata struct {
-	Name     ast.Var       `json:"name"`
-	Location *ast.Location `json:"location"`
-}
-
 // Event contains state associated with a tracing event.
 type Event struct {
-	Op            Op                      // Identifies type of event.
-	Node          ast.Node                // Contains AST node relevant to the event.
-	Location      *ast.Location           // The location of the Node this event relates to.
-	QueryID       uint64                  // Identifies the query this event belongs to.
-	ParentID      uint64                  // Identifies the parent query this event belongs to.
-	Locals        *ast.ValueMap           // Contains local variable bindings from the query context.
-	LocalMetadata map[ast.Var]VarMetadata // Contains metadata for the local variable bindings.
-	Message       string                  // Contains message for Note events.
+	Op       Op            // Identifies type of event.
+	Node     ast.Node      // Contains AST node relevant to the event.
+	QueryID  uint64        // Identifies the query this event belongs to.
+	ParentID uint64        // Identifies the parent query this event belongs to.
+	Locals   *ast.ValueMap // Contains local variable bindings from the query context.
+	Message  string        // Contains message for Note events.
 }
 
 // HasRule returns true if the Event contains an ast.Rule.
@@ -159,16 +150,6 @@ func PrettyTrace(w io.Writer, trace []*Event) {
 	}
 }
 
-// PrettyTraceWithLocation prints the trace to the writer and includes location information
-func PrettyTraceWithLocation(w io.Writer, trace []*Event) {
-	depths := depths{}
-	for _, event := range trace {
-		depth := depths.GetOrSet(event.QueryID, event.ParentID)
-		location := formatLocation(event)
-		fmt.Fprintln(w, fmt.Sprintf("%v %v", location, formatEvent(event, depth)))
-	}
-}
-
 func formatEvent(event *Event, depth int) string {
 	padding := formatEventPadding(event, depth)
 	if event.Op == NoteOp {
@@ -180,7 +161,7 @@ func formatEvent(event *Event, depth int) string {
 		case *ast.Rule:
 			return fmt.Sprintf("%v%v %v", padding, event.Op, node.Path())
 		default:
-			return fmt.Sprintf("%v%v %v", padding, event.Op, rewrite(event).Node)
+			return fmt.Sprintf("%v%v %v", padding, event.Op, event.Node)
 		}
 	}
 }
@@ -204,23 +185,6 @@ func formatEventSpaces(event *Event, depth int) int {
 		}
 	}
 	return depth + 1
-}
-
-func formatLocation(event *Event) string {
-	if event.Op == NoteOp {
-		return fmt.Sprintf("%-19v", "note")
-	}
-
-	location := event.Location
-	if location == nil {
-		return fmt.Sprintf("%-19v", "")
-	}
-
-	if location.File == "" {
-		return fmt.Sprintf("%-19v", fmt.Sprintf("%.15v:%v", "query", location.Row))
-	}
-
-	return fmt.Sprintf("%-19v", fmt.Sprintf("%.15v:%v", location.File, location.Row))
 }
 
 // depths is a helper for computing the depth of an event. Events within the
@@ -270,33 +234,6 @@ func traceIsEnabled(tracers []Tracer) bool {
 		}
 	}
 	return false
-}
-
-func rewrite(event *Event) *Event {
-
-	cpy := *event
-
-	var node ast.Node
-
-	switch v := event.Node.(type) {
-	case *ast.Expr:
-		node = v.Copy()
-	case ast.Body:
-		node = v.Copy()
-	case *ast.Rule:
-		node = v.Copy()
-	}
-
-	ast.TransformVars(node, func(v ast.Var) (ast.Value, error) {
-		if meta, ok := cpy.LocalMetadata[v]; ok {
-			return meta.Name, nil
-		}
-		return v, nil
-	})
-
-	cpy.Node = node
-
-	return &cpy
 }
 
 func init() {
