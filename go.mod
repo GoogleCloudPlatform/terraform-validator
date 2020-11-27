@@ -5,7 +5,7 @@ require (
 	cloud.google.com/go/storage v1.0.0
 	github.com/Azure/go-autorest v11.1.2+incompatible // indirect
 	github.com/BurntSushi/toml v0.3.1
-	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201124163654-f879c81c3537
+	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03
 	github.com/OneOfOne/xxhash v1.2.5
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 	github.com/agext/levenshtein v1.2.2
