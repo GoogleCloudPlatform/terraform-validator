@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/version"
@@ -38,6 +39,7 @@ type testData struct {
 	// provider "google"
 	Provider map[string]string
 	Project  map[string]string
+	Time     map[string]int64
 	OrgID    string
 	FolderID string
 	Ancestry string
@@ -87,12 +89,19 @@ func init() {
 	if version.TF12 == version.LeastSupportedVersion() {
 		providerVersion = defaultProviderVersion
 	}
+	//As time is not information in terraform resource data, time is rounded for testing purposes
+	currentTime := time.Now()
+	currentTime = currentTime.Round(time.Minute)
 	data = &testData{
 		TFVersion: version.LeastSupportedVersion(),
 		Provider: map[string]string{
 			"version":     providerVersion,
 			"project":     project,
 			"credentials": credentials,
+		},
+		Time: map[string]int64{
+			"timeSeconds": currentTime.Unix(),
+			"timeNanos":   currentTime.UnixNano(),
 		},
 		Project: map[string]string{
 			"Name":               "My Project Name",

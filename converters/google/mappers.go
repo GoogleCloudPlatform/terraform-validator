@@ -72,6 +72,12 @@ func mappers() map[string][]mapper {
 				merge:   converter.MergeOrganizationIamPolicy,
 			},
 		},
+		"google_project_organization_policy": {
+			{
+				convert: converter.GetProjectOrgPolicyCaiObject,
+				merge:   converter.MergeProjectOrgPolicy,
+			},
+		},
 		"google_organization_iam_binding": {
 			{
 				convert: converter.GetOrganizationIamBindingCaiObject,
