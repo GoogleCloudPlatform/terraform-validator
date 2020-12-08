@@ -1,31 +1,43 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
 require (
+	cloud.google.com/go v0.46.3
 	cloud.google.com/go/bigtable v1.1.0
 	cloud.google.com/go/storage v1.0.0
-	github.com/Azure/go-autorest v11.1.2+incompatible // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03
 	github.com/OneOfOne/xxhash v1.2.5
+	github.com/PuerkitoBio/purell v1.1.1
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 	github.com/agext/levenshtein v1.2.2
 	github.com/apparentlymart/go-cidr v1.0.1
 	github.com/apparentlymart/go-textseg v1.0.0
+	github.com/armon/go-radix v1.0.0
+	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/aws/aws-sdk-go v1.25.3
-	github.com/danielkermode/gvm v1.0.0 // indirect
+	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
+	github.com/bgentry/speakeasy v0.1.0
 	github.com/davecgh/go-spew v1.1.1
+	github.com/fatih/color v1.7.0
 	github.com/forseti-security/config-validator v0.0.0-20200812033229-7388761cc9ca
 	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4
 	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/analysis v0.19.4
 	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/jsonpointer v0.19.3
+	github.com/go-openapi/jsonreference v0.19.2
+	github.com/go-openapi/loads v0.19.2
+	github.com/go-openapi/runtime v0.19.4
 	github.com/go-openapi/spec v0.19.4
 	github.com/go-openapi/strfmt v0.19.3
+	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.4
 	github.com/go-stack/stack v1.8.0
 	github.com/gobwas/glob v0.2.3
 	github.com/gogo/protobuf v1.3.0
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
 	github.com/golang/protobuf v1.3.3
 	github.com/google/go-cmp v0.3.1
 	github.com/google/gofuzz v1.0.0
@@ -37,6 +49,7 @@ require (
 	github.com/hashicorp/go-hclog v0.9.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-plugin v1.0.1
+	github.com/hashicorp/go-safetemp v1.0.0
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/golang-lru v0.5.1
@@ -46,7 +59,9 @@ require (
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191115094559-17f92b0546e8
 	github.com/hashicorp/terraform-plugin-sdk v1.4.0
 	github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596
+	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d
 	github.com/imdario/mergo v0.3.7
+	github.com/inconshreveable/mousetrap v1.0.0
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 	github.com/json-iterator/go v1.1.7
 	github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
@@ -57,18 +72,20 @@ require (
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/go-testing-interface v1.0.0
 	github.com/mitchellh/go-wordwrap v1.0.0
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mitchellh/reflectwalk v1.0.1
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 	github.com/modern-go/reflect2 v1.0.1
-	github.com/open-policy-agent/frameworks v0.0.0-20200803193800-bcb6432d79b7 // indirect
+	github.com/oklog/run v1.0.0
 	github.com/open-policy-agent/frameworks/constraint v0.0.0-20200127222620-69dff9b895a2
 	github.com/open-policy-agent/gatekeeper v0.0.0-20200130050101-a7990e5bc83a
 	github.com/open-policy-agent/opa v0.17.2
 	github.com/pkg/errors v0.8.1
 	github.com/pmezard/go-difflib v1.0.0
+	github.com/posener/complete v1.2.1
 	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
@@ -85,6 +102,7 @@ require (
 	go.opencensus.io v0.22.2
 	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
 	golang.org/x/exp v0.0.0-20191029154019-8994fa331a53
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
