@@ -81,7 +81,7 @@ var rootCmd = &cobra.Command{
 	Long: fmt.Sprintf(`Validate terraform plans by converting terraform resources to their Google CAI 
 (Cloud Asset Inventory) format and passing them through Forseti Config Validator.
 
-Supported Terraform versions = 0.12`),
+Supported Terraform versions = 0.12+`),
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if !flags.verbose {
 			// Suppress chatty packages.
