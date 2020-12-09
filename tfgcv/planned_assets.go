@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	"google.golang.org/api/option"
@@ -26,9 +25,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/golang/glog"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/pkg/errors"
 )
 
@@ -44,40 +41,14 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 
 	var resources []tfplan.Resource
 
-	switch version.LeastSupportedVersion() {
-	case version.TF12:
-		data, err := readTF12Data(path)
-		if err != nil {
-			return nil, err
-		}
+	data, err := readTF12Data(path)
+	if err != nil {
+		return nil, err
+	}
 
-		resources, err = tfplan.ComposeTF12Resources(data, converter.Schemas())
-		if err != nil {
-			return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
-		}
-	case version.TF11:
-		f, err := os.Open(path)
-		if err != nil {
-			return nil, errors.Wrap(err, "opening plan file")
-		}
-		defer f.Close()
-
-		plan, err := terraform.ReadPlan(f)
-		if err != nil {
-			return nil, errors.Wrap(err, "reading terraform plan")
-		}
-
-		// Attempt to pull the project from the provider.
-		if project == "" {
-			project, err = parseProviderProject(plan)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		resources = tfplan.ComposeResources(plan, converter.Schemas())
-	default:
-		return nil, fmt.Errorf("terraform version %s is not supported by this version of validator, see README.md to switch to the right version", version.LeastSupportedVersion())
+	resources, err = tfplan.ComposeTF12Resources(data, converter.Schemas())
+	if err != nil {
+		return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
 	}
 
 	for _, r := range resources {
@@ -96,7 +67,6 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 // ReadCurrentAssets extracts CAI assets from a terraform plan file.
 // This is the same as ReadPlannedAssets, but operates on the current rather than
 // the planned resources.
-// Only supports version.TF12
 func ReadCurrentAssets(ctx context.Context, path, project, ancestry string, offline bool) ([]google.Asset, error) {
 	converter, err := newConverter(ctx, path, project, ancestry, offline)
 	if err != nil {
@@ -105,22 +75,17 @@ func ReadCurrentAssets(ctx context.Context, path, project, ancestry string, offl
 
 	var resources []tfplan.Resource
 
-	switch version.LeastSupportedVersion() {
-	case version.TF12:
-		data, err := readTF12Data(path)
-		if err != nil {
-			return nil, err
-		}
-		if ".json" != filepath.Ext(path) {
-			return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
-		}
+	data, err := readTF12Data(path)
+	if err != nil {
+		return nil, err
+	}
+	if ".json" != filepath.Ext(path) {
+		return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
+	}
 
-		resources, err = tfplan.ComposeCurrentTF12Resources(data, converter.Schemas())
-		if err != nil {
-			return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
-		}
-	default:
-		return nil, fmt.Errorf("terraform version %s is not supported by this version of validator, see README.md to switch to the right version", version.LeastSupportedVersion())
+	resources, err = tfplan.ComposeCurrentTF12Resources(data, converter.Schemas())
+	if err != nil {
+		return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
 	}
 
 	for _, r := range resources {

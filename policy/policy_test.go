@@ -169,7 +169,7 @@ func TestOverlayWithDeletes(t *testing.T) {
 }
 
 // TestOverlayNoChanges ensures a plan with no changes results in an empty overlay.
-func TestOverlayNoChanges(t *testing.T){
+func TestOverlayNoChanges(t *testing.T) {
 	wantOverlay := Overlay{}
 
 	file := filepath.Join(testDataDir, "tf12plan_no_change.json")
