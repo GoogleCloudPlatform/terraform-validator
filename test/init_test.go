@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 const (
@@ -85,15 +84,12 @@ func init() {
 		log.Printf("Missing required env var TEST_ANCESTRY. Default (%s) will be used.", defaultAncestry)
 		ancestry = defaultAncestry
 	}
-	providerVersion := "1.20"
-	if version.TF12 == version.LeastSupportedVersion() {
-		providerVersion = defaultProviderVersion
-	}
+	providerVersion := defaultProviderVersion
 	//As time is not information in terraform resource data, time is rounded for testing purposes
 	currentTime := time.Now()
 	currentTime = currentTime.Round(time.Minute)
 	data = &testData{
-		TFVersion: version.LeastSupportedVersion(),
+		TFVersion: "0.12",
 		Provider: map[string]string{
 			"version":     providerVersion,
 			"project":     project,

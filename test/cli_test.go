@@ -30,7 +30,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 // TestCLI tests the "convert" and "validate" subcommand against a generated .tfplan file.
@@ -94,7 +93,7 @@ func TestCLI(t *testing.T) {
 
 		// Test both offline and online mode.
 		for _, offline := range []bool{true, false} {
-			t.Run(fmt.Sprintf("v=%s/tf=%s/offline=%t", version.LeastSupportedVersion(), c.name, offline), func(t *testing.T) {
+			t.Run(fmt.Sprintf("v=0.12/tf=%s/offline=%t", c.name, offline), func(t *testing.T) {
 				t.Parallel()
 				// Create a temporary directory for running terraform.
 				dir, err := ioutil.TempDir(tmpDir, "terraform")
@@ -125,12 +124,7 @@ func TestCLI(t *testing.T) {
 
 func testConvertCommand(t *testing.T, dir, name string, offline bool) {
 	var payload []byte
-	switch version.LeastSupportedVersion() {
-	case version.TF11:
-		payload = tfvConvert(t, dir, name+".tfplan", offline)
-	default:
-		payload = tfvConvert(t, dir, name+".tfplan.json", offline)
-	}
+	payload = tfvConvert(t, dir, name+".tfplan.json", offline)
 	// Verify if the generated assets match the expected.
 	var got []google.Asset
 	err := json.Unmarshal(payload, &got)
@@ -159,12 +153,7 @@ func testValidateCommand(t *testing.T, wantViolation bool, want, dir, name strin
 	}
 	policyPath := filepath.Join(cwd, samplePolicyPath, constraintName)
 	var got []byte
-	switch version.LeastSupportedVersion() {
-	case version.TF11:
-		got = tfvValidate(t, wantViolation, dir, name+".tfplan", policyPath, offline)
-	default:
-		got = tfvValidate(t, wantViolation, dir, name+".tfplan.json", policyPath, offline)
-	}
+	got = tfvValidate(t, wantViolation, dir, name+".tfplan.json", policyPath, offline)
 	wantRe := regexp.MustCompile(want)
 	if want != "" && !wantRe.Match(got) {
 		t.Fatalf("binary did not return expect output, \ngot=%s \nwant (regex)=%s", string(got), want)
@@ -172,16 +161,10 @@ func testValidateCommand(t *testing.T, wantViolation bool, want, dir, name strin
 }
 
 func terraform(t *testing.T, dir, name string) {
-	switch version.LeastSupportedVersion() {
-	case version.TF11:
-		terraformInit(t, "terraform", dir)
-		terraformPlan(t, "terraform", dir, name+".tfplan")
-	default:
-		terraformInit(t, "terraform", dir)
-		terraformPlan(t, "terraform", dir, name+".tfplan")
-		payload := terraformShow(t, "terraform", dir, name+".tfplan")
-		saveFile(t, dir, name+".tfplan.json", payload)
-	}
+	terraformInit(t, "terraform", dir)
+	terraformPlan(t, "terraform", dir, name+".tfplan")
+	payload := terraformShow(t, "terraform", dir, name+".tfplan")
+	saveFile(t, dir, name+".tfplan.json", payload)
 }
 
 func terraformInit(t *testing.T, executable, dir string) {

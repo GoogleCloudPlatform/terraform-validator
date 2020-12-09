@@ -4,7 +4,7 @@ This tool is used to validate terraform plans before they are applied. Validatio
 
 **Note**: Using Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary.
 
-Note: this tool supports Terraform v0.12 by default. To switch to use Terraform v0.11, please see the section [Terraform v0.11](#terraform-v011).
+Note: this tool supports Terraform v0.12. Terraform 0.11 is not supported.
 
 ## Getting Started
 
@@ -43,10 +43,6 @@ terraform-validator validate --policy-path=${POLICY_PATH} ./terraform.tfplan.jso
 # Apply the validated plan.
 terraform apply ./terraform.tfplan
 ```
-
-### Terraform v0.11
-
-Terraform 0.11 is no longer officially supported.
 
 ## Resources
 The follow Terraform resources are supported for running validation checks:

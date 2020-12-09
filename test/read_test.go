@@ -13,13 +13,9 @@ import (
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 func TestReadPlannedAssetsCoverage(t *testing.T) {
-	if !version.Supported(version.TF12) {
-		t.Skipf("TestReadPlannedAssetsCoverage runs on terraform v0.12 or above.")
-	}
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode.")
 		return

@@ -55,7 +55,7 @@ func BuildOverlay(path, project, ancestry string, offline bool) (Overlay, error)
 // extractOverlay compares the current and planned assets to determine
 // what policies have changed.
 func extractOverlay(before, after []google.Asset) Overlay {
-	emptyPolicy := func() *google.IAMPolicy {return &google.IAMPolicy{Bindings:[]google.IAMBinding{}}}
+	emptyPolicy := func() *google.IAMPolicy { return &google.IAMPolicy{Bindings: []google.IAMBinding{}} }
 
 	afterIndex := make(map[string]google.Asset)
 	for _, a := range after {

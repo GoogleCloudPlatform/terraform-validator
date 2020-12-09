@@ -21,8 +21,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 // LoggerStdErr used by commands to print errors and warnings
@@ -35,9 +33,7 @@ func init() {
 	validateCmd.MarkFlagRequired("policy-path")
 	validateCmd.Flags().StringVar(&flags.validate.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when validating resources)")
 	validateCmd.Flags().StringVar(&flags.validate.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
-	if version.Supported(version.TF12) {
-		validateCmd.Flags().BoolVar(&flags.validate.offline, "offline", false, "Do not connect to GCP API")
-	}
+	validateCmd.Flags().BoolVar(&flags.validate.offline, "offline", false, "Do not connect to GCP API")
 
 	convertCmd.Flags().StringVar(&flags.convert.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when converting resources)")
 	convertCmd.Flags().StringVar(&flags.convert.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
@@ -85,7 +81,7 @@ var rootCmd = &cobra.Command{
 	Long: fmt.Sprintf(`Validate terraform plans by converting terraform resources to their Google CAI 
 (Cloud Asset Inventory) format and passing them through Forseti Config Validator.
 
-Supported Terraform versions = %s`, version.AllSupportedVersions()),
+Supported Terraform versions = 0.12`),
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if !flags.verbose {
 			// Suppress chatty packages.
