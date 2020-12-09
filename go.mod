@@ -1,132 +1,77 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
 require (
-	cloud.google.com/go v0.46.3
-	cloud.google.com/go/bigtable v1.1.0
-	cloud.google.com/go/storage v1.0.0
-	github.com/BurntSushi/toml v0.3.1
-	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20200229011250-33377f76bc03
-	github.com/OneOfOne/xxhash v1.2.5
-	github.com/PuerkitoBio/purell v1.1.1
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
-	github.com/agext/levenshtein v1.2.2
-	github.com/apparentlymart/go-cidr v1.0.1
-	github.com/apparentlymart/go-textseg v1.0.0
-	github.com/armon/go-radix v1.0.0
-	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
-	github.com/aws/aws-sdk-go v1.25.3
-	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
-	github.com/bgentry/speakeasy v0.1.0
-	github.com/davecgh/go-spew v1.1.1
-	github.com/fatih/color v1.7.0
-	github.com/forseti-security/config-validator v0.0.0-20200812033229-7388761cc9ca
-	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4
-	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92
-	github.com/ghodss/yaml v1.0.0
-	github.com/go-openapi/analysis v0.19.4
-	github.com/go-openapi/errors v0.19.2
-	github.com/go-openapi/jsonpointer v0.19.3
-	github.com/go-openapi/jsonreference v0.19.2
-	github.com/go-openapi/loads v0.19.2
-	github.com/go-openapi/runtime v0.19.4
-	github.com/go-openapi/spec v0.19.4
-	github.com/go-openapi/strfmt v0.19.3
-	github.com/go-openapi/swag v0.19.5
-	github.com/go-openapi/validate v0.19.4
-	github.com/go-stack/stack v1.8.0
-	github.com/gobwas/glob v0.2.3
-	github.com/gogo/protobuf v1.3.0
+	cloud.google.com/go v0.73.0 // indirect
+	cloud.google.com/go/bigtable v1.6.0 // indirect
+	cloud.google.com/go/storage v1.12.0 // indirect
+	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20201209001225-610fadaf66b5
+	github.com/Microsoft/go-winio v0.4.16 // indirect
+	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/apparentlymart/go-cidr v1.1.0 // indirect
+	github.com/aws/aws-sdk-go v1.36.5 // indirect
+	github.com/fatih/color v1.10.0 // indirect
+	github.com/forseti-security/config-validator v0.0.0-20201204181659-b3da694a3d79
+	github.com/gammazero/deque v0.0.0-20201010052221-3932da5530cc // indirect
+	github.com/gammazero/workerpool v1.1.1 // indirect
+	github.com/go-git/go-git/v5 v5.2.0 // indirect
+	github.com/go-logr/logr v0.3.0 // indirect
+	github.com/go-openapi/validate v0.20.0 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
-	github.com/golang/protobuf v1.3.3
-	github.com/google/go-cmp v0.3.1
-	github.com/google/gofuzz v1.0.0
-	github.com/google/uuid v1.1.1
-	github.com/googleapis/gax-go/v2 v2.0.5
-	github.com/hashicorp/errwrap v1.0.0
-	github.com/hashicorp/go-cleanhttp v0.5.1
-	github.com/hashicorp/go-getter v1.4.0
-	github.com/hashicorp/go-hclog v0.9.2
-	github.com/hashicorp/go-multierror v1.0.0
-	github.com/hashicorp/go-plugin v1.0.1
-	github.com/hashicorp/go-safetemp v1.0.0
-	github.com/hashicorp/go-uuid v1.0.1
-	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/golang-lru v0.5.1
-	github.com/hashicorp/hcl v1.0.0
-	github.com/hashicorp/hcl/v2 v2.0.0
-	github.com/hashicorp/logutils v1.0.0
-	github.com/hashicorp/terraform-config-inspect v0.0.0-20191115094559-17f92b0546e8
-	github.com/hashicorp/terraform-plugin-sdk v1.4.0
-	github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596
-	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d
-	github.com/imdario/mergo v0.3.7
-	github.com/inconshreveable/mousetrap v1.0.0
-	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
-	github.com/json-iterator/go v1.1.7
-	github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
-	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e
-	github.com/mattn/go-colorable v0.1.2
-	github.com/mattn/go-isatty v0.0.8
-	github.com/mitchellh/cli v1.0.0
-	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
-	github.com/mitchellh/copystructure v1.0.0
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/go-testing-interface v1.0.0
-	github.com/mitchellh/go-wordwrap v1.0.0
-	github.com/mitchellh/hashstructure v1.0.0
-	github.com/mitchellh/mapstructure v1.1.2
-	github.com/mitchellh/reflectwalk v1.0.1
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
-	github.com/modern-go/reflect2 v1.0.1
-	github.com/oklog/run v1.0.0
-	github.com/open-policy-agent/frameworks/constraint v0.0.0-20200127222620-69dff9b895a2
-	github.com/open-policy-agent/gatekeeper v0.0.0-20200130050101-a7990e5bc83a
-	github.com/open-policy-agent/opa v0.17.2
-	github.com/pkg/errors v0.8.1
-	github.com/pmezard/go-difflib v1.0.0
-	github.com/posener/complete v1.2.1
-	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
-	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v0.0.5
-	github.com/spf13/pflag v1.0.3
-	github.com/stoewer/go-strcase v1.0.2
-	github.com/stretchr/testify v1.4.0
+	github.com/golang/protobuf v1.4.3
+	github.com/google/go-cmp v0.5.4
+	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-getter v1.5.1 // indirect
+	github.com/hashicorp/go-hclog v0.15.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.0 // indirect
+	github.com/hashicorp/go-plugin v1.4.0 // indirect
+	github.com/hashicorp/go-uuid v1.0.2 // indirect
+	github.com/hashicorp/hcl/v2 v2.8.0 // indirect
+	github.com/hashicorp/terraform-config-inspect v0.0.0-20201102131242-0c45ba392e51 // indirect
+	github.com/hashicorp/terraform-exec v0.11.0 // indirect
+	github.com/hashicorp/terraform-json v0.7.0 // indirect
+	github.com/hashicorp/terraform-plugin-sdk v1.16.0
+	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
+	github.com/hashicorp/yamux v0.0.0-20200609203250-aecfd211c9ce // indirect
+	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
+	github.com/mitchellh/cli v1.1.2 // indirect
+	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/mitchellh/hashstructure v1.1.0 // indirect
+	github.com/oklog/run v1.1.0 // indirect
+	github.com/open-policy-agent/frameworks/constraint v0.0.0-20201118071520-0d37681951a4 // indirect
+	github.com/open-policy-agent/opa v0.25.2 // indirect
+	github.com/pkg/errors v0.9.1
+	github.com/posener/complete v1.2.3 // indirect
+	github.com/prometheus/client_golang v1.8.0 // indirect
+	github.com/prometheus/common v0.15.0 // indirect
+	github.com/spf13/afero v1.5.1 // indirect
+	github.com/spf13/cobra v1.1.1
+	github.com/stoewer/go-strcase v1.2.0 // indirect
+	github.com/stretchr/testify v1.6.1
 	github.com/terraform-providers/terraform-provider-google v1.20.1-0.20200228174759-ed183996d331
-	github.com/ulikunitz/xz v0.5.5
-	github.com/vmihailenco/msgpack v4.0.1+incompatible
-	github.com/yashtewari/glob-intersection v0.0.0-20180916065949-5c77d914dd0b
-	github.com/zclconf/go-cty v1.1.0
-	github.com/zclconf/go-cty-yaml v1.0.1
-	go.mongodb.org/mongo-driver v1.1.1
-	go.opencensus.io v0.22.2
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
-	golang.org/x/exp v0.0.0-20191029154019-8994fa331a53
-	golang.org/x/lint v0.0.0-20190930215403-16217165b5de
-	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
-	golang.org/x/text v0.3.2
-	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
-	golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
-	google.golang.org/api v0.16.0
-	google.golang.org/appengine v1.6.1
-	google.golang.org/genproto v0.0.0-20200319113533-08878b785e9c
-	google.golang.org/grpc v1.27.0
-	gopkg.in/inf.v0 v0.9.1
-	gopkg.in/yaml.v2 v2.2.4
-	honnef.co/go/tools v0.0.1-2019.2.3
-	k8s.io/api v0.16.4
-	k8s.io/apiextensions-apiserver v0.16.4
-	k8s.io/apimachinery v0.16.4
-	k8s.io/apiserver v0.16.4
-	k8s.io/client-go v0.16.4
-	k8s.io/component-base v0.16.4
-	k8s.io/klog v1.0.0
-	k8s.io/kubectl v0.16.4
-	k8s.io/utils v0.0.0-20190920012459-5008bf6f8cd6
-	sigs.k8s.io/controller-runtime v0.4.0
-	sigs.k8s.io/yaml v1.1.0
+	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
+	github.com/vmihailenco/tagparser v0.1.2 // indirect
+	github.com/xanzy/ssh-agent v0.3.0 // indirect
+	github.com/zclconf/go-cty v1.7.0 // indirect
+	github.com/zclconf/go-cty-yaml v1.0.2 // indirect
+	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // indirect
+	golang.org/x/exp v0.0.0-20201203231725-fa01524bc59d // indirect
+	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
+	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11 // indirect
+	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5 // indirect
+	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d // indirect
+	golang.org/x/term v0.0.0-20201207232118-ee85cb95a76b // indirect
+	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
+	golang.org/x/tools v0.0.0-20201208233053-a543418bbed2 // indirect
+	google.golang.org/api v0.36.0
+	google.golang.org/genproto v0.0.0-20201209185603-f92720507ed4
+	google.golang.org/grpc v1.34.0 // indirect
+	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
+	k8s.io/apiextensions-apiserver v0.20.0 // indirect
+	k8s.io/client-go v11.0.0+incompatible // indirect
+	k8s.io/kubectl v0.20.0 // indirect
+	sigs.k8s.io/controller-runtime v0.6.4 // indirect
 )
 
 replace github.com/GoogleCloudPlatform/terraform-google-conversion => ./vendor/github.com/GoogleCloudPlatform/terraform-google-conversion
