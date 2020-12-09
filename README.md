@@ -4,7 +4,7 @@ This tool is used to validate terraform plans before they are applied. Validatio
 
 **Note**: Using Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary.
 
-Note: this tool supports Terraform v0.12. Terraform 0.11 is not supported.
+Note: this tool supports Terraform v0.12+.
 
 ## Getting Started
 
@@ -15,7 +15,7 @@ To get started with Terraform Validator, please follow the [user guide](https://
 See the [Auth](#Auth) section first.
 
 
-### Terraform 0.12 Usage
+### Terraform 0.12+ Usage
 
 ```
 # The example/ directory contains a basic Terraform config for testing the validator.
