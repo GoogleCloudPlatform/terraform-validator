@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/hashicorp/terraform-provider-google/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func stepTimeoutCustomizeDiff(diff *schema.ResourceDiff, v interface{}) error {

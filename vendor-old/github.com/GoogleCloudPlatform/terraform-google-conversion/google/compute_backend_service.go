@@ -21,7 +21,7 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/terraform-provider-google/helper/hashcode"
-	"github.com/hashicorp/terraform-provider-google/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceGoogleComputeBackendServiceBackendHash(v interface{}) int {
