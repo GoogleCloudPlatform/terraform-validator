@@ -11,4 +11,4 @@ import (
 var ErrNoConversion = errors.New("no conversion")
 
 // Global MutexKV
-var mutexKV = mutexkv.NewMutexKV()
+var mutexKV = NewMutexKV()
