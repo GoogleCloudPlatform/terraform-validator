@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/terraform-providers/terraform-provider-google/version"
 
@@ -269,7 +268,9 @@ func (c *Config) LoadAndValidate(ctx context.Context) error {
 	// This timeout is a timeout per HTTP request, not per logical operation.
 	client.Timeout = c.synchronousTimeout()
 
-	tfUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", schema.Provider.terraformVersion, meta.SDKVersionString())
+	// Temporarily hardcode terraform version as 12. This is unused
+	// and will be resolved by the tgc upgrade: https://github.com/GoogleCloudPlatform/terraform-validator/issues/158
+	tfUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", 12, meta.SDKVersionString())
 	providerVersion := fmt.Sprintf("terraform-provider-google/%s", version.ProviderVersion)
 	userAgent := fmt.Sprintf("%s %s", tfUserAgent, providerVersion)
 
