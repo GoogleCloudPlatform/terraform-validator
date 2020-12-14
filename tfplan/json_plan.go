@@ -26,6 +26,12 @@ import (
 
 const maxChildModuleLevel = 10000
 
+// Resource is the terraform representation of a resource.
+type Resource struct {
+	Path Fullpath
+	*fieldGetter
+}
+
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
 // https://www.terraform.io/docs/internals/json-format.html#plan-representation
 type jsonPlan struct {
@@ -82,7 +88,6 @@ type jsonResource struct {
 }
 
 // ComposeTF12Resources inspects a plan and returns the planned resources that match the provided resource schema map.
-// ComposeTF12Resources works in a same way as tfplan.ComposeResources and returns array of tfplan.Resource
 func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
 	plan, err := readPlan(data)
 	if err != nil {
