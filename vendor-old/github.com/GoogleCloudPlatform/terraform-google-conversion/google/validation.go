@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/validation"
 )
 
 const (

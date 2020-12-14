@@ -1,7 +1,7 @@
 package google
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 )
 
 // For generated resources, endpoint entries live in product-specific provider

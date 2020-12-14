@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 )
 
 // validatePeerAddr returns false if a tunnel's peer_ip property

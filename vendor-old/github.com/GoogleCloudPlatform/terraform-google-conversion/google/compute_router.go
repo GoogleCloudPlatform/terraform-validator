@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 )
 
 // customizeDiff func for additional checks on google_compute_router properties:

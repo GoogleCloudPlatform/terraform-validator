@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
+	"github.com/hashicorp/terraform-provider-google/helper/logging"
+	"github.com/hashicorp/terraform-provider-google/helper/pathorcontents"
+	"github.com/hashicorp/terraform-provider-google/httpclient"
 	"github.com/terraform-providers/terraform-provider-google/version"
 
 	"golang.org/x/oauth2"

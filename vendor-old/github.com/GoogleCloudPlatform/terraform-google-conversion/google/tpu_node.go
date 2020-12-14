@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 )
 
 // compareTpuNodeSchedulingConfig diff suppresses for the default

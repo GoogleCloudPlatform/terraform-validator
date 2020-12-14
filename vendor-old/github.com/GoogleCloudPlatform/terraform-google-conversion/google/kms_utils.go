@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 	"google.golang.org/api/cloudkms/v1"
 )
 

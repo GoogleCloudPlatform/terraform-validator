@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-provider-google/helper/resource"
 )
 
 func GetSpannerInstanceCaiObject(d TerraformResourceData, config *Config) (Asset, error) {

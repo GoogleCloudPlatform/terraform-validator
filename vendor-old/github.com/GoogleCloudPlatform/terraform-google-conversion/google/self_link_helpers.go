@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/hashcode"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 )
 
 // Compare only the resource name of two self links/paths.

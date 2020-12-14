@@ -17,8 +17,8 @@ package tfplan
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/terraform"
 	"github.com/stretchr/testify/require"
 )
 

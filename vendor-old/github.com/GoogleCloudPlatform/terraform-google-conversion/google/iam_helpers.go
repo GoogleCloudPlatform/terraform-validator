@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/helper/schema"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 )
 
