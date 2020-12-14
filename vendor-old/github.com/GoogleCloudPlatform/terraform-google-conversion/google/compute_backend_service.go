@@ -20,7 +20,6 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/hashicorp/terraform-provider-google/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

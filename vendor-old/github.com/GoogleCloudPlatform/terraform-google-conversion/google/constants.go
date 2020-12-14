@@ -2,8 +2,6 @@ package google
 
 import (
 	"errors"
-
-	"github.com/hashicorp/terraform-provider-google/helper/mutexkv"
 )
 
 // ErrNoConversion can be returned if a conversion is unable to be returned
