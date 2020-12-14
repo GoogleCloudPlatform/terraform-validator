@@ -22,7 +22,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
-	provider "github.com/terraform-providers/terraform-provider-google/google"
+	provider "github.com/hashicorp/terraform-provider-google/v3/google"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
