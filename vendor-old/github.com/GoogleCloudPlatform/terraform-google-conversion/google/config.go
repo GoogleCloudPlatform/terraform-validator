@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/hashicorp/terraform-provider-google/httpclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/terraform-providers/terraform-provider-google/version"
 
 	"golang.org/x/oauth2"
@@ -268,7 +269,7 @@ func (c *Config) LoadAndValidate(ctx context.Context) error {
 	// This timeout is a timeout per HTTP request, not per logical operation.
 	client.Timeout = c.synchronousTimeout()
 
-	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
+	tfUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", schema.Provider.terraformVersion, meta.SDKVersionString())
 	providerVersion := fmt.Sprintf("terraform-provider-google/%s", version.ProviderVersion)
 	userAgent := fmt.Sprintf("%s %s", tfUserAgent, providerVersion)
 
