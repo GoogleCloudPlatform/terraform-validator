@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/hashicorp/terraform-provider-google/helper/pathorcontents"
 	"github.com/hashicorp/terraform-provider-google/httpclient"
 	"github.com/terraform-providers/terraform-provider-google/version"
 
@@ -642,7 +641,7 @@ func (c *Config) synchronousTimeout() time.Duration {
 
 func (c *Config) getTokenSource(clientScopes []string) (oauth2.TokenSource, error) {
 	if c.AccessToken != "" {
-		contents, _, err := pathorcontents.Read(c.AccessToken)
+		contents, _, err := pathOrContents(c.AccessToken)
 		if err != nil {
 			return nil, fmt.Errorf("Error loading access token: %s", err)
 		}
@@ -654,7 +653,7 @@ func (c *Config) getTokenSource(clientScopes []string) (oauth2.TokenSource, erro
 	}
 
 	if c.Credentials != "" {
-		contents, _, err := pathorcontents.Read(c.Credentials)
+		contents, _, err := pathOrContents(c.Credentials)
 		if err != nil {
 			return nil, fmt.Errorf("Error loading credentials: %s", err)
 		}
