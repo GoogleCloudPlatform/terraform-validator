@@ -139,9 +139,8 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 		}
 	}
 
-	p := provider.Provider().(*schema.Provider)
 	return &Converter{
-		schema:          p,
+		schema:          provider.Provider(),
 		mapperFuncs:     mappers(),
 		cfg:             cfg,
 		ancestryManager: ancestryManager,
