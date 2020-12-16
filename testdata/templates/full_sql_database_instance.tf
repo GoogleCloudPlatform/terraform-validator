@@ -33,7 +33,7 @@ resource "google_sql_database_instance" "master" {
   region           = "us-central1"
 
   depends_on = [
-    "google_service_networking_connection.private_vpc_connection"
+    google_service_networking_connection.private_vpc_connection
   ]
 
   master_instance_name = "test-master_instance_name"
@@ -86,7 +86,7 @@ resource "google_sql_database_instance" "master" {
         expiration_time = "test-expiration_time"
       }
       ipv4_enabled    = true
-      private_network = "${google_compute_network.private_network.self_link}"
+      private_network = google_compute_network.private_network.self_link
       require_ssl     = true
     }
     location_preference {

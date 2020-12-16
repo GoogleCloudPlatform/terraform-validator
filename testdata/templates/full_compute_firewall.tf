@@ -29,7 +29,7 @@ provider "google" {
 
 resource "google_compute_firewall" "full_list_default_1" {
   name    = "test-firewall1"
-  network = "${google_compute_network.default.name}"
+  network = google_compute_network.default.name
 
   allow {
     protocol = "icmp"
