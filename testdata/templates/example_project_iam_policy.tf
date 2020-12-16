@@ -29,7 +29,7 @@ provider "google" {
 
 resource "google_project_iam_policy" "project" {
   project     = "{{.Provider.project}}"
-  policy_data = "${data.google_iam_policy.admin.policy_data}"
+  policy_data = data.google_iam_policy.admin.policy_data
 }
 
 data "google_iam_policy" "admin" {

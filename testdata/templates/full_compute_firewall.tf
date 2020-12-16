@@ -29,7 +29,7 @@ provider "google" {
 
 resource "google_compute_firewall" "full_list_default_1" {
   name    = "test-firewall1"
-  network = "${google_compute_network.default.name}"
+  network = google_compute_network.default.name
 
   allow {
     protocol = "icmp"
@@ -50,7 +50,7 @@ resource "google_compute_firewall" "full_list_default_1" {
 
 resource "google_compute_firewall" "full_list_default_2" {
   name    = "test-firewall2"
-  network = "${google_compute_network.default.name}"
+  network = google_compute_network.default.name
 
   deny {
     protocol = "icmp"
@@ -66,7 +66,7 @@ resource "google_compute_firewall" "full_list_default_2" {
 
 resource "google_compute_firewall" "full_list_default_3" {
   name    = "test-firewall3"
-  network = "${google_compute_network.default.name}"
+  network = google_compute_network.default.name
 
   deny {
     protocol = "icmp"

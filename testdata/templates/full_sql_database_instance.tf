@@ -33,7 +33,7 @@ resource "google_sql_database_instance" "master" {
   region           = "us-central1"
 
   depends_on = [
-    "google_service_networking_connection.private_vpc_connection"
+    google_service_networking_connection.private_vpc_connection
   ]
 
   master_instance_name = "test-master_instance_name"
@@ -86,7 +86,7 @@ resource "google_sql_database_instance" "master" {
         expiration_time = "test-expiration_time"
       }
       ipv4_enabled    = true
-      private_network = "${google_compute_network.private_network.self_link}"
+      private_network = google_compute_network.private_network.self_link
       require_ssl     = true
     }
     location_preference {
@@ -117,11 +117,11 @@ resource "google_compute_global_address" "private_ip_address" {
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
-  network       = "${google_compute_network.private_network.self_link}"
+  network       = google_compute_network.private_network.self_link
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = "${google_compute_network.private_network.self_link}"
+  network                 = google_compute_network.private_network.self_link
   service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = ["${google_compute_global_address.private_ip_address.name}"]
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 }
