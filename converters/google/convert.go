@@ -20,9 +20,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	provider "github.com/hashicorp/terraform-provider-google/v3/google"
 	"github.com/pkg/errors"
-	provider "github.com/terraform-providers/terraform-provider-google/google"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
@@ -45,9 +45,10 @@ type TerraformResource interface {
 // required (and not used) by downstream mappers.
 type nonImplementedResourceData struct{}
 
-func (nonImplementedResourceData) HasChange(string) bool         { return false }
-func (nonImplementedResourceData) Set(string, interface{}) error { return nil }
-func (nonImplementedResourceData) SetId(string)                  {}
+func (nonImplementedResourceData) HasChange(string) bool             { return false }
+func (nonImplementedResourceData) Set(string, interface{}) error     { return nil }
+func (nonImplementedResourceData) SetId(string)                      {}
+func (nonImplementedResourceData) GetProviderMeta(interface{}) error { return nil }
 
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).
@@ -139,9 +140,8 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 		}
 	}
 
-	p := provider.Provider().(*schema.Provider)
 	return &Converter{
-		schema:          p,
+		schema:          provider.Provider(),
 		mapperFuncs:     mappers(),
 		cfg:             cfg,
 		ancestryManager: ancestryManager,

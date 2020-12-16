@@ -19,6 +19,7 @@ import (
 
 	"github.com/forseti-security/config-validator/pkg/api/validator"
 	structpb "github.com/golang/protobuf/ptypes/struct"
+	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/genproto/googleapis/cloud/asset/v1"
 )
@@ -92,7 +93,7 @@ func TestProtoViaJSON(t *testing.T) {
 			if err := protoViaJSON(c.input, msg); err != nil {
 				t.Error(err)
 			}
-			require.EqualValues(t, c.expected, msg)
+			require.True(t, proto.Equal(c.expected, msg))
 		})
 	}
 }

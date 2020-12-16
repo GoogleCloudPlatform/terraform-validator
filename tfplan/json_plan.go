@@ -20,11 +20,30 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 )
 
 const maxChildModuleLevel = 10000
+
+// Resource is the terraform representation of a resource.
+type Resource struct {
+	Path Fullpath
+	*fieldGetter
+}
+
+// Kind returns the type of resource (i.e. "google_storage_bucket").
+func (r *Resource) Kind() string {
+	return r.Path.Kind
+}
+
+// Provider derives the provider from the resource prefix.
+// i.e. resource="google_storage_bucket" --> provider="google".
+func (r *Resource) Provider() string {
+	// NOTE: In order to differentiate between "google" and "google-beta"
+	// the resource fields will need to be inspected (i.e. "provider").
+	return strings.Split(r.Kind(), "_")[0]
+}
 
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
 // https://www.terraform.io/docs/internals/json-format.html#plan-representation
