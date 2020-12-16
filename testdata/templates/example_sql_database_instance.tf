@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "~> {{.Provider.version}}"
+    }
+  }
+}
+
 provider "google" {
-  version     = "~> {{.Provider.version}}"
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
