@@ -27,6 +27,11 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
+resource "google_service_account" "default" {
+  account_id   = "service-account-id"
+  display_name = "Service Account"
+}
+
 resource "google_compute_instance" "default" {
   name         = "test"
   machine_type = "n1-standard-1"
@@ -36,7 +41,7 @@ resource "google_compute_instance" "default" {
 
   boot_disk {
     initialize_params {
-      image = "projects/debian-cloud/global/images/debian-9"
+      image = "debian-cloud/debian-9"
     }
   }
 
@@ -64,6 +69,7 @@ resource "google_compute_instance" "default" {
   # metadata_startup_script = "echo hi > /test.txt"
 
   service_account {
-    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+    email  = google_service_account.default.email
+    scopes = ["cloud-platform"]
   }
 }

@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.20",
+  "terraform_version": "0.14.2",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -9,7 +9,7 @@
           "mode": "managed",
           "type": "google_compute_instance",
           "name": "default",
-          "provider_name": "google",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 6,
           "values": {
             "allow_stopping_for_update": null,
@@ -20,7 +20,7 @@
                 "disk_encryption_key_raw": null,
                 "initialize_params": [
                   {
-                    "image": "projects/debian-cloud/global/images/debian-9"
+                    "image": "debian-cloud/debian-9"
                   }
                 ],
                 "mode": "READ_WRITE"
@@ -29,6 +29,7 @@
             "can_ip_forward": false,
             "deletion_protection": false,
             "description": null,
+            "desired_status": null,
             "enable_display": null,
             "hostname": null,
             "labels": null,
@@ -49,6 +50,7 @@
                 "network": "default"
               }
             ],
+            "resource_policies": null,
             "scratch_disk": [
               {
                 "interface": "SCSI"
@@ -57,9 +59,7 @@
             "service_account": [
               {
                 "scopes": [
-                  "https://www.googleapis.com/auth/compute.readonly",
-                  "https://www.googleapis.com/auth/devstorage.read_only",
-                  "https://www.googleapis.com/auth/userinfo.email"
+                  "https://www.googleapis.com/auth/cloud-platform"
                 ]
               }
             ],
@@ -71,6 +71,20 @@
             "timeouts": null,
             "zone": "us-central1-a"
           }
+        },
+        {
+          "address": "google_service_account.default",
+          "mode": "managed",
+          "type": "google_service_account",
+          "name": "default",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 0,
+          "values": {
+            "account_id": "service-account-id",
+            "description": null,
+            "display_name": "Service Account",
+            "timeouts": null
+          }
         }
       ]
     }
@@ -81,7 +95,7 @@
       "mode": "managed",
       "type": "google_compute_instance",
       "name": "default",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
@@ -96,7 +110,7 @@
               "disk_encryption_key_raw": null,
               "initialize_params": [
                 {
-                  "image": "projects/debian-cloud/global/images/debian-9"
+                  "image": "debian-cloud/debian-9"
                 }
               ],
               "mode": "READ_WRITE"
@@ -105,6 +119,7 @@
           "can_ip_forward": false,
           "deletion_protection": false,
           "description": null,
+          "desired_status": null,
           "enable_display": null,
           "hostname": null,
           "labels": null,
@@ -125,6 +140,7 @@
               "network": "default"
             }
           ],
+          "resource_policies": null,
           "scratch_disk": [
             {
               "interface": "SCSI"
@@ -133,9 +149,7 @@
           "service_account": [
             {
               "scopes": [
-                "https://www.googleapis.com/auth/compute.readonly",
-                "https://www.googleapis.com/auth/devstorage.read_only",
-                "https://www.googleapis.com/auth/userinfo.email"
+                "https://www.googleapis.com/auth/cloud-platform"
               ]
             }
           ],
@@ -165,6 +179,7 @@
             }
           ],
           "cpu_platform": true,
+          "current_status": true,
           "guest_accelerator": true,
           "id": true,
           "instance_id": true,
@@ -197,8 +212,6 @@
             {
               "email": true,
               "scopes": [
-                false,
-                false,
                 false
               ]
             }
@@ -211,17 +224,38 @@
           "tags_fingerprint": true
         }
       }
+    },
+    {
+      "address": "google_service_account.default",
+      "mode": "managed",
+      "type": "google_service_account",
+      "name": "default",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "account_id": "service-account-id",
+          "description": null,
+          "display_name": "Service Account",
+          "timeouts": null
+        },
+        "after_unknown": {
+          "email": true,
+          "id": true,
+          "name": true,
+          "project": true,
+          "unique_id": true
+        }
+      }
     }
   ],
   "configuration": {
     "provider_config": {
       "google": {
-        "name": "google",
-        "expressions": {
-          "project": {
-            "constant_value": "{{.Provider.project}}"
-          }
-        }
+        "name": "google"
       }
     },
     "root_module": {
@@ -238,7 +272,7 @@
                 "initialize_params": [
                   {
                     "image": {
-                      "constant_value": "projects/debian-cloud/global/images/debian-9"
+                      "constant_value": "debian-cloud/debian-9"
                     }
                   }
                 ]
@@ -274,11 +308,14 @@
             ],
             "service_account": [
               {
+                "email": {
+                  "references": [
+                    "google_service_account.default"
+                  ]
+                },
                 "scopes": {
                   "constant_value": [
-                    "userinfo-email",
-                    "compute-ro",
-                    "storage-ro"
+                    "cloud-platform"
                   ]
                 }
               }
@@ -294,6 +331,22 @@
             }
           },
           "schema_version": 6
+        },
+        {
+          "address": "google_service_account.default",
+          "mode": "managed",
+          "type": "google_service_account",
+          "name": "default",
+          "provider_config_key": "google",
+          "expressions": {
+            "account_id": {
+              "constant_value": "service-account-id"
+            },
+            "display_name": {
+              "constant_value": "Service Account"
+            }
+          },
+          "schema_version": 0
         }
       ]
     }
