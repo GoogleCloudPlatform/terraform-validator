@@ -22,7 +22,7 @@
                 ]
             }
         ],
-        {{if eq .TFVersion "0.12"}}"disabled": false,{{end}}
+        "disabled": false,
         "logConfig": {
           "enable": false
         },
