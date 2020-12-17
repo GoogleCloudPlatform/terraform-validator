@@ -128,9 +128,7 @@
               {
                 "email": "test-email",
                 "scopes": [
-                  "https://www.googleapis.com/auth/compute.readonly",
-                  "https://www.googleapis.com/auth/devstorage.read_only",
-                  "https://www.googleapis.com/auth/userinfo.email"
+                  "https://www.googleapis.com/auth/cloud-platform"
                 ]
               }
             ],

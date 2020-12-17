@@ -13,7 +13,7 @@
         "displayDevice": {
           "enableDisplay": false
         },
-        "shieldedVmConfig": {
+        "shieldedInstanceConfig": {
           "enableIntegrityMonitoring": true,
           "enableSecureBoot": true,
           "enableVtpm": true
@@ -129,9 +129,7 @@
           {
             "email": "test-email",
             "scopes": [
-              "https://www.googleapis.com/auth/devstorage.read_only",
-              "https://www.googleapis.com/auth/userinfo.email",
-              "https://www.googleapis.com/auth/compute.readonly"
+              "https://www.googleapis.com/auth/cloud-platform"
             ]
           }
         ],
@@ -158,7 +156,7 @@
         "displayDevice": {
           "enableDisplay": false
         },
-        "shieldedVmConfig": {
+        "shieldedInstanceConfig": {
           "enableIntegrityMonitoring": false,
           "enableSecureBoot": false,
           "enableVtpm": false
