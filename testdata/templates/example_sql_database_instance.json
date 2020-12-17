@@ -15,7 +15,6 @@
         "region": "us-central1",
         "settings": {
           "pricingPlan": "PER_USE",
-          "replicationType": "SYNCHRONOUS",
           "storageAutoResize": true,
           "tier": "db-f1-micro"
         }
