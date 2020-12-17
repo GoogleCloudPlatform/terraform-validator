@@ -9,15 +9,12 @@
       "discovery_name": "Disk",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "diskEncryptionKey": null,
         "labels": {
           "environment": "dev"
         },
         "name": "test-disk",
         "physicalBlockSizeBytes": 4096,
         "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
-        "sourceImageEncryptionKey": null,
-        "sourceSnapshotEncryptionKey": null,
         "type": "projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/pd-ssd",
         "zone": "projects/{{.Provider.project}}/global/zones/us-central1-a"
       }
