@@ -9,22 +9,10 @@
       "discovery_name": "Cluster",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "addonsConfig": null,
-        "binaryAuthorization": null,
-        "defaultMaxPodsConstraint": null,
         "initialNodeCount": 1,
-        "ipAllocationPolicy": null,
-        "legacyAbac": null,
         "location": "us-central1",
-        "loggingService": "logging.googleapis.com/kubernetes",
-        "masterAuthorizedNetworksConfig": null,
-        "monitoringService": "monitoring.googleapis.com/kubernetes",
         "name": "my-gke-cluster",
-        "network": "projects/{{.Provider.project}}/global/networks/default",
-        "networkPolicy": null,
-        "nodeConfig": null,
-        "podSecurityPolicyConfig": null,
-        "privateClusterConfig": null
+        "network": "projects/{{.Provider.project}}/global/networks/default"
       }
     }
   },
@@ -38,7 +26,6 @@
       "discovery_name": "NodePool",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "autoscaling": null,
         "cluster": "projects/{{.Provider.project}}/global/clusters/my-gke-cluster",
         "config": {
           "machineType": "n1-standard-1",
@@ -46,14 +33,11 @@
             "disable-legacy-endpoints": "true"
           },
           "oauthScopes": [
-            "https://www.googleapis.com/auth/monitoring",
-            "https://www.googleapis.com/auth/logging.write"
+            "https://www.googleapis.com/auth/cloud-platform"
           ],
           "preemptible": true
         },
         "location": "us-central1",
-        "management": null,
-        "maxPodsConstraint": null,
         "name": "my-node-pool"
       }
     }
