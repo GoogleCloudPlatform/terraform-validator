@@ -16,7 +16,6 @@
           "env": "dev"
         },
         "location": "EU",
-        "defaultEncryptionConfiguration": null,
         "defaultTableExpirationMs": 3.6e+06
       }
     }

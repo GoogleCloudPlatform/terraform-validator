@@ -13,6 +13,8 @@ run-docker:
 	docker run -it -v `pwd`:/terraform-validator -v ${GOOGLE_APPLICATION_CREDENTIALS}:/terraform-validator/credentials.json --entrypoint=/bin/bash --env TEST_PROJECT=${PROJECT_ID} --env TEST_CREDENTIALS=./credentials.json terraform-validator;
 
 test-integration:
+	go version
+	terraform --version
 	go test -v -run=CLI ./test
 
 build-docker:

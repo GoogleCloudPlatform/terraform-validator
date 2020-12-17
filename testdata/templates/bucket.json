@@ -9,7 +9,6 @@
       "discovery_name": "Bucket",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-{{if eq .TFVersion "0.12"}}
         "billing": {},
         "lifecycle": {},
         "iamConfiguration": {
@@ -17,12 +16,6 @@
             "enabled": false
           }
         },
-{{else}}
-        "lifecycle": {
-          "rule": [
-          ]
-        },
-{{end}}
         "location": "EU",
         "name": "test-bucket",
         "project": "{{.Provider.project}}",

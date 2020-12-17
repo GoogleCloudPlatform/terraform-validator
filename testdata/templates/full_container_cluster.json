@@ -20,7 +20,6 @@
             "disabled": true
           }
         },
-        "binaryAuthorization": null,
         "defaultMaxPodsConstraint": {
           "maxPodsPerNode": 42
         },
@@ -100,7 +99,6 @@
             "test-tags"
           ]
         },
-        "podSecurityPolicyConfig": null,
         "privateClusterConfig": {
           "enablePrivateEndpoint": true,
           "enablePrivateNodes": true,

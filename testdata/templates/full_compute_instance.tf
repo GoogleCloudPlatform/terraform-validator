@@ -123,7 +123,7 @@ resource "google_compute_instance" "full_list_default_1" {
   }
   service_account {
     email  = "test-email"
-    scopes = ["userinfo-email", "compute-ro", "storage-ro"]
+    scopes = ["cloud-platform"]
   }
   shielded_instance_config {
     enable_secure_boot          = true
