@@ -11,7 +11,7 @@
       "data": {
         "billing": {},
         "iamConfiguration": {
-          "bucketPolicyOnly": {
+          "uniformBucketLevelAccess": {
             "enabled": false
           }
         },
