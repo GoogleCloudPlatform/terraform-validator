@@ -48,7 +48,7 @@
           "defaultKmsKeyName": "test-default_kms_key_name"
         },
         "iamConfiguration": {
-          "bucketPolicyOnly": {
+          "uniformBucketLevelAccess": {
             "enabled": true
           }
         },

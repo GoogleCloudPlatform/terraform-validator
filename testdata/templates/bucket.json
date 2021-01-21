@@ -12,7 +12,7 @@
         "billing": {},
         "lifecycle": {},
         "iamConfiguration": {
-          "bucketPolicyOnly": {
+          "uniformBucketLevelAccess": {
             "enabled": false
           }
         },
