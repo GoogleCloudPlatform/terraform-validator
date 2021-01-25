@@ -27,12 +27,17 @@ type convertFunc func(d converter.TerraformResourceData, config *converter.Confi
 // google_project_iam_member -> google.cloud.resourcemanager/Project
 type mergeFunc func(existing, incoming converter.Asset) converter.Asset
 
+// This represents an iam updater func like you would get from terraform-google-conversion
+type newResourceIamUpdaterFunc func(d converter.TerraformResourceData, config *converter.Config) (converter.ResourceIamUpdater, error)
+
 // mapper pairs related conversion/merging functions.
 type mapper struct {
 	// convert must be defined.
 	convert convertFunc
 	// merge may be defined.
 	merge mergeFunc
+	// new_iam_updater may be defined
+	newIamUpdater newResourceIamUpdaterFunc
 }
 
 // mappers maps terraform resource types (i.e. `google_project`) into
@@ -81,14 +86,16 @@ func mappers() map[string][]mapper {
 		},
 		"google_organization_iam_binding": {
 			{
-				convert: converter.GetOrganizationIamBindingCaiObject,
-				merge:   converter.MergeOrganizationIamBinding,
+				convert:       converter.GetOrganizationIamBindingCaiObject,
+				merge:         converter.MergeOrganizationIamBinding,
+				newIamUpdater: converter.NewOrganizationIamUpdater,
 			},
 		},
 		"google_organization_iam_member": {
 			{
-				convert: converter.GetOrganizationIamMemberCaiObject,
-				merge:   converter.MergeOrganizationIamMember,
+				convert:       converter.GetOrganizationIamMemberCaiObject,
+				merge:         converter.MergeOrganizationIamMember,
+				newIamUpdater: converter.NewOrganizationIamUpdater,
 			},
 		},
 		"google_folder_iam_policy": {

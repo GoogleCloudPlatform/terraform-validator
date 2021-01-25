@@ -49,6 +49,7 @@ func (nonImplementedResourceData) HasChange(string) bool             { return fa
 func (nonImplementedResourceData) Set(string, interface{}) error     { return nil }
 func (nonImplementedResourceData) SetId(string)                      {}
 func (nonImplementedResourceData) GetProviderMeta(interface{}) error { return nil }
+func (nonImplementedResourceData) Timeout(key string) time.Duration  { return time.Duration(1) }
 
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).
@@ -195,6 +196,31 @@ func (c *Converter) AddResource(r TerraformResource) error {
 		}
 
 		key := converted.Type + converted.Name
+
+		// The existence of a newIamUpdater function signals that this tf
+		// resource needs to be merged with existing remote IAM data to be useful.
+		// This will be run once, for the first IAM policy encountered.
+		if mapper.newIamUpdater != nil {
+			if _, exists := c.assets[key]; !exists {
+				updater, _ := mapper.newIamUpdater(data, c.cfg)
+				iam_policy, _ := updater.GetResourceIamPolicy()
+				var bindings []IAMBinding
+				for _, b := range iam_policy.Bindings {
+					bindings = append(bindings, IAMBinding{
+						Role:    b.Role,
+						Members: b.Members,
+					})
+				}
+				remoteAsset := Asset{
+					Name: converted.Name,
+					Type: converted.Type,
+					IAMPolicy: &IAMPolicy{
+						Bindings: bindings,
+					},
+				}
+				c.assets[key] = remoteAsset
+			}
+		}
 
 		if existing, exists := c.assets[key]; exists {
 			// The existance of a merge function signals that this tf resource maps to a
