@@ -145,6 +145,7 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 		schema:          provider.Provider(),
 		mapperFuncs:     mappers(),
 		cfg:             cfg,
+		offline:         offline,
 		ancestryManager: ancestryManager,
 		assets:          make(map[string]Asset),
 	}, nil
@@ -160,6 +161,9 @@ type Converter struct {
 	mapperFuncs map[string][]mapper
 
 	cfg *converter.Config
+
+	// If true, the converter should not attempt to make real API connections.
+	offline bool
 
 	// ancestryManager provides a manager to find the ancestry information for a project.
 	ancestryManager ancestrymanager.AncestryManager
@@ -200,7 +204,7 @@ func (c *Converter) AddResource(r TerraformResource) error {
 		// The existence of a newIamUpdater function signals that this tf
 		// resource needs to be merged with existing remote IAM data to be useful.
 		// This will be run once, for the first IAM policy encountered.
-		if mapper.newIamUpdater != nil {
+		if mapper.newIamUpdater != nil && !c.offline {
 			if _, exists := c.assets[key]; !exists {
 				updater, _ := mapper.newIamUpdater(data, c.cfg)
 				iam_policy, _ := updater.GetResourceIamPolicy()
