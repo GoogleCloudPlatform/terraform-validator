@@ -88,14 +88,12 @@ func mappers() map[string][]mapper {
 			{
 				convert:       converter.GetOrganizationIamBindingCaiObject,
 				merge:         converter.MergeOrganizationIamBinding,
-				newIamUpdater: converter.NewOrganizationIamUpdater,
 			},
 		},
 		"google_organization_iam_member": {
 			{
 				convert:       converter.GetOrganizationIamMemberCaiObject,
 				merge:         converter.MergeOrganizationIamMember,
-				newIamUpdater: converter.NewOrganizationIamUpdater,
 			},
 		},
 		"google_folder_iam_policy": {
@@ -126,12 +124,14 @@ func mappers() map[string][]mapper {
 			{
 				convert: converter.GetProjectIamBindingCaiObject,
 				merge:   converter.MergeProjectIamBinding,
+				newIamUpdater: converter.NewProjectIamUpdater,
 			},
 		},
 		"google_project_iam_member": {
 			{
 				convert: converter.GetProjectIamMemberCaiObject,
 				merge:   converter.MergeProjectIamMember,
+				newIamUpdater: converter.NewProjectIamUpdater,
 			},
 		},
 		"google_storage_bucket_iam_policy": {
