@@ -201,36 +201,38 @@ func (c *Converter) AddResource(r TerraformResource) error {
 
 		key := converted.Type + converted.Name
 
-		// The existence of a newIamUpdater function signals that this tf
-		// resource needs to be merged with existing remote IAM data to be useful.
-		// This will be run once, for the first IAM policy encountered.
-		if mapper.newIamUpdater != nil && !c.offline {
-			if _, exists := c.assets[key]; !exists {
-				updater, _ := mapper.newIamUpdater(data, c.cfg)
-				iam_policy, _ := updater.GetResourceIamPolicy()
-				var bindings []IAMBinding
-				for _, b := range iam_policy.Bindings {
-					bindings = append(bindings, IAMBinding{
-						Role:    b.Role,
-						Members: b.Members,
-					})
-				}
-				remoteAsset := Asset{
-					Name: converted.Name,
-					Type: converted.Type,
-					IAMPolicy: &IAMPolicy{
-						Bindings: bindings,
-					},
-				}
-				c.assets[key] = remoteAsset
-			}
-		}
-
 		if existing, exists := c.assets[key]; exists {
 			// The existance of a merge function signals that this tf resource maps to a
 			// patching operation on an API resource.
 			if mapper.merge != nil {
-				converted = mapper.merge(existing.converterAsset, converted)
+				converterAsset := existing.converterAsset
+
+				// The existence of a newIamUpdater function signals that this tf
+				// resource needs to be merged with existing remote IAM data to be useful.
+				// We pre-merge that data prior to runner mapper.merge.
+				if mapper.newIamUpdater != nil && !c.offline && existing.IAMPolicy == nil {
+					updater, err := mapper.newIamUpdater(data, c.cfg)
+					if err != nil {
+						return err
+					}
+					iamPolicy, err := updater.GetResourceIamPolicy()
+					if err != nil {
+						return err
+					}
+					fmt.Printf("%+v\n", iamPolicy)
+					var bindings []converter.IAMBinding
+					for _, b := range iamPolicy.Bindings {
+						bindings = append(bindings, converter.IAMBinding{
+							Role:    b.Role,
+							Members: b.Members,
+						})
+					}
+					converterAsset.IAMPolicy = &converter.IAMPolicy{
+						Bindings: bindings,
+					}
+				}
+
+				converted = mapper.merge(converterAsset, converted)
 			} else {
 				// If a merge function does not exist ignore the asset and return
 				// a checkable error.
