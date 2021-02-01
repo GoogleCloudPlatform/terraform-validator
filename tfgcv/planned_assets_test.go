@@ -62,22 +62,3 @@ func TestReadPlannedAssets(t *testing.T) {
 		})
 	}
 }
-
-func TestReadCurrentAssets(t *testing.T) {
-	for _, tt := range testCases(t) {
-		t.Run(tt.name, func(t *testing.T) {
-			testFile := filepath.Join(testDataDir, tt.args.file)
-			var offline bool
-			offline = true
-			ctx := context.Background()
-			got, err := ReadCurrentAssets(ctx, testFile, tt.args.project, tt.args.ancestry, offline)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadCurrentAssets() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.want {
-				t.Errorf("ReadCurrentAssets() = %v, want %v", len(got), tt.want)
-			}
-		})
-	}
-}

@@ -64,43 +64,6 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 	return converter.Assets(), nil
 }
 
-// ReadCurrentAssets extracts CAI assets from a terraform plan file.
-// This is the same as ReadPlannedAssets, but operates on the current rather than
-// the planned resources.
-func ReadCurrentAssets(ctx context.Context, path, project, ancestry string, offline bool) ([]google.Asset, error) {
-	converter, err := newConverter(ctx, path, project, ancestry, offline)
-	if err != nil {
-		return nil, err
-	}
-
-	var resources []tfplan.Resource
-
-	data, err := readTF12Data(path)
-	if err != nil {
-		return nil, err
-	}
-	if ".json" != filepath.Ext(path) {
-		return nil, errors.New(fmt.Sprintf("Terraform 0.12 support plans only in JSON format, got: %s", filepath.Ext(path)))
-	}
-
-	resources, err = tfplan.ComposeCurrentTF12Resources(data, converter.Schemas())
-	if err != nil {
-		return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
-	}
-
-	for _, r := range resources {
-		if err := converter.AddResource(&r); err != nil {
-			if errors.Cause(err) == google.ErrDuplicateAsset {
-				glog.Warningf("converting resource: %v", err)
-			} else {
-				return nil, errors.Wrapf(err, "converting resource %v", r.Kind())
-			}
-		}
-	}
-
-	return converter.Assets(), nil
-}
-
 func newConverter(ctx context.Context, path, project, ancestry string, offline bool) (*google.Converter, error) {
 	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
 	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)

@@ -111,17 +111,6 @@ func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]R
 	return jsonToResources(resources, schemas), nil
 }
 
-// ComposeCurrentTF12Resources inspects a plan and returns the current resources that match the provided resource schema map.
-// This works the same as ComposeTF12Resources but operates on current rather than planned resources.
-func ComposeCurrentTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
-	plan, err := readPlan(data)
-	if err != nil {
-		return nil, err
-	}
-	resources := readCurrentJSONResources(plan)
-	return jsonToResources(resources, schemas), nil
-}
-
 // jsonToResource converts the jsonResources to tfplan.Resource using the provided schemas.
 // Any resources not supported by the schemas are silently skipped.
 func jsonToResources(resources []jsonResource, schemas map[string]*schema.Resource) []Resource {
@@ -264,26 +253,6 @@ func readPlannedJSONResources(plan jsonPlan) []jsonResource {
 	}
 	for _, module := range plan.PlannedValues.RootModules.ChildModules {
 		result = append(result, resourcesFromModule(&module, 0)...)
-	}
-	return result
-}
-
-// readCurrentJSONResources constructs jsonResources for the current state.
-func readCurrentJSONResources(plan jsonPlan) []jsonResource {
-	var result []jsonResource
-	for _, c := range plan.ResourceChanges {
-		// Ignore resources being created because they don't currently exist.
-		if c.isCreate() {
-			continue
-		}
-		result = append(result, jsonResource{
-			Name:         c.Name,
-			Address:      c.Address,
-			Mode:         c.Mode,
-			Kind:         c.Kind,
-			ProviderName: c.ProviderName,
-			Values:       c.Change.Before,
-		})
 	}
 	return result
 }
