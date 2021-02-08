@@ -39,7 +39,7 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 		return nil, err
 	}
 
-	var resources []tfplan.Resource
+	var resources []google.FakeResourceData
 
 	data, err := readTF12Data(path)
 	if err != nil {

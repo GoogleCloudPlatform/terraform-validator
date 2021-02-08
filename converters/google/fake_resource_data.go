@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tfplan
+// In order to interact with terraform-google-conversion, we need to be able to create
+// "terraform resource data" that supports a very limited subset of the API actually
+// used during the conversion process.
+package google
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -22,75 +26,43 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-// newFieldGetter accepts a resource schema map (field name --> Schema),
-// a state instance, and a diff and returns a type with field getter methods.
-func newFieldGetter(sch map[string]*schema.Schema, state *terraform.InstanceState, diff *terraform.InstanceDiff) *fieldGetter {
-	if state == nil && diff == nil {
-		panic("both state and diff should not be nil")
-	}
-
-	var baseState map[string]string
-	if state != nil {
-		baseState = state.Attributes
-	} else {
-		baseState = make(map[string]string)
-	}
-
-	stateReader := &schema.MapFieldReader{
-		Map:    schema.BasicMapReader(baseState),
-		Schema: sch,
-	}
-
-	var rdr schema.FieldReader
-	if diff == nil {
-		rdr = stateReader
-	} else {
-		rdr = &schema.DiffFieldReader{
-			Diff:   diff,
-			Source: stateReader,
-			Schema: sch,
-		}
-	}
-
-	return &fieldGetter{
-		rdr:    rdr,
-		schema: sch,
-		state:  state,
-	}
-}
-
-// fieldGetter exposes the ability to get terraform resource instance
-// field values.
-type fieldGetter struct {
-	rdr    schema.FieldReader
+// Compare to https://github.com/hashicorp/terraform-plugin-sdk/blob/97b4465/helper/schema/resource_data.go#L15
+type FakeResourceData struct {
+	kind   string
 	schema map[string]*schema.Schema
 	state  *terraform.InstanceState
+	reader schema.FieldReader
+}
+
+// Kind returns the type of resource (i.e. "google_storage_bucket").
+func (d *FakeResourceData) Kind() string {
+	return d.kind
 }
 
 // Id returns the ID of the resource from state.
-func (g *fieldGetter) Id() string {
-	if g.state != nil {
-		return g.state.ID
+func (d *FakeResourceData) Id() string {
+	if d.state != nil {
+		return d.state.ID
 	}
 	return ""
 }
 
 // Get reads a single field by key.
-func (g *fieldGetter) Get(name string) interface{} {
-	val, _ := g.GetOk(name)
+func (d *FakeResourceData) Get(name string) interface{} {
+	val, _ := d.GetOk(name)
 	return val
 }
 
 // Get reads a single field by key and returns a boolean indicating
 // whether the field exists.
-func (g *fieldGetter) GetOk(name string) (interface{}, bool) {
-	res, err := g.rdr.ReadField(strings.Split(name, "."))
+func (d *FakeResourceData) GetOk(name string) (interface{}, bool) {
+	res, err := d.reader.ReadField(strings.Split(name, "."))
 	if err != nil {
 		return nil, false
 	}
 
 	addr := strings.Split(name, ".")
-	schemaPath := addrToSchema(addr, g.schema)
+	schemaPath := addrToSchema(addr, d.schema)
 	if len(schemaPath) == 0 {
 		return nil, false
 	}
@@ -100,8 +72,23 @@ func (g *fieldGetter) GetOk(name string) (interface{}, bool) {
 
 // GetOkExists currently just calls GetOk but should be updated to support
 // schema.ResourceData.GetOkExists functionality.
-func (g *fieldGetter) GetOkExists(name string) (interface{}, bool) {
-	return g.GetOk(name)
+func (d *FakeResourceData) GetOkExists(name string) (interface{}, bool) {
+	return d.GetOk(name)
+}
+
+func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, values map[string]interface{}) FakeResourceData {
+	state := map[string]string{}
+	var address []string
+	attributes(values, address, state, resourceSchema)
+	reader := &schema.MapFieldReader{
+		Map:    schema.BasicMapReader(state),
+		Schema: resourceSchema,
+	}
+	return FakeResourceData{
+		kind:   kind,
+		schema: resourceSchema,
+		reader: reader,
+	}
 }
 
 // addrToSchema finds the final element schema for the given address
@@ -229,4 +216,86 @@ func addrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.
 	}
 
 	return result
+}
+
+// attributes function takes json parsed JSON object (value param) and fill map[string]string with it's
+// content (state param) for example JSON:
+//
+//	{
+//		"foo": {
+//			"name" : "value"
+//		},
+//	  "list": ["item1", "item2"]
+//	}
+//
+// will be translated to map with following key/value set:
+//
+//	foo.name => "value"
+//	list.# => 2
+//	list.0 => "item1"
+//	list.1 => "item2"
+//
+// Map above will be passed to schema.BasicMapReader that have all appropriate logic to read fields
+// correctly during conversion to CAI.
+func attributes(value interface{}, address []string, state map[string]string, schemas map[string]*schema.Schema) {
+	schemaArr := addrToSchema(address, schemas)
+	if len(schemaArr) == 0 {
+		return
+	}
+	sch := schemaArr[len(schemaArr)-1]
+	addr := strings.Join(address, ".")
+	// int is special case, can't use handle it in main switch because number will be always parsed from JSON as float
+	// need to identify it by schema.TypeInt and convert to int from int or float
+	if sch.Type == schema.TypeInt && value != nil {
+		switch value.(type) {
+		case int:
+			state[addr] = strconv.Itoa(value.(int))
+		case float64:
+			state[addr] = strconv.Itoa(int(value.(float64)))
+		case float32:
+			state[addr] = strconv.Itoa(int(value.(float32)))
+		}
+		return
+	}
+
+	switch value.(type) {
+	case nil:
+		defaultValue, err := sch.DefaultValue()
+		if err != nil {
+			panic(fmt.Sprintf("error getting default value for %v", address))
+		}
+		if defaultValue == nil {
+			defaultValue = sch.ZeroValue()
+		}
+		attributes(defaultValue, address, state, schemas)
+	case float64:
+		state[addr] = strconv.FormatFloat(value.(float64), 'f', 6, 64)
+	case float32:
+		state[addr] = strconv.FormatFloat(value.(float64), 'f', 6, 32)
+	case string:
+		state[addr] = value.(string)
+	case bool:
+		state[addr] = strconv.FormatBool(value.(bool))
+	case int:
+		state[addr] = strconv.Itoa(value.(int))
+	case []interface{}:
+		arr := value.([]interface{})
+		countAddr := addr + ".#"
+		state[countAddr] = strconv.Itoa(len(arr))
+		for i, e := range arr {
+			addr := append(address, strconv.Itoa(i))
+			attributes(e, addr, state, schemas)
+		}
+	case map[string]interface{}:
+		m := value.(map[string]interface{})
+		for k, v := range m {
+			addr := append(address, k)
+			attributes(v, addr, state, schemas)
+		}
+	case *schema.Set:
+		set := value.(*schema.Set)
+		attributes(set.List(), address, state, schemas)
+	default:
+		panic(fmt.Sprintf("unrecognized type %T", value))
+	}
 }
