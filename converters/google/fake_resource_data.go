@@ -23,15 +23,13 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 // Compare to https://github.com/hashicorp/terraform-plugin-sdk/blob/97b4465/helper/schema/resource_data.go#L15
 type FakeResourceData struct {
+	reader schema.FieldReader
 	kind   string
 	schema map[string]*schema.Schema
-	state  *terraform.InstanceState
-	reader schema.FieldReader
 }
 
 // Kind returns the type of resource (i.e. "google_storage_bucket").
@@ -41,9 +39,6 @@ func (d *FakeResourceData) Kind() string {
 
 // Id returns the ID of the resource from state.
 func (d *FakeResourceData) Id() string {
-	if d.state != nil {
-		return d.state.ID
-	}
 	return ""
 }
 
