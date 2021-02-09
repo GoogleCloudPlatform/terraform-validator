@@ -56,6 +56,7 @@ func mappers() map[string][]mapper {
 		"google_bigquery_dataset":      {{convert: converter.GetBigQueryDatasetCaiObject}},
 		"google_spanner_instance":      {{convert: converter.GetSpannerInstanceCaiObject}},
 		"google_project_service":       {{convert: converter.GetServiceUsageCaiObject}},
+		"google_pubsub_topic":          {{convert: converter.GetPubsubTopicCaiObject}},
 
 		// Terraform resources of type "google_project" have a 1:N relationship with CAI assets.
 		"google_project": {
