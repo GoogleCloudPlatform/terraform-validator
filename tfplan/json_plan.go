@@ -58,7 +58,7 @@ func (c *ResourceChange) Kind() string {
 }
 
 // ComposeTF12Resources is a thin wrapper around ReadResourceChanges as a compatibility shim.
-func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]ResourceChange, error) {
+func ComposeTF12Resources(data []byte, _ map[string]*schema.Resource) ([]ResourceChange, error) {
 	return ReadResourceChanges(data)
 }
 
