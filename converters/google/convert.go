@@ -24,6 +24,7 @@ import (
 	provider "github.com/hashicorp/terraform-provider-google/v3/google"
 	"github.com/pkg/errors"
 
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 )
@@ -179,7 +180,31 @@ func (c *Converter) Schemas() map[string]*schema.Resource {
 }
 
 // AddResource converts a terraform resource and stores the converted asset.
-func (c *Converter) AddResource(r TerraformResource) error {
+func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
+	// Compatibility shim: silently do nothing if this resource isn't
+	// being added or changed.
+	if !(rc.IsCreate() || rc.IsUpdate() || rc.IsDeleteCreate()) {
+		return nil
+	}
+
+	// Compatibility shim: silently skip unknown resources
+	resource, ok := c.schema.ResourcesMap[rc.Type]
+	if !ok {
+		return nil
+	}
+
+	// Compatibility shim: silently skip unsupported resources
+	if _, ok := c.mapperFuncs[rc.Type]; !ok {
+		return nil
+	}
+
+	rd := NewFakeResourceData(
+		rc.Type,
+		resource.Schema,
+		rc.Change.After,
+	)
+	r := &rd
+
 	for _, mapper := range c.mapperFuncs[r.Kind()] {
 		data := struct {
 			TerraformResource
