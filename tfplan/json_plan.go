@@ -15,35 +15,15 @@ package tfplan
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 )
 
 const maxChildModuleLevel = 10000
-
-// Resource is the terraform representation of a resource.
-type Resource struct {
-	Path Fullpath
-	*fieldGetter
-}
-
-// Kind returns the type of resource (i.e. "google_storage_bucket").
-func (r *Resource) Kind() string {
-	return r.Path.Kind
-}
-
-// Provider derives the provider from the resource prefix.
-// i.e. resource="google_storage_bucket" --> provider="google".
-func (r *Resource) Provider() string {
-	// NOTE: In order to differentiate between "google" and "google-beta"
-	// the resource fields will need to be inspected (i.e. "provider").
-	return strings.Split(r.Kind(), "_")[0]
-}
 
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
 // https://www.terraform.io/docs/internals/json-format.html#plan-representation
@@ -102,7 +82,7 @@ type jsonResource struct {
 
 // ComposeTF12Resources inspects a plan and returns the planned resources that match the provided resource schema map.
 // ComposeTF12Resources works in a same way as tfplan.ComposeResources and returns array of tfplan.Resource
-func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]Resource, error) {
+func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]google.FakeResourceData, error) {
 	plan, err := readPlan(data)
 	if err != nil {
 		return nil, err
@@ -113,28 +93,20 @@ func ComposeTF12Resources(data []byte, schemas map[string]*schema.Resource) ([]R
 
 // jsonToResource converts the jsonResources to tfplan.Resource using the provided schemas.
 // Any resources not supported by the schemas are silently skipped.
-func jsonToResources(resources []jsonResource, schemas map[string]*schema.Resource) []Resource {
-	var instances []Resource
+func jsonToResources(resources []jsonResource, schemas map[string]*schema.Resource) []google.FakeResourceData {
+	var instances []google.FakeResourceData
 	for _, r := range resources {
 		sch, ok := schemas[r.Kind]
 		if !ok {
 			// Unsupported in given provider schema.
 			continue
 		}
-		res := map[string]string{}
-		var address []string
-		attributes(r.Values, address, res, sch.Schema)
-		reader := &schema.MapFieldReader{
-			Map:    schema.BasicMapReader(res),
-			Schema: sch.Schema,
-		}
-		instances = append(instances, Resource{
-			Path: Fullpath{r.Kind, r.Name, r.Module},
-			fieldGetter: &fieldGetter{
-				rdr:    reader,
-				schema: sch.Schema,
-			},
-		})
+
+		instances = append(instances, google.NewFakeResourceData(
+			r.Kind,
+			sch.Schema,
+			r.Values,
+		))
 	}
 	return instances
 }
@@ -147,88 +119,6 @@ func jsonResourceFromChange(c jsonResourceChange) jsonResource {
 		Kind:         c.Kind,
 		ProviderName: c.ProviderName,
 		Values:       c.Change.Before,
-	}
-}
-
-// attributes function takes json parsed JSON object (value param) and fill map[string]string with it's
-// content (res param) for example JSON:
-//
-//	{
-//		"foo": {
-//			"name" : "value"
-//		},
-//	  "list": ["item1", "item2"]
-//	}
-//
-// will be translated to map with following key/value set:
-//
-//	foo.name => "value"
-//	list.# => 2
-//	list.0 => "item1"
-//	list.1 => "item2"
-//
-// Map above will be passed to schema.BasicMapReader that have all appropriate logic to read fields
-// correctly during conversion to CAI.
-func attributes(value interface{}, address []string, res map[string]string, schemas map[string]*schema.Schema) {
-	schemaArr := addrToSchema(address, schemas)
-	if len(schemaArr) == 0 {
-		return
-	}
-	sch := schemaArr[len(schemaArr)-1]
-	addr := strings.Join(address, ".")
-	// int is special case, can't use handle it in main switch because number will be always parsed from JSON as float
-	// need to identify it by schema.TypeInt and convert to int from int or float
-	if sch.Type == schema.TypeInt && value != nil {
-		switch value.(type) {
-		case int:
-			res[addr] = strconv.Itoa(value.(int))
-		case float64:
-			res[addr] = strconv.Itoa(int(value.(float64)))
-		case float32:
-			res[addr] = strconv.Itoa(int(value.(float32)))
-		}
-		return
-	}
-
-	switch value.(type) {
-	case nil:
-		defaultValue, err := sch.DefaultValue()
-		if err != nil {
-			panic(fmt.Sprintf("error getting default value for %v", address))
-		}
-		if defaultValue == nil {
-			defaultValue = sch.ZeroValue()
-		}
-		attributes(defaultValue, address, res, schemas)
-	case float64:
-		res[addr] = strconv.FormatFloat(value.(float64), 'f', 6, 64)
-	case float32:
-		res[addr] = strconv.FormatFloat(value.(float64), 'f', 6, 32)
-	case string:
-		res[addr] = value.(string)
-	case bool:
-		res[addr] = strconv.FormatBool(value.(bool))
-	case int:
-		res[addr] = strconv.Itoa(value.(int))
-	case []interface{}:
-		arr := value.([]interface{})
-		countAddr := addr + ".#"
-		res[countAddr] = strconv.Itoa(len(arr))
-		for i, e := range arr {
-			addr := append(address, strconv.Itoa(i))
-			attributes(e, addr, res, schemas)
-		}
-	case map[string]interface{}:
-		m := value.(map[string]interface{})
-		for k, v := range m {
-			addr := append(address, k)
-			attributes(v, addr, res, schemas)
-		}
-	case *schema.Set:
-		set := value.(*schema.Set)
-		attributes(set.List(), address, res, schemas)
-	default:
-		panic(fmt.Sprintf("unrecognized type %T", value))
 	}
 }
 
