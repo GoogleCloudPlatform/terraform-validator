@@ -39,16 +39,14 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 		return nil, err
 	}
 
-	var resources []google.FakeResourceData
-
 	data, err := readTF12Data(path)
 	if err != nil {
 		return nil, err
 	}
 
-	resources, err = tfplan.ComposeTF12Resources(data, converter.Schemas())
+	resources, err := tfplan.ComposeTF12Resources(data, converter.Schemas())
 	if err != nil {
-		return nil, errors.Wrap(err, "unmarshal from JSON and composing terraform plan")
+		return nil, errors.Wrap(err, "reading resource changes")
 	}
 
 	for _, r := range resources {
