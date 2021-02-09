@@ -20,8 +20,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const maxChildModuleLevel = 10000
-
 // jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
 // https://www.terraform.io/docs/internals/json-format.html#plan-representation
 type jsonPlan struct {
