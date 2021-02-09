@@ -181,8 +181,9 @@ func (c *Converter) Schemas() map[string]*schema.Resource {
 
 // AddResource converts a terraform resource and stores the converted asset.
 func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
-	// Compatibility shim: silently do nothing with deleted resources.
-	if len(rc.Change.Actions) == 1 && rc.Change.Actions[0] == "delete" {
+	// Compatibility shim: silently do nothing if this resource isn't
+	// being added or changed.
+	if !(rc.IsCreate() || rc.IsUpdate() || rc.IsDeleteCreate()) {
 		return nil
 	}
 

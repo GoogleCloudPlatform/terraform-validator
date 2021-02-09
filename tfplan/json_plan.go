@@ -47,9 +47,16 @@ type ResourceChange struct {
 	} `json:"change"`
 }
 
-// isCreate returns true if the action on the resource is ["create"].
-func (c *ResourceChange) isCreate() bool {
+func (c *ResourceChange) IsCreate() bool {
 	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "create"
+}
+
+func (c *ResourceChange) IsUpdate() bool {
+	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "update"
+}
+
+func (c *ResourceChange) IsDeleteCreate() bool {
+	return len(c.Change.Actions) == 2 && c.Change.Actions[0] == "delete"
 }
 
 // compatibility shim until ResourceChange is expected by all callers.

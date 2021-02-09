@@ -377,7 +377,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "description": null,
@@ -460,7 +460,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "allow": [
@@ -567,7 +567,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "allow_stopping_for_update": null,
@@ -791,7 +791,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "folder": "my-folder",
@@ -824,7 +824,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "folder": "my-folder",
@@ -850,7 +850,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "folder": "my-folder",
@@ -874,7 +874,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "members": [
@@ -907,7 +907,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "member": "user:jane@example.com",
@@ -933,7 +933,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "org_id": "123456789",
@@ -957,7 +957,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "auto_create_network": true,
@@ -1002,7 +1002,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "members": [
@@ -1035,7 +1035,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "member": "user:jane@example.com",
@@ -1061,7 +1061,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "authoritative": null,
@@ -1090,7 +1090,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "database_version": "POSTGRES_9_6",
@@ -1179,7 +1179,7 @@
       "provider_name": "google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
         "before": {
           "cors": [
