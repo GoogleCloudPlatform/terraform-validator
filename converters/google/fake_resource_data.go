@@ -71,6 +71,13 @@ func (d *FakeResourceData) GetOkExists(name string) (interface{}, bool) {
 	return d.GetOk(name)
 }
 
+// These methods are required by some mappers but we don't actually have (or need)
+// implementations for them.
+func (d *FakeResourceData) HasChange(string) bool             { return false }
+func (d *FakeResourceData) Set(string, interface{}) error     { return nil }
+func (d *FakeResourceData) SetId(string)                      {}
+func (d *FakeResourceData) GetProviderMeta(interface{}) error { return nil }
+
 func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, values map[string]interface{}) FakeResourceData {
 	state := map[string]string{}
 	var address []string

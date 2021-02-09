@@ -25,7 +25,6 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
 
@@ -44,19 +43,14 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 		return nil, err
 	}
 
-	resources, err := tfplan.ComposeTF12Resources(data, converter.Schemas())
+	changes, err := tfplan.ReadResourceChanges(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "reading resource changes")
 	}
 
-	for _, r := range resources {
-		if err := converter.AddResource(&r); err != nil {
-			if errors.Cause(err) == google.ErrDuplicateAsset {
-				glog.Warningf("converting resource: %v", err)
-			} else {
-				return nil, errors.Wrapf(err, "converting resource %v", r.Kind())
-			}
-		}
+	err = converter.AddResourceChanges(changes)
+	if err != nil {
+		return nil, errors.Wrap(err, "adding resource changes to converter")
 	}
 
 	return converter.Assets(), nil
