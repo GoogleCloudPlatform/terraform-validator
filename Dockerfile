@@ -1,4 +1,4 @@
-FROM golang:1.11
+FROM golang:1.14
 
 RUN apt-get update && apt-get -y install wget unzip
 
@@ -7,7 +7,6 @@ RUN wget https://releases.hashicorp.com/terraform/0.12.20/terraform_0.12.20_linu
 
 
 ENV GO111MODULE=on
-ENV GOFLAGS=-mod=vendor
 WORKDIR /terraform-validator
 COPY . .
 RUN make build
