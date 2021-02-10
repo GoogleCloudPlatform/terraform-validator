@@ -215,8 +215,8 @@ func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
 		if existing, exists := c.assets[key]; exists {
 			// The existance of a merge function signals that this tf resource maps to a
 			// patching operation on an API resource.
-			if mapper.merge != nil {
-				converted = mapper.merge(existing.converterAsset, converted)
+			if mapper.mergeCreateUpdate != nil {
+				converted = mapper.mergeCreateUpdate(existing.converterAsset, converted)
 			} else {
 				// If a merge function does not exist ignore the asset and return
 				// a checkable error.

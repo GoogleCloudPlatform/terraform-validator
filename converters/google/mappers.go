@@ -22,17 +22,21 @@ import (
 
 type convertFunc func(d converter.TerraformResourceData, config *converter.Config) (converter.Asset, error)
 
-// mergeFunc combines terraform resources that have a many-to-one relationship
-// with CAI assets, i.e:
-// google_project_iam_member -> google.cloud.resourcemanager/Project
+// fetchFunc allows initial data for a resource to be fetched from the API and merged
+// with the planned changes. This is useful for resources that are only partially managed
+// by Terraform, like IAM policies managed with member/binding resources.
+type fetchFunc func(data converter.TerraformResourceData, config *converter.Config) (converter.Asset, error)
+
+// mergeFunc combines multiple terraform resources into a single CAI asset.
+// The incoming asset will either be an asset that was created/updated or deleted.
 type mergeFunc func(existing, incoming converter.Asset) converter.Asset
 
 // mapper pairs related conversion/merging functions.
 type mapper struct {
-	// convert must be defined.
-	convert convertFunc
-	// merge may be defined.
-	merge mergeFunc
+	convert           convertFunc // required
+	fetch             fetchFunc   // optional
+	mergeCreateUpdate mergeFunc   // optional
+	mergeDelete       mergeFunc   // optional
 }
 
 // mappers maps terraform resource types (i.e. `google_project`) into
@@ -61,8 +65,8 @@ func mappers() map[string][]mapper {
 		// Terraform resources of type "google_project" have a 1:N relationship with CAI assets.
 		"google_project": {
 			{
-				convert: converter.GetProjectCaiObject,
-				merge:   mergeProject,
+				convert:           converter.GetProjectCaiObject,
+				mergeCreateUpdate: mergeProject,
 			},
 			{convert: converter.GetProjectBillingInfoCaiObject},
 		},
@@ -70,80 +74,80 @@ func mappers() map[string][]mapper {
 		// Terraform IAM policy resources have a N:1 relationship with CAI assets.
 		"google_organization_iam_policy": {
 			{
-				convert: converter.GetOrganizationIamPolicyCaiObject,
-				merge:   converter.MergeOrganizationIamPolicy,
+				convert:           converter.GetOrganizationIamPolicyCaiObject,
+				mergeCreateUpdate: converter.MergeOrganizationIamPolicy,
 			},
 		},
 		"google_project_organization_policy": {
 			{
-				convert: converter.GetProjectOrgPolicyCaiObject,
-				merge:   converter.MergeProjectOrgPolicy,
+				convert:           converter.GetProjectOrgPolicyCaiObject,
+				mergeCreateUpdate: converter.MergeProjectOrgPolicy,
 			},
 		},
 		"google_organization_iam_binding": {
 			{
-				convert: converter.GetOrganizationIamBindingCaiObject,
-				merge:   converter.MergeOrganizationIamBinding,
+				convert:           converter.GetOrganizationIamBindingCaiObject,
+				mergeCreateUpdate: converter.MergeOrganizationIamBinding,
 			},
 		},
 		"google_organization_iam_member": {
 			{
-				convert: converter.GetOrganizationIamMemberCaiObject,
-				merge:   converter.MergeOrganizationIamMember,
+				convert:           converter.GetOrganizationIamMemberCaiObject,
+				mergeCreateUpdate: converter.MergeOrganizationIamMember,
 			},
 		},
 		"google_folder_iam_policy": {
 			{
-				convert: converter.GetFolderIamPolicyCaiObject,
-				merge:   converter.MergeFolderIamPolicy,
+				convert:           converter.GetFolderIamPolicyCaiObject,
+				mergeCreateUpdate: converter.MergeFolderIamPolicy,
 			},
 		},
 		"google_folder_iam_binding": {
 			{
-				convert: converter.GetFolderIamBindingCaiObject,
-				merge:   converter.MergeFolderIamBinding,
+				convert:           converter.GetFolderIamBindingCaiObject,
+				mergeCreateUpdate: converter.MergeFolderIamBinding,
 			},
 		},
 		"google_folder_iam_member": {
 			{
-				convert: converter.GetFolderIamMemberCaiObject,
-				merge:   converter.MergeFolderIamMember,
+				convert:           converter.GetFolderIamMemberCaiObject,
+				mergeCreateUpdate: converter.MergeFolderIamMember,
 			},
 		},
 		"google_project_iam_policy": {
 			{
-				convert: converter.GetProjectIamPolicyCaiObject,
-				merge:   converter.MergeProjectIamPolicy,
+				convert:           converter.GetProjectIamPolicyCaiObject,
+				mergeCreateUpdate: converter.MergeProjectIamPolicy,
 			},
 		},
 		"google_project_iam_binding": {
 			{
-				convert: converter.GetProjectIamBindingCaiObject,
-				merge:   converter.MergeProjectIamBinding,
+				convert:           converter.GetProjectIamBindingCaiObject,
+				mergeCreateUpdate: converter.MergeProjectIamBinding,
 			},
 		},
 		"google_project_iam_member": {
 			{
-				convert: converter.GetProjectIamMemberCaiObject,
-				merge:   converter.MergeProjectIamMember,
+				convert:           converter.GetProjectIamMemberCaiObject,
+				mergeCreateUpdate: converter.MergeProjectIamMember,
 			},
 		},
 		"google_storage_bucket_iam_policy": {
 			{
-				convert: converter.GetBucketIamPolicyCaiObject,
-				merge:   converter.MergeBucketIamPolicy,
+				convert:           converter.GetBucketIamPolicyCaiObject,
+				mergeCreateUpdate: converter.MergeBucketIamPolicy,
 			},
 		},
 		"google_storage_bucket_iam_binding": {
 			{
-				convert: converter.GetBucketIamBindingCaiObject,
-				merge:   converter.MergeBucketIamBinding,
+				convert:           converter.GetBucketIamBindingCaiObject,
+				mergeCreateUpdate: converter.MergeBucketIamBinding,
 			},
 		},
 		"google_storage_bucket_iam_member": {
 			{
-				convert: converter.GetBucketIamMemberCaiObject,
-				merge:   converter.MergeBucketIamMember,
+				convert:           converter.GetBucketIamMemberCaiObject,
+				mergeCreateUpdate: converter.MergeBucketIamMember,
 			},
 		},
 	}
