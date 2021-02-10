@@ -84,6 +84,15 @@ make test
 
 ### Integration
 
+#### Non-docker
+```
+gcloud auth application-default login
+export TEST_PROJECT=my-project-id
+export TEST_CREDENTIALS=~/.config/.config/gcloud/application_default_credentials.json
+make test-integration
+```
+
+#### Docker
 First, build the Docker container:
 ```
 make build-docker
