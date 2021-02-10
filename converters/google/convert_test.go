@@ -15,11 +15,33 @@
 package google
 
 import (
+	"context"
 	"sort"
 	"testing"
 
+	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
+
+const testProject = "test-project"
+
+func newTestConverter() (*Converter, error) {
+	ctx := context.Background()
+	ancestry := ""
+	project := testProject
+	offline := true
+	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing resource manager client")
+	}
+	c, err := NewConverter(ctx, ancestryManager, project, "", offline)
+	if err != nil {
+		return nil, errors.Wrap(err, "building converter")
+	}
+	return c, nil
+}
 
 func TestSortByName(t *testing.T) {
 	cases := []struct {
@@ -44,6 +66,147 @@ func TestSortByName(t *testing.T) {
 			assets := c.unsorted
 			sort.Sort(byName(assets))
 			assert.EqualValues(t, c.expectedSorted, assets)
+		})
+	}
+}
+
+func TestAddResourceChanges_unknownResourceIgnored(t *testing.T) {
+	rc := tfplan.ResourceChange{
+		Address:      "whatever.google_unknown.foo",
+		Mode:         "managed",
+		Type:         "google_unknown",
+		Name:         "foo",
+		ProviderName: "google",
+		Change: tfplan.ChangeRepresentation{
+			Actions: []string{"change"},
+			Before:  nil,
+			After:   nil,
+		},
+	}
+	c, err := newTestConverter()
+	assert.Nil(t, err)
+	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	assert.Nil(t, err)
+	assert.EqualValues(t, map[string]Asset{}, c.assets)
+}
+
+func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
+	rc := tfplan.ResourceChange{
+		Address:      "whatever.google_unknown.foo",
+		Mode:         "managed",
+		Type:         "google_unsupported",
+		Name:         "foo",
+		ProviderName: "google",
+		Change: tfplan.ChangeRepresentation{
+			Actions: []string{"change"},
+			Before:  nil,
+			After:   nil,
+		},
+	}
+	c, err := newTestConverter()
+	assert.Nil(t, err)
+
+	// fake that this resource is known to the provider; it will never be "supported" by the
+	// converter.
+	c.schema.ResourcesMap[rc.Type] = c.schema.ResourcesMap["google_compute_disk"]
+
+	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	assert.Nil(t, err)
+	assert.EqualValues(t, map[string]Asset{}, c.assets)
+}
+
+func TestAddResourceChanges_noopIgnored(t *testing.T) {
+	rc := tfplan.ResourceChange{
+		Address:      "whatever.google_compute_disk.foo",
+		Mode:         "managed",
+		Type:         "google_compute_disk",
+		Name:         "foo",
+		ProviderName: "google",
+		Change: tfplan.ChangeRepresentation{
+			Actions: []string{"no-op"},
+			Before:  nil,
+			After:   nil,
+		},
+	}
+	c, err := newTestConverter()
+	assert.Nil(t, err)
+
+	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	assert.Nil(t, err)
+	assert.EqualValues(t, map[string]Asset{}, c.assets)
+}
+
+func TestAddResourceChanges_deleteIgnored(t *testing.T) {
+	rc := tfplan.ResourceChange{
+		Address:      "whatever.google_compute_disk.foo",
+		Mode:         "managed",
+		Type:         "google_compute_disk",
+		Name:         "foo",
+		ProviderName: "google",
+		Change: tfplan.ChangeRepresentation{
+			Actions: []string{"delete"},
+			Before:  nil,
+			After:   nil,
+		},
+	}
+	c, err := newTestConverter()
+	assert.Nil(t, err)
+
+	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	assert.Nil(t, err)
+	assert.EqualValues(t, map[string]Asset{}, c.assets)
+}
+
+func TestAddResourceChanges_createOrUpdateOrDeleteCreateProcessed(t *testing.T) {
+	cases := []struct {
+		name    string
+		actions []string
+	}{
+		{
+			name:    "Create",
+			actions: []string{"create"},
+		},
+		{
+			name:    "Update",
+			actions: []string{"update"},
+		},
+		{
+			name:    "DeleteCreate",
+			actions: []string{"delete", "create"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			rc := tfplan.ResourceChange{
+				Address:      "whatever.google_compute_disk.foo",
+				Mode:         "managed",
+				Type:         "google_compute_disk",
+				Name:         "foo",
+				ProviderName: "google",
+				Change: tfplan.ChangeRepresentation{
+					Actions: c.actions,
+					Before:  nil, // Ignore Before because it's unused
+					After: map[string]interface{}{
+						"project": testProject,
+						"name":    "test-disk",
+						"type":    "pd-ssd",
+						"zone":    "us-central1-a",
+						"image":   "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+						"labels": map[string]interface{}{
+							"environment": "dev",
+						},
+						"physical_block_size_bytes": 4096,
+					},
+				},
+			}
+			c, err := newTestConverter()
+			assert.Nil(t, err)
+
+			err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+			assert.Nil(t, err)
+
+			caiKey := "compute.googleapis.com/Disk//compute.googleapis.com/projects/test-project/zones/us-central1-a/disks/test-disk"
+			assert.Contains(t, c.assets, caiKey)
 		})
 	}
 }

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/golang/glog"
 	provider "github.com/hashicorp/terraform-provider-google/v3/google"
 	"github.com/pkg/errors"
 
@@ -30,26 +31,6 @@ import (
 )
 
 var ErrDuplicateAsset = errors.New("duplicate asset")
-
-// TerraformResource represents the required methods needed to convert a terraform
-// resource into an Asset type.
-type TerraformResource interface {
-	Id() string
-	Kind() string
-	Get(string) interface{}
-	GetOk(string) (interface{}, bool)
-	GetOkExists(string) (interface{}, bool)
-}
-
-// nonImplementedResourceData represents the non-getter fields that are
-// passed to terraform providers that are not implemented here but are
-// required (and not used) by downstream mappers.
-type nonImplementedResourceData struct{}
-
-func (nonImplementedResourceData) HasChange(string) bool             { return false }
-func (nonImplementedResourceData) Set(string, interface{}) error     { return nil }
-func (nonImplementedResourceData) SetId(string)                      {}
-func (nonImplementedResourceData) GetProviderMeta(interface{}) error { return nil }
 
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).
@@ -179,39 +160,49 @@ func (c *Converter) Schemas() map[string]*schema.Resource {
 	return supported
 }
 
-// AddResource converts a terraform resource and stores the converted asset.
+// Compatibility shim: maintain support for ComposeTF12Resources -> AddResource pipeline
 func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
-	// Compatibility shim: silently do nothing if this resource isn't
-	// being added or changed.
-	if !(rc.IsCreate() || rc.IsUpdate() || rc.IsDeleteCreate()) {
-		return nil
+	return c.AddResourceChanges([]tfplan.ResourceChange{*rc})
+}
+
+func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
+	for _, rc := range changes {
+		// skip unknown resources
+		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
+			glog.Infof("unknown resource: %s", rc.Type)
+			continue
+		}
+
+		// Skip unsupported resources
+		if _, ok := c.mapperFuncs[rc.Type]; !ok {
+			glog.Infof("unsupported resource: %s", rc.Type)
+			continue
+		}
+
+		if rc.IsCreate() || rc.IsUpdate() || rc.IsDeleteCreate() {
+			if err := c.addCreateOrUpdate(rc); err != nil {
+				if errors.Cause(err) == ErrDuplicateAsset {
+					glog.Warningf("adding resource change: %v", err)
+				} else {
+					return errors.Wrapf(err, "adding resource change")
+				}
+			}
+		}
 	}
 
-	// Compatibility shim: silently skip unknown resources
-	resource, ok := c.schema.ResourcesMap[rc.Type]
-	if !ok {
-		return nil
-	}
+	return nil
+}
 
-	// Compatibility shim: silently skip unsupported resources
-	if _, ok := c.mapperFuncs[rc.Type]; !ok {
-		return nil
-	}
-
+func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
+	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
 		rc.Change.After,
 	)
-	r := &rd
 
-	for _, mapper := range c.mapperFuncs[r.Kind()] {
-		data := struct {
-			TerraformResource
-			nonImplementedResourceData
-		}{TerraformResource: r}
-
-		converted, err := mapper.convert(data, c.cfg)
+	for _, mapper := range c.mapperFuncs[rd.Kind()] {
+		converted, err := mapper.convert(&rd, c.cfg)
 		if err != nil {
 			if errors.Cause(err) == converter.ErrNoConversion {
 				continue
@@ -234,7 +225,7 @@ func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
 			}
 		}
 
-		augmented, err := c.augmentAsset(data, c.cfg, converted)
+		augmented, err := c.augmentAsset(&rd, c.cfg, converted)
 		if err != nil {
 			return errors.Wrap(err, "augmenting asset")
 		}

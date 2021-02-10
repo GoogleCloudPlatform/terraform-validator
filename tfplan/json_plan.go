@@ -26,25 +26,27 @@ type jsonPlan struct {
 	ResourceChanges []ResourceChange `json:"resource_changes"`
 }
 
+type ChangeRepresentation struct {
+	// Valid actions values are:
+	//    ["no-op"]
+	//    ["create"]
+	//    ["read"]
+	//    ["update"]
+	//    ["delete", "create"]
+	//    ["create", "delete"]
+	//    ["delete"]
+	Actions []string               `json:"actions"`
+	Before  map[string]interface{} `json:"before"`
+	After   map[string]interface{} `json:"after"`
+}
+
 type ResourceChange struct {
-	Address      string `json:"address"`
-	Mode         string `json:"mode"`
-	Type         string `json:"type"`
-	Name         string `json:"name"`
-	ProviderName string `json:"provider_name"`
-	Change       struct {
-		// Valid actions values are:
-		//    ["no-op"]
-		//    ["create"]
-		//    ["read"]
-		//    ["update"]
-		//    ["delete", "create"]
-		//    ["create", "delete"]
-		//    ["delete"]
-		Actions []string               `json:"actions"`
-		Before  map[string]interface{} `json:"before"`
-		After   map[string]interface{} `json:"after"`
-	} `json:"change"`
+	Address      string               `json:"address"`
+	Mode         string               `json:"mode"`
+	Type         string               `json:"type"`
+	Name         string               `json:"name"`
+	ProviderName string               `json:"provider_name"`
+	Change       ChangeRepresentation `json:"change"`
 }
 
 func (c *ResourceChange) IsCreate() bool {
