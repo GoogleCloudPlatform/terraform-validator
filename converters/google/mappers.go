@@ -25,7 +25,7 @@ type convertFunc func(d converter.TerraformResourceData, config *converter.Confi
 // fetchFunc allows initial data for a resource to be fetched from the API and merged
 // with the planned changes. This is useful for resources that are only partially managed
 // by Terraform, like IAM policies managed with member/binding resources.
-type fetchFunc func(data converter.TerraformResourceData, config *converter.Config) (converter.Asset, error)
+type fetchFunc func(d converter.TerraformResourceData, config *converter.Config) (converter.Asset, error)
 
 // mergeFunc combines multiple terraform resources into a single CAI asset.
 // The incoming asset will either be an asset that was created/updated or deleted.

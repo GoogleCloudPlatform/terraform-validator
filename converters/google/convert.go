@@ -165,7 +165,14 @@ func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
 	return c.AddResourceChanges([]tfplan.ResourceChange{*rc})
 }
 
+// AddResourceChange processes the resource changes in two stages:
+// 1. Process deletions (fetching canonical resources from GCP as necessary)
+// 2. Process creates and updates (fetching canonical resources from GCP as necessary)
+// This will give us a deterministic end result even in cases where for example
+// an IAM Binding and Member conflict with each other, but one is replacing the
+// other.
 func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
+	var createOrUpdates []tfplan.ResourceChange
 	for _, rc := range changes {
 		// skip unknown resources
 		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
@@ -180,12 +187,20 @@ func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
 		}
 
 		if rc.IsCreate() || rc.IsUpdate() || rc.IsDeleteCreate() {
-			if err := c.addCreateOrUpdate(rc); err != nil {
-				if errors.Cause(err) == ErrDuplicateAsset {
-					glog.Warningf("adding resource change: %v", err)
-				} else {
-					return errors.Wrapf(err, "adding resource change")
-				}
+			createOrUpdates = append(createOrUpdates, rc)
+		} else if rc.IsDelete() {
+			if err := c.addDelete(rc); err != nil {
+				return errors.Wrapf(err, "adding resource deletion")
+			}
+		}
+	}
+
+	for _, rc := range createOrUpdates {
+		if err := c.addCreateOrUpdate(rc); err != nil {
+			if errors.Cause(err) == ErrDuplicateAsset {
+				glog.Warningf("adding resource change: %v", err)
+			} else {
+				return errors.Wrapf(err, "adding resource create or update")
 			}
 		}
 	}
@@ -193,6 +208,57 @@ func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
 	return nil
 }
 
+
+// For deletions, we only need to handle mappers that support
+// both fetch and mergeDelete. Supporting just one doesn't
+// make sense, and supporting neither means that the deletion
+// can just happen without needing to be merged.
+func (c *Converter) addDelete(rc tfplan.ResourceChange) error {
+	resource, _ := c.schema.ResourcesMap[rc.Type]
+	rd := NewFakeResourceData(
+		rc.Type,
+		resource.Schema,
+		rc.Change.Before,
+	)
+	for _, mapper := range c.mapperFuncs[rd.Kind()] {
+		if mapper.fetch == nil || mapper.mergeDelete == nil {
+			continue
+		}
+		converted, err := mapper.convert(&rd, c.cfg)
+		if err != nil {
+			if errors.Cause(err) == converter.ErrNoConversion {
+				continue
+			}
+			return errors.Wrap(err, "converting asset")
+		}
+
+		key := converted.Type + converted.Name
+		existing, exists := c.assets[key]
+		var existingConverterAsset converter.Asset
+		if !exists{
+			existingConverterAsset, err = mapper.fetch(&rd, c.cfg)
+			if err != nil {
+				return errors.Wrap(err, "fetching asset")
+			}
+		} else {
+			existingConverterAsset = existing.converterAsset
+		}
+
+		converted = mapper.mergeDelete(existingConverterAsset, converted)
+		augmented, err := c.augmentAsset(&rd, c.cfg, converted)
+		if err != nil {
+			return errors.Wrap(err, "augmenting asset")
+		}
+		c.assets[key] = augmented
+	}
+
+	return nil
+}
+
+
+// For create/update, we need to handle both the case of no merging,
+// and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
+// to be present.
 func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
@@ -212,17 +278,26 @@ func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
 
 		key := converted.Type + converted.Name
 
-		if existing, exists := c.assets[key]; exists {
-			// The existance of a merge function signals that this tf resource maps to a
-			// patching operation on an API resource.
-			if mapper.mergeCreateUpdate != nil {
-				converted = mapper.mergeCreateUpdate(existing.converterAsset, converted)
-			} else {
+		existing, exists := c.assets[key]
+		var existingConverterAsset *converter.Asset
+		if !exists && mapper.fetch != nil{
+			asset, err := mapper.fetch(&rd, c.cfg)
+			existingConverterAsset = &asset
+			if err != nil {
+				return errors.Wrap(err, "fetching asset")
+			}
+		} else if exists {
+			existingConverterAsset = &existing.converterAsset
+		}
+
+		if existingConverterAsset != nil {
+			if mapper.mergeCreateUpdate == nil {
 				// If a merge function does not exist ignore the asset and return
 				// a checkable error.
 				return errors.Wrapf(ErrDuplicateAsset, "asset type %s: asset name %s",
 					converted.Type, converted.Name)
 			}
+			converted = mapper.mergeCreateUpdate(*existingConverterAsset, converted)
 		}
 
 		augmented, err := c.augmentAsset(&rd, c.cfg, converted)
