@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-variable "project_id" {
-  description = "The project to create resources inside of."
-  type        = string
-  default     = null
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "~> {{.Provider.version}}"
+    }
+  }
 }
 
-variable "org_id" {
-  description = "The organization ID use for creating resources."
+provider "google" {
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
+
+resource "google_compute_global_forwarding_rule" "test" {
+  name                   = "test-global-rule"
+  target                 = "target-id"
+  load_balancing_scheme  = "INTERNAL_SELF_MANAGED"
+  ip_protocol            = "TCP"
+  ip_version             = "IPV4"
+  port_range             = "80"
+}
+
