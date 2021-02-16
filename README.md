@@ -88,7 +88,7 @@ bin/terraform-validator convert example/tfplan.json
 Running the validate command requires setting up a local [policy library](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-set-up-constraints-with-policy-library).
 
 ```
-# Set the local forseti-config-policies repository path.
+# Set the local policy library repository path.
 export POLICY_PATH=/path/to/your/policy/library
 
 # Build the binary
