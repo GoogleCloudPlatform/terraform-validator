@@ -278,16 +278,16 @@ func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
 
 		key := converted.Type + converted.Name
 
-		existing, exists := c.assets[key]
 		var existingConverterAsset *converter.Asset
-		if !exists && mapper.fetch != nil{
+		if existing, exists := c.assets[key]; exists {
+			existingConverterAsset = &existing.converterAsset
+		} else if mapper.fetch != nil{
 			asset, err := mapper.fetch(&rd, c.cfg)
-			existingConverterAsset = &asset
 			if err != nil {
 				return errors.Wrap(err, "fetching asset")
 			}
-		} else if exists {
-			existingConverterAsset = &existing.converterAsset
+
+			existingConverterAsset = &asset
 		}
 
 		if existingConverterAsset != nil {
