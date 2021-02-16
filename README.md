@@ -77,10 +77,11 @@ terraform show -json ./tfplan.tfplan > ./tfplan.json
 
 #### Convert command
 
-It can be useful to run the convert command separately to test conversion of terraform resources to CAI assets. After configuring the example project as described above, you can run:
+It can be useful to run the convert command separately to test conversion of terraform resources to CAI assets. After configuring the example project as described above, you can run (from the repository root):
 
 ```
-terraform-validator convert ./tfplan.json
+make build
+bin/terraform-validator convert example/tfplan.json
 ```
 
 #### Validate command
@@ -90,11 +91,14 @@ Running the validate command requires setting up a local [policy library](https:
 # Set the local forseti-config-policies repository path.
 export POLICY_PATH=/path/to/your/policy/library
 
+# Build the binary
+make build
+
 # Validate the google resources the plan would create.
-terraform-validator validate --policy-path=${POLICY_PATH} ./tfplan.json
+bin/terraform-validator validate --policy-path=${POLICY_PATH} example/tfplan.json
 
 # Apply the validated plan.
-terraform apply ./tfplan.tfplan
+terraform apply example/tfplan.tfplan
 ```
 ## Testing
 
@@ -129,6 +133,30 @@ Finally, run the integration tests inside the container:
 ```
 make test-integration
 ````
+
+## Adding support for a new resource
+
+We are using code generation tool called [Magic Modules](https://github.com/googleCloudPlatform/magic-modules/) that uses a shared code base to generate the [google](https://github.com/hashicorp/terraform-provider-google) and [google-beta](https://github.com/hashicorp/terraform-provider-google-beta) Terraform providers as well as a library called [terraform-google-conversion](https://github.com/GoogleCloudPlatform/terraform-google-conversion). terraform-google-conversion is what Terraform Validator uses to convert Terraform resources to CAI Assets for validation.
+
+Some Terraform resources are fully generated, whereas some resources are hand written and located in [the third_party/validator/ folder in magic modules](https://github.com/GoogleCloudPlatform/magic-modules/tree/master/mmv1/third_party/validator/resources). Compilation and copying of files into terraform-google-conversion happens in [mmv1/provider/terraform_object_library.rb](https://github.com/GoogleCloudPlatform/magic-modules/blob/100ba410e1db645a6ae0e6351f87e82e897eade7/mmv1/provider/terraform_object_library.rb).
+
+Adding support for a new resource follows these steps:
+
+1. Add support for the resource in Magic Modules (preferably auto-generated; hand-written resources are harder to maintain.)
+2. [Generate the terraform-google-conversion code](https://github.com/GoogleCloudPlatform/magic-modules/blob/master/README.md#generating-downstream-tools).
+3. Run `make test` inside the terraform-google-conversion repository.
+4. Create a PR against Magic Modules. This will be reviewed by a core contributor.
+5. Once that is merged, go to terraform-validator and run `go get github.com/GoogleCloudPlatform/terraform-google-conversion` to update the version of terraform-google-conversion in use
+6. Add one or more [mappers](https://github.com/GoogleCloudPlatform/terraform-validator/blob/86e5a59ce0dbf4089db8484a482dbac4f48dc93a/converters/google/mappers.go#L42) for the new resource.
+7. Run tests.
+8. Create a PR against terraform-validator.
+
+### mappers
+
+"mappers" are the glue that connects a specific terraform resource type (like `google_compute_disk`) to specific terraform-google-conversion functions necessary to convert it to a CAI Asset. A mapper can have the following functions:
+
+- `convert`: Required. This function does basic conversion of a Terraform resource to a CAI Asset, including converting nested structures and specifying what the [CAI Asset Type](https://cloud.google.com/asset-inventory/docs/supported-asset-types) is.
+- `fetch`, `mergeCreateUpdate`, `mergeDelete`: Optional. Some assets, like [IAM Members and Bindings](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_project_iam), have to be merged with remote data prior to validation in order to properly check whether policies are being followed.
 
 ## Disclaimer
 
