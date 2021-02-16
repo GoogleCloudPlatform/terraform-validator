@@ -124,12 +124,16 @@ func mappers() map[string][]mapper {
 			{
 				convert:           converter.GetProjectIamBindingCaiObject,
 				mergeCreateUpdate: converter.MergeProjectIamBinding,
+				mergeDelete:       converter.MergeProjectIamBindingDelete,
+				fetch:             converter.FetchProjectIamPolicy,
 			},
 		},
 		"google_project_iam_member": {
 			{
 				convert:           converter.GetProjectIamMemberCaiObject,
 				mergeCreateUpdate: converter.MergeProjectIamMember,
+				mergeDelete:       converter.MergeProjectIamMemberDelete,
+				fetch:             converter.FetchProjectIamPolicy,
 			},
 		},
 		"google_storage_bucket_iam_policy": {

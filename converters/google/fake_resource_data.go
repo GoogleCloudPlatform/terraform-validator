@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -77,6 +78,7 @@ func (d *FakeResourceData) HasChange(string) bool             { return false }
 func (d *FakeResourceData) Set(string, interface{}) error     { return nil }
 func (d *FakeResourceData) SetId(string)                      {}
 func (d *FakeResourceData) GetProviderMeta(interface{}) error { return nil }
+func (d *FakeResourceData) Timeout(key string) time.Duration  { return time.Duration(1) }
 
 func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, values map[string]interface{}) FakeResourceData {
 	state := map[string]string{}
