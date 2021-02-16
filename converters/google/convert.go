@@ -190,7 +190,7 @@ func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
 			createOrUpdates = append(createOrUpdates, rc)
 		} else if rc.IsDelete() {
 			if err := c.addDelete(rc); err != nil {
-				return errors.Wrapf(err, "adding resource deletion")
+				return fmt.Errorf("adding resource deletion %w", err)
 			}
 		}
 	}
@@ -200,7 +200,7 @@ func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
 			if errors.Cause(err) == ErrDuplicateAsset {
 				glog.Warningf("adding resource change: %v", err)
 			} else {
-				return errors.Wrapf(err, "adding resource create or update")
+				return fmt.Errorf("adding resource create or update %w", err)
 			}
 		}
 	}
@@ -334,7 +334,7 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 	}
 	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
 	if err != nil {
-		return Asset{}, errors.Wrapf(err, "getting resource ancestry: project %v", project)
+		return Asset{}, fmt.Errorf("getting resource ancestry: project %v %w", project, err)
 	}
 	var resource *AssetResource
 	if cai.Resource != nil {
