@@ -23,3 +23,12 @@ variable "project_id" {
 variable "org_id" {
   description = "The organization ID use for creating resources."
 }
+
+
+output "project_id" {
+  value = var.project_id
+}
+
+output "org_id" {
+  value = var.org_id
+}

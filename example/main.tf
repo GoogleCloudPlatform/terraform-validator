@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-locals {
-  project = var.project_id
+terraform {
+  required_version = ">= 0.12"
+
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "~>3.57.0"
+    }
+  }
 }
 
 provider "google" {
-  version = "~> 2.11.0"
-  project = local.project
+  project = var.project_id
 }
 
 resource "google_folder" "test" {
@@ -31,19 +37,17 @@ resource "google_folder" "test" {
 resource "google_project" "my_project" {
   name       = "test-project"
   project_id = "test-project-912"
-  folder_id  = "folders/880142660913"
+  org_id     = "organizations/${var.org_id}"
+  # folder_id  = google_folder.test.name
 
   labels  = {
     "project-label-key-a" = "project-label-val-a"
   }
-
-  # org_id     = "organizations/${var.org_id}"
-  # folder_id  = google_folder.test.name
 }
 
 resource "google_compute_disk" "my-disk" {
   name    = "my-disk"
-  project = local.project
+  project = var.project_id
   type    = "pd-ssd"
   zone    = "us-central1-a"
   image   = "debian-8-jessie-v20170523"
@@ -56,6 +60,7 @@ resource "google_compute_disk" "my-disk" {
 resource "google_compute_firewall" "my-test-firewall" {
   name    = "my-test-firewall"
   network = "default"
+  project = var.project_id
 
   allow {
     protocol = "icmp"
@@ -75,7 +80,7 @@ resource "random_id" "bucket" {
 
 resource "google_storage_bucket" "my-bucket" {
   name     = "my-bucket-${random_id.bucket.hex}"
-  project  = local.project
+  project  = var.project_id
   location = "US"
 
   labels = {
@@ -95,25 +100,25 @@ resource "google_storage_bucket" "my-bucket" {
 
 /* Uncomment and change emails to try out IAM policies.
 resource "google_project_iam_member" "owner-a" {
-  project = "${local.project}"
+  project = "${var.project_id}"
   role    = "roles/owner"
   member  = "user:example-a@google.com"
 }
 
 resource "google_project_iam_member" "viewer-a" {
-  project = "${local.project}"
+  project = "${var.project_id}"
   role    = "roles/viewer"
   member  = "user:example-a@google.com"
 }
 
 resource "google_project_iam_member" "viewer-b" {
-  project = "${local.project}"
+  project = "${var.project_id}"
   role    = "roles/viewer"
   member  = "user:example-b@google.com"
 }
 
 resource "google_project_iam_binding" "editors" {
-  project = "${local.project}"
+  project = "${var.project_id}"
   role    = "roles/editor"
   members  = [
     "user:example-a@google.com",
