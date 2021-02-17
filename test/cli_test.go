@@ -85,6 +85,12 @@ func TestCLI(t *testing.T) {
 		{name: "full_sql_database_instance"},
 		{name: "full_storage_bucket"},
 	}
+
+	// Map of cases to skip to reasons for the skip
+	skipCases := map[string]string{
+		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=convert":                            "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=validate/constraint=always_violate": "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+	}
 	for i := range cases {
 		// Allocate a variable to make sure test can run in parallel.
 		c := cases[i]
@@ -112,11 +118,17 @@ func TestCLI(t *testing.T) {
 				terraform(t, dir, c.name)
 
 				t.Run("cmd=convert", func(t *testing.T) {
+					if reason, exists := skipCases[t.Name()]; exists {
+						t.Skip(reason)
+					}
 					testConvertCommand(t, dir, c.name, offline)
 				})
 
 				for _, ct := range c.constraints {
 					t.Run(fmt.Sprintf("cmd=validate/constraint=%s", ct.name), func(t *testing.T) {
+						if reason, exists := skipCases[t.Name()]; exists {
+							t.Skip(reason)
+						}
 						testValidateCommand(t, ct.wantViolation, ct.wantOutputRegex, dir, c.name, offline, ct.name)
 					})
 				}
