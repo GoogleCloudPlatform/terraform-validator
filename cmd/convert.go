@@ -44,11 +44,14 @@ Example:
 		if len(args) != 1 {
 			return errors.New("missing required argument <tfplan>")
 		}
+		if flags.validate.offline && flags.validate.ancestry == "" {
+			return errors.New("please set ancestry via --ancestry in offline mode")
+		}
 		return nil
 	},
 	RunE: func(c *cobra.Command, args []string) error {
 		ctx := context.Background()
-		assets, err := tfgcv.ReadPlannedAssets(ctx, args[0], flags.convert.project, flags.convert.ancestry, false)
+		assets, err := tfgcv.ReadPlannedAssets(ctx, args[0], flags.convert.project, flags.convert.ancestry, flags.convert.offline)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 				return errors.New("unable to parse provider project, please use --project flag")

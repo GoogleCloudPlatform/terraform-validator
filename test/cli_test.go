@@ -207,7 +207,7 @@ func tfvConvert(t *testing.T, dir, tfplan string, offline bool) []byte {
 	wantError := false
 	args := []string{"convert", "--project", data.Provider["project"]}
 	if offline {
-		args = append(args, "--ancestry", data.Ancestry)
+		args = append(args, "--offline", "--ancestry", data.Ancestry)
 	}
 	args = append(args, tfplan)
 	cmd := exec.Command(executable, args...)
