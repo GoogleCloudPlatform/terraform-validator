@@ -6,6 +6,8 @@ Terraform Validator relies on policies that are [compatible with Config Validato
 
 Terraform Validator is compatible with Terraform 0.12+.
 
+**Note**: Using Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary.
+
 ## Supported Terraform resources
 The follow Terraform resources are supported for running validation checks:
 
