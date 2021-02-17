@@ -52,6 +52,7 @@ func TestCLI(t *testing.T) {
 	cases := []struct {
 		name        string
 		constraints []constraint
+		compareConvertOutput compareConvertOutputFunc
 	}{
 		{name: "bucket"},
 		{name: "bucket_iam"},
@@ -99,6 +100,11 @@ func TestCLI(t *testing.T) {
 			c.constraints = []constraint{alwaysViolate}
 		}
 
+		// Add default convert comparison func if not set
+		if c.compareConvertOutput == nil {
+			c.compareConvertOutput = compareUnmergedConvertOutput
+		}
+
 		// Test both offline and online mode.
 		for _, offline := range []bool{true, false} {
 			offline := offline
@@ -121,7 +127,7 @@ func TestCLI(t *testing.T) {
 					if reason, exists := skipCases[t.Name()]; exists {
 						t.Skip(reason)
 					}
-					testConvertCommand(t, dir, c.name, offline)
+					testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
 				})
 
 				for _, ct := range c.constraints {
@@ -137,28 +143,37 @@ func TestCLI(t *testing.T) {
 	}
 }
 
-func testConvertCommand(t *testing.T, dir, name string, offline bool) {
+type compareConvertOutputFunc func(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool)
+
+func compareUnmergedConvertOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
+	expectedJSON := normalizeAssets(t, expected, offline)
+	actualJSON := normalizeAssets(t, actual, offline)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+}
+
+func testConvertCommand(t *testing.T, dir, name string, offline bool, compare compareConvertOutputFunc) {
 	var payload []byte
-	payload = tfvConvert(t, dir, name+".tfplan.json", offline)
-	// Verify if the generated assets match the expected.
-	var got []google.Asset
-	err := json.Unmarshal(payload, &got)
-	if err != nil {
-		t.Fatalf("unmarshaling: %v", err)
-	}
+
+	// Load expected assets
 	testfile := filepath.Join(dir, name+".json")
-	payload, err = ioutil.ReadFile(testfile)
+	payload, err := ioutil.ReadFile(testfile)
 	if err != nil {
 		t.Fatalf("Error reading %v: %v", testfile, err)
 	}
-	var want []google.Asset
-	if err := json.Unmarshal(payload, &want); err != nil {
+	var expected []google.Asset
+	if err := json.Unmarshal(payload, &expected); err != nil {
 		t.Fatalf("unmarshaling: %v", err)
 	}
 
-	gotJSON := normalizeAssets(t, got, offline)
-	wantJSON := normalizeAssets(t, want, offline)
-	require.JSONEq(t, string(wantJSON), string(gotJSON))
+	// Get converted assets
+	payload = tfvConvert(t, dir, name+".tfplan.json", offline)
+	var actual []google.Asset
+	err = json.Unmarshal(payload, &actual)
+	if err != nil {
+		t.Fatalf("unmarshaling: %v", err)
+	}
+
+	compare(t, expected, actual, offline)
 }
 
 func testValidateCommand(t *testing.T, wantViolation bool, want, dir, name string, offline bool, constraintName string) {
