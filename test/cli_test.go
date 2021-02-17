@@ -95,6 +95,7 @@ func TestCLI(t *testing.T) {
 
 		// Test both offline and online mode.
 		for _, offline := range []bool{true, false} {
+			offline := offline
 			t.Run(fmt.Sprintf("v=0.12/tf=%s/offline=%t", c.name, offline), func(t *testing.T) {
 				t.Parallel()
 				// Create a temporary directory for running terraform.
