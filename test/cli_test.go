@@ -50,8 +50,8 @@ func TestCLI(t *testing.T) {
 
 	// Test cases for each type of resource is defined here.
 	cases := []struct {
-		name        string
-		constraints []constraint
+		name                 string
+		constraints          []constraint
 		compareConvertOutput compareConvertOutputFunc
 	}{
 		{name: "bucket"},
@@ -74,7 +74,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_project_in_folder"},
 		{name: "example_project_iam"},
 		{name: "example_project_iam_binding"},
-		{name: "example_project_iam_member"},
+		{name: "example_project_iam_member", compareConvertOutput: compareMergedIamMemberOutput},
 		{name: "example_project_iam_policy"},
 		{name: "example_project_service"},
 		{name: "example_sql_database_instance"},
@@ -148,6 +148,50 @@ type compareConvertOutputFunc func(t *testing.T, expected []google.Asset, actual
 func compareUnmergedConvertOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
 	expectedJSON := normalizeAssets(t, expected, offline)
 	actualJSON := normalizeAssets(t, actual, offline)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+}
+
+// For merged IAM members, only consider whether the expected members are present.
+func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
+	var normalizedActual []google.Asset
+	for i := range expected {
+		expectedAsset := expected[i]
+		actualAsset := expected[i]
+
+		normalizedActualAsset := google.Asset{
+			Name:     actualAsset.Name,
+			Type:     actualAsset.Type,
+			Ancestry: "",
+		}
+
+		expectedBindings := map[string]map[string]struct{}{}
+		for _, binding := range expectedAsset.IAMPolicy.Bindings {
+			expectedBindings[binding.Role] = map[string]struct{}{}
+			for _, member := range binding.Members {
+				expectedBindings[binding.Role][member] = struct{}{}
+			}
+		}
+
+		iamPolicy := google.IAMPolicy{}
+		for _, binding := range actualAsset.IAMPolicy.Bindings {
+			if expectedMembers, exists := expectedBindings[binding.Role]; exists {
+				iamBinding := google.IAMBinding{
+					Role: binding.Role,
+				}
+				for _, member := range binding.Members {
+					if _, exists := expectedMembers[member]; exists {
+						iamBinding.Members = append(iamBinding.Members, member)
+					}
+				}
+				iamPolicy.Bindings = append(iamPolicy.Bindings, iamBinding)
+			}
+		}
+		normalizedActualAsset.IAMPolicy = &iamPolicy
+		normalizedActual = append(normalizedActual, normalizedActualAsset)
+	}
+
+	expectedJSON := normalizeAssets(t, expected, offline)
+	actualJSON := normalizeAssets(t, normalizedActual, offline)
 	require.JSONEq(t, string(expectedJSON), string(actualJSON))
 }
 
