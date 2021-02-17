@@ -125,6 +125,7 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 	return &Converter{
 		schema:          provider.Provider(),
 		mapperFuncs:     mappers(),
+		offline:         offline,
 		cfg:             cfg,
 		ancestryManager: ancestryManager,
 		assets:          make(map[string]Asset),
@@ -140,6 +141,7 @@ type Converter struct {
 	// to their mapping/merging functions.
 	mapperFuncs map[string][]mapper
 
+	offline bool
 	cfg *converter.Config
 
 	// ancestryManager provides a manager to find the ancestry information for a project.
@@ -233,23 +235,25 @@ func (c *Converter) addDelete(rc tfplan.ResourceChange) error {
 		}
 
 		key := converted.Type + converted.Name
-		existing, exists := c.assets[key]
-		var existingConverterAsset converter.Asset
-		if !exists{
-			existingConverterAsset, err = mapper.fetch(&rd, c.cfg)
+		var existingConverterAsset *converter.Asset
+		if existing, exists := c.assets[key]; exists {
+			existingConverterAsset = &existing.converterAsset
+		} else if !c.offline {
+			asset, err := mapper.fetch(&rd, c.cfg)
 			if err != nil {
 				return errors.Wrap(err, "fetching asset")
 			}
-		} else {
-			existingConverterAsset = existing.converterAsset
+			existingConverterAsset = &asset
 		}
 
-		converted = mapper.mergeDelete(existingConverterAsset, converted)
-		augmented, err := c.augmentAsset(&rd, c.cfg, converted)
-		if err != nil {
-			return errors.Wrap(err, "augmenting asset")
+		if existingConverterAsset != nil {
+			converted = mapper.mergeDelete(*existingConverterAsset, converted)
+			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
+			if err != nil {
+				return errors.Wrap(err, "augmenting asset")
+			}
+			c.assets[key] = augmented
 		}
-		c.assets[key] = augmented
 	}
 
 	return nil
@@ -281,7 +285,7 @@ func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
 		var existingConverterAsset *converter.Asset
 		if existing, exists := c.assets[key]; exists {
 			existingConverterAsset = &existing.converterAsset
-		} else if mapper.fetch != nil{
+		} else if mapper.fetch != nil && !c.offline {
 			asset, err := mapper.fetch(&rd, c.cfg)
 			if err != nil {
 				return errors.Wrap(err, "fetching asset")
