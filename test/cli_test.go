@@ -156,12 +156,12 @@ func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual 
 	var normalizedActual []google.Asset
 	for i := range expected {
 		expectedAsset := expected[i]
-		actualAsset := expected[i]
+		actualAsset := actual[i]
 
 		normalizedActualAsset := google.Asset{
 			Name:     actualAsset.Name,
 			Type:     actualAsset.Type,
-			Ancestry: "",
+			Ancestry: actualAsset.Ancestry,
 		}
 
 		expectedBindings := map[string]map[string]struct{}{}
@@ -200,12 +200,12 @@ func compareMergedIamBindingOutput(t *testing.T, expected []google.Asset, actual
 	var normalizedActual []google.Asset
 	for i := range expected {
 		expectedAsset := expected[i]
-		actualAsset := expected[i]
+		actualAsset := actual[i]
 
 		normalizedActualAsset := google.Asset{
 			Name:     actualAsset.Name,
 			Type:     actualAsset.Type,
-			Ancestry: "",
+			Ancestry: actualAsset.Ancestry,
 		}
 
 		expectedBindings := map[string]struct{}{}
