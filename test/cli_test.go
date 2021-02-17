@@ -91,6 +91,7 @@ func TestCLI(t *testing.T) {
 	skipCases := map[string]string{
 		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=convert":                            "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
 		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=validate/constraint=always_violate": "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+		"TestCLI/v=0.12/tf=example_project_iam/offline=false/cmd=convert":                                "example_project_iam is too complex to untangle merges with online data generically",
 	}
 	for i := range cases {
 		// Allocate a variable to make sure test can run in parallel.
