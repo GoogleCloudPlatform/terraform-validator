@@ -61,6 +61,10 @@ func (c *ResourceChange) IsDeleteCreate() bool {
 	return len(c.Change.Actions) == 2 && c.Change.Actions[0] == "delete"
 }
 
+func (c *ResourceChange) IsDelete() bool {
+	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "delete"
+}
+
 // compatibility shim until ResourceChange is expected by all callers.
 func (c *ResourceChange) Kind() string {
 	return c.Type

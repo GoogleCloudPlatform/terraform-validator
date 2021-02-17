@@ -50,8 +50,9 @@ func TestCLI(t *testing.T) {
 
 	// Test cases for each type of resource is defined here.
 	cases := []struct {
-		name        string
-		constraints []constraint
+		name                 string
+		constraints          []constraint
+		compareConvertOutput compareConvertOutputFunc
 	}{
 		{name: "bucket"},
 		{name: "bucket_iam"},
@@ -72,8 +73,8 @@ func TestCLI(t *testing.T) {
 		{name: "example_project_in_org"},
 		{name: "example_project_in_folder"},
 		{name: "example_project_iam"},
-		{name: "example_project_iam_binding"},
-		{name: "example_project_iam_member"},
+		{name: "example_project_iam_binding", compareConvertOutput: compareMergedIamBindingOutput},
+		{name: "example_project_iam_member", compareConvertOutput: compareMergedIamMemberOutput},
 		{name: "example_project_iam_policy"},
 		{name: "example_project_service"},
 		{name: "example_sql_database_instance"},
@@ -85,6 +86,13 @@ func TestCLI(t *testing.T) {
 		{name: "full_sql_database_instance"},
 		{name: "full_storage_bucket"},
 	}
+
+	// Map of cases to skip to reasons for the skip
+	skipCases := map[string]string{
+		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=convert":                            "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=validate/constraint=always_violate": "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+		"TestCLI/v=0.12/tf=example_project_iam/offline=false/cmd=convert":                                "example_project_iam is too complex to untangle merges with online data generically",
+	}
 	for i := range cases {
 		// Allocate a variable to make sure test can run in parallel.
 		c := cases[i]
@@ -93,8 +101,14 @@ func TestCLI(t *testing.T) {
 			c.constraints = []constraint{alwaysViolate}
 		}
 
+		// Add default convert comparison func if not set
+		if c.compareConvertOutput == nil {
+			c.compareConvertOutput = compareUnmergedConvertOutput
+		}
+
 		// Test both offline and online mode.
 		for _, offline := range []bool{true, false} {
+			offline := offline
 			t.Run(fmt.Sprintf("v=0.12/tf=%s/offline=%t", c.name, offline), func(t *testing.T) {
 				t.Parallel()
 				// Create a temporary directory for running terraform.
@@ -111,11 +125,17 @@ func TestCLI(t *testing.T) {
 				terraform(t, dir, c.name)
 
 				t.Run("cmd=convert", func(t *testing.T) {
-					testConvertCommand(t, dir, c.name, offline)
+					if reason, exists := skipCases[t.Name()]; exists {
+						t.Skip(reason)
+					}
+					testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
 				})
 
 				for _, ct := range c.constraints {
 					t.Run(fmt.Sprintf("cmd=validate/constraint=%s", ct.name), func(t *testing.T) {
+						if reason, exists := skipCases[t.Name()]; exists {
+							t.Skip(reason)
+						}
 						testValidateCommand(t, ct.wantViolation, ct.wantOutputRegex, dir, c.name, offline, ct.name)
 					})
 				}
@@ -124,28 +144,114 @@ func TestCLI(t *testing.T) {
 	}
 }
 
-func testConvertCommand(t *testing.T, dir, name string, offline bool) {
-	var payload []byte
-	payload = tfvConvert(t, dir, name+".tfplan.json", offline)
-	// Verify if the generated assets match the expected.
-	var got []google.Asset
-	err := json.Unmarshal(payload, &got)
-	if err != nil {
-		t.Fatalf("unmarshaling: %v", err)
+type compareConvertOutputFunc func(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool)
+
+func compareUnmergedConvertOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
+	expectedJSON := normalizeAssets(t, expected, offline)
+	actualJSON := normalizeAssets(t, actual, offline)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+}
+
+// For merged IAM members, only consider whether the expected members are present.
+func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
+	var normalizedActual []google.Asset
+	for i := range expected {
+		expectedAsset := expected[i]
+		actualAsset := actual[i]
+
+		normalizedActualAsset := google.Asset{
+			Name:     actualAsset.Name,
+			Type:     actualAsset.Type,
+			Ancestry: actualAsset.Ancestry,
+		}
+
+		expectedBindings := map[string]map[string]struct{}{}
+		for _, binding := range expectedAsset.IAMPolicy.Bindings {
+			expectedBindings[binding.Role] = map[string]struct{}{}
+			for _, member := range binding.Members {
+				expectedBindings[binding.Role][member] = struct{}{}
+			}
+		}
+
+		iamPolicy := google.IAMPolicy{}
+		for _, binding := range actualAsset.IAMPolicy.Bindings {
+			if expectedMembers, exists := expectedBindings[binding.Role]; exists {
+				iamBinding := google.IAMBinding{
+					Role: binding.Role,
+				}
+				for _, member := range binding.Members {
+					if _, exists := expectedMembers[member]; exists {
+						iamBinding.Members = append(iamBinding.Members, member)
+					}
+				}
+				iamPolicy.Bindings = append(iamPolicy.Bindings, iamBinding)
+			}
+		}
+		normalizedActualAsset.IAMPolicy = &iamPolicy
+		normalizedActual = append(normalizedActual, normalizedActualAsset)
 	}
+
+	expectedJSON := normalizeAssets(t, expected, offline)
+	actualJSON := normalizeAssets(t, normalizedActual, offline)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+}
+
+// For merged IAM bindings, only consider whether the expected bindings are as expected.
+func compareMergedIamBindingOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
+	var normalizedActual []google.Asset
+	for i := range expected {
+		expectedAsset := expected[i]
+		actualAsset := actual[i]
+
+		normalizedActualAsset := google.Asset{
+			Name:     actualAsset.Name,
+			Type:     actualAsset.Type,
+			Ancestry: actualAsset.Ancestry,
+		}
+
+		expectedBindings := map[string]struct{}{}
+		for _, binding := range expectedAsset.IAMPolicy.Bindings {
+			expectedBindings[binding.Role] = struct{}{}
+		}
+
+		iamPolicy := google.IAMPolicy{}
+		for _, binding := range actualAsset.IAMPolicy.Bindings {
+			if _, exists := expectedBindings[binding.Role]; exists {
+				iamPolicy.Bindings = append(iamPolicy.Bindings, binding)
+			}
+		}
+		normalizedActualAsset.IAMPolicy = &iamPolicy
+		normalizedActual = append(normalizedActual, normalizedActualAsset)
+	}
+
+	expectedJSON := normalizeAssets(t, expected, offline)
+	actualJSON := normalizeAssets(t, normalizedActual, offline)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+}
+
+func testConvertCommand(t *testing.T, dir, name string, offline bool, compare compareConvertOutputFunc) {
+	var payload []byte
+
+	// Load expected assets
 	testfile := filepath.Join(dir, name+".json")
-	payload, err = ioutil.ReadFile(testfile)
+	payload, err := ioutil.ReadFile(testfile)
 	if err != nil {
 		t.Fatalf("Error reading %v: %v", testfile, err)
 	}
-	var want []google.Asset
-	if err := json.Unmarshal(payload, &want); err != nil {
+	var expected []google.Asset
+	if err := json.Unmarshal(payload, &expected); err != nil {
 		t.Fatalf("unmarshaling: %v", err)
 	}
 
-	gotJSON := normalizeAssets(t, got, offline)
-	wantJSON := normalizeAssets(t, want, offline)
-	require.JSONEq(t, string(wantJSON), string(gotJSON))
+	// Get converted assets
+	payload = tfvConvert(t, dir, name+".tfplan.json", offline)
+	var actual []google.Asset
+	err = json.Unmarshal(payload, &actual)
+	if err != nil {
+		t.Fatalf("unmarshaling: %v", err)
+	}
+
+	compare(t, expected, actual, offline)
 }
 
 func testValidateCommand(t *testing.T, wantViolation bool, want, dir, name string, offline bool, constraintName string) {
@@ -207,7 +313,7 @@ func tfvConvert(t *testing.T, dir, tfplan string, offline bool) []byte {
 	wantError := false
 	args := []string{"convert", "--project", data.Provider["project"]}
 	if offline {
-		args = append(args, "--ancestry", data.Ancestry)
+		args = append(args, "--offline", "--ancestry", data.Ancestry)
 	}
 	args = append(args, tfplan)
 	cmd := exec.Command(executable, args...)
