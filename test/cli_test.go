@@ -73,7 +73,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_project_in_org"},
 		{name: "example_project_in_folder"},
 		{name: "example_project_iam"},
-		{name: "example_project_iam_binding"},
+		{name: "example_project_iam_binding", compareConvertOutput: compareMergedIamBindingOutput},
 		{name: "example_project_iam_member", compareConvertOutput: compareMergedIamMemberOutput},
 		{name: "example_project_iam_policy"},
 		{name: "example_project_service"},
@@ -184,6 +184,39 @@ func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual 
 					}
 				}
 				iamPolicy.Bindings = append(iamPolicy.Bindings, iamBinding)
+			}
+		}
+		normalizedActualAsset.IAMPolicy = &iamPolicy
+		normalizedActual = append(normalizedActual, normalizedActualAsset)
+	}
+
+	expectedJSON := normalizeAssets(t, expected, offline)
+	actualJSON := normalizeAssets(t, normalizedActual, offline)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+}
+
+// For merged IAM bindings, only consider whether the expected bindings are as expected.
+func compareMergedIamBindingOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
+	var normalizedActual []google.Asset
+	for i := range expected {
+		expectedAsset := expected[i]
+		actualAsset := expected[i]
+
+		normalizedActualAsset := google.Asset{
+			Name:     actualAsset.Name,
+			Type:     actualAsset.Type,
+			Ancestry: "",
+		}
+
+		expectedBindings := map[string]struct{}{}
+		for _, binding := range expectedAsset.IAMPolicy.Bindings {
+			expectedBindings[binding.Role] = struct{}{}
+		}
+
+		iamPolicy := google.IAMPolicy{}
+		for _, binding := range actualAsset.IAMPolicy.Bindings {
+			if _, exists := expectedBindings[binding.Role]; exists {
+				iamPolicy.Bindings = append(iamPolicy.Bindings, binding)
 			}
 		}
 		normalizedActualAsset.IAMPolicy = &iamPolicy
