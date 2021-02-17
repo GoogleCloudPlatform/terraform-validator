@@ -111,7 +111,7 @@ make test
 # Integration tests (interacts with real APIs)
 gcloud auth application-default login
 export TEST_PROJECT=my-project-id
-export TEST_CREDENTIALS=~/.config/.config/gcloud/application_default_credentials.json
+export TEST_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
 make test-integration
 ```
 
