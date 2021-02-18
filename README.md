@@ -113,6 +113,9 @@ gcloud auth application-default login
 export TEST_PROJECT=my-project-id
 export TEST_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
 make test-integration
+
+# Specific integration test
+go test -v -run=<test name or prefix> ./test
 ```
 
 ### Docker
