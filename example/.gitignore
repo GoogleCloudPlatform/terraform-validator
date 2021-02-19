@@ -10,10 +10,12 @@ tfplan.*
 *.tfstate
 *.tfstate.*
 
+
 # .tfvars files
 *.tfvars
 
 # Inventory
 inventory*.json
 
-terraform.tfplan.json
+tfplan.json
+.terraform.lock.hcl
