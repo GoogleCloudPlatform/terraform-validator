@@ -14,73 +14,60 @@
 package tfplan
 
 import (
-	"encoding/json"
-
+	"github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 )
 
-// jsonPlan structure used to parse Terraform 12 plan exported in json format by 'terraform show -json ./binary_plan.tfplan' command.
-// https://www.terraform.io/docs/internals/json-format.html#plan-representation
-type jsonPlan struct {
-	ResourceChanges []ResourceChange `json:"resource_changes"`
+func IsCreate(rc *tfjson.ResourceChange) bool {
+	return len(rc.Change.Actions) == 1 && rc.Change.Actions[0] == "create"
 }
 
-type ChangeRepresentation struct {
-	// Valid actions values are:
-	//    ["no-op"]
-	//    ["create"]
-	//    ["read"]
-	//    ["update"]
-	//    ["delete", "create"]
-	//    ["create", "delete"]
-	//    ["delete"]
-	Actions []string               `json:"actions"`
-	Before  map[string]interface{} `json:"before"`
-	After   map[string]interface{} `json:"after"`
+func IsUpdate(rc *tfjson.ResourceChange) bool {
+	return len(rc.Change.Actions) == 1 && rc.Change.Actions[0] == "update"
 }
 
-type ResourceChange struct {
-	Address      string               `json:"address"`
-	Mode         string               `json:"mode"`
-	Type         string               `json:"type"`
-	Name         string               `json:"name"`
-	ProviderName string               `json:"provider_name"`
-	Change       ChangeRepresentation `json:"change"`
+func IsDeleteCreate(rc *tfjson.ResourceChange) bool {
+	return len(rc.Change.Actions) == 2 && rc.Change.Actions[0] == "delete"
 }
 
-func (c *ResourceChange) IsCreate() bool {
-	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "create"
-}
-
-func (c *ResourceChange) IsUpdate() bool {
-	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "update"
-}
-
-func (c *ResourceChange) IsDeleteCreate() bool {
-	return len(c.Change.Actions) == 2 && c.Change.Actions[0] == "delete"
-}
-
-func (c *ResourceChange) IsDelete() bool {
-	return len(c.Change.Actions) == 1 && c.Change.Actions[0] == "delete"
+func IsDelete(rc *tfjson.ResourceChange) bool {
+	return len(rc.Change.Actions) == 1 && rc.Change.Actions[0] == "delete"
 }
 
 // compatibility shim until ResourceChange is expected by all callers.
-func (c *ResourceChange) Kind() string {
-	return c.Type
+func Kind(rc *tfjson.ResourceChange) string {
+	return rc.Type
 }
 
 // ComposeTF12Resources is a thin wrapper around ReadResourceChanges as a compatibility shim.
-func ComposeTF12Resources(data []byte, _ map[string]*schema.Resource) ([]ResourceChange, error) {
-	return ReadResourceChanges(data)
+// It needs to return a slice of non-pointers to the same type that Converter.AddResource
+// takes a pointer to.
+func ComposeTF12Resources(data []byte, _ map[string]*schema.Resource) ([]tfjson.ResourceChange, error) {
+	rcps, err := ReadResourceChanges(data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var rcs []tfjson.ResourceChange
+	for _, rcp := range rcps {
+		rcs = append(rcs, *rcp)
+	}
+	return rcs, nil
 }
 
 // ReadResourceChanges returns the list of resource changes from a json plan
-func ReadResourceChanges(data []byte) ([]ResourceChange, error) {
-	plan := jsonPlan{}
-	err := json.Unmarshal(data, &plan)
+func ReadResourceChanges(data []byte) ([]*tfjson.ResourceChange, error) {
+	plan := tfjson.Plan{}
+	err := plan.UnmarshalJSON(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "reading JSON plan")
+	}
+
+	err = plan.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "validating JSON plan")
 	}
 
 	return plan.ResourceChanges, nil
