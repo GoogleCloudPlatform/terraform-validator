@@ -19,8 +19,8 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/hashicorp/terraform-json"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
-	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -71,34 +71,34 @@ func TestSortByName(t *testing.T) {
 }
 
 func TestAddResourceChanges_unknownResourceIgnored(t *testing.T) {
-	rc := tfplan.ResourceChange{
+	rc := tfjson.ResourceChange{
 		Address:      "whatever.google_unknown.foo",
 		Mode:         "managed",
 		Type:         "google_unknown",
 		Name:         "foo",
 		ProviderName: "google",
-		Change: tfplan.ChangeRepresentation{
-			Actions: []string{"change"},
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"change"},
 			Before:  nil,
 			After:   nil,
 		},
 	}
 	c, err := newTestConverter()
 	assert.Nil(t, err)
-	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
 }
 
 func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
-	rc := tfplan.ResourceChange{
+	rc := tfjson.ResourceChange{
 		Address:      "whatever.google_unknown.foo",
 		Mode:         "managed",
 		Type:         "google_unsupported",
 		Name:         "foo",
 		ProviderName: "google",
-		Change: tfplan.ChangeRepresentation{
-			Actions: []string{"change"},
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"change"},
 			Before:  nil,
 			After:   nil,
 		},
@@ -110,20 +110,20 @@ func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
 	// converter.
 	c.schema.ResourcesMap[rc.Type] = c.schema.ResourcesMap["google_compute_disk"]
 
-	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
 }
 
 func TestAddResourceChanges_noopIgnored(t *testing.T) {
-	rc := tfplan.ResourceChange{
+	rc := tfjson.ResourceChange{
 		Address:      "whatever.google_compute_disk.foo",
 		Mode:         "managed",
 		Type:         "google_compute_disk",
 		Name:         "foo",
 		ProviderName: "google",
-		Change: tfplan.ChangeRepresentation{
-			Actions: []string{"no-op"},
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"no-op"},
 			Before:  nil,
 			After:   nil,
 		},
@@ -131,28 +131,38 @@ func TestAddResourceChanges_noopIgnored(t *testing.T) {
 	c, err := newTestConverter()
 	assert.Nil(t, err)
 
-	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
 }
 
-func TestAddResourceChanges_deleteIgnored(t *testing.T) {
-	rc := tfplan.ResourceChange{
+func TestAddResourceChanges_deleteProcessed(t *testing.T) {
+	rc := tfjson.ResourceChange{
 		Address:      "whatever.google_compute_disk.foo",
 		Mode:         "managed",
 		Type:         "google_compute_disk",
 		Name:         "foo",
 		ProviderName: "google",
-		Change: tfplan.ChangeRepresentation{
-			Actions: []string{"delete"},
-			Before:  nil,
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"delete"},
+			Before:  map[string]interface{}{
+				"project": testProject,
+				"name":    "test-disk",
+				"type":    "pd-ssd",
+				"zone":    "us-central1-a",
+				"image":   "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+				"labels": map[string]interface{}{
+					"environment": "dev",
+				},
+				"physical_block_size_bytes": 4096,
+			},
 			After:   nil,
 		},
 	}
 	c, err := newTestConverter()
 	assert.Nil(t, err)
 
-	err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
 }
@@ -160,30 +170,30 @@ func TestAddResourceChanges_deleteIgnored(t *testing.T) {
 func TestAddResourceChanges_createOrUpdateOrDeleteCreateProcessed(t *testing.T) {
 	cases := []struct {
 		name    string
-		actions []string
+		actions tfjson.Actions
 	}{
 		{
 			name:    "Create",
-			actions: []string{"create"},
+			actions: tfjson.Actions{"create"},
 		},
 		{
 			name:    "Update",
-			actions: []string{"update"},
+			actions: tfjson.Actions{"update"},
 		},
 		{
 			name:    "DeleteCreate",
-			actions: []string{"delete", "create"},
+			actions: tfjson.Actions{"delete", "create"},
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			rc := tfplan.ResourceChange{
+			rc := tfjson.ResourceChange{
 				Address:      "whatever.google_compute_disk.foo",
 				Mode:         "managed",
 				Type:         "google_compute_disk",
 				Name:         "foo",
 				ProviderName: "google",
-				Change: tfplan.ChangeRepresentation{
+				Change: &tfjson.Change{
 					Actions: c.actions,
 					Before:  nil, // Ignore Before because it's unused
 					After: map[string]interface{}{
@@ -202,7 +212,7 @@ func TestAddResourceChanges_createOrUpdateOrDeleteCreateProcessed(t *testing.T) 
 			c, err := newTestConverter()
 			assert.Nil(t, err)
 
-			err = c.AddResourceChanges([]tfplan.ResourceChange{rc})
+			err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 			assert.Nil(t, err)
 
 			caiKey := "compute.googleapis.com/Disk//compute.googleapis.com/projects/test-project/zones/us-central1-a/disks/test-disk"

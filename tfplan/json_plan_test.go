@@ -11,6 +11,7 @@ func newPlan(t *testing.T) []byte {
 	t.Helper()
 	return []byte(`
 {
+  "format_version": "0.1",
   "planned_values": {
     "root_module": {
       "child_modules": [

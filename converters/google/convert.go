@@ -20,6 +20,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/golang/glog"
 	provider "github.com/hashicorp/terraform-provider-google/v3/google"
@@ -163,8 +164,8 @@ func (c *Converter) Schemas() map[string]*schema.Resource {
 }
 
 // Compatibility shim: maintain support for ComposeTF12Resources -> AddResource pipeline
-func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
-	return c.AddResourceChanges([]tfplan.ResourceChange{*rc})
+func (c *Converter) AddResource(rc *tfjson.ResourceChange) error {
+	return c.AddResourceChanges([]*tfjson.ResourceChange{rc})
 }
 
 // AddResourceChange processes the resource changes in two stages:
@@ -173,8 +174,8 @@ func (c *Converter) AddResource(rc *tfplan.ResourceChange) error {
 // This will give us a deterministic end result even in cases where for example
 // an IAM Binding and Member conflict with each other, but one is replacing the
 // other.
-func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
-	var createOrUpdates []tfplan.ResourceChange
+func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
+	var createOrUpdates []*tfjson.ResourceChange
 	for _, rc := range changes {
 		// skip unknown resources
 		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
@@ -188,9 +189,9 @@ func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
 			continue
 		}
 
-		if rc.IsCreate() || rc.IsUpdate() || rc.IsDeleteCreate() {
+		if tfplan.IsCreate(rc) || tfplan.IsUpdate(rc) || tfplan.IsDeleteCreate(rc) {
 			createOrUpdates = append(createOrUpdates, rc)
-		} else if rc.IsDelete() {
+		} else if tfplan.IsDelete(rc) {
 			if err := c.addDelete(rc); err != nil {
 				return fmt.Errorf("adding resource deletion %w", err)
 			}
@@ -215,12 +216,12 @@ func (c *Converter) AddResourceChanges(changes []tfplan.ResourceChange) error {
 // both fetch and mergeDelete. Supporting just one doesn't
 // make sense, and supporting neither means that the deletion
 // can just happen without needing to be merged.
-func (c *Converter) addDelete(rc tfplan.ResourceChange) error {
+func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
-		rc.Change.Before,
+		rc.Change.Before.(map[string]interface{}),
 	)
 	for _, mapper := range c.mapperFuncs[rd.Kind()] {
 		if mapper.fetch == nil || mapper.mergeDelete == nil {
@@ -263,12 +264,12 @@ func (c *Converter) addDelete(rc tfplan.ResourceChange) error {
 // For create/update, we need to handle both the case of no merging,
 // and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
 // to be present.
-func (c *Converter) addCreateOrUpdate(rc tfplan.ResourceChange) error {
+func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
-		rc.Change.After,
+		rc.Change.After.(map[string]interface{}),
 	)
 
 	for _, mapper := range c.mapperFuncs[rd.Kind()] {
