@@ -153,8 +153,9 @@ Adding support for a new resource follows these steps:
 4. Create a PR against Magic Modules. This will be reviewed by a core contributor.
 5. Once that is merged, go to terraform-validator and run `go get github.com/GoogleCloudPlatform/terraform-google-conversion` to update the version of terraform-google-conversion in use
 6. Add one or more [mappers](https://github.com/GoogleCloudPlatform/terraform-validator/blob/86e5a59ce0dbf4089db8484a482dbac4f48dc93a/converters/google/mappers.go#L42) for the new resource.
-7. Run tests.
-8. Create a PR against terraform-validator.
+7. Add test cases to [test/cli_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/cli_test.go#L52) and [test/read_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/read_test.go#L24)
+8. Run tests.
+9. Create a PR against terraform-validator.
 
 ### mappers
 
