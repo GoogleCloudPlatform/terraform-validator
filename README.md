@@ -147,7 +147,7 @@ Some Terraform resources are fully generated, whereas some resources are hand wr
 
 Adding support for a new resource follows these steps:
 
-0. If the resource is already [supported by terraform-google-conversion](https://github.com/GoogleCloudPlatform/terraform-google-conversion/tree/master/google) you can skip to step 6. You may be need to upgrade the terraform-google-conversion dependency in terraform-validator's go.mod file.
+0. If the resource is already [supported by terraform-google-conversion](https://github.com/GoogleCloudPlatform/terraform-google-conversion/tree/master/google) you can skip to step 6. You may be need to upgrade the terraform-google-conversion dependency in terraform-validator's [go.mod file](https://github.com/GoogleCloudPlatform/terraform-validator/blob/master/go.mod).
 1. Add support for the resource in Magic Modules (preferably auto-generated; hand-written resources are harder to maintain.)
 2. [Generate the terraform-google-conversion code](https://github.com/GoogleCloudPlatform/magic-modules/blob/master/README.md#generating-downstream-tools).
 3. Run `make test` inside the terraform-google-conversion repository.
