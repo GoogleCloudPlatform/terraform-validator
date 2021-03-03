@@ -64,7 +64,8 @@ func mappers() map[string][]mapper {
 		"google_project_service":                {{convert: converter.GetServiceUsageCaiObject}},
 		"google_pubsub_subscription":            {{convert: converter.GetPubsubSubscriptionCaiObject}},
 		"google_pubsub_topic":                   {{convert: converter.GetPubsubTopicCaiObject}},
-		"google_kms_key_ring":			         {{convert: converter.GetKMSKeyRingCaiObject}},
+		"google_kms_crypto_key":                 {{convert: converter.GetKMSCryptoKeyCaiObject}},
+		"google_kms_key_ring":			             {{convert: converter.GetKMSKeyRingCaiObject}},
 
 		// Terraform resources of type "google_project" have a 1:N relationship with CAI assets.
 		"google_project": {
