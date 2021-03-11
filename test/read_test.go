@@ -25,6 +25,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		name string
 	}{
 		{name: "example_bigquery_dataset"},
+		{name: "example_bigtable_instance"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_firewall"},
 		{name: "example_compute_instance"},
