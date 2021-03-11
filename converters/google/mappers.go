@@ -20,7 +20,7 @@ import (
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 )
 
-type convertFunc func(d converter.TerraformResourceData, config *converter.Config) (converter.Asset, error)
+type convertFunc func(d converter.TerraformResourceData, config *converter.Config) ([]converter.Asset, error)
 
 // fetchFunc allows initial data for a resource to be fetched from the API and merged
 // with the planned changes. This is useful for resources that are only partially managed
