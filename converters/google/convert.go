@@ -227,7 +227,8 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 		if mapper.fetch == nil || mapper.mergeDelete == nil {
 			continue
 		}
-		converted, err := mapper.convert(&rd, c.cfg)
+		convertedItems, err := mapper.convert(&rd, c.cfg)
+
 		if err != nil {
 			if errors.Cause(err) == converter.ErrNoConversion {
 				continue
@@ -235,31 +236,32 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			return errors.Wrap(err, "converting asset")
 		}
 
-		key := converted.Type + converted.Name
-		var existingConverterAsset *converter.Asset
-		if existing, exists := c.assets[key]; exists {
-			existingConverterAsset = &existing.converterAsset
-		} else if !c.offline {
-			asset, err := mapper.fetch(&rd, c.cfg)
-			if err != nil {
-				return errors.Wrap(err, "fetching asset")
-			}
-			existingConverterAsset = &asset
-		}
+		for _, converted := range convertedItems {
 
-		if existingConverterAsset != nil {
-			converted = mapper.mergeDelete(*existingConverterAsset, converted)
-			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
-			if err != nil {
-				return errors.Wrap(err, "augmenting asset")
+			key := converted.Type + converted.Name
+			var existingConverterAsset *converter.Asset
+			if existing, exists := c.assets[key]; exists {
+				existingConverterAsset = &existing.converterAsset
+			} else if !c.offline {
+				asset, err := mapper.fetch(&rd, c.cfg)
+				if err != nil {
+					return errors.Wrap(err, "fetching asset")
+				}
+				existingConverterAsset = &asset
+				if existingConverterAsset != nil {
+					converted = mapper.mergeDelete(*existingConverterAsset, converted)
+					augmented, err := c.augmentAsset(&rd, c.cfg, converted)
+					if err != nil {
+						return errors.Wrap(err, "augmenting asset")
+					}
+					c.assets[key] = augmented
+				}
 			}
-			c.assets[key] = augmented
 		}
 	}
 
 	return nil
 }
-
 
 // For create/update, we need to handle both the case of no merging,
 // and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
@@ -273,7 +275,7 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 	)
 
 	for _, mapper := range c.mapperFuncs[rd.Kind()] {
-		converted, err := mapper.convert(&rd, c.cfg)
+		convertedAssets, err := mapper.convert(&rd, c.cfg)
 		if err != nil {
 			if errors.Cause(err) == converter.ErrNoConversion {
 				continue
@@ -281,34 +283,36 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 			return errors.Wrap(err, "converting asset")
 		}
 
-		key := converted.Type + converted.Name
+		for _, converted := range convertedAssets {
+			key := converted.Type + converted.Name
 
-		var existingConverterAsset *converter.Asset
-		if existing, exists := c.assets[key]; exists {
-			existingConverterAsset = &existing.converterAsset
-		} else if mapper.fetch != nil && !c.offline {
-			asset, err := mapper.fetch(&rd, c.cfg)
+			var existingConverterAsset *converter.Asset
+			if existing, exists := c.assets[key]; exists {
+				existingConverterAsset = &existing.converterAsset
+			} else if mapper.fetch != nil && !c.offline {
+				asset, err := mapper.fetch(&rd, c.cfg)
+				if err != nil {
+					return errors.Wrap(err, "fetching asset")
+				}
+
+				existingConverterAsset = &asset
+			}
+
+			if existingConverterAsset != nil {
+				if mapper.mergeCreateUpdate == nil {
+					// If a merge function does not exist ignore the asset and return
+					// a checkable error.
+					return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
+				}
+				converted = mapper.mergeCreateUpdate(*existingConverterAsset, converted)
+			}
+
+			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
 			if err != nil {
-				return errors.Wrap(err, "fetching asset")
+				return errors.Wrap(err, "augmenting asset")
 			}
-
-			existingConverterAsset = &asset
+			c.assets[key] = augmented
 		}
-
-		if existingConverterAsset != nil {
-			if mapper.mergeCreateUpdate == nil {
-				// If a merge function does not exist ignore the asset and return
-				// a checkable error.
-				return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
-			}
-			converted = mapper.mergeCreateUpdate(*existingConverterAsset, converted)
-		}
-
-		augmented, err := c.augmentAsset(&rd, c.cfg, converted)
-		if err != nil {
-			return errors.Wrap(err, "augmenting asset")
-		}
-		c.assets[key] = augmented
 	}
 
 	return nil
