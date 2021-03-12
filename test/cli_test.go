@@ -130,13 +130,21 @@ func TestCLI(t *testing.T) {
 				// Generate the <name>.tf and <name>_assets.json files into the temporary directory.
 				generateTestFiles(t, "../testdata/templates", dir, c.name+".tf")
 				generateTestFiles(t, "../testdata/templates", dir, c.name+".json")
-				generateTestFiles(t, "../testdata/templates", dir, c.name+".tfstate")
-				err = os.Rename(
-					filepath.Join(dir, c.name + ".tfstate"),
-					filepath.Join(dir, "terraform.tfstate"),
-				)
+
+				// Uses glob matching to match generateTestFiles internals.
+				tfstateMatches, err := filepath.Glob(filepath.Join("../testdata/templates", c.name+".tfstate"))
 				if err != nil {
-					log.Printf("Error renaming tfstate: %v", err)
+					t.Fatalf("malformed glob: %v", err)
+				}
+				if tfstateMatches != nil {
+					generateTestFiles(t, "../testdata/templates", dir, c.name+".tfstate")
+					err = os.Rename(
+						filepath.Join(dir, c.name + ".tfstate"),
+						filepath.Join(dir, "terraform.tfstate"),
+					)
+					if err != nil {
+						t.Fatalf("renaming tfstate: %v", err)
+					}
 				}
 
 				terraform(t, dir, c.name)
