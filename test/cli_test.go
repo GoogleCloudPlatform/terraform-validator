@@ -67,6 +67,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_compute_instance"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_container_cluster"},
+		{name: "example_filestore_instance"},
 		{name: "example_kms_crypto_key"},
 		{name: "example_kms_key_ring"},
 		{name: "example_organization_iam_binding"},
