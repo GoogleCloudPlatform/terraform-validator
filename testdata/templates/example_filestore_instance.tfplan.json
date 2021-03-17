@@ -1,0 +1,247 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.13.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_filestore_instance.test",
+          "mode": "managed",
+          "type": "google_filestore_instance",
+          "name": "test",
+          "provider_name": "registry.terraform.io/hashicorp/google-beta",
+          "schema_version": 0,
+          "values": {
+            "description": null,
+            "file_shares": [
+              {
+                "capacity_gb": 2660,
+                "name": "share1",
+                "nfs_export_options": [
+                  {
+                    "access_mode": "READ_WRITE",
+                    "anon_gid": null,
+                    "anon_uid": null,
+                    "ip_ranges": [
+                      "10.0.0.0/24"
+                    ],
+                    "squash_mode": "NO_ROOT_SQUASH"
+                  },
+                  {
+                    "access_mode": "READ_ONLY",
+                    "anon_gid": 456,
+                    "anon_uid": 123,
+                    "ip_ranges": [
+                      "10.10.0.0/24"
+                    ],
+                    "squash_mode": "ROOT_SQUASH"
+                  }
+                ]
+              }
+            ],
+            "labels": null,
+            "name": "test-instance",
+            "networks": [
+              {
+                "modes": [
+                  "MODE_IPV4"
+                ],
+                "network": "default"
+              }
+            ],
+            "tier": "BASIC_SSD",
+            "timeouts": null,
+            "zone": "us-central1-b"
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "google_filestore_instance.test",
+      "mode": "managed",
+      "type": "google_filestore_instance",
+      "name": "test",
+      "provider_name": "registry.terraform.io/hashicorp/google-beta",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "file_shares": [
+            {
+              "capacity_gb": 2660,
+              "name": "share1",
+              "nfs_export_options": [
+                {
+                  "access_mode": "READ_WRITE",
+                  "anon_gid": null,
+                  "anon_uid": null,
+                  "ip_ranges": [
+                    "10.0.0.0/24"
+                  ],
+                  "squash_mode": "NO_ROOT_SQUASH"
+                },
+                {
+                  "access_mode": "READ_ONLY",
+                  "anon_gid": 456,
+                  "anon_uid": 123,
+                  "ip_ranges": [
+                    "10.10.0.0/24"
+                  ],
+                  "squash_mode": "ROOT_SQUASH"
+                }
+              ]
+            }
+          ],
+          "labels": null,
+          "name": "test-instance",
+          "networks": [
+            {
+              "modes": [
+                "MODE_IPV4"
+              ],
+              "network": "default"
+            }
+          ],
+          "tier": "BASIC_SSD",
+          "timeouts": null,
+          "zone": "us-central1-b"
+        },
+        "after_unknown": {
+          "create_time": true,
+          "etag": true,
+          "file_shares": [
+            {
+              "nfs_export_options": [
+                {
+                  "ip_ranges": [
+                    false
+                  ]
+                },
+                {
+                  "ip_ranges": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ],
+          "id": true,
+          "networks": [
+            {
+              "ip_addresses": true,
+              "modes": [
+                false
+              ],
+              "reserved_ip_range": true
+            }
+          ],
+          "project": true
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "google": {
+        "name": "google",
+        "expressions": {
+          "project": {
+            "constant_value": "{{.Provider.project}}"
+          }
+        }
+      },
+      "google-beta": {
+        "name": "google-beta",
+        "expressions": {
+          "project": {
+            "constant_value": "{{.Provider.project}}"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_filestore_instance.test",
+          "mode": "managed",
+          "type": "google_filestore_instance",
+          "name": "test",
+          "provider_config_key": "google-beta",
+          "expressions": {
+            "file_shares": [
+              {
+                "capacity_gb": {
+                  "constant_value": 2660
+                },
+                "name": {
+                  "constant_value": "share1"
+                },
+                "nfs_export_options": [
+                  {
+                    "access_mode": {
+                      "constant_value": "READ_WRITE"
+                    },
+                    "ip_ranges": {
+                      "constant_value": [
+                        "10.0.0.0/24"
+                      ]
+                    },
+                    "squash_mode": {
+                      "constant_value": "NO_ROOT_SQUASH"
+                    }
+                  },
+                  {
+                    "access_mode": {
+                      "constant_value": "READ_ONLY"
+                    },
+                    "anon_gid": {
+                      "constant_value": 456
+                    },
+                    "anon_uid": {
+                      "constant_value": 123
+                    },
+                    "ip_ranges": {
+                      "constant_value": [
+                        "10.10.0.0/24"
+                      ]
+                    },
+                    "squash_mode": {
+                      "constant_value": "ROOT_SQUASH"
+                    }
+                  }
+                ]
+              }
+            ],
+            "name": {
+              "constant_value": "test-instance"
+            },
+            "networks": [
+              {
+                "modes": {
+                  "constant_value": [
+                    "MODE_IPV4"
+                  ]
+                },
+                "network": {
+                  "constant_value": "default"
+                }
+              }
+            ],
+            "tier": {
+              "constant_value": "BASIC_SSD"
+            },
+            "zone": {
+              "constant_value": "us-central1-b"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}
