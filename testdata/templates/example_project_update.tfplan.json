@@ -20,7 +20,7 @@
               "project-label-key-a": "project-label-val-a"
             },
             "name": "My New Project",
-            "number": "1234567890",
+            "number": "{{.Project.Number}}",
             "org_id": "{{.OrgID}}",
             "project_id": "{{.Provider.project}}",
             "skip_delete": null,
@@ -50,7 +50,7 @@
             "project-label-key-a": "project-label-val-a"
           },
           "name": "My Project",
-          "number": "1234567890",
+          "number": "{{.Project.Number}}",
           "org_id": "{{.OrgID}}",
           "project_id": "{{.Provider.project}}",
           "skip_delete": null,
@@ -65,7 +65,7 @@
             "project-label-key-a": "project-label-val-a"
           },
           "name": "My New Project",
-          "number": "1234567890",
+          "number": "{{.Project.Number}}",
           "org_id": "{{.OrgID}}",
           "project_id": "{{.Provider.project}}",
           "skip_delete": null,
@@ -97,7 +97,7 @@
                 "project-label-key-a": "project-label-val-a"
               },
               "name": "My Project",
-              "number": "1234567890",
+              "number": "{{.Project.Number}}",
               "org_id": "{{.OrgID}}",
               "project_id": "{{.Provider.project}}",
               "skip_delete": null,

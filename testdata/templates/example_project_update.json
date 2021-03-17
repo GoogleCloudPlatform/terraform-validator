@@ -7,7 +7,7 @@
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/cloudbilling/v1/rest",
       "discovery_name": "ProjectBillingInfo",
-      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Project.Number}}",
       "data": {
         "billingAccountName": "billingAccounts/{{.Project.BillingAccountName}}",
         "name": "projects/{{.Provider.project}}/billingInfo",
@@ -16,14 +16,14 @@
     }
   },
   {
-    "name": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+    "name": "//cloudresourcemanager.googleapis.com/projects/{{.Project.Number}}",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
     "ancestry_path": "organization/{{.OrgID}}/project/{{.Provider.project}}",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
       "discovery_name": "Project",
-      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Project.Number}}",
       "data": {
         "labels": {
           "project-label-key-a": "project-label-val-a"
