@@ -1,6 +1,6 @@
 [
   {
-    "name": "//cloudbilling.googleapis.com/projects/{{.Provider.project}}/billingInfo",
+    "name": "//cloudbilling.googleapis.com/projects/{{.Project.Number}}/billingInfo",
     "asset_type": "cloudbilling.googleapis.com/ProjectBillingInfo",
     "ancestry_path": "organization/{{.OrgID}}/project/{{.Provider.project}}",
     "resource": {
@@ -10,7 +10,7 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Project.Number}}",
       "data": {
         "billingAccountName": "billingAccounts/{{.Project.BillingAccountName}}",
-        "name": "projects/{{.Provider.project}}/billingInfo",
+        "name": "projects/{{.Project.Number}}/billingInfo",
         "projectId": "{{.Provider.project}}"
       }
     }

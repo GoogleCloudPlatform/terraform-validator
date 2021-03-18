@@ -30,7 +30,12 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project",
 		"cloudbilling.googleapis.com/ProjectBillingInfo":
-		res, ok := d.GetOk("project_id")
+		res, ok := d.GetOk("number")
+		if ok {
+			return res.(string), nil
+		}
+		// Fall back to project_id if number is not available.
+		res, ok = d.GetOk("project_id")
 		if ok {
 			return res.(string), nil
 		} else {
