@@ -14,10 +14,13 @@ The follow Terraform resources are supported for running validation checks:
 ```
 google_bigquery_dataset
 google_compute_disk
+google_compute_forwarding_rule
+google_compute_global_forwarding_rule
 google_compute_firewall
 google_compute_instance
 google_container_cluster
 google_container_node_pool
+google_filestore_instance
 google_folder_iam_binding
 google_folder_iam_member
 google_folder_iam_policy
@@ -31,12 +34,15 @@ google_project_iam_policy
 google_project_organization_policy
 google_project_service
 google_pubsub_topic
+google_pubsub_subscription
 google_spanner_instance
 google_sql_database_instance
 google_storage_bucket
 google_storage_bucket_iam_binding
 google_storage_bucket_iam_member
 google_storage_bucket_iam_policy
+google_kms_crypto_key
+google_kms_key_ring
 ```
 
 ## Getting Started
