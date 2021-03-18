@@ -302,7 +302,7 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 				if mapper.mergeCreateUpdate == nil {
 					// If a merge function does not exist ignore the asset and return
 					// a checkable error.
-					return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
+					return errors.Wrapf(ErrDuplicateAsset, "asset type %s: asset name %s", converted.Type, converted.Name)
 				}
 				converted = mapper.mergeCreateUpdate(*existingConverterAsset, converted)
 			}
