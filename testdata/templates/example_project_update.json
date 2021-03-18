@@ -2,7 +2,7 @@
   {
     "name": "//cloudbilling.googleapis.com/projects/{{.Project.Number}}/billingInfo",
     "asset_type": "cloudbilling.googleapis.com/ProjectBillingInfo",
-    "ancestry_path": "organization/{{.OrgID}}/project/{{.Provider.project}}",
+    "ancestry_path": "organization/{{.OrgID}}/project/{{.Project.Number}}",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/cloudbilling/v1/rest",
@@ -18,7 +18,7 @@
   {
     "name": "//cloudresourcemanager.googleapis.com/projects/{{.Project.Number}}",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
-    "ancestry_path": "organization/{{.OrgID}}/project/{{.Provider.project}}",
+    "ancestry_path": "organization/{{.OrgID}}/project/{{.Project.Number}}",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
