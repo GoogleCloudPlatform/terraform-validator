@@ -75,7 +75,8 @@ func TestCLI(t *testing.T) {
 		{name: "example_organization_iam_policy"},
 		{name: "example_pubsub_topic"},
 		{name: "example_pubsub_subscription"},
-		{name: "example_project"},
+		{name: "example_project_create", constraints: []constraint{alwaysViolate, constraint{name: "project_match_target", wantViolation: false, wantOutputRegex: ""}}},
+		{name: "example_project_update", constraints: []constraint{alwaysViolate, constraint{name: "project_match_target", wantViolation: true, wantOutputRegex: "Constraint GCPAlwaysViolatesConstraintV1.always_violates_project_match_target on resource"}}},
 		{name: "example_project_in_org"},
 		{name: "example_project_in_folder"},
 		{name: "example_project_iam"},
@@ -129,6 +130,22 @@ func TestCLI(t *testing.T) {
 				// Generate the <name>.tf and <name>_assets.json files into the temporary directory.
 				generateTestFiles(t, "../testdata/templates", dir, c.name+".tf")
 				generateTestFiles(t, "../testdata/templates", dir, c.name+".json")
+
+				// Uses glob matching to match generateTestFiles internals.
+				tfstateMatches, err := filepath.Glob(filepath.Join("../testdata/templates", c.name+".tfstate"))
+				if err != nil {
+					t.Fatalf("malformed glob: %v", err)
+				}
+				if tfstateMatches != nil {
+					generateTestFiles(t, "../testdata/templates", dir, c.name+".tfstate")
+					err = os.Rename(
+						filepath.Join(dir, c.name + ".tfstate"),
+						filepath.Join(dir, "terraform.tfstate"),
+					)
+					if err != nil {
+						t.Fatalf("renaming tfstate: %v", err)
+					}
+				}
 
 				terraform(t, dir, c.name)
 
@@ -288,7 +305,7 @@ func terraformInit(t *testing.T, executable, dir string) {
 }
 
 func terraformPlan(t *testing.T, executable, dir, tfplan string) {
-	terraformExec(t, executable, dir, "plan", "-input=false", "--out", tfplan)
+	terraformExec(t, executable, dir, "plan", "-input=false", "-refresh=false", "-out", tfplan)
 }
 
 func terraformShow(t *testing.T, executable, dir, tfplan string) []byte {

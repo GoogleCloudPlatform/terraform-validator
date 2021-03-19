@@ -103,6 +103,7 @@ func init() {
 			"Name":               "My Project Name",
 			"ProjectId":          "my-project-id",
 			"BillingAccountName": "012345-567890-ABCDEF",
+			"Number":             "1234567890",
 		},
 		OrgID:    org,
 		FolderID: folder,
@@ -137,6 +138,7 @@ func generateTestFiles(t *testing.T, sourceDir string, targetDir string, selecto
 		if err := f.Close(); err != nil {
 			t.Fatalf("closing file %v: %v", path, err)
 		}
+		log.Printf("Successfully created file %v", path)
 	}
 }
 

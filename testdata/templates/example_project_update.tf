@@ -27,7 +27,14 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_organization_iam_policy" "policy" {
-  org_id = "123456789"
-  policy_data = "{\"bindings\":[{\"members\":[\"user:jane@example.com\"],\"role\":\"roles/editor\"}]}"
+resource "google_project" "my_project" {
+  name = "My New Project"
+  project_id = "{{.Provider.project}}"
+  org_id  = "{{.OrgID}}"
+
+  billing_account = "{{.Project.BillingAccountName}}"
+
+  labels  = {
+    "project-label-key-a" = "project-label-val-a"
+  }
 }

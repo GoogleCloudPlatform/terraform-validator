@@ -29,15 +29,5 @@ provider "google" {
 
 resource "google_project_iam_policy" "project" {
   project     = "{{.Provider.project}}"
-  policy_data = data.google_iam_policy.admin.policy_data
-}
-
-data "google_iam_policy" "admin" {
-  binding {
-    role = "roles/editor"
-
-    members = [
-      "user:jane@example.com",
-    ]
-  }
+  policy_data = "{\"bindings\":[{\"members\":[\"user:jane@example.com\"],\"role\":\"roles/editor\"}]}"
 }

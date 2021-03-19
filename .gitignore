@@ -8,9 +8,12 @@ credentials.json
 # Terraform (possibly sensitive)
 .terraform/
 *.tfplan
-*.tfstate*
+examples/*.tfstate*
 
 # Visual Studio Code
 .vscode/
 # Intellij Golang
 .idea/
+
+# Mac OSX
+.DS_Store
