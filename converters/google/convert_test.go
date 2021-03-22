@@ -19,8 +19,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/hashicorp/terraform-json"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -145,7 +145,7 @@ func TestAddResourceChanges_deleteProcessed(t *testing.T) {
 		ProviderName: "google",
 		Change: &tfjson.Change{
 			Actions: tfjson.Actions{"delete"},
-			Before:  map[string]interface{}{
+			Before: map[string]interface{}{
 				"project": testProject,
 				"name":    "test-disk",
 				"type":    "pd-ssd",
@@ -156,7 +156,7 @@ func TestAddResourceChanges_deleteProcessed(t *testing.T) {
 				},
 				"physical_block_size_bytes": 4096,
 			},
-			After:   nil,
+			After: nil,
 		},
 	}
 	c, err := newTestConverter()
@@ -219,4 +219,136 @@ func TestAddResourceChanges_createOrUpdateOrDeleteCreateProcessed(t *testing.T) 
 			assert.Contains(t, c.assets, caiKey)
 		})
 	}
+}
+
+func TestAddDuplicatedResources(t *testing.T) {
+	rcb1 := tfjson.ResourceChange{
+		Address:      "google_billing_budget.budget1",
+		Mode:         "managed",
+		Type:         "google_billing_budget",
+		Name:         "budget1",
+		ProviderName: "google",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"create"},
+			Before:  nil,
+			After: map[string]interface{}{
+				"all_updates_rule": []map[string]interface{}{},
+				"amount": []map[string]interface{}{
+					{
+						"last_period_amount": nil,
+						"specified_amount": []map[string]interface{}{
+							{
+								"currency_code": "USD",
+								"nanos":         nil,
+								"units":         "100",
+							},
+						},
+					},
+				},
+				"billing_account": "000000-000000-000000",
+				"budget_filter": []map[string]interface{}{
+					{
+						"credit_types_treatment": "INCLUDE_ALL_CREDITS",
+					},
+				},
+				"display_name": "Example Billing Budget 1",
+				"threshold_rules": []map[string]interface{}{
+					{
+						"spend_basis":       "CURRENT_SPEND",
+						"threshold_percent": 0.5,
+					},
+				},
+				"timeouts": nil,
+			},
+		},
+	}
+	rcb2 := tfjson.ResourceChange{
+		Address:      "google_billing_budget.budget2",
+		Mode:         "managed",
+		Type:         "google_billing_budget",
+		Name:         "budget2",
+		ProviderName: "google",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"create"},
+			Before:  nil,
+			After: map[string]interface{}{
+				"all_updates_rule": []map[string]interface{}{},
+				"amount": []map[string]interface{}{
+					{
+						"last_period_amount": nil,
+						"specified_amount": []map[string]interface{}{
+							{
+								"currency_code": "USD",
+								"nanos":         nil,
+								"units":         "100",
+							},
+						},
+					},
+				},
+				"billing_account": "000000-000000-000000",
+				"budget_filter": []map[string]interface{}{
+					{
+						"credit_types_treatment": "INCLUDE_ALL_CREDITS",
+					},
+				},
+				"display_name": "Example Billing Budget 2",
+				"threshold_rules": []map[string]interface{}{
+					{
+						"spend_basis":       "CURRENT_SPEND",
+						"threshold_percent": 0.5,
+					},
+				},
+				"timeouts": nil,
+			},
+		},
+	}
+	rcp1 := tfjson.ResourceChange{
+		Address:      "google_project.my_project1",
+		Mode:         "managed",
+		Type:         "google_project",
+		Name:         "my_project1",
+		ProviderName: "google",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"create"},
+			Before:  nil,
+			After: map[string]interface{}{
+				"auto_create_network": true,
+				"billing_account":     "000000-000000-000000",
+				"labels":              nil,
+				"name":                "My Project1",
+				"org_id":              "00000000000000",
+				"timeouts":            nil,
+			},
+		},
+	}
+	rcp2 := tfjson.ResourceChange{
+		Address:      "google_project.my_project2",
+		Mode:         "managed",
+		Type:         "google_project",
+		Name:         "my_project2",
+		ProviderName: "google",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"create"},
+			Before:  nil,
+			After: map[string]interface{}{
+				"auto_create_network": true,
+				"billing_account":     "000000-000000-000000",
+				"labels":              nil,
+				"name":                "My Project2",
+				"org_id":              "00000000000000",
+				"timeouts":            nil,
+			},
+		},
+	}
+	c, err := newTestConverter()
+	assert.Nil(t, err)
+
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rcb1, &rcb2, &rcp1, &rcp2})
+	assert.Nil(t, err)
+
+	caiKeyBilling := "cloudbilling.googleapis.com/ProjectBillingInfo//cloudbilling.googleapis.com/projects/test-project/billingInfo"
+	assert.Contains(t, c.assets, caiKeyBilling)
+
+	caiKeyProject := "cloudresourcemanager.googleapis.com/Project//cloudresourcemanager.googleapis.com/projects/test-project"
+	assert.Contains(t, c.assets, caiKeyProject)
 }
