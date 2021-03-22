@@ -16,19 +16,20 @@ package google
 
 import (
 	"context"
+	errorssyslib "errors"
 	"fmt"
 	"sort"
 	"time"
 
-	"github.com/hashicorp/terraform-json"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/golang/glog"
+	tfjson "github.com/hashicorp/terraform-json"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	provider "github.com/hashicorp/terraform-provider-google/v3/google"
 	"github.com/pkg/errors"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 )
 
 var ErrDuplicateAsset = errors.New("duplicate asset")
@@ -143,7 +144,7 @@ type Converter struct {
 	mapperFuncs map[string][]mapper
 
 	offline bool
-	cfg *converter.Config
+	cfg     *converter.Config
 
 	// ancestryManager provides a manager to find the ancestry information for a project.
 	ancestryManager ancestrymanager.AncestryManager
@@ -200,7 +201,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 
 	for _, rc := range createOrUpdates {
 		if err := c.addCreateOrUpdate(rc); err != nil {
-			if errors.Cause(err) == ErrDuplicateAsset {
+			if errorssyslib.Is(err, ErrDuplicateAsset) {
 				glog.Warningf("adding resource change: %v", err)
 			} else {
 				return fmt.Errorf("adding resource create or update %w", err)
@@ -210,7 +211,6 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 
 	return nil
 }
-
 
 // For deletions, we only need to handle mappers that support
 // both fetch and mergeDelete. Supporting just one doesn't
@@ -302,7 +302,7 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 				if mapper.mergeCreateUpdate == nil {
 					// If a merge function does not exist ignore the asset and return
 					// a checkable error.
-					return errors.Wrapf(ErrDuplicateAsset, "asset type %s: asset name %s", converted.Type, converted.Name)
+					return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
 				}
 				converted = mapper.mergeCreateUpdate(*existingConverterAsset, converted)
 			}
