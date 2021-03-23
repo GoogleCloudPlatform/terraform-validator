@@ -352,3 +352,52 @@ func TestAddDuplicatedResources(t *testing.T) {
 	caiKeyProject := "cloudresourcemanager.googleapis.com/Project//cloudresourcemanager.googleapis.com/projects/test-project"
 	assert.Contains(t, c.assets, caiKeyProject)
 }
+
+func TestAddStorageModuleAfterUnknown(t *testing.T) {
+	var nilValue map[string]interface{} = nil
+	rc := tfjson.ResourceChange{
+		Address:       "module.gcs_buckets.google_storage_bucket.buckets[0]",
+		ModuleAddress: "module.gcs_buckets",
+		Mode:          "managed",
+		Type:          "google_storage_bucket",
+		Name:          "buckets",
+		Index:         0,
+		ProviderName:  "google",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"create"},
+			Before:  nil,
+			After: map[string]interface{}{
+				"cors": []interface{}{
+					nilValue,
+				},
+				"default_event_based_hold": nil,
+				"encryption": []interface{}{
+					nilValue,
+				},
+				"lifecycle_rule":   []interface{}{},
+				"location":         "US",
+				"logging":          []interface{}{},
+				"project":          "test-project",
+				"requester_pays":   nil,
+				"retention_policy": []interface{}{},
+				"storage_class":    "MULTI_REGIONAL",
+				"versioning": []interface{}{
+					nilValue,
+				},
+				"website": []interface{}{
+					nilValue,
+				},
+			},
+		},
+	}
+	c, err := newTestConverter()
+	assert.Nil(t, err)
+
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
+	assert.Nil(t, err)
+	assert.Len(t, c.assets, 1)
+	for key := range c.assets {
+		assert.EqualValues(t, c.assets[key].Type, "storage.googleapis.com/Bucket")
+	}
+
+}
