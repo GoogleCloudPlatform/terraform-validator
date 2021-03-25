@@ -55,7 +55,6 @@ func TestCLI(t *testing.T) {
 		compareConvertOutput compareConvertOutputFunc
 	}{
 		{name: "bucket"},
-		{name: "bucket_iam"},
 		{name: "disk"},
 		{name: "firewall"},
 		{name: "instance"},
