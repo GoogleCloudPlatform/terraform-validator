@@ -98,11 +98,15 @@ func TestCLI(t *testing.T) {
 
 	// Map of cases to skip to reasons for the skip
 	skipCases := map[string]string{
-		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=convert":                                   "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
-		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=validate/constraint=always_violate":        "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
-		"TestCLI/v=0.12/tf=example_project_iam/offline=false/cmd=convert":                                       "example_project_iam is too complex to untangle merges with online data generically",
-		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=convert":                            "temperarily skip because of the predictable drift in offline mode",
-		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=validate/constraint=always_violate": "temperarily skip because of the predictable drift in offline mode",
+		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=convert":                              "temperarily skip because of the predictable drift in offline mode",
+		"TestCLI/v=0.12/tf=example_compute_forwarding_rule/offline=true/cmd=validate/constraint=always_violate":   "temperarily skip because of the predictable drift in offline mode",
+		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=convert":                                     "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+		"TestCLI/v=0.12/tf=example_compute_instance/offline=true/cmd=validate/constraint=always_violate":          "compute_instance doesn't work in offline mode - github.com/hashicorp/terraform-provider-google/issues/8489",
+		"TestCLI/v=0.12/tf=example_organization_iam_binding/offline=false/cmd=convert":                            "skip because test runner doesn't have org permissions",
+		"TestCLI/v=0.12/tf=example_organization_iam_binding/offline=false/cmd=validate/constraint=always_violate": "skip because test runner doesn't have org permissions",
+		"TestCLI/v=0.12/tf=example_organization_iam_member/offline=false/cmd=convert":                             "skip because test runner doesn't have org permissions",
+		"TestCLI/v=0.12/tf=example_organization_iam_member/offline=false/cmd=validate/constraint=always_violate":  "skip because test runner doesn't have org permissions",
+		"TestCLI/v=0.12/tf=example_project_iam/offline=false/cmd=convert":                                         "example_project_iam is too complex to untangle merges with online data generically",
 	}
 	for i := range cases {
 		// Allocate a variable to make sure test can run in parallel.
@@ -141,7 +145,7 @@ func TestCLI(t *testing.T) {
 				if tfstateMatches != nil {
 					generateTestFiles(t, "../testdata/templates", dir, c.name+".tfstate")
 					err = os.Rename(
-						filepath.Join(dir, c.name + ".tfstate"),
+						filepath.Join(dir, c.name+".tfstate"),
 						filepath.Join(dir, "terraform.tfstate"),
 					)
 					if err != nil {
