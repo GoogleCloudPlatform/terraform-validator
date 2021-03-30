@@ -13,6 +13,7 @@ The follow Terraform resources are supported for running validation checks:
 
 ```
 google_bigquery_dataset
+google_bigtable_instance
 google_compute_disk
 google_compute_forwarding_rule
 google_compute_global_forwarding_rule
