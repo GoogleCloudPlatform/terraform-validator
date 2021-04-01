@@ -55,7 +55,6 @@ func TestCLI(t *testing.T) {
 		compareConvertOutput compareConvertOutputFunc
 	}{
 		{name: "bucket"},
-		{name: "bucket_iam"},
 		{name: "disk"},
 		{name: "firewall"},
 		{name: "instance"},
@@ -86,6 +85,9 @@ func TestCLI(t *testing.T) {
 		{name: "example_project_service"},
 		{name: "example_sql_database_instance"},
 		{name: "example_storage_bucket"},
+		{name: "example_storage_bucket_iam_binding", compareConvertOutput: compareMergedIamBindingOutput},
+		{name: "example_storage_bucket_iam_member", compareConvertOutput: compareMergedIamMemberOutput},
+		{name: "example_storage_bucket_iam_policy"},
 		{name: "full_compute_firewall"},
 		{name: "full_compute_instance"},
 		{name: "full_container_cluster"},
@@ -184,11 +186,8 @@ func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual 
 		expectedAsset := expected[i]
 		actualAsset := actual[i]
 
-		normalizedActualAsset := google.Asset{
-			Name:     actualAsset.Name,
-			Type:     actualAsset.Type,
-			Ancestry: actualAsset.Ancestry,
-		}
+		// Copy actualAsset
+		normalizedActualAsset := actualAsset
 
 		expectedBindings := map[string]map[string]struct{}{}
 		for _, binding := range expectedAsset.IAMPolicy.Bindings {
@@ -228,11 +227,8 @@ func compareMergedIamBindingOutput(t *testing.T, expected []google.Asset, actual
 		expectedAsset := expected[i]
 		actualAsset := actual[i]
 
-		normalizedActualAsset := google.Asset{
-			Name:     actualAsset.Name,
-			Type:     actualAsset.Type,
-			Ancestry: actualAsset.Ancestry,
-		}
+		// Copy actualAsset
+		normalizedActualAsset := actualAsset
 
 		expectedBindings := map[string]struct{}{}
 		for _, binding := range expectedAsset.IAMPolicy.Bindings {

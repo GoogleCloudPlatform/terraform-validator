@@ -27,8 +27,17 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_storage_bucket_iam_member" "member" {
-  bucket = "test-bucket"
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
+resource "google_storage_bucket" "default" {
+  name     = "fake-bucket-123456"
+  location = "EU"
+  uniform_bucket_level_access = true
+  project = "{{.Provider.project}}"
+}
+
+resource "google_storage_bucket_iam_binding" "binding" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+  members = [
+    "user:jane@example.com",
+  ]
 }

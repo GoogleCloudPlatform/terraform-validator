@@ -41,6 +41,14 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 		} else {
 			log.Printf("[WARN] Failed to retrieve project_id for %s from resource", cai.Name)
 		}
+	case "storage.googleapis.com/Bucket":
+		if cai.Resource != nil {
+			res, ok := cai.Resource.Data["project"]
+			if ok {
+				return res.(string), nil
+			}
+		}
+		log.Printf("[WARN] Failed to retrieve project_id for %s from cai resource", cai.Name)
 	}
 
 	return getProjectFromSchema("project", d, config)
