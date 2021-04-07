@@ -77,6 +77,14 @@ func mappers() map[string][]mapper {
 			{convert: converter.GetProjectBillingInfoCaiObject},
 		},
 
+		"google_bigtable_instance": {
+			{
+				convert: converter.GetBigtableInstanceCaiObject,
+			},
+			{
+				convert: converter.GetBigtableClusterCaiObject,
+			},
+		},
 		// Terraform IAM policy resources have a N:1 relationship with CAI assets.
 		"google_organization_iam_policy": {
 			{
