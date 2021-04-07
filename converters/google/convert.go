@@ -338,11 +338,11 @@ func (c *Converter) Assets() []Asset {
 func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *converter.Config, cai converter.Asset) (Asset, error) {
 	project, err := getProject(tfData, cfg, cai)
 	if err != nil {
-		return Asset{}, err
+		return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
 	}
 	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
 	if err != nil {
-		return Asset{}, fmt.Errorf("getting resource ancestry: project %v %w", project, err)
+		return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
 	}
 	var resource *AssetResource
 	if cai.Resource != nil {

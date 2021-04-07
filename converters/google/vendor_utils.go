@@ -41,6 +41,14 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 		} else {
 			log.Printf("[WARN] Failed to retrieve project_id for %s from resource", cai.Name)
 		}
+	case "storage.googleapis.com/Bucket":
+		if cai.Resource != nil {
+			res, ok := cai.Resource.Data["project"]
+			if ok {
+				return res.(string), nil
+			}
+		}
+		log.Printf("[WARN] Failed to retrieve project_id for %s from cai resource", cai.Name)
 	}
 
 	return getProjectFromSchema("project", d, config)
@@ -54,5 +62,5 @@ func getProjectFromSchema(projectSchemaField string, d converter.TerraformResour
 	if config.Project != "" {
 		return config.Project, nil
 	}
-	return "", fmt.Errorf("%s: required field is not set", projectSchemaField)
+	return "", fmt.Errorf("required field '%s' is not set", projectSchemaField)
 }

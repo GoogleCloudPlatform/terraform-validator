@@ -44,7 +44,7 @@ Example:
 		if len(args) != 1 {
 			return errors.New("missing required argument <tfplan>")
 		}
-		if flags.validate.offline && flags.validate.ancestry == "" {
+		if flags.convert.offline && flags.convert.ancestry == "" {
 			return errors.New("please set ancestry via --ancestry in offline mode")
 		}
 		return nil

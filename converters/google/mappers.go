@@ -102,12 +102,16 @@ func mappers() map[string][]mapper {
 			{
 				convert:           converter.GetOrganizationIamBindingCaiObject,
 				mergeCreateUpdate: converter.MergeOrganizationIamBinding,
+				mergeDelete:       converter.MergeOrganizationIamBindingDelete,
+				fetch:             converter.FetchOrganizationIamPolicy,
 			},
 		},
 		"google_organization_iam_member": {
 			{
 				convert:           converter.GetOrganizationIamMemberCaiObject,
 				mergeCreateUpdate: converter.MergeOrganizationIamMember,
+				mergeDelete:       converter.MergeOrganizationIamMemberDelete,
+				fetch:             converter.FetchOrganizationIamPolicy,
 			},
 		},
 		"google_folder_iam_policy": {
@@ -120,12 +124,16 @@ func mappers() map[string][]mapper {
 			{
 				convert:           converter.GetFolderIamBindingCaiObject,
 				mergeCreateUpdate: converter.MergeFolderIamBinding,
+				mergeDelete:       converter.MergeFolderIamBindingDelete,
+				fetch:             converter.FetchFolderIamPolicy,
 			},
 		},
 		"google_folder_iam_member": {
 			{
 				convert:           converter.GetFolderIamMemberCaiObject,
 				mergeCreateUpdate: converter.MergeFolderIamMember,
+				mergeDelete:       converter.MergeFolderIamMemberDelete,
+				fetch:             converter.FetchFolderIamPolicy,
 			},
 		},
 		"google_project_iam_policy": {
@@ -160,12 +168,16 @@ func mappers() map[string][]mapper {
 			{
 				convert:           converter.GetBucketIamBindingCaiObject,
 				mergeCreateUpdate: converter.MergeBucketIamBinding,
+				mergeDelete:       converter.MergeBucketIamBindingDelete,
+				fetch:             converter.FetchBucketIamPolicy,
 			},
 		},
 		"google_storage_bucket_iam_member": {
 			{
 				convert:           converter.GetBucketIamMemberCaiObject,
 				mergeCreateUpdate: converter.MergeBucketIamMember,
+				mergeDelete:       converter.MergeBucketIamMemberDelete,
+				fetch:             converter.FetchBucketIamPolicy,
 			},
 		},
 	}
