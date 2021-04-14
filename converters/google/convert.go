@@ -75,12 +75,7 @@ type OrgPolicy struct {
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
 	BooleanPolicy  *BooleanPolicy  `json:"boolean_policy,omitempty"`
 	RestoreDefault *RestoreDefault `json:"restore_default,omitempty"`
-	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
-}
-
-type Timestamp struct {
-	Seconds int64 `json:"seconds,omitempty"`
-	Nanos   int64 `json:"nanos,omitempty"`
+	UpdateTime     string          `json:"update_time,omitempty"`
 }
 
 // ListPolicyAllValues is used to set `Policies` that apply to all possible
@@ -397,10 +392,7 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 				ListPolicy:     listPolicy,
 				BooleanPolicy:  booleanPolicy,
 				RestoreDefault: restoreDefault,
-				UpdateTime: &Timestamp{
-					Seconds: int64(currentTime.Unix()),
-					Nanos:   int64(currentTime.UnixNano()),
-				},
+				UpdateTime:     currentTime.Format(time.RFC3339),
 			})
 		}
 	}

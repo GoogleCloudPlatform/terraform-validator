@@ -8,28 +8,19 @@
         "boolean_policy": {
           "enforced": true
         },
-        "update_time": {
-          "seconds": {{.Time.timeSeconds}},
-      "nanos": {{.Time.timeNanos}}
-    }
+        "update_time": "{{.Time.RFC3339}}"
     },
       {
         "constraint": "constraints/iam.disableServiceAccountCreation",
         "restore_default": {},
-        "update_time": {
-          "seconds": {{.Time.timeSeconds}},
-      "nanos": {{.Time.timeNanos}}
-    }
+        "update_time": "{{.Time.RFC3339}}"
     },
       {
         "constraint": "constraints/serviceuser.services",
         "list_policy": {
           "all_values": 1
         },
-        "update_time": {
-          "seconds": {{.Time.timeSeconds}},
-      "nanos": {{.Time.timeNanos}}
-    }
+        "update_time": "{{.Time.RFC3339}}"
     }
     ],
     "ancestry_path": "organization/{{.OrgID}}/folder/{{.FolderID}}/project/{{.Provider.project}}"

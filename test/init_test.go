@@ -38,7 +38,7 @@ type testData struct {
 	// provider "google"
 	Provider map[string]string
 	Project  map[string]string
-	Time     map[string]int64
+	Time     map[string]string
 	OrgID    string
 	FolderID string
 	Ancestry string
@@ -95,9 +95,8 @@ func init() {
 			"project":     project,
 			"credentials": credentials,
 		},
-		Time: map[string]int64{
-			"timeSeconds": currentTime.Unix(),
-			"timeNanos":   currentTime.UnixNano(),
+		Time: map[string]string{
+			"RFC3339": currentTime.Format(time.RFC3339),
 		},
 		Project: map[string]string{
 			"Name":               "My Project Name",
