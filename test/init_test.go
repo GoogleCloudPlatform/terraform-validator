@@ -38,7 +38,7 @@ type testData struct {
 	// provider "google"
 	Provider map[string]string
 	Project  map[string]string
-	Time     map[string]int64
+	Time     map[string]string
 	OrgID    string
 	FolderID string
 	Ancestry string
@@ -85,9 +85,8 @@ func init() {
 		ancestry = defaultAncestry
 	}
 	providerVersion := defaultProviderVersion
-	//As time is not information in terraform resource data, time is rounded for testing purposes
-	currentTime := time.Now()
-	currentTime = currentTime.Round(time.Minute)
+	//As time is not information in terraform resource data, time is fixed for testing purposes
+	fixedTime := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
 	data = &testData{
 		TFVersion: "0.12",
 		Provider: map[string]string{
@@ -95,9 +94,8 @@ func init() {
 			"project":     project,
 			"credentials": credentials,
 		},
-		Time: map[string]int64{
-			"timeSeconds": currentTime.Unix(),
-			"timeNanos":   currentTime.UnixNano(),
+		Time: map[string]string{
+			"RFC3339Nano": fixedTime.Format(time.RFC3339Nano),
 		},
 		Project: map[string]string{
 			"Name":               "My Project Name",
