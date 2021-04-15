@@ -19,6 +19,7 @@ import (
 	errorssyslib "errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -75,7 +76,26 @@ type OrgPolicy struct {
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
 	BooleanPolicy  *BooleanPolicy  `json:"boolean_policy,omitempty"`
 	RestoreDefault *RestoreDefault `json:"restore_default,omitempty"`
-	UpdateTime     string          `json:"update_time,omitempty"`
+	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
+}
+
+type Timestamp struct {
+	Seconds int64 `json:"seconds,omitempty"`
+	Nanos   int64 `json:"nanos,omitempty"`
+}
+
+func (t Timestamp) MarshalJSON() ([]byte, error) {
+	return []byte(`"` + time.Unix(t.Seconds, t.Nanos).Format(time.RFC3339Nano) + `"`), nil
+}
+
+func (t Timestamp) UnmarshalJSON(b []byte) error {
+	p, err := time.Parse(time.RFC3339Nano, strings.Trim(string(b), `"`))
+	if err != nil {
+		return fmt.Errorf("bad Timestamp: %v", err)
+	}
+	t.Seconds = p.Unix()
+	t.Nanos = p.UnixNano()
+	return nil
 }
 
 // ListPolicyAllValues is used to set `Policies` that apply to all possible
@@ -384,15 +404,17 @@ func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *co
 			if o.RestoreDefault != nil {
 				restoreDefault = &RestoreDefault{}
 			}
-			//As time is not information in terraform resource data, time is rounded for testing purposes
-			currentTime := time.Now()
-			currentTime = currentTime.Round(time.Minute)
+			//As time is not information in terraform resource data, time is fixed for testing purposes
+			fixedTime := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
 			orgPolicy = append(orgPolicy, &OrgPolicy{
 				Constraint:     o.Constraint,
 				ListPolicy:     listPolicy,
 				BooleanPolicy:  booleanPolicy,
 				RestoreDefault: restoreDefault,
-				UpdateTime:     currentTime.Format(time.RFC3339),
+				UpdateTime: &Timestamp{
+					Seconds: int64(fixedTime.Unix()),
+					Nanos:   int64(fixedTime.UnixNano()),
+				},
 			})
 		}
 	}
