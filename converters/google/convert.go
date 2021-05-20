@@ -260,7 +260,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			} else if !c.offline {
 				asset, err := mapper.fetch(&rd, c.cfg)
 				if err != nil {
-					if string.Contains(err.Error(), "Did not return a value") {
+					if strings.Contains(err.Error(), "Did not return a value") {
 						glog.Warningf("%s did not return a value for ID field. Skipping asset.", key)
 						continue
 					}
@@ -311,6 +311,10 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 			} else if mapper.fetch != nil && !c.offline {
 				asset, err := mapper.fetch(&rd, c.cfg)
 				if err != nil {
+					if strings.Contains(err.Error(), "Did not return a value") {
+						glog.Warningf("%s did not return a value for ID field. Skipping asset.", key)
+						continue
+					}
 					return errors.Wrap(err, "fetching asset")
 				}
 
