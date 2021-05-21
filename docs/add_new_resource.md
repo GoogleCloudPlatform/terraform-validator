@@ -54,7 +54,7 @@ func GetWhateverResourceCaiObject(d TerraformResourceData, config *Config) ([]As
 		return []Asset{{
 			Name: name,
 			// The type also comes from https://cloud.google.com/asset-inventory/docs/supported-asset-types
-			Type: "sql.googleapis.com/Database",
+			Type: "whatever.googleapis.com/Whatever",
 			Resource: &AssetResource{
 				Version:              "v1",  // or whatever the correct version is
 				DiscoveryDocumentURI: "https://www.googleapis.com/path/to/rest/api/docs",
