@@ -26,7 +26,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/credentials.json
 
 # Set a project and org to test with
 export TF_VAR_project_id=my-project-id
-export TF_VAR_org_id=93392932
+export TF_VAR_org_id=12345678
 
 # Generate a terraform plan.
 terraform init
