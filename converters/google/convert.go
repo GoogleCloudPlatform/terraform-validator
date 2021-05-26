@@ -259,14 +259,14 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 				existingConverterAsset = &existing.converterAsset
 			} else if !c.offline {
 				asset, err := mapper.fetch(&rd, c.cfg)
-				if err != nil {
-					if strings.Contains(err.Error(), "Did not return a value") {
-						glog.Warningf("%s did not return a value for ID field. Skipping asset.", key)
-						continue
-					}
+				if errors.Cause(err) == converter.ErrEmptyIdentityField {
+					glog.Warningf("%s did not return a value for ID field. Skipping asset fetch.", key)
+					existingConverterAsset = nil
+				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
+				} else {
+					existingConverterAsset = &asset
 				}
-				existingConverterAsset = &asset
 				if existingConverterAsset != nil {
 					converted = mapper.mergeDelete(*existingConverterAsset, converted)
 					augmented, err := c.augmentAsset(&rd, c.cfg, converted)
@@ -310,15 +310,14 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 				existingConverterAsset = &existing.converterAsset
 			} else if mapper.fetch != nil && !c.offline {
 				asset, err := mapper.fetch(&rd, c.cfg)
-				if err != nil {
-					if strings.Contains(err.Error(), "Did not return a value") {
-						glog.Warningf("%s did not return a value for ID field. Skipping asset.", key)
-						continue
-					}
+				if errors.Cause(err) == converter.ErrEmptyIdentityField {
+					glog.Warningf("%s did not return a value for ID field. Skipping asset fetch.", key)
+					existingConverterAsset = nil
+				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
+				} else {
+					existingConverterAsset = &asset
 				}
-
-				existingConverterAsset = &asset
 			}
 
 			if existingConverterAsset != nil {
