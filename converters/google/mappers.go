@@ -55,6 +55,7 @@ func mappers() map[string][]mapper {
 		"google_compute_forwarding_rule":        {{convert: converter.GetComputeForwardingRuleCaiObject}},
 		"google_compute_global_forwarding_rule": {{convert: converter.GetComputeGlobalForwardingRuleCaiObject}},
 		"google_compute_instance":               {{convert: converter.GetComputeInstanceCaiObject}},
+		"google_compute_network":                {{convert: converter.GetComputeNetworkCaiObject}},
 		"google_storage_bucket":                 {{convert: converter.GetStorageBucketCaiObject}},
 		"google_sql_database_instance":          {{convert: converter.GetSQLDatabaseInstanceCaiObject}},
 		"google_container_cluster":              {{convert: converter.GetContainerClusterCaiObject}},

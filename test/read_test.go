@@ -29,6 +29,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_compute_disk"},
 		{name: "example_compute_firewall"},
 		{name: "example_compute_instance"},
+		{name: "example_compute_network"},
 		{name: "example_compute_forwarding_rule"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_container_cluster"},

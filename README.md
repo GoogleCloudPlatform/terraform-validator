@@ -19,6 +19,7 @@ google_compute_forwarding_rule
 google_compute_global_forwarding_rule
 google_compute_firewall
 google_compute_instance
+google_compute_network
 google_container_cluster
 google_container_node_pool
 google_filestore_instance
