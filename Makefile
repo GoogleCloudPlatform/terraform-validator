@@ -1,9 +1,5 @@
-PLATFORMS := linux windows darwin
-BUILD_DIR=./bin
-NAME=terraform-validator
-RELEASE_BUCKET=terraform-validator
-DATE=`date +%Y-%m-%d`
-LDFLAGS="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=${DATE}"
+build_dir=./bin
+name=terraform-validator
 
 test:
 	# Skip integration tests in ./test/ using -short flag
@@ -21,17 +17,12 @@ build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .
 
 build:
-	GO111MODULE=on go build -ldflags ${LDFLAGS} -o ${BUILD_DIR}/${NAME}
+	GO111MODULE=on go build -o ${build_dir}/${name}
 
-release: $(PLATFORMS)
-
-publish:
-	gsutil cp ${BUILD_DIR}/*-amd64 gs://${RELEASE_BUCKET}/releases/${DATE}
-
-$(PLATFORMS):
-	GO111MODULE=on GOOS=$@ GOARCH=amd64 CGO_ENABLED=0 go build -ldflags ${LDFLAGS} -o "${BUILD_DIR}/${NAME}-$@-amd64" .
+release:
+	./release.sh ${VERSION}
 
 clean:
-	rm bin/${NAME}*
+	rm bin/${name}*
 
-.PHONY: test test-e2e build build-docker release $(PLATFORMS) clean publish
+.PHONY: test test-e2e build build-docker release clean
