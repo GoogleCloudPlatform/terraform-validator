@@ -10,8 +10,6 @@ fi
 
 version=$1
 
-echo $version | grep -Eq "^v[0-9]+\.[0-9]+\.[0-9]+$" && echo "match" || echo "no match"
-
 if ! echo $version | grep -Eq "^v[0-9]+\.[0-9]+\.[0-9]+$"
 then
 	echo "Invalid version: ${version}"
