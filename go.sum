@@ -88,6 +88,8 @@ github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210329172659
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210329172659-48085272153f/go.mod h1:ZmY0Ua5EVNaxHXJe5x3VQfaghzCmORy2fksFH4Wf6Eg=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210406210412-d3254d3ece4e h1:p8KBvzXl227Q8EHWdiPTq4JjyBsD2f5Kma7BHxkueTk=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210406210412-d3254d3ece4e/go.mod h1:ZmY0Ua5EVNaxHXJe5x3VQfaghzCmORy2fksFH4Wf6Eg=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210601230819-a51758b001dc h1:M2We5ICue4VYatIPOg0yc/f2ySjBa4XSq3igGJlwx4g=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210601230819-a51758b001dc/go.mod h1:ZmY0Ua5EVNaxHXJe5x3VQfaghzCmORy2fksFH4Wf6Eg=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
