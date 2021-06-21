@@ -162,24 +162,24 @@ func mappers() map[string][]mapper {
 		},
 		"google_storage_bucket_iam_policy": {
 			{
-				convert:           converter.GetBucketIamPolicyCaiObject,
-				mergeCreateUpdate: converter.MergeBucketIamPolicy,
+				convert:           converter.GetStorageBucketIamPolicyCaiObject,
+				mergeCreateUpdate: converter.MergeStorageBucketIamPolicy,
 			},
 		},
 		"google_storage_bucket_iam_binding": {
 			{
-				convert:           converter.GetBucketIamBindingCaiObject,
-				mergeCreateUpdate: converter.MergeBucketIamBinding,
-				mergeDelete:       converter.MergeBucketIamBindingDelete,
-				fetch:             converter.FetchBucketIamPolicy,
+				convert:           converter.GetStorageBucketIamBindingCaiObject,
+				mergeCreateUpdate: converter.MergeStorageBucketIamBinding,
+				mergeDelete:       converter.MergeStorageBucketIamBindingDelete,
+				fetch:             converter.FetchStorageBucketIamPolicy,
 			},
 		},
 		"google_storage_bucket_iam_member": {
 			{
-				convert:           converter.GetBucketIamMemberCaiObject,
-				mergeCreateUpdate: converter.MergeBucketIamMember,
-				mergeDelete:       converter.MergeBucketIamMemberDelete,
-				fetch:             converter.FetchBucketIamPolicy,
+				convert:           converter.GetStorageBucketIamMemberCaiObject,
+				mergeCreateUpdate: converter.MergeStorageBucketIamMember,
+				mergeDelete:       converter.MergeStorageBucketIamMemberDelete,
+				fetch:             converter.FetchStorageBucketIamPolicy,
 			},
 		},
 	}
