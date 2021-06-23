@@ -79,10 +79,10 @@ func GetWhateverResourceApiObject(d TerraformResourceData, config *Config) (map[
 
 ```
 
-To generate terraform-google-conversion code locally, run the following from `magic-modules/mmv1`:
+To generate terraform-google-conversion code locally, run the following from the root of the `magic-modules` repository:
 
 ```
-bundle exec compiler -a -e terraform -f validator -o "/path/to/your/terraform-google-conversion"
+make validator OUTPUT_PATH="/path/to/your/terraform-google-conversion"
 ```
 
 You can then run `make test` inside your terraform-google-conversion repository to make sure the tests pass prior to creating your PR.

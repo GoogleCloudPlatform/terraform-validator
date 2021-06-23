@@ -9,46 +9,16 @@ Terraform Validator is compatible with Terraform 0.12+.
 **Note**: Using Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary.
 
 ## Supported Terraform resources
-The follow Terraform resources are supported for running validation checks:
+
+To list the Terraform resources supported by your binary, run:
 
 ```
-google_bigquery_dataset
-google_bigtable_instance
-google_compute_disk
-google_compute_forwarding_rule
-google_compute_global_forwarding_rule
-google_compute_firewall
-google_compute_instance
-google_compute_network
-google_compute_subnetwork
-google_container_cluster
-google_container_node_pool
-google_filestore_instance
-google_folder_iam_binding
-google_folder_iam_member
-google_folder_iam_policy
-google_organization_iam_binding
-google_organization_iam_member
-google_organization_iam_policy
-google_project
-google_project_iam_binding
-google_project_iam_member
-google_project_iam_policy
-google_project_organization_policy
-google_project_service
-google_pubsub_topic
-google_pubsub_subscription
-google_spanner_instance
-google_sql_database_instance
-google_storage_bucket
-google_storage_bucket_iam_binding
-google_storage_bucket_iam_member
-google_storage_bucket_iam_policy
-google_kms_crypto_key
-google_kms_key_ring
+terraform-validator list-supported-resources
 ```
 
-If you want terraform validator to support an additional resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) or follow the instructions below to contribute code.
+You can also view a [list of supported resources](./docs/supported_resources.md) in your browser.
+
+If you want terraform validator to add support for a resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) or follow the instructions below to contribute code.
 
 ## Getting started
 
