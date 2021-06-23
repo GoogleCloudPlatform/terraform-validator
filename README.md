@@ -18,7 +18,7 @@ terraform-validator list-supported-resources
 
 You can also view a [list of supported resources](./docs/supported_resources.md) in your browser.
 
-If you want terraform validator to support an additional resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) or follow the instructions below to contribute code.
+If you want terraform validator to add support for a resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) or follow the instructions below to contribute code.
 
 ## Getting started
 
