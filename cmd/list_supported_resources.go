@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ var listSupportedResourcesCmd = &cobra.Command{
 	Use:   "list-supported-resources",
 	Short: "List supported terraform resources.",
 	RunE: func(c *cobra.Command, args []string) error {
-		list := google.SupportedTerraformResources()
+		list := converter.SupportedTerraformResources()
 
 		for _, resource := range list {
 			fmt.Println(resource)
