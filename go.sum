@@ -88,6 +88,12 @@ github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210329172659
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210329172659-48085272153f/go.mod h1:ZmY0Ua5EVNaxHXJe5x3VQfaghzCmORy2fksFH4Wf6Eg=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210406210412-d3254d3ece4e h1:p8KBvzXl227Q8EHWdiPTq4JjyBsD2f5Kma7BHxkueTk=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210406210412-d3254d3ece4e/go.mod h1:ZmY0Ua5EVNaxHXJe5x3VQfaghzCmORy2fksFH4Wf6Eg=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210622221656-28a433661691 h1:BLrrrx3TPmnBm84YItrjU8uaBxElxedXLlBj6O89sI0=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210622221656-28a433661691/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623151241-7cc0bc6e231c h1:K9TH//C4t4mlNeALCorM+5p+9OsZyYUxYJ9IIVzpfGA=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623151241-7cc0bc6e231c/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623163153-171b4ba409c2 h1:JDwK3l0s688s7GVdOOw1Hp+oFzzlpxbp4qmtw/rM5go=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623163153-171b4ba409c2/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

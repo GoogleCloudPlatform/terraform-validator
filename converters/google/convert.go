@@ -141,7 +141,7 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 
 	return &Converter{
 		schema:          provider.Provider(),
-		mapperFuncs:     mappers(),
+		mapperFuncs:     converter.Mappers(),
 		offline:         offline,
 		cfg:             cfg,
 		ancestryManager: ancestryManager,
@@ -156,7 +156,7 @@ type Converter struct {
 
 	// Map terraform resource kinds (i.e. "google_compute_instance")
 	// to their mapping/merging functions.
-	mapperFuncs map[string][]mapper
+	mapperFuncs map[string][]converter.Mapper
 
 	offline bool
 	cfg     *converter.Config
@@ -239,10 +239,10 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 		rc.Change.Before.(map[string]interface{}),
 	)
 	for _, mapper := range c.mapperFuncs[rd.Kind()] {
-		if mapper.fetch == nil || mapper.mergeDelete == nil {
+		if mapper.Fetch == nil || mapper.MergeDelete == nil {
 			continue
 		}
-		convertedItems, err := mapper.convert(&rd, c.cfg)
+		convertedItems, err := mapper.Convert(&rd, c.cfg)
 
 		if err != nil {
 			if errors.Cause(err) == converter.ErrNoConversion {
@@ -258,13 +258,13 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			if existing, exists := c.assets[key]; exists {
 				existingConverterAsset = &existing.converterAsset
 			} else if !c.offline {
-				asset, err := mapper.fetch(&rd, c.cfg)
+				asset, err := mapper.Fetch(&rd, c.cfg)
 				if err != nil {
 					return errors.Wrap(err, "fetching asset")
 				}
 				existingConverterAsset = &asset
 				if existingConverterAsset != nil {
-					converted = mapper.mergeDelete(*existingConverterAsset, converted)
+					converted = mapper.MergeDelete(*existingConverterAsset, converted)
 					augmented, err := c.augmentAsset(&rd, c.cfg, converted)
 					if err != nil {
 						return errors.Wrap(err, "augmenting asset")
@@ -290,7 +290,7 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 	)
 
 	for _, mapper := range c.mapperFuncs[rd.Kind()] {
-		convertedAssets, err := mapper.convert(&rd, c.cfg)
+		convertedAssets, err := mapper.Convert(&rd, c.cfg)
 		if err != nil {
 			if errors.Cause(err) == converter.ErrNoConversion {
 				continue
@@ -304,8 +304,8 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 			var existingConverterAsset *converter.Asset
 			if existing, exists := c.assets[key]; exists {
 				existingConverterAsset = &existing.converterAsset
-			} else if mapper.fetch != nil && !c.offline {
-				asset, err := mapper.fetch(&rd, c.cfg)
+			} else if mapper.Fetch != nil && !c.offline {
+				asset, err := mapper.Fetch(&rd, c.cfg)
 				if err != nil {
 					return errors.Wrap(err, "fetching asset")
 				}
@@ -314,12 +314,12 @@ func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
 			}
 
 			if existingConverterAsset != nil {
-				if mapper.mergeCreateUpdate == nil {
+				if mapper.MergeCreateUpdate == nil {
 					// If a merge function does not exist ignore the asset and return
 					// a checkable error.
 					return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
 				}
-				converted = mapper.mergeCreateUpdate(*existingConverterAsset, converted)
+				converted = mapper.MergeCreateUpdate(*existingConverterAsset, converted)
 			}
 
 			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
