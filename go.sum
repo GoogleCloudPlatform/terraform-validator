@@ -101,6 +101,10 @@ github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623151241
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623151241-7cc0bc6e231c/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623163153-171b4ba409c2 h1:JDwK3l0s688s7GVdOOw1Hp+oFzzlpxbp4qmtw/rM5go=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210623163153-171b4ba409c2/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210625223301-e9c1dc361ca1 h1:xIpBmQBpSsKWpuh62suDmBqrDXO8YDB16dIWcUk0ue8=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210625223301-e9c1dc361ca1/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210628183505-f0289a8b1278 h1:Qu1TGmdQRDgly4zL+2ucgc9JSzDoTmD3M5dmhdNHOPI=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210628183505-f0289a8b1278/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
