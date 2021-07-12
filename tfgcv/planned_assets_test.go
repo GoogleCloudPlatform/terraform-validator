@@ -29,14 +29,26 @@ func testCases(t *testing.T) []testcase {
 
 	tests = append(tests, []testcase{
 		{
-			"Test TF12 and JSON plan",
-			args{"tf12plan.json", testProjectName, testAncestryName},
+			"Test TF0_12 and JSON plan",
+			args{"tf0_12plan.json", testProjectName, testAncestryName},
 			2,
 			false,
 		},
 		{
-			"Test TF12 with all coverage",
-			args{"tf12plan.allcoverage.json", "foobar", testAncestryName},
+			"Test TF0_12 with all coverage",
+			args{"tf0_12plan.allcoverage.json", "foobar", testAncestryName},
+			9,
+			false,
+		},
+		{
+			"Test TF1_0 and JSON plan",
+			args{"tf1_0plan.json", testProjectName, testAncestryName},
+			2,
+			false,
+		},
+		{
+			"Test TF1_0 with all coverage",
+			args{"tf1_0plan.allcoverage.json", "foobar", testAncestryName},
 			9,
 			false,
 		},
