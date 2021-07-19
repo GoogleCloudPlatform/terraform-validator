@@ -91,6 +91,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_binding", compareConvertOutput: compareMergedIamBindingOutput},
 		{name: "example_storage_bucket_iam_member", compareConvertOutput: compareMergedIamMemberOutput},
+		{name: "example_storage_bucket_iam_member_random_suffix"},
 		{name: "example_storage_bucket_iam_policy"},
 		{name: "full_compute_firewall"},
 		{name: "full_compute_instance"},
@@ -111,6 +112,8 @@ func TestCLI(t *testing.T) {
 		"TestCLI/v=0.12/tf=example_organization_iam_member/offline=false/cmd=convert":                             "skip because test runner doesn't have org permissions",
 		"TestCLI/v=0.12/tf=example_organization_iam_member/offline=false/cmd=validate/constraint=always_violate":  "skip because test runner doesn't have org permissions",
 		"TestCLI/v=0.12/tf=example_project_iam/offline=false/cmd=convert":                                         "example_project_iam is too complex to untangle merges with online data generically",
+		"TestCLI/v=0.12/tf=example_storage_bucket_iam_member_random_suffix/offline=false":                         "test produces inconsistent results based on randomized names - github.com/GoogleCloudPlatform/terraform-validator/issues/259",
+		"TestCLI/v=0.12/tf=example_storage_bucket_iam_member_random_suffix/offline=false/cmd=convert":             "test produces inconsistent results based on randomized names - github.com/GoogleCloudPlatform/terraform-validator/issues/259",
 	}
 	for i := range cases {
 		// Allocate a variable to make sure test can run in parallel.
