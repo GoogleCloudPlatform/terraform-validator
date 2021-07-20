@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.10",
+  "terraform_version": "0.13.6",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -9,22 +9,25 @@
           "mode": "managed",
           "type": "google_sql_database_instance",
           "name": "master",
-          "provider_name": "google",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 0,
           "values": {
+            "clone": [],
             "database_version": "POSTGRES_9_6",
+            "deletion_protection": true,
             "name": "master-instance",
             "region": "us-central1",
+            "restore_backup_context": [],
+            "root_password": null,
             "settings": [
               {
-                "authorized_gae_applications": null,
                 "database_flags": [],
                 "disk_autoresize": true,
+                "disk_autoresize_limit": 0,
+                "insights_config": [],
                 "maintenance_window": [],
                 "pricing_plan": "PER_USE",
-                "replication_type": "SYNCHRONOUS",
-                "tier": "db-f1-micro",
-                "user_labels": null
+                "tier": "db-f1-micro"
               }
             ],
             "timeouts": null
@@ -39,31 +42,35 @@
       "mode": "managed",
       "type": "google_sql_database_instance",
       "name": "master",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
         ],
         "before": null,
         "after": {
+          "clone": [],
           "database_version": "POSTGRES_9_6",
+          "deletion_protection": true,
           "name": "master-instance",
           "region": "us-central1",
+          "restore_backup_context": [],
+          "root_password": null,
           "settings": [
             {
-              "authorized_gae_applications": null,
               "database_flags": [],
               "disk_autoresize": true,
+              "disk_autoresize_limit": 0,
+              "insights_config": [],
               "maintenance_window": [],
               "pricing_plan": "PER_USE",
-              "replication_type": "SYNCHRONOUS",
-              "tier": "db-f1-micro",
-              "user_labels": null
+              "tier": "db-f1-micro"
             }
           ],
           "timeouts": null
         },
         "after_unknown": {
+          "clone": [],
           "connection_name": true,
           "first_ip_address": true,
           "id": true,
@@ -73,21 +80,26 @@
           "project": true,
           "public_ip_address": true,
           "replica_configuration": true,
+          "restore_backup_context": [],
           "self_link": true,
           "server_ca_cert": true,
           "service_account_email_address": true,
           "settings": [
             {
               "activation_policy": true,
+              "authorized_gae_applications": true,
               "availability_type": true,
               "backup_configuration": true,
               "crash_safe_replication": true,
               "database_flags": [],
               "disk_size": true,
               "disk_type": true,
+              "insights_config": [],
               "ip_configuration": true,
               "location_preference": true,
               "maintenance_window": [],
+              "replication_type": true,
+              "user_labels": true,
               "version": true
             }
           ]
@@ -96,16 +108,6 @@
     }
   ],
   "configuration": {
-    "provider_config": {
-      "google": {
-        "name": "google",
-        "expressions": {
-          "project": {
-            "constant_value": "{{.Provider.project}}"
-          }
-        }
-      }
-    },
     "root_module": {
       "resources": [
         {
