@@ -1,6 +1,6 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.20",
+  "terraform_version": "0.13.6",
   "planned_values": {
     "root_module": {
       "resources": [
@@ -9,9 +9,10 @@
           "mode": "managed",
           "type": "google_compute_instance",
           "name": "full_list_default_1",
-          "provider_name": "google",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 6,
           "values": {
+            "advanced_machine_features": [],
             "allow_stopping_for_update": true,
             "attached_disk": [
               {
@@ -46,6 +47,7 @@
             "can_ip_forward": true,
             "deletion_protection": true,
             "description": "test-description",
+            "desired_status": null,
             "enable_display": null,
             "guest_accelerator": [
               {
@@ -90,18 +92,22 @@
                   }
                 ],
                 "network": "default",
-                "network_ip": "test-network_ip"
+                "network_ip": "test-network_ip",
+                "nic_type": null
               },
               {
                 "access_config": [],
                 "alias_ip_range": [],
+                "nic_type": null,
                 "subnetwork": "test-subnetwork",
                 "subnetwork_project": "test-subnetwork_project"
               }
             ],
+            "resource_policies": null,
             "scheduling": [
               {
                 "automatic_restart": true,
+                "min_node_cpus": null,
                 "node_affinities": [
                   {
                     "key": "test-key",
@@ -152,9 +158,10 @@
           "mode": "managed",
           "type": "google_compute_instance",
           "name": "full_list_default_2",
-          "provider_name": "google",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 6,
           "values": {
+            "advanced_machine_features": [],
             "allow_stopping_for_update": null,
             "attached_disk": [],
             "boot_disk": [
@@ -168,6 +175,7 @@
             "can_ip_forward": false,
             "deletion_protection": false,
             "description": null,
+            "desired_status": null,
             "enable_display": null,
             "hostname": null,
             "labels": null,
@@ -179,9 +187,11 @@
               {
                 "access_config": [],
                 "alias_ip_range": [],
-                "network": "default"
+                "network": "default",
+                "nic_type": null
               }
             ],
+            "resource_policies": null,
             "scratch_disk": [],
             "service_account": [],
             "shielded_instance_config": [],
@@ -199,13 +209,14 @@
       "mode": "managed",
       "type": "google_compute_instance",
       "name": "full_list_default_1",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
         ],
         "before": null,
         "after": {
+          "advanced_machine_features": [],
           "allow_stopping_for_update": true,
           "attached_disk": [
             {
@@ -240,6 +251,7 @@
           "can_ip_forward": true,
           "deletion_protection": true,
           "description": "test-description",
+          "desired_status": null,
           "enable_display": null,
           "guest_accelerator": [
             {
@@ -284,18 +296,22 @@
                 }
               ],
               "network": "default",
-              "network_ip": "test-network_ip"
+              "network_ip": "test-network_ip",
+              "nic_type": null
             },
             {
               "access_config": [],
               "alias_ip_range": [],
+              "nic_type": null,
               "subnetwork": "test-subnetwork",
               "subnetwork_project": "test-subnetwork_project"
             }
           ],
+          "resource_policies": null,
           "scheduling": [
             {
               "automatic_restart": true,
+              "min_node_cpus": null,
               "node_affinities": [
                 {
                   "key": "test-key",
@@ -322,9 +338,7 @@
             {
               "email": "test-email",
               "scopes": [
-                "https://www.googleapis.com/auth/compute.readonly",
-                "https://www.googleapis.com/auth/devstorage.read_only",
-                "https://www.googleapis.com/auth/userinfo.email"
+                "https://www.googleapis.com/auth/cloud-platform"
               ]
             }
           ],
@@ -343,6 +357,7 @@
           "zone": "us-central1-a"
         },
         "after_unknown": {
+          "advanced_machine_features": [],
           "attached_disk": [
             {
               "disk_encryption_key_sha256": true
@@ -364,7 +379,9 @@
               "kms_key_self_link": true
             }
           ],
+          "confidential_instance_config": true,
           "cpu_platform": true,
+          "current_status": true,
           "guest_accelerator": [
             {},
             {}
@@ -405,6 +422,7 @@
             }
           ],
           "project": true,
+          "reservation_affinity": true,
           "scheduling": [
             {
               "node_affinities": [
@@ -425,8 +443,6 @@
           "service_account": [
             {
               "scopes": [
-                false,
-                false,
                 false
               ]
             }
@@ -447,13 +463,14 @@
       "mode": "managed",
       "type": "google_compute_instance",
       "name": "full_list_default_2",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
         ],
         "before": null,
         "after": {
+          "advanced_machine_features": [],
           "allow_stopping_for_update": null,
           "attached_disk": [],
           "boot_disk": [
@@ -467,6 +484,7 @@
           "can_ip_forward": false,
           "deletion_protection": false,
           "description": null,
+          "desired_status": null,
           "enable_display": null,
           "hostname": null,
           "labels": null,
@@ -478,9 +496,11 @@
             {
               "access_config": [],
               "alias_ip_range": [],
-              "network": "default"
+              "network": "default",
+              "nic_type": null
             }
           ],
+          "resource_policies": null,
           "scratch_disk": [],
           "service_account": [],
           "shielded_instance_config": [],
@@ -489,6 +509,7 @@
           "zone": "us-central1-a"
         },
         "after_unknown": {
+          "advanced_machine_features": [],
           "attached_disk": [],
           "boot_disk": [
             {
@@ -498,7 +519,9 @@
               "source": true
             }
           ],
+          "confidential_instance_config": true,
           "cpu_platform": true,
+          "current_status": true,
           "guest_accelerator": true,
           "id": true,
           "instance_id": true,
@@ -516,6 +539,7 @@
             }
           ],
           "project": true,
+          "reservation_affinity": true,
           "scheduling": true,
           "scratch_disk": [],
           "self_link": true,
@@ -527,16 +551,6 @@
     }
   ],
   "configuration": {
-    "provider_config": {
-      "google": {
-        "name": "google",
-        "expressions": {
-          "project": {
-            "constant_value": "{{.Provider.project}}"
-          }
-        }
-      }
-    },
     "root_module": {
       "resources": [
         {
@@ -723,9 +737,7 @@
                 },
                 "scopes": {
                   "constant_value": [
-                    "userinfo-email",
-                    "compute-ro",
-                    "storage-ro"
+                    "cloud-platform"
                   ]
                 }
               }
