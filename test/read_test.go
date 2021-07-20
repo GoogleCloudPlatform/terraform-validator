@@ -16,11 +16,6 @@ import (
 )
 
 func TestReadPlannedAssetsCoverage(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode.")
-		return
-	}
-
 	cases := []struct {
 		name string
 	}{
