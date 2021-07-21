@@ -85,10 +85,10 @@ type Timestamp struct {
 }
 
 func (t Timestamp) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + time.Unix(t.Seconds, t.Nanos).Format(time.RFC3339Nano) + `"`), nil
+	return []byte(`"` + time.Unix(0, t.Nanos).UTC().Format(time.RFC3339Nano) + `"`), nil
 }
 
-func (t Timestamp) UnmarshalJSON(b []byte) error {
+func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	p, err := time.Parse(time.RFC3339Nano, strings.Trim(string(b), `"`))
 	if err != nil {
 		return fmt.Errorf("bad Timestamp: %v", err)

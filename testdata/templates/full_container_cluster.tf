@@ -141,7 +141,6 @@ resource "google_container_cluster" "full_list_default_1" {
     enable_private_nodes    = true
     master_ipv4_cidr_block  = "127.0.0.0/28"
   }
-  remove_default_node_pool = true
   resource_labels = {
     test-resource_labels-key = "test-resource_labels-value"
   }

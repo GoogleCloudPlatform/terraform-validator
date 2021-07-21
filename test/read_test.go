@@ -16,11 +16,6 @@ import (
 )
 
 func TestReadPlannedAssetsCoverage(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test in short mode.")
-		return
-	}
-
 	cases := []struct {
 		name string
 	}{
@@ -28,10 +23,12 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_bigtable_instance"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_firewall"},
-		{name: "example_compute_instance"},
+		// This test can't run in offline mode
+		// {name: "example_compute_instance"},
 		{name: "example_compute_network"},
 		{name: "example_compute_subnetwork"},
-		{name: "example_compute_forwarding_rule"},
+		// This test can't run in offline mode.
+		// {name: "example_compute_forwarding_rule"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_container_cluster"},
 		{name: "example_filestore_instance"},

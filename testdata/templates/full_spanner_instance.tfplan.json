@@ -1,64 +1,49 @@
 {
   "format_version": "0.1",
-  "terraform_version": "0.12.13",
+  "terraform_version": "0.13.6",
   "planned_values": {
     "root_module": {
       "resources": [
-            {
-              "address": "module.env.google_spanner_instance.spanner-instance",
-              "mode": "managed",
-              "type": "google_spanner_instance",
-              "name": "spanner-instance",
-              "provider_name": "google",
-              "schema_version": 0,
-              "values": {
-                "config": "projects/{{.Provider.project}}/instanceConfigs/regional-us-central1",
-                "display_name": "spanner-instance",
-                "id": "{{.Provider.project}}/spanner-instance",
-                "labels": {
-                  "label1": "value1",
-                  "label2": "value2",
-                  "label3": "value3"
-                },
-                "name": "spanner-instance",
-                "num_nodes": 1,
-                "state": "READY",
-                "timeouts": null
-              }
-            }
-          ]
+        {
+          "address": "google_spanner_instance.spanner-instance",
+          "mode": "managed",
+          "type": "google_spanner_instance",
+          "name": "spanner-instance",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 0,
+          "values": {
+            "config": "regional-us-central1",
+            "display_name": "spanner-instance",
+            "force_destroy": false,
+            "labels": {
+              "label1": "value1",
+              "label2": "value2",
+              "label3": "value3"
+            },
+            "name": "spanner-instance",
+            "num_nodes": 1,
+            "timeouts": null
+          }
         }
-    },
+      ]
+    }
+  },
   "resource_changes": [
-     {
-      "address": "module.env.google_spanner_instance.spanner-instance",
-      "module_address": "module.env",
+    {
+      "address": "google_spanner_instance.spanner-instance",
       "mode": "managed",
       "type": "google_spanner_instance",
       "name": "spanner-instance",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
-          "no-op"
+          "create"
         ],
-        "before": {
-          "config": "projects/abcloud-ref-dev/instanceConfigs/regional-us-central1",
-          "display_name": "spanner-instance",
-          "id": "{{.Provider.project}}/spanner-instance",
-          "labels": {
-            "label1": "value1",
-            "label2": "value2",
-            "label3": "value3"
-          },
-          "name": "spanner-instance",
-          "num_nodes": 1,
-          "state": "READY",
-          "timeouts": null
-        },
+        "before": null,
         "after": {
-          "config": "projects/{{.Provider.project}}/instanceConfigs/regional-us-central1",
+          "config": "regional-us-central1",
           "display_name": "spanner-instance",
-          "id": "{{.Provider.project}}/spanner-instance",
+          "force_destroy": false,
           "labels": {
             "label1": "value1",
             "label2": "value2",
@@ -66,11 +51,50 @@
           },
           "name": "spanner-instance",
           "num_nodes": 1,
-          "state": "READY",
           "timeouts": null
         },
-        "after_unknown": {}
+        "after_unknown": {
+          "id": true,
+          "labels": {},
+          "project": true,
+          "state": true
+        }
       }
     }
-  ]
+  ],
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_spanner_instance.spanner-instance",
+          "mode": "managed",
+          "type": "google_spanner_instance",
+          "name": "spanner-instance",
+          "provider_config_key": "google",
+          "expressions": {
+            "config": {
+              "constant_value": "regional-us-central1"
+            },
+            "display_name": {
+              "constant_value": "spanner-instance"
+            },
+            "labels": {
+              "constant_value": {
+                "label1": "value1",
+                "label2": "value2",
+                "label3": "value3"
+              }
+            },
+            "name": {
+              "constant_value": "spanner-instance"
+            },
+            "num_nodes": {
+              "constant_value": 1
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
 }
