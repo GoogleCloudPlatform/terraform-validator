@@ -18,6 +18,7 @@ import (
 	"context"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -400,4 +401,33 @@ func TestAddStorageModuleAfterUnknown(t *testing.T) {
 		assert.EqualValues(t, c.assets[key].Type, "storage.googleapis.com/Bucket")
 	}
 
+}
+
+func TestTimestampMarshalJSON(t *testing.T) {
+	expectedJSON := []byte("\"2021-04-14T15:16:17Z\"")
+	date := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
+	ts := Timestamp{
+		Seconds: int64(date.Unix()),
+		Nanos: int64(date.UnixNano()),
+	}
+	json, err := ts.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+	assert.EqualValues(t, json, expectedJSON)
+}
+
+func TestTimestampUnmarshalJSON(t *testing.T) {
+	expectedDate := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
+	expected := Timestamp{
+		Seconds: int64(expectedDate.Unix()),
+		Nanos: int64(expectedDate.UnixNano()),
+	}
+	json := []byte("\"2021-04-14T15:16:17Z\"")
+	ts := Timestamp{}
+	err := ts.UnmarshalJSON(json)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+	assert.EqualValues(t, ts, expected)
 }
