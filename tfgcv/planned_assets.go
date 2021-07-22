@@ -62,7 +62,7 @@ func newConverter(ctx context.Context, path, project, ancestry string, offline b
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(ctx, ancestryManager, project, "", offline)
+	converter, err := google.NewConverter(ctx, ancestryManager, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}
