@@ -16,10 +16,12 @@ package google
 
 import (
 	"context"
+	"os"
 	"sort"
 	"testing"
 	"time"
 
+	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/pkg/errors"
@@ -37,11 +39,83 @@ func newTestConverter() (*Converter, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	c, err := NewConverter(ctx, ancestryManager, project, "", offline)
+	c, err := NewConverter(ctx, ancestryManager, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building converter")
 	}
 	return c, nil
+}
+
+type configAttrGetter func(cfg *converter.Config) string
+
+func getCredentials(cfg *converter.Config) string {
+	return cfg.Credentials
+}
+func getAccessToken(cfg *converter.Config) string {
+	return cfg.AccessToken
+}
+
+func TestNewConverterCredentials(t *testing.T) {
+	cases := []struct {
+		name           string
+		envKey         string
+		envValue       string
+		getConfigValue configAttrGetter
+	}{
+		{
+			name:           "GOOGLE_CREDENTIALS",
+			envKey:         "GOOGLE_CREDENTIALS",
+			envValue:       "whatever",
+			getConfigValue: getCredentials,
+		},
+		{
+			name:           "GOOGLE_CLOUD_KEYFILE_JSON",
+			envKey:         "GOOGLE_CLOUD_KEYFILE_JSON",
+			envValue:       "whatever",
+			getConfigValue: getCredentials,
+		},
+		{
+			name:           "GCLOUD_KEYFILE_JSON",
+			envKey:         "GCLOUD_KEYFILE_JSON",
+			envValue:       "whatever",
+			getConfigValue: getCredentials,
+		},
+		{
+			name:           "GOOGLE_OAUTH_ACCESS_TOKEN",
+			envKey:         "GOOGLE_OAUTH_ACCESS_TOKEN",
+			envValue:       "whatever",
+			getConfigValue: getAccessToken,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			originalValue, isSet := os.LookupEnv(c.envKey)
+			err := os.Setenv(c.envKey, c.envValue)
+			if err != nil {
+				t.Fatalf("error setting env var %s=%s: %s", c.envKey, c.envValue, err)
+			}
+
+			converter, err := newTestConverter()
+			if err != nil {
+				t.Fatalf("error building converter: %s", err)
+			}
+
+			assert.EqualValues(t, c.getConfigValue(converter.cfg), c.envValue)
+
+			if isSet {
+				err = os.Setenv(c.envKey, originalValue)
+				if err != nil {
+					t.Fatalf("error setting env var %s=%s: %s", c.envKey, originalValue, err)
+				}
+			} else {
+				err = os.Unsetenv(c.envKey)
+				if err != nil {
+					t.Fatalf("error unsetting env var %s: %s", c.envKey, err)
+				}
+			}
+		})
+	}
 }
 
 func TestSortByName(t *testing.T) {
@@ -408,7 +482,7 @@ func TestTimestampMarshalJSON(t *testing.T) {
 	date := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
 	ts := Timestamp{
 		Seconds: int64(date.Unix()),
-		Nanos: int64(date.UnixNano()),
+		Nanos:   int64(date.UnixNano()),
 	}
 	json, err := ts.MarshalJSON()
 	if err != nil {
@@ -421,7 +495,7 @@ func TestTimestampUnmarshalJSON(t *testing.T) {
 	expectedDate := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
 	expected := Timestamp{
 		Seconds: int64(expectedDate.Unix()),
-		Nanos: int64(expectedDate.UnixNano()),
+		Nanos:   int64(expectedDate.UnixNano()),
 	}
 	json := []byte("\"2021-04-14T15:16:17Z\"")
 	ts := Timestamp{}
