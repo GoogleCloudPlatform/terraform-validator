@@ -2,7 +2,7 @@
 
 *Note: this may not reflect the resources supported by your binary. Run `terraform-validator list-supported-resources` to get an up-to-date list for your binary.*
 
-If you want terraform validator to add support for a resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) or follow the instructions in the [README](../README.md) to contribute code.
+If you want terraform validator to add support for a resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) and consider [contributing code](./contributing/index.md).
 
 ```
 google_bigquery_dataset

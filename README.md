@@ -1,34 +1,40 @@
 # Terraform Validator
 
-Terraform Validator is a tool for validating compliance with organizational policies prior to applying a terraform plan.
-It can be used either as a standalone tool or in conjunction with [Forseti](https://forsetisecurity.org/) or other policy enforcement tooling.
-Terraform Validator relies on policies that are [compatible with Config Validator](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-set-up-constraints-with-policy-library). For examples, see the [Policy Library](https://github.com/forseti-security/policy-library).
+## Overview
 
-Terraform Validator is compatible with Terraform 0.12+.
+As your business shifts towards an infrastructure-as-code workflow, security and
+cloud administrators are concerned about misconfigurations that may cause
+security and governance violations.
 
-**Note**: Using Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary.
+Cloud Administrators need to be able to put up guardrails that follow security
+best practices and help drive the environment towards programmatic security and
+governance while enabling developers to go fast.
 
-## Supported Terraform resources
+Terraform Validator allows your administrators to enforce **constraints** on
+developer machines and as part of your CI/CD pipeline, allowing you to check for
+constraint violations and provide warnings or halt invalid deployments before
+they reach production.
 
-To list the Terraform resources supported by your binary, run:
+### One way to define constraints
 
-```
-terraform-validator list-supported-resources
-```
+Constraints are designed to be compatible with tools across the deployment
+lifecycle. The same set of constraints that you use with Terraform Validator
+can also be used with any other tool that supports them, either at deploy-time
+or as an audit of deployed resources. These constraints live in your
+organization's repository as the source of truth for your security and
+governance requirements. You can obtain constraints from the
+[Policy Library](./docs/policy_library.md), or
+[build your own constraint templates](https://github.com/forseti-security/policy-library/blob/master/docs/constraint_template_authoring.md).
 
-You can also view a [list of supported resources](./docs/supported_resources.md) in your browser.
+## Table of Contents
 
-If you want terraform validator to add support for a resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) or follow the instructions below to contribute code.
-
-## Getting started
-
-For instructions on downloading a binary for use on your development machine or CI/CD pipeline, please read the [user guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-use-terraform-validator).
-
-If you want to contribute to Terraform Validator, check out the [contribution guidelines](./CONTRIBUTING.md) and read the [Getting started docs](./docs/getting_started.md).
-
-## Adding support for a new resource
-
-See [Adding support for a new resource](./docs/add_new_resource.md).
+- [Install Terraform Validator](./docs/install.md)
+- [User guide](./docs/user_guide.md)
+- [Tutorial](./docs/tutorial.md)
+- [Creating a policy library](./docs/policy_library.md)
+- [Supported resources](./docs/supported_resources.md)
+- [Contributing](./docs/contributing/index.md)
+  - [Add a new resource](./docs/contributing/add_new_resource.md)
 
 ## Disclaimer
 
