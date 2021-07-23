@@ -1,17 +1,14 @@
-# Getting Started
+# Contributing
 
-For instructions on downloading a binary for use on your development machine or CI/CD pipeline, please read the [user guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-use-terraform-validator). The instructions in this document are aimed at developers working on Terraform Validator itself.
+If you want to contribute to Terraform Validator, check out the [contribution guidelines](../../CONTRIBUTING.md)
 
-## Auth
+## Table of Contents
 
-The `terraform` and `terraform-validator` commands need to be able to authenticate to Google Cloud APIs. This can be done by [generating a `credentials.json` file](https://cloud.google.com/docs/authentication/production). For local development, you can generate application default credentials. For production, use service account credentials instead.
-
-Once you have a credentials file on your local machine, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to the credentials file.
-
-```
-gcloud auth application-default login  # local development only
-GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json  # or path to service account credentials
-```
+- [Example project](#example-project)
+- [Convert command](#convert-command)
+- [Testing](#testing)
+  - [Docker](#docker)
+- [Add a new resource](#add-a-new-resource)
 
 ## Example project
 
@@ -43,23 +40,6 @@ It can be useful to run the convert command separately to test conversion of ter
 ```
 make build
 bin/terraform-validator convert example/tfplan.json
-```
-
-## Validate command
-Running the validate command requires setting up a local [policy library](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#how-to-set-up-constraints-with-policy-library).
-
-```
-# Set the local policy library repository path.
-export POLICY_PATH=/path/to/your/policy/library
-
-# Build the binary
-make build
-
-# Validate the google resources the plan would create.
-bin/terraform-validator validate --policy-path=${POLICY_PATH} example/tfplan.json
-
-# Apply the validated plan.
-terraform apply example/tfplan.tfplan
 ```
 
 ## Testing
@@ -97,4 +77,8 @@ make run-docker
 Finally, run the integration tests inside the container:
 ```
 make test-integration
-````
+```
+
+### Add a new resource
+
+See [Add a new resource](./add_new_resource)
