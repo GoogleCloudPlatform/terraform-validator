@@ -62,5 +62,5 @@ func getProjectFromSchema(projectSchemaField string, d converter.TerraformResour
 	if config.Project != "" {
 		return config.Project, nil
 	}
-	return "", fmt.Errorf("required field '%s' is not set", projectSchemaField)
+	return "", fmt.Errorf("required field '%s' is not set, you may use --project=my-project to provide default project to resolve the issue", projectSchemaField)
 }
