@@ -74,7 +74,7 @@ Since your email address is in the IAM policy binding, the plan should result in
 a violation. Let's try this out:
 
 ```
-gsutil cp gs://terraform-validator/releases/2019-03-28/terraform-validator-linux-amd64 .
+gsutil cp gs://terraform-validator/releases/v0.4.0/terraform-validator-linux-amd64 .
 chmod 755 terraform-validator-linux-amd64
 ./terraform-validator-linux-amd64 validate tfplan.json --policy-path=policy-library
 ```
