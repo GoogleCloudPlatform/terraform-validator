@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,8 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-data "google_kms_key_ring" "kms-keyring-dev" {
-  name = "kms-keyring-dev"
-  location = "global"
-}
-
 resource "google_kms_key_ring_iam_member" "key_ring" {
-  key_ring_id = data.google_kms_key_ring.kms-keyring-dev.id
+  key_ring_id = "{{.Provider.project}}/global/keyring-example"
   role        = "roles/cloudkms.admin"
   member      = "allAuthenticatedUsers"
 }
