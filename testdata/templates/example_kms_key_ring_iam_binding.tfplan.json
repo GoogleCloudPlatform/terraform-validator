@@ -1,6 +1,6 @@
 {
     "format_version": "0.1",
-    "terraform_version": "0.12.29",
+    "terraform_version": "0.15.3",
     "planned_values": {
         "root_module": {
             "resources": [
@@ -13,9 +13,7 @@
                     "schema_version": 0,
                     "values": {
                         "condition": [],
-                        "etag": "BwXF+82NACE=",
-                        "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/roles/cloudkms.cryptoKeyEncrypter",
-                        "key_ring_id": "prj-dev-palani-ram/global/kms-keyring-dev",
+                        "key_ring_id": "{{.Provider.project}}/global/keyring-example",
                         "members": [
                             "allAuthenticatedUsers",
                             "allUsers"
@@ -26,44 +24,83 @@
             ]
         }
     },
-    "address": "module.kms_key",
-    "child_modules": [
+    "resource_changes": [
         {
-            "resources": [
-                {
-                    "address": "module.kms_key.module.kms.google_kms_key_ring.key_ring",
-                    "module_address": "module.kms_key.module.kms",
-                    "mode": "managed",
-                    "type": "google_kms_key_ring",
-                    "name": "key_ring",
-                    "provider_name": "registry.terraform.io/hashicorp/google",
-                    "change": {
-                        "actions": [
-                            "no-op"
-                        ],
-                        "before": {
-                            "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev",
-                            "location": "global",
-                            "name": "kms-keyring-dev",
-                            "project": "prj-dev-palani-ram",
-                            "self_link": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev",
-                            "timeouts": null
-                        },
-                        "after": {
-                            "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev",
-                            "location": "global",
-                            "name": "kms-keyring-dev",
-                            "project": "prj-dev-palani-ram",
-                            "self_link": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev",
-                            "timeouts": null
-                        },
-                        "after_unknown": {},
-                        "before_sensitive": {},
-                        "after_sensitive": {}
+            "address": "google_kms_key_ring_iam_binding.key_ring",
+            "mode": "managed",
+            "type": "google_kms_key_ring_iam_binding",
+            "name": "key_ring",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "condition": [],
+                    "key_ring_id": "{{.Provider.project}}/global/keyring-example",
+                    "members": [
+                        "allAuthenticatedUsers",
+                        "allUsers"
+                    ],
+                    "role": "roles/cloudkms.cryptoKeyEncrypter"
+                },
+                "after_unknown": {
+                    "condition": [],
+                    "etag": true,
+                    "id": true,
+                    "members": [
+                        false,
+                        false
+                    ]
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "condition": [],
+                    "members": [
+                        false,
+                        false
+                    ]
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "google": {
+                "name": "google",
+                "expressions": {
+                    "project": {
+                        "constant_value": "{{.Provider.project}}"
                     }
                 }
-            ],
-            "address": "module.kms_key.module.kms"
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_kms_key_ring_iam_binding.key_ring",
+                    "mode": "managed",
+                    "type": "google_kms_key_ring_iam_binding",
+                    "name": "key_ring",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "key_ring_id": {
+                            "constant_value": "{{.Provider.project}}/global/keyring-example"
+                        },
+                        "members": {
+                            "constant_value": [
+                                "allUsers",
+                                "allAuthenticatedUsers"
+                            ]
+                        },
+                        "role": {
+                            "constant_value": "roles/cloudkms.cryptoKeyEncrypter"
+                        }
+                    },
+                    "schema_version": 0
+                }
+            ]
         }
-    ]
+    }
 }

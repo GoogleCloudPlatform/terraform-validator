@@ -1,6 +1,6 @@
 {
     "format_version": "0.1",
-    "terraform_version": "0.12.29",
+    "terraform_version": "0.15.3",
     "planned_values": {
         "root_module": {
             "resources": [
@@ -12,46 +12,126 @@
                     "provider_name": "registry.terraform.io/hashicorp/google",
                     "schema_version": 0,
                     "values": {
-                        "crypto_key_id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
-                        "etag": "BwXF/sriUKI=",
-                        "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
-                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/editor\"}]}"
+                        "crypto_key_id": "{{.Provider.project}}/global/key-ring-test/crypto-key-example",
+                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/cloudkms.admin\"}]}"
                     }
                 }
             ]
         }
     },
-    "address": "module.kms_key",
-    "child_modules": [
+    "resource_changes": [
         {
+            "address": "google_kms_crypto_key_iam_policy.crypto_key",
+            "mode": "managed",
+            "type": "google_kms_crypto_key_iam_policy",
+            "name": "crypto_key",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "crypto_key_id": "{{.Provider.project}}/global/key-ring-test/crypto-key-example",
+                    "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/cloudkms.admin\"}]}"
+                },
+                "after_unknown": {
+                    "etag": true,
+                    "id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {}
+            }
+        }
+    ],
+    "prior_state": {
+        "format_version": "0.1",
+        "terraform_version": "0.15.3",
+        "values": {
+            "root_module": {
+                "resources": [
+                    {
+                        "address": "data.google_iam_policy.admin",
+                        "mode": "data",
+                        "type": "google_iam_policy",
+                        "name": "admin",
+                        "provider_name": "registry.terraform.io/hashicorp/google",
+                        "schema_version": 0,
+                        "values": {
+                            "audit_config": null,
+                            "binding": [
+                                {
+                                    "condition": [],
+                                    "members": [
+                                        "allAuthenticatedUsers",
+                                        "allUsers"
+                                    ],
+                                    "role": "roles/cloudkms.admin"
+                                }
+                            ],
+                            "id": "759243159",
+                            "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/cloudkms.admin\"}]}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "configuration": {
+        "provider_config": {
+            "google": {
+                "name": "google",
+                "expressions": {
+                    "project": {
+                        "constant_value": "{{.Provider.project}}"
+                    }
+                }
+            }
+        },
+        "root_module": {
             "resources": [
                 {
-                    "address": "module.kms_key.module.kms.google_kms_crypto_key.key_ephemeral[0]",
+                    "address": "google_kms_crypto_key_iam_policy.crypto_key",
                     "mode": "managed",
-                    "type": "google_kms_crypto_key",
-                    "name": "key_ephemeral",
-                    "index": 0,
-                    "provider_name": "registry.terraform.io/hashicorp/google",
-                    "schema_version": 1,
-                    "values": {
-                        "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
-                        "key_ring": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev",
-                        "labels": {},
-                        "name": "kms-key-dev",
-                        "purpose": "ENCRYPT_DECRYPT",
-                        "rotation_period": "100000s",
-                        "self_link": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
-                        "skip_initial_version_creation": false,
-                        "timeouts": null,
-                        "version_template": [
+                    "type": "google_kms_crypto_key_iam_policy",
+                    "name": "crypto_key",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "crypto_key_id": {
+                            "constant_value": "{{.Provider.project}}/global/key-ring-test/crypto-key-example"
+                        },
+                        "policy_data": {
+                            "references": [
+                                "data.google_iam_policy.admin"
+                            ]
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "data.google_iam_policy.admin",
+                    "mode": "data",
+                    "type": "google_iam_policy",
+                    "name": "admin",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "binding": [
                             {
-                                "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
-                                "protection_level": "SOFTWARE"
+                                "members": {
+                                    "constant_value": [
+                                        "allUsers",
+                                        "allAuthenticatedUsers"
+                                    ]
+                                },
+                                "role": {
+                                    "constant_value": "roles/cloudkms.admin"
+                                }
                             }
                         ]
-                    }
+                    },
+                    "schema_version": 0
                 }
             ]
         }
-    ]
+    }
 }
