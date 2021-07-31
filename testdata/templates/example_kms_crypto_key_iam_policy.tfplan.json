@@ -1,0 +1,57 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.12.29",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_kms_crypto_key_iam_policy.crypto_key",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key_iam_policy",
+                    "name": "crypto_key",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "crypto_key_id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
+                        "etag": "BwXF/sriUKI=",
+                        "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
+                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/editor\"}]}"
+                    }
+                }
+            ]
+        }
+    },
+    "address": "module.kms_key",
+    "child_modules": [
+        {
+            "resources": [
+                {
+                    "address": "module.kms_key.module.kms.google_kms_crypto_key.key_ephemeral[0]",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key",
+                    "name": "key_ephemeral",
+                    "index": 0,
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 1,
+                    "values": {
+                        "id": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
+                        "key_ring": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev",
+                        "labels": {},
+                        "name": "kms-key-dev",
+                        "purpose": "ENCRYPT_DECRYPT",
+                        "rotation_period": "100000s",
+                        "self_link": "projects/prj-dev-palani-ram/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
+                        "skip_initial_version_creation": false,
+                        "timeouts": null,
+                        "version_template": [
+                            {
+                                "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+                                "protection_level": "SOFTWARE"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

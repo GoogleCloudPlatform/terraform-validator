@@ -1,0 +1,22 @@
+[
+  {
+    "name": "//cloudkms.googleapis.com/projects/{{.Provider.project}}/locations/global/keyRings/kms-keyring-dev/cryptoKeys/kms-key-dev",
+    "asset_type": "cloudkms.googleapis.com/CryptoKey",
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+    "iam_policy": {
+      "bindings": [
+        {
+          "role": "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+          "member": "allUsers"
+        }
+      ]
+    },
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/kms/v1/rest",
+      "discovery_name": "kms-key-dev",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+      "data": null
+    }
+  }
+]

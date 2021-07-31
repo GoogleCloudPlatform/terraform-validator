@@ -1,0 +1,46 @@
+[
+  {
+    "name": "//cloudkms.googleapis.com/projects/{{.Provider.project}}/locations/global/keyRings/kms-keyring-dev",
+    "asset_type": "cloudkms.googleapis.com/KeyRing",
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+    "iam_policy": {
+      "bindings": [
+        {
+          "role": "roles/cloudkms.admin",
+          "members": [
+            "allAuthenticatedUsers",
+            "allUsers"
+          ]
+        },
+        {
+          "role": "roles/editor",
+          "members": [
+            "allAuthenticatedUsers",
+            "allUsers"
+          ]
+        },
+        {
+          "role": "roles/owner",
+          "members": [
+            "allAuthenticatedUsers",
+            "allUsers"
+          ]
+        },
+        {
+          "role": "roles/cloudkms.cryptoKeyEncrypter",
+          "members": [
+            "allAuthenticatedUsers",
+            "allUsers"
+          ]
+        }
+      ]
+    },
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/kms/v1/rest",
+      "discovery_name": "kms-keyring-dev",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+      "data": null
+    }
+  }
+]
