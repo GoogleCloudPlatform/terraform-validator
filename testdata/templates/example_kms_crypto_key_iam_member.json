@@ -1,0 +1,17 @@
+[
+  {
+    "name": "//cloudkms.googleapis.com/{{.Provider.project}}/global/key-ring-test/crypto-key-example",
+    "asset_type": "cloudkms.googleapis.com/CryptoKey",
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+    "iam_policy": {
+      "bindings": [
+        {
+          "role": "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+          "members": [
+            "allUsers"
+          ]
+        }
+      ]
+    }
+  }
+]

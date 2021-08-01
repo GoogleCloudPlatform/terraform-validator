@@ -1,0 +1,106 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.15.3",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_kms_crypto_key_iam_binding.crypto_key",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key_iam_binding",
+                    "name": "crypto_key",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "condition": [],
+                        "crypto_key_id": "{{.Provider.project}}/global/key-ring-test/crypto-key-example",
+                        "members": [
+                            "allAuthenticatedUsers",
+                            "allUsers"
+                        ],
+                        "role": "roles/cloudkms.admin"
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "google_kms_crypto_key_iam_binding.crypto_key",
+            "mode": "managed",
+            "type": "google_kms_crypto_key_iam_binding",
+            "name": "crypto_key",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "condition": [],
+                    "crypto_key_id": "{{.Provider.project}}/global/key-ring-test/crypto-key-example",
+                    "members": [
+                        "allAuthenticatedUsers",
+                        "allUsers"
+                    ],
+                    "role": "roles/cloudkms.admin"
+                },
+                "after_unknown": {
+                    "condition": [],
+                    "etag": true,
+                    "id": true,
+                    "members": [
+                        false,
+                        false
+                    ]
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "condition": [],
+                    "members": [
+                        false,
+                        false
+                    ]
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "google": {
+                "name": "google",
+                "expressions": {
+                    "project": {
+                        "constant_value": "{{.Provider.project}}"
+                    }
+                }
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_kms_crypto_key_iam_binding.crypto_key",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key_iam_binding",
+                    "name": "crypto_key",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "crypto_key_id": {
+                            "constant_value": "{{.Provider.project}}/global/key-ring-test/crypto-key-example"
+                        },
+                        "members": {
+                            "constant_value": [
+                                "allUsers",
+                                "allAuthenticatedUsers"
+                            ]
+                        },
+                        "role": {
+                            "constant_value": "roles/cloudkms.admin"
+                        }
+                    },
+                    "schema_version": 0
+                }
+            ]
+        }
+    }
+}
