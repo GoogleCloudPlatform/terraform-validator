@@ -13,7 +13,7 @@
                     "schema_version": 0,
                     "values": {
                         "key_ring_id": "{{.Provider.project}}/global/keyring-example",
-                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"serviceAccount:998476993360@cloudservices.gserviceaccount.com\"],\"role\":\"roles/cloudkms.admin\"}]}"
+                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/editor\"}]}"
                     }
                 }
             ]
@@ -33,7 +33,7 @@
                 "before": null,
                 "after": {
                     "key_ring_id": "{{.Provider.project}}/global/keyring-example",
-                    "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"serviceAccount:998476993360@cloudservices.gserviceaccount.com\"],\"role\":\"roles/cloudkms.admin\"}]}"
+                    "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/editor\"}]}"
                 },
                 "after_unknown": {
                     "etag": true,
@@ -44,6 +44,39 @@
             }
         }
     ],
+    "prior_state": {
+        "format_version": "0.1",
+        "terraform_version": "0.15.3",
+        "values": {
+            "root_module": {
+                "resources": [
+                    {
+                        "address": "data.google_iam_policy.admin",
+                        "mode": "data",
+                        "type": "google_iam_policy",
+                        "name": "admin",
+                        "provider_name": "registry.terraform.io/hashicorp/google",
+                        "schema_version": 0,
+                        "values": {
+                            "audit_config": null,
+                            "binding": [
+                                {
+                                    "condition": [],
+                                    "members": [
+                                        "allAuthenticatedUsers",
+                                        "allUsers"
+                                    ],
+                                    "role": "roles/editor"
+                                }
+                            ],
+                            "id": "2672193668",
+                            "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"allUsers\"],\"role\":\"roles/editor\"}]}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
     "configuration": {
         "provider_config": {
             "google": {
@@ -67,7 +100,34 @@
                         "key_ring_id": {
                             "constant_value": "{{.Provider.project}}/global/keyring-example"
                         },
-                        "policy_data": {}
+                        "policy_data": {
+                            "references": [
+                                "data.google_iam_policy.admin"
+                            ]
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "data.google_iam_policy.admin",
+                    "mode": "data",
+                    "type": "google_iam_policy",
+                    "name": "admin",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "binding": [
+                            {
+                                "members": {
+                                    "constant_value": [
+                                        "allUsers",
+                                        "allAuthenticatedUsers"
+                                    ]
+                                },
+                                "role": {
+                                    "constant_value": "roles/editor"
+                                }
+                            }
+                        ]
                     },
                     "schema_version": 0
                 }

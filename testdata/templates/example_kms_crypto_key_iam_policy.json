@@ -9,7 +9,7 @@
           "role": "roles/cloudkms.admin",
           "members": [
             "allAuthenticatedUsers",
-            "serviceAccount:998476993360@cloudservices.gserviceaccount.com"
+            "allUsers"
           ]
         }
       ]

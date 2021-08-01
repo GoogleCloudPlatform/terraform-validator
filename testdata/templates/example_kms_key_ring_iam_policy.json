@@ -6,10 +6,10 @@
     "iam_policy": {
       "bindings": [
         {
-          "role": "roles/cloudkms.admin",
+          "role": "roles/editor",
           "members": [
             "allAuthenticatedUsers",
-            "serviceAccount:998476993360@cloudservices.gserviceaccount.com"
+            "allUsers"
           ]
         }
       ]
