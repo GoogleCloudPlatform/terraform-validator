@@ -30,10 +30,13 @@ import (
 
 // ReadPlannedAssets extracts CAI assets from a terraform plan file.
 // If ancestry path is provided, it assumes the project is in that path rather
-// than fetching the ancestry information using Google API.
+// than fetching the ancestry information using Google API. If convertUnchanged
+// is set then resources that do not have any change from their deployed state
+// are also reported in the output, otherwise only resources that are going to
+// be changed are reported.
 // It ignores non-supported resources.
-func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline bool) ([]google.Asset, error) {
-	converter, err := newConverter(ctx, path, project, ancestry, offline)
+func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) ([]google.Asset, error) {
+	converter, err := newConverter(ctx, path, project, ancestry, offline, convertUnchanged)
 	if err != nil {
 		return nil, err
 	}
@@ -56,13 +59,13 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 	return converter.Assets(), nil
 }
 
-func newConverter(ctx context.Context, path, project, ancestry string, offline bool) (*google.Converter, error) {
+func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) (*google.Converter, error) {
 	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
 	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(ctx, ancestryManager, project, offline)
+	converter, err := google.NewConverter(ctx, ancestryManager, project, offline, convertUnchanged)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google converter")
 	}

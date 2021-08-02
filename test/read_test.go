@@ -92,7 +92,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 
 			planfile := filepath.Join(dir, c.name+".tfplan.json")
 			ctx := context.Background()
-			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], data.Ancestry, true)
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], data.Ancestry, true, false)
 			if err != nil {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], data.Ancestry, true, err)
 			}
