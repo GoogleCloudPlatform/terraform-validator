@@ -17,7 +17,10 @@ then
 	exit 1
 fi
 
+architectures="amd64 arm64"
 platforms="linux windows darwin"
+skip_platform_arch_pairs=" windows/arm64 "
+
 build_dir=./bin
 name=terraform-validator
 ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=${version}"
@@ -25,9 +28,17 @@ release_bucket=terraform-validator
 
 # Build release versions
 for platform in ${platforms}; do
-	echo "Building version ${version} for ${platform}..."
-	GO111MODULE=on GOOS=${platform} GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "${ldflags}" -o "${build_dir}/${name}-${platform}-amd64" .
-	echo "Done building version ${version} for ${platform}"
+	for arch in ${architectures}; do
+		if [[ " ${skip_platform_arch_pairs[@]} " =~ " ${platform}/${arch} " ]]; then
+			echo "Skipped unsupported platform/arch pair ${platform}/${arch}"
+			continue
+		fi
+
+
+		echo "Building version ${version} for platform ${platform} / arch ${arch}..."
+		GO111MODULE=on GOOS=${platform} GOARCH=${arch} CGO_ENABLED=0 go build -ldflags "${ldflags}" -o "${build_dir}/${name}-${platform}-${arch}" .
+		echo "Done building version ${version} for platform ${platform} / arch ${arch}"
+	done
 done
 
 echo "Creating Github tag ${version}"
@@ -37,7 +48,9 @@ echo "Github tag ${version} created"
 
 # Publish release versions
 echo "Pushing releases to Google Storage"
-gsutil cp ${build_dir}/*-amd64 gs://${release_bucket}/releases/${version}
+for arch in ${architectures}; do
+	gsutil cp ${build_dir}/*-${arch} gs://${release_bucket}/releases/${version}
+done
 echo "Releases pushed to Google Storage"
 
 echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=${version}&title=${version}"
