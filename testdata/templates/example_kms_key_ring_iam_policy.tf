@@ -27,17 +27,19 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-data "google_iam_policy" "admin" {
-  binding {
-    role = "roles/editor"
-    members = [
-      "allUsers", "allAuthenticatedUsers"
-    ]
-  }
-}
-
 resource "google_kms_key_ring_iam_policy" "key_ring" {
   key_ring_id = "{{.Provider.project}}/global/keyring-example"
-  
-  policy_data = data.google_iam_policy.admin.policy_data
+  policy_data = jsonencode(
+    {
+      bindings = [
+        {
+          members = [
+            "allAuthenticatedUsers",
+            "serviceAccount:998476993360@cloudservices.gserviceaccount.com",
+          ]
+          role = "roles/cloudkms.admin"
+        }
+      ]
+    }
+  )
 }

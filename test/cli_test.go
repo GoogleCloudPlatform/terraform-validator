@@ -124,6 +124,8 @@ func TestCLI(t *testing.T) {
 		"TestCLI/v=0.12/tf=example_kms_key_ring_iam_binding/offline=false/cmd=validate/constraint=always_violate":      "skip because test keyring does not exist in project",
 		"TestCLI/v=0.12/tf=example_kms_key_ring_iam_member/offline=false/cmd=convert":                                  "skip because test keyring does not exist in project",
 		"TestCLI/v=0.12/tf=example_kms_key_ring_iam_member/offline=false/cmd=validate/constraint=always_violate":       "skip because test keyring does not exist in project",
+        "TestCLI/v=0.12/tf=example_kms_key_ring_iam_policy/offline=false/cmd=convert":                                  "skip because test keyring does not exist in project",
+		"TestCLI/v=0.12/tf=example_kms_key_ring_iam_policy/offline=false/cmd=validate/constraint=always_violate":       "skip because test keyring does not exist in project",
 		"TestCLI/v=0.12/tf=example_kms_crypto_key_iam_binding/offline=false/cmd=convert":                               "skip because test keyring does not exist in project",
 		"TestCLI/v=0.12/tf=example_kms_crypto_key_iam_binding/offline=false/cmd=validate/constraint=always_violate":    "skip because test keyring does not exist in project",
 		"TestCLI/v=0.12/tf=example_kms_crypto_key_iam_member/offline=false/cmd=convert":                                "skip because test keyring does not exist in project",
