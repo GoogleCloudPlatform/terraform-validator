@@ -218,11 +218,11 @@ func TestAddResourceChanges_deleteProcessed(t *testing.T) {
 		convertUnchanged bool
 	}{
 		{
-			name:             "Delete when convertUnchanged is unset",
+			name:             "Delete when convertUnchanged is false",
 			convertUnchanged: false,
 		},
 		{
-			name:             "Delete when convertUnchanged is set",
+			name:             "Delete when convertUnchanged is true",
 			convertUnchanged: true,
 		},
 	}
@@ -267,37 +267,37 @@ func TestAddResourceChanges_createOrUpdateOrDeleteCreateOrNoopProcessed(t *testi
 		convertUnchanged bool
 	}{
 		{
-			name:             "Create when convertUnchanged is unset",
+			name:             "Create when convertUnchanged is false",
 			actions:          tfjson.Actions{"create"},
 			convertUnchanged: false,
 		},
 		{
-			name:             "Create when convertUnchanged is set",
+			name:             "Create when convertUnchanged is true",
 			actions:          tfjson.Actions{"create"},
 			convertUnchanged: true,
 		},
 		{
-			name:             "Update when convertUnchanged is unset",
+			name:             "Update when convertUnchanged is false",
 			actions:          tfjson.Actions{"update"},
 			convertUnchanged: false,
 		},
 		{
-			name:             "Update when convertUnchanged is set",
+			name:             "Update when convertUnchanged is true",
 			actions:          tfjson.Actions{"update"},
 			convertUnchanged: true,
 		},
 		{
-			name:             "DeleteCreate when convertUnchanged is unset",
+			name:             "DeleteCreate when convertUnchanged is false",
 			actions:          tfjson.Actions{"delete", "create"},
 			convertUnchanged: false,
 		},
 		{
-			name:             "DeleteCreate when convertUnchanged is set",
+			name:             "DeleteCreate when convertUnchanged is true",
 			actions:          tfjson.Actions{"delete", "create"},
 			convertUnchanged: true,
 		},
 		{
-			name:             "Noop when convertUnchanged is set",
+			name:             "Noop when convertUnchanged is true",
 			actions:          tfjson.Actions{"no-op"},
 			convertUnchanged: true,
 		},

@@ -221,14 +221,14 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 		if tfplan.IsCreate(rc) || tfplan.IsUpdate(rc) || tfplan.IsDeleteCreate(rc) || (c.convertUnchanged && tfplan.IsNoOp(rc)) {
 			createOrUpdateOrNoops = append(createOrUpdateOrNoops, rc)
 		} else if tfplan.IsDelete(rc) {
-			if err := c.addDeleteResourceChange(rc); err != nil {
+			if err := c.addDelete(rc); err != nil {
 				return fmt.Errorf("adding resource deletion %w", err)
 			}
 		}
 	}
 
 	for _, rc := range createOrUpdateOrNoops {
-		if err := c.addResourceChange(rc); err != nil {
+		if err := c.addCreateOrUpdateOrNoop(rc); err != nil {
 			if errorssyslib.Is(err, ErrDuplicateAsset) {
 				glog.Warningf("adding resource change: %v", err)
 			} else {
@@ -244,7 +244,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 // both fetch and mergeDelete. Supporting just one doesn't
 // make sense, and supporting neither means that the deletion
 // can just happen without needing to be merged.
-func (c *Converter) addDeleteResourceChange(rc *tfjson.ResourceChange) error {
+func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
@@ -298,7 +298,7 @@ func (c *Converter) addDeleteResourceChange(rc *tfjson.ResourceChange) error {
 // For create/update/no-op, we need to handle both the case of no merging,
 // and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
 // to be present.
-func (c *Converter) addResourceChange(rc *tfjson.ResourceChange) error {
+func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
