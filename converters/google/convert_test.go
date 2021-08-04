@@ -23,6 +23,7 @@ import (
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -35,14 +36,15 @@ func newTestConverter() (*Converter, error) {
 	ancestry := ""
 	project := testProject
 	offline := true
-	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline)
+	cfg, err := tfgcv.GetConfig(ctx, project, offline)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing configuration")
+	}
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, "", offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	c, err := NewConverter(ctx, ancestryManager, project, offline)
-	if err != nil {
-		return nil, errors.Wrap(err, "building converter")
-	}
+	c := NewConverter(cfg, ancestryManager, offline)
 	return c, nil
 }
 

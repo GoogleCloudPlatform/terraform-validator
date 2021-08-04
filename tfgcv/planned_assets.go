@@ -20,8 +20,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"google.golang.org/api/option"
-
+	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
@@ -57,16 +56,42 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 }
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline bool) (*google.Converter, error) {
-	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
-	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
+	cfg, err := GetConfig(ctx, project, offline)
+	if err != nil {
+		return nil, errors.Wrap(err, "building google configuration")
+	}
+	ua := fmt.Sprintf("config-validator-tf/%s", BuildVersion())
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	converter, err := google.NewConverter(ctx, ancestryManager, project, offline)
-	if err != nil {
-		return nil, errors.Wrap(err, "building google converter")
-	}
+	converter := google.NewConverter(cfg, ancestryManager, offline)
 	return converter, nil
+}
+
+func GetConfig(ctx context.Context, project string, offline bool) (*converter.Config, error) {
+	cfg := &converter.Config{
+		Project: project,
+	}
+
+	if !offline {
+		// Search for default credentials
+		cfg.Credentials = multiEnvSearch([]string{
+			"GOOGLE_CREDENTIALS",
+			"GOOGLE_CLOUD_KEYFILE_JSON",
+			"GCLOUD_KEYFILE_JSON",
+		})
+
+		cfg.AccessToken = multiEnvSearch([]string{
+			"GOOGLE_OAUTH_ACCESS_TOKEN",
+		})
+		converter.ConfigureBasePaths(cfg)
+		if err := cfg.LoadAndValidate(ctx); err != nil {
+			return nil, errors.Wrap(err, "load and validate config")
+		}
+	}
+
+	return cfg, nil
 }
 
 func readTF12Data(path string) ([]byte, error) {
