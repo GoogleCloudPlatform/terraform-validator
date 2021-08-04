@@ -14,7 +14,7 @@
 package tfplan
 
 import (
-	"github.com/hashicorp/terraform-json"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 )
@@ -33,6 +33,10 @@ func IsDeleteCreate(rc *tfjson.ResourceChange) bool {
 
 func IsDelete(rc *tfjson.ResourceChange) bool {
 	return len(rc.Change.Actions) == 1 && rc.Change.Actions[0] == "delete"
+}
+
+func IsNoOp(rc *tfjson.ResourceChange) bool {
+	return rc.Change.Actions.NoOp()
 }
 
 // compatibility shim until ResourceChange is expected by all callers.

@@ -51,7 +51,7 @@ Example:
 	},
 	RunE: func(c *cobra.Command, args []string) error {
 		ctx := context.Background()
-		assets, err := tfgcv.ReadPlannedAssets(ctx, args[0], flags.convert.project, flags.convert.ancestry, flags.convert.offline)
+		assets, err := tfgcv.ReadPlannedAssets(ctx, args[0], flags.convert.project, flags.convert.ancestry, flags.convert.offline, false)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 				return errors.New("unable to parse provider project, please use --project flag")

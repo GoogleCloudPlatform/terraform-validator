@@ -127,9 +127,9 @@ type RestoreDefault struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryManager, project string, offline bool) (*Converter, error) {
+func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryManager, project string, offline, convertUnchanged bool) (*Converter, error) {
 	cfg := &converter.Config{
-		Project:     project,
+		Project: project,
 	}
 	// Search for default credentials
 	cfg.Credentials = multiEnvSearch([]string{
@@ -149,12 +149,13 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 	}
 
 	return &Converter{
-		schema:          provider.Provider(),
-		mapperFuncs:     converter.Mappers(),
-		offline:         offline,
-		cfg:             cfg,
-		ancestryManager: ancestryManager,
-		assets:          make(map[string]Asset),
+		schema:           provider.Provider(),
+		mapperFuncs:      converter.Mappers(),
+		offline:          offline,
+		cfg:              cfg,
+		ancestryManager:  ancestryManager,
+		assets:           make(map[string]Asset),
+		convertUnchanged: convertUnchanged,
 	}, nil
 }
 
@@ -175,6 +176,9 @@ type Converter struct {
 
 	// Map of converted assets (key = asset.Type + asset.Name)
 	assets map[string]Asset
+
+	// When set, Converter will convert ResourceChanges with no-op "actions".
+	convertUnchanged bool
 }
 
 // Schemas exposes the schemas of resources this converter knows about.
@@ -195,12 +199,12 @@ func (c *Converter) AddResource(rc *tfjson.ResourceChange) error {
 
 // AddResourceChange processes the resource changes in two stages:
 // 1. Process deletions (fetching canonical resources from GCP as necessary)
-// 2. Process creates and updates (fetching canonical resources from GCP as necessary)
+// 2. Process creates, updates, and no-ops (fetching canonical resources from GCP as necessary)
 // This will give us a deterministic end result even in cases where for example
 // an IAM Binding and Member conflict with each other, but one is replacing the
 // other.
 func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
-	var createOrUpdates []*tfjson.ResourceChange
+	var createOrUpdateOrNoops []*tfjson.ResourceChange
 	for _, rc := range changes {
 		// skip unknown resources
 		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
@@ -214,8 +218,8 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 			continue
 		}
 
-		if tfplan.IsCreate(rc) || tfplan.IsUpdate(rc) || tfplan.IsDeleteCreate(rc) {
-			createOrUpdates = append(createOrUpdates, rc)
+		if tfplan.IsCreate(rc) || tfplan.IsUpdate(rc) || tfplan.IsDeleteCreate(rc) || (c.convertUnchanged && tfplan.IsNoOp(rc)) {
+			createOrUpdateOrNoops = append(createOrUpdateOrNoops, rc)
 		} else if tfplan.IsDelete(rc) {
 			if err := c.addDelete(rc); err != nil {
 				return fmt.Errorf("adding resource deletion %w", err)
@@ -223,12 +227,12 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 		}
 	}
 
-	for _, rc := range createOrUpdates {
-		if err := c.addCreateOrUpdate(rc); err != nil {
+	for _, rc := range createOrUpdateOrNoops {
+		if err := c.addCreateOrUpdateOrNoop(rc); err != nil {
 			if errorssyslib.Is(err, ErrDuplicateAsset) {
 				glog.Warningf("adding resource change: %v", err)
 			} else {
-				return fmt.Errorf("adding resource create or update %w", err)
+				return fmt.Errorf("adding resource create/update/no-op %w", err)
 			}
 		}
 	}
@@ -291,10 +295,10 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 	return nil
 }
 
-// For create/update, we need to handle both the case of no merging,
+// For create/update/no-op, we need to handle both the case of no merging,
 // and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
 // to be present.
-func (c *Converter) addCreateOrUpdate(rc *tfjson.ResourceChange) error {
+func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
