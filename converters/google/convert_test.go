@@ -36,7 +36,7 @@ func newTestConverter() (*Converter, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	c, err := NewConverter(ctx, ancestryManager, project, "", offline)
+	c, err := NewConverter(ctx, ancestryManager, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building converter")
 	}

@@ -17,6 +17,7 @@ package google
 import (
 	"fmt"
 	"log"
+	"os"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 )
@@ -63,4 +64,13 @@ func getProjectFromSchema(projectSchemaField string, d converter.TerraformResour
 		return config.Project, nil
 	}
 	return "", fmt.Errorf("required field '%s' is not set", projectSchemaField)
+}
+
+func multiEnvSearch(ks []string) string {
+	for _, k := range ks {
+		if v := os.Getenv(k); v != "" {
+			return v
+		}
+	}
+	return ""
 }

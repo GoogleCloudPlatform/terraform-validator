@@ -127,11 +127,24 @@ type RestoreDefault struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryManager, project, credentials string, offline bool) (*Converter, error) {
+func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryManager, project string, offline bool) (*Converter, error) {
 	cfg := &converter.Config{
-		Project:     project,
-		Credentials: credentials,
+		Project: project,
 	}
+
+	if !offline {
+		// Search for default credentials
+		cfg.Credentials = multiEnvSearch([]string{
+			"GOOGLE_CREDENTIALS",
+			"GOOGLE_CLOUD_KEYFILE_JSON",
+			"GCLOUD_KEYFILE_JSON",
+		})
+
+		cfg.AccessToken = multiEnvSearch([]string{
+			"GOOGLE_OAUTH_ACCESS_TOKEN",
+		})
+	}
+
 	if !offline {
 		converter.ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(ctx); err != nil {
