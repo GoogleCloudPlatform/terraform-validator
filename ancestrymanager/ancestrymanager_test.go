@@ -116,7 +116,8 @@ func TestGetAncestry(t *testing.T) {
 		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestryPath},
 		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2"},
 		{name: "another_project_offline", target: amOffline, query: anotherProject, wantError: true},
-		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true}}
+		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true},
+	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got, err := c.target.GetAncestry(c.query)
