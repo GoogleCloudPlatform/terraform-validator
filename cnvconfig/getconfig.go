@@ -26,17 +26,18 @@ func GetConfig(ctx context.Context, project string, offline bool) (*converter.Co
 		Project: project,
 	}
 
-	if !offline {
-		// Search for default credentials
-		cfg.Credentials = multiEnvSearch([]string{
-			"GOOGLE_CREDENTIALS",
-			"GOOGLE_CLOUD_KEYFILE_JSON",
-			"GCLOUD_KEYFILE_JSON",
-		})
+	// Search for default credentials
+	cfg.Credentials = multiEnvSearch([]string{
+		"GOOGLE_CREDENTIALS",
+		"GOOGLE_CLOUD_KEYFILE_JSON",
+		"GCLOUD_KEYFILE_JSON",
+	})
 
-		cfg.AccessToken = multiEnvSearch([]string{
-			"GOOGLE_OAUTH_ACCESS_TOKEN",
-		})
+	cfg.AccessToken = multiEnvSearch([]string{
+		"GOOGLE_OAUTH_ACCESS_TOKEN",
+	})
+
+	if !offline {
 		converter.ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(ctx); err != nil {
 			return nil, errors.Wrap(err, "load and validate config")
