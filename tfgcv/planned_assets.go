@@ -61,7 +61,7 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) (*google.Converter, error) {
 	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
 	ua := "config-validator-tf/%s"
-	ancestryManager, err := ancestrymanager.NewInternal(cfg, project, ancestry, ua, offline)
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}

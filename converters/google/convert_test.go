@@ -39,7 +39,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing configuration")
 	}
-	ancestryManager, err := ancestrymanager.NewInternal(cfg, project, ancestry, ua, offline)
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
-	"google.golang.org/api/option"
 )
 
 func TestAncestryPath(t *testing.T) {
@@ -76,17 +75,8 @@ func TestGetAncestry(t *testing.T) {
 	ts := newAncestryManagerMockServer(t, cache)
 	defer ts.Close()
 
-	amOnline, err := New(ctx, ownerProject, "", false, option.WithEndpoint(ts.URL), option.WithoutAuthentication())
-	if err != nil {
-		t.Fatalf("failed to create online ancestry manager: %s", err)
-	}
-	amOffline, err := New(ctx, ownerProject, ownerAncestry, true)
-	if err != nil {
-		t.Fatalf("failed to create offline ancestry manager: %s", err)
-	}
-
 	cfgOffline, err := cnvconfig.GetConfig(ctx, anotherProject, false)
-	amOfflineInternal, err := NewInternal(cfgOffline, ownerProject, ownerAncestry, "", true)
+	amOffline, err := New(cfgOffline, ownerProject, ownerAncestry, "", true)
 	if err != nil {
 		t.Fatalf("failed to create offline ancestry manager: %s", err)
 	}
@@ -98,13 +88,8 @@ func TestGetAncestry(t *testing.T) {
 		wantError bool
 		want      string
 	}{
-		{name: "owner_project_online", target: amOnline, query: ownerProject, want: ownerAncestryPath},
 		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestryPath},
-		{name: "owner_project_offline", target: amOfflineInternal, query: ownerProject, want: ownerAncestryPath},
-		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2"},
 		{name: "another_project_offline", target: amOffline, query: anotherProject, wantError: true},
-		{name: "another_project_offline", target: amOfflineInternal, query: anotherProject, wantError: true},
-		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
