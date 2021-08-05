@@ -19,7 +19,7 @@ type AncestryManager interface {
 	GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error)
 }
 
-// ResourceManagerRetriever is the interface that returns an instance of resourceManager.
+// ClientRetriever is the interface that returns an instance of various clients.
 type ClientRetriever interface {
 	// NewResourceManagerClient returns an initialized *cloudresourcemanager.Service
 	NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service
