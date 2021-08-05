@@ -31,20 +31,21 @@ import (
 
 const testProject = "test-project"
 
-func newTestConverter() (*Converter, error) {
+func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	ctx := context.Background()
 	ancestry := ""
+	ua := ""
 	project := testProject
 	offline := true
 	cfg, err := tfgcv.GetConfig(ctx, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing configuration")
 	}
-	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, "", offline)
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource manager client")
 	}
-	c := NewConverter(cfg, ancestryManager, offline)
+	c := NewConverter(cfg, ancestryManager, offline, convertUnchanged)
 	return c, nil
 }
 
@@ -98,7 +99,7 @@ func TestNewConverterCredentials(t *testing.T) {
 				t.Fatalf("error setting env var %s=%s: %s", c.envKey, c.envValue, err)
 			}
 
-			converter, err := newTestConverter()
+			converter, err := newTestConverter(false)
 			if err != nil {
 				t.Fatalf("error building converter: %s", err)
 			}
@@ -160,7 +161,7 @@ func TestAddResourceChanges_unknownResourceIgnored(t *testing.T) {
 			After:   nil,
 		},
 	}
-	c, err := newTestConverter()
+	c, err := newTestConverter(false)
 	assert.Nil(t, err)
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
@@ -180,7 +181,7 @@ func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
 			After:   nil,
 		},
 	}
-	c, err := newTestConverter()
+	c, err := newTestConverter(false)
 	assert.Nil(t, err)
 
 	// fake that this resource is known to the provider; it will never be "supported" by the
@@ -192,7 +193,7 @@ func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
 }
 
-func TestAddResourceChanges_noopIgnored(t *testing.T) {
+func TestAddResourceChanges_noopIgnoredWhenConvertUnchangedFalse(t *testing.T) {
 	rc := tfjson.ResourceChange{
 		Address:      "whatever.google_compute_disk.foo",
 		Mode:         "managed",
@@ -205,7 +206,8 @@ func TestAddResourceChanges_noopIgnored(t *testing.T) {
 			After:   nil,
 		},
 	}
-	c, err := newTestConverter()
+	convertUnchanged := false
+	c, err := newTestConverter(convertUnchanged)
 	assert.Nil(t, err)
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
@@ -214,52 +216,93 @@ func TestAddResourceChanges_noopIgnored(t *testing.T) {
 }
 
 func TestAddResourceChanges_deleteProcessed(t *testing.T) {
-	rc := tfjson.ResourceChange{
-		Address:      "whatever.google_compute_disk.foo",
-		Mode:         "managed",
-		Type:         "google_compute_disk",
-		Name:         "foo",
-		ProviderName: "google",
-		Change: &tfjson.Change{
-			Actions: tfjson.Actions{"delete"},
-			Before: map[string]interface{}{
-				"project": testProject,
-				"name":    "test-disk",
-				"type":    "pd-ssd",
-				"zone":    "us-central1-a",
-				"image":   "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
-				"labels": map[string]interface{}{
-					"environment": "dev",
-				},
-				"physical_block_size_bytes": 4096,
-			},
-			After: nil,
-		},
-	}
-	c, err := newTestConverter()
-	assert.Nil(t, err)
-
-	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
-	assert.Nil(t, err)
-	assert.EqualValues(t, map[string]Asset{}, c.assets)
-}
-
-func TestAddResourceChanges_createOrUpdateOrDeleteCreateProcessed(t *testing.T) {
 	cases := []struct {
-		name    string
-		actions tfjson.Actions
+		name             string
+		convertUnchanged bool
 	}{
 		{
-			name:    "Create",
-			actions: tfjson.Actions{"create"},
+			name:             "Delete when convertUnchanged is false",
+			convertUnchanged: false,
 		},
 		{
-			name:    "Update",
-			actions: tfjson.Actions{"update"},
+			name:             "Delete when convertUnchanged is true",
+			convertUnchanged: true,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			rc := tfjson.ResourceChange{
+				Address:      "whatever.google_compute_disk.foo",
+				Mode:         "managed",
+				Type:         "google_compute_disk",
+				Name:         "foo",
+				ProviderName: "google",
+				Change: &tfjson.Change{
+					Actions: tfjson.Actions{"delete"},
+					Before: map[string]interface{}{
+						"project": testProject,
+						"name":    "test-disk",
+						"type":    "pd-ssd",
+						"zone":    "us-central1-a",
+						"image":   "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+						"labels": map[string]interface{}{
+							"environment": "dev",
+						},
+						"physical_block_size_bytes": 4096,
+					},
+					After: nil,
+				},
+			}
+			c, err := newTestConverter(tc.convertUnchanged)
+			assert.Nil(t, err)
+
+			err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
+			assert.Nil(t, err)
+			assert.EqualValues(t, map[string]Asset{}, c.assets)
+		})
+	}
+}
+
+func TestAddResourceChanges_createOrUpdateOrDeleteCreateOrNoopProcessed(t *testing.T) {
+	cases := []struct {
+		name             string
+		actions          tfjson.Actions
+		convertUnchanged bool
+	}{
+		{
+			name:             "Create when convertUnchanged is false",
+			actions:          tfjson.Actions{"create"},
+			convertUnchanged: false,
 		},
 		{
-			name:    "DeleteCreate",
-			actions: tfjson.Actions{"delete", "create"},
+			name:             "Create when convertUnchanged is true",
+			actions:          tfjson.Actions{"create"},
+			convertUnchanged: true,
+		},
+		{
+			name:             "Update when convertUnchanged is false",
+			actions:          tfjson.Actions{"update"},
+			convertUnchanged: false,
+		},
+		{
+			name:             "Update when convertUnchanged is true",
+			actions:          tfjson.Actions{"update"},
+			convertUnchanged: true,
+		},
+		{
+			name:             "DeleteCreate when convertUnchanged is false",
+			actions:          tfjson.Actions{"delete", "create"},
+			convertUnchanged: false,
+		},
+		{
+			name:             "DeleteCreate when convertUnchanged is true",
+			actions:          tfjson.Actions{"delete", "create"},
+			convertUnchanged: true,
+		},
+		{
+			name:             "Noop when convertUnchanged is true",
+			actions:          tfjson.Actions{"no-op"},
+			convertUnchanged: true,
 		},
 	}
 	for _, c := range cases {
@@ -286,7 +329,7 @@ func TestAddResourceChanges_createOrUpdateOrDeleteCreateProcessed(t *testing.T) 
 					},
 				},
 			}
-			c, err := newTestConverter()
+			c, err := newTestConverter(c.convertUnchanged)
 			assert.Nil(t, err)
 
 			err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
@@ -417,7 +460,7 @@ func TestAddDuplicatedResources(t *testing.T) {
 			},
 		},
 	}
-	c, err := newTestConverter()
+	c, err := newTestConverter(false)
 	assert.Nil(t, err)
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rcb1, &rcb2, &rcp1, &rcp2})
@@ -467,7 +510,7 @@ func TestAddStorageModuleAfterUnknown(t *testing.T) {
 			},
 		},
 	}
-	c, err := newTestConverter()
+	c, err := newTestConverter(false)
 	assert.Nil(t, err)
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
