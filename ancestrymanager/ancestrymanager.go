@@ -2,13 +2,16 @@
 package ancestrymanager
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 
 	"google.golang.org/api/cloudresourcemanager/v1"
+	"google.golang.org/api/option"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	"github.com/pkg/errors"
 )
 
 // AncestryManager is the interface that wraps the GetAncestry method.
@@ -177,7 +180,29 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
-func New(cfg *converter.Config, project, ancestry, userAgent string, offline bool) (AncestryManager, error) {
+// This function is deprecated and no longer used by terraform validator. It is maintained
+// as is for legacy accessors.
+func New(ctx context.Context, project, ancestry string, offline bool, opts ...option.ClientOption) (AncestryManager, error) {
+	if ancestry != "" {
+		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
+	}
+	if offline {
+		return &offlineAncestryManager{project: project, ancestry: ancestry}, nil
+	}
+	am := &onlineAncestryManager{ancestryCache: map[string]string{}}
+	am.store(project, ancestry)
+	rm, err := cloudresourcemanager.NewService(ctx, opts...)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing resource manager client")
+	}
+	am.resourceManager = rm
+	return am, nil
+}
+
+// NewInternal returns AncestryManager that can be used to fetch ancestry information for a project.
+// This is a direct dependency for terraform validator. Do not take dependency as this interface may
+// mutate in the future.
+func NewInternal(cfg *converter.Config, project, ancestry, userAgent string, offline bool) (AncestryManager, error) {
 	if ancestry != "" {
 		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
 	}

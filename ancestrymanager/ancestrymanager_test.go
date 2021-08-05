@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/option"
 )
@@ -84,6 +85,12 @@ func TestGetAncestry(t *testing.T) {
 		t.Fatalf("failed to create offline ancestry manager: %s", err)
 	}
 
+	cfgOffline, err := cnvconfig.GetConfig(ctx, anotherProject, false)
+	amOfflineInternal, err := NewInternal(cfgOffline, ownerProject, ownerAncestry, "", true)
+	if err != nil {
+		t.Fatalf("failed to create offline ancestry manager: %s", err)
+	}
+
 	cases := []struct {
 		name      string
 		target    AncestryManager
@@ -93,8 +100,10 @@ func TestGetAncestry(t *testing.T) {
 	}{
 		{name: "owner_project_online", target: amOnline, query: ownerProject, want: ownerAncestryPath},
 		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestryPath},
+		{name: "owner_project_offline", target: amOfflineInternal, query: ownerProject, want: ownerAncestryPath},
 		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2"},
 		{name: "another_project_offline", target: amOffline, query: anotherProject, wantError: true},
+		{name: "another_project_offline", target: amOfflineInternal, query: anotherProject, wantError: true},
 		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true},
 	}
 	for _, c := range cases {

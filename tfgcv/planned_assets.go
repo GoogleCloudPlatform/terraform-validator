@@ -20,8 +20,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/pkg/errors"
@@ -59,39 +59,14 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 }
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) (*google.Converter, error) {
-	cfg, err := GetConfig(ctx, project, offline)
+	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
 	ua := "config-validator-tf/%s"
-	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
+	ancestryManager, err := ancestrymanager.NewInternal(cfg, project, ancestry, ua, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}
 	converter := google.NewConverter(cfg, ancestryManager, offline, convertUnchanged)
 	return converter, nil
-}
-
-func GetConfig(ctx context.Context, project string, offline bool) (*converter.Config, error) {
-	cfg := &converter.Config{
-		Project: project,
-	}
-
-	if !offline {
-		// Search for default credentials
-		cfg.Credentials = multiEnvSearch([]string{
-			"GOOGLE_CREDENTIALS",
-			"GOOGLE_CLOUD_KEYFILE_JSON",
-			"GCLOUD_KEYFILE_JSON",
-		})
-
-		cfg.AccessToken = multiEnvSearch([]string{
-			"GOOGLE_OAUTH_ACCESS_TOKEN",
-		})
-		converter.ConfigureBasePaths(cfg)
-		if err := cfg.LoadAndValidate(ctx); err != nil {
-			return nil, errors.Wrap(err, "load and validate config")
-		}
-	}
-
-	return cfg, nil
 }
 
 func readTF12Data(path string) ([]byte, error) {
