@@ -7,9 +7,27 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
+	"google.golang.org/api/option"
 )
+
+type testRetriever struct {
+	online bool
+	opts   []option.ClientOption
+}
+
+func (tr *testRetriever) NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service {
+	ctx := context.Background()
+
+	if tr.online {
+		rm, err := cloudresourcemanager.NewService(ctx, tr.opts...)
+		if err != nil {
+			panic(err)
+		}
+		return rm
+	}
+	return nil
+}
 
 func TestAncestryPath(t *testing.T) {
 	cases := []struct {
@@ -53,7 +71,6 @@ func TestAncestryPath(t *testing.T) {
 }
 
 func TestGetAncestry(t *testing.T) {
-	ctx := context.Background()
 	ownerProject := "foo"
 	ownerAncestry := "organization/qux/folder/bar"
 	ownerAncestryPath := "organization/qux/folder/bar/project/foo"
@@ -75,8 +92,15 @@ func TestGetAncestry(t *testing.T) {
 	ts := newAncestryManagerMockServer(t, cache)
 	defer ts.Close()
 
-	cfgOffline, err := cnvconfig.GetConfig(ctx, anotherProject, false)
-	amOffline, err := New(cfgOffline, ownerProject, ownerAncestry, "", true)
+	// option.WithEndpoint(ts.URL), option.WithoutAuthentication()
+	trOnline := &testRetriever{online: true, opts: []option.ClientOption{option.WithEndpoint(ts.URL), option.WithoutAuthentication()}}
+	amOnline, err := New(trOnline, ownerProject, ownerAncestry, "", false)
+	if err != nil {
+		t.Fatalf("failed to create online ancestry manager: %s", err)
+	}
+
+	trOffline := &testRetriever{online: false}
+	amOffline, err := New(trOffline, ownerProject, ownerAncestry, "", true)
 	if err != nil {
 		t.Fatalf("failed to create offline ancestry manager: %s", err)
 	}
@@ -88,9 +112,11 @@ func TestGetAncestry(t *testing.T) {
 		wantError bool
 		want      string
 	}{
+		{name: "owner_project_online", target: amOnline, query: ownerProject, want: ownerAncestryPath},
 		{name: "owner_project_offline", target: amOffline, query: ownerProject, want: ownerAncestryPath},
+		{name: "another_project_online", target: amOnline, query: anotherProject, want: "organization/qux2/folder/bar2/project/foo2"},
 		{name: "another_project_offline", target: amOffline, query: anotherProject, wantError: true},
-	}
+		{name: "missed_project_online", target: amOnline, query: "notexist", wantError: true}}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got, err := c.target.GetAncestry(c.query)

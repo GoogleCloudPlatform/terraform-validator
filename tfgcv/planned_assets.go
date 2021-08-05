@@ -60,10 +60,13 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) (*google.Converter, error) {
 	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
-	ua := "config-validator-tf/%s"
-	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
+	}
+	ua := fmt.Sprintf("config-validator-tf/%s", BuildVersion())
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
+	if err != nil {
+		return nil, errors.Wrap(err, "building google ancestry manager")
 	}
 	converter := google.NewConverter(cfg, ancestryManager, offline, convertUnchanged)
 	return converter, nil

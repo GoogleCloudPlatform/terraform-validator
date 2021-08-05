@@ -41,7 +41,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	}
 	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
+		return nil, errors.Wrap(err, "constructing resource ancestryManager")
 	}
 	c := NewConverter(cfg, ancestryManager, offline, convertUnchanged)
 	return c, nil

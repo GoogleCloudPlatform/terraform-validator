@@ -19,6 +19,12 @@ type AncestryManager interface {
 	GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error)
 }
 
+// ResourceManagerRetriever is the interface that returns an instance of resourceManager.
+type ClientRetriever interface {
+	// NewResourceManagerClient returns an initialized *cloudresourcemanager.Service
+	NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service
+}
+
 // resourceAncestryManager provides common methods for retrieving ancestry from resources
 type resourceAncestryManager struct {
 }
@@ -177,7 +183,7 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
-func New(cfg *converter.Config, project, ancestry, userAgent string, offline bool) (AncestryManager, error) {
+func New(retriever ClientRetriever, project, ancestry, userAgent string, offline bool) (AncestryManager, error) {
 	if ancestry != "" {
 		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
 	}
@@ -186,7 +192,7 @@ func New(cfg *converter.Config, project, ancestry, userAgent string, offline boo
 	}
 	am := &onlineAncestryManager{ancestryCache: map[string]string{}}
 	am.store(project, ancestry)
-	rm := cfg.NewResourceManagerClient(userAgent)
+	rm := retriever.NewResourceManagerClient(userAgent)
 	am.resourceManager = rm
 	return am, nil
 }
