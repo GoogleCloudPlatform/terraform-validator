@@ -16,13 +16,12 @@ package google
 
 import (
 	"context"
-	"os"
 	"sort"
 	"testing"
 	"time"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -33,89 +32,19 @@ const testProject = "test-project"
 func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	ctx := context.Background()
 	ancestry := ""
+	ua := ""
 	project := testProject
 	offline := true
-	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline)
+	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
+		return nil, errors.Wrap(err, "constructing configuration")
 	}
-	c, err := NewConverter(ctx, ancestryManager, project, offline, convertUnchanged)
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "building converter")
+		return nil, errors.Wrap(err, "constructing resource ancestryManager")
 	}
+	c := NewConverter(cfg, ancestryManager, offline, convertUnchanged)
 	return c, nil
-}
-
-type configAttrGetter func(cfg *converter.Config) string
-
-func getCredentials(cfg *converter.Config) string {
-	return cfg.Credentials
-}
-func getAccessToken(cfg *converter.Config) string {
-	return cfg.AccessToken
-}
-
-func TestNewConverterCredentials(t *testing.T) {
-	cases := []struct {
-		name           string
-		envKey         string
-		envValue       string
-		getConfigValue configAttrGetter
-	}{
-		{
-			name:           "GOOGLE_CREDENTIALS",
-			envKey:         "GOOGLE_CREDENTIALS",
-			envValue:       "whatever",
-			getConfigValue: getCredentials,
-		},
-		{
-			name:           "GOOGLE_CLOUD_KEYFILE_JSON",
-			envKey:         "GOOGLE_CLOUD_KEYFILE_JSON",
-			envValue:       "whatever",
-			getConfigValue: getCredentials,
-		},
-		{
-			name:           "GCLOUD_KEYFILE_JSON",
-			envKey:         "GCLOUD_KEYFILE_JSON",
-			envValue:       "whatever",
-			getConfigValue: getCredentials,
-		},
-		{
-			name:           "GOOGLE_OAUTH_ACCESS_TOKEN",
-			envKey:         "GOOGLE_OAUTH_ACCESS_TOKEN",
-			envValue:       "whatever",
-			getConfigValue: getAccessToken,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			originalValue, isSet := os.LookupEnv(c.envKey)
-			err := os.Setenv(c.envKey, c.envValue)
-			if err != nil {
-				t.Fatalf("error setting env var %s=%s: %s", c.envKey, c.envValue, err)
-			}
-
-			converter, err := newTestConverter(false)
-			if err != nil {
-				t.Fatalf("error building converter: %s", err)
-			}
-
-			assert.EqualValues(t, c.getConfigValue(converter.cfg), c.envValue)
-
-			if isSet {
-				err = os.Setenv(c.envKey, originalValue)
-				if err != nil {
-					t.Fatalf("error setting env var %s=%s: %s", c.envKey, originalValue, err)
-				}
-			} else {
-				err = os.Unsetenv(c.envKey)
-				if err != nil {
-					t.Fatalf("error unsetting env var %s: %s", c.envKey, err)
-				}
-			}
-		})
-	}
 }
 
 func TestSortByName(t *testing.T) {

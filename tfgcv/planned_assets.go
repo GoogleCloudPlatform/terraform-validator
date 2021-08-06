@@ -20,9 +20,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"google.golang.org/api/option"
-
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/pkg/errors"
@@ -60,15 +59,16 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 }
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) (*google.Converter, error) {
-	ua := option.WithUserAgent(fmt.Sprintf("config-validator-tf/%s", BuildVersion()))
-	ancestryManager, err := ancestrymanager.New(context.Background(), project, ancestry, offline, ua)
+	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
+		return nil, errors.Wrap(err, "building google configuration")
 	}
-	converter, err := google.NewConverter(ctx, ancestryManager, project, offline, convertUnchanged)
+	ua := fmt.Sprintf("config-validator-tf/%s", BuildVersion())
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "building google converter")
+		return nil, errors.Wrap(err, "building google ancestry manager")
 	}
+	converter := google.NewConverter(cfg, ancestryManager, offline, convertUnchanged)
 	return converter, nil
 }
 

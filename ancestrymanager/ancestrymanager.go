@@ -2,14 +2,11 @@
 package ancestrymanager
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/pkg/errors"
 	"google.golang.org/api/cloudresourcemanager/v1"
-	"google.golang.org/api/option"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 )
@@ -20,6 +17,12 @@ type AncestryManager interface {
 	GetAncestry(project string) (string, error)
 	// GetAncestry takes a project name and resource data to return an ancestry path
 	GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error)
+}
+
+// ClientRetriever is the interface that returns an instance of various clients.
+type ClientRetriever interface {
+	// NewResourceManagerClient returns an initialized *cloudresourcemanager.Service
+	NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service
 }
 
 // resourceAncestryManager provides common methods for retrieving ancestry from resources
@@ -180,7 +183,7 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
-func New(ctx context.Context, project, ancestry string, offline bool, opts ...option.ClientOption) (AncestryManager, error) {
+func New(retriever ClientRetriever, project, ancestry, userAgent string, offline bool) (AncestryManager, error) {
 	if ancestry != "" {
 		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
 	}
@@ -189,10 +192,7 @@ func New(ctx context.Context, project, ancestry string, offline bool, opts ...op
 	}
 	am := &onlineAncestryManager{ancestryCache: map[string]string{}}
 	am.store(project, ancestry)
-	rm, err := cloudresourcemanager.NewService(ctx, opts...)
-	if err != nil {
-		return nil, errors.Wrap(err, "constructing resource manager client")
-	}
+	rm := retriever.NewResourceManagerClient(userAgent)
 	am.resourceManager = rm
 	return am, nil
 }

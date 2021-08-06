@@ -15,7 +15,6 @@
 package google
 
 import (
-	"context"
 	errorssyslib "errors"
 	"fmt"
 	"sort"
@@ -127,27 +126,7 @@ type RestoreDefault struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryManager, project string, offline, convertUnchanged bool) (*Converter, error) {
-	cfg := &converter.Config{
-		Project: project,
-	}
-	// Search for default credentials
-	cfg.Credentials = multiEnvSearch([]string{
-		"GOOGLE_CREDENTIALS",
-		"GOOGLE_CLOUD_KEYFILE_JSON",
-		"GCLOUD_KEYFILE_JSON",
-	})
-
-	cfg.AccessToken = multiEnvSearch([]string{
-		"GOOGLE_OAUTH_ACCESS_TOKEN",
-	})
-	if !offline {
-		converter.ConfigureBasePaths(cfg)
-		if err := cfg.LoadAndValidate(ctx); err != nil {
-			return nil, errors.Wrap(err, "load and validate config")
-		}
-	}
-
+func NewConverter(cfg *converter.Config, ancestryManager ancestrymanager.AncestryManager, offline bool, convertUnchanged bool) *Converter {
 	return &Converter{
 		schema:           provider.Provider(),
 		mapperFuncs:      converter.Mappers(),
@@ -156,7 +135,7 @@ func NewConverter(ctx context.Context, ancestryManager ancestrymanager.AncestryM
 		ancestryManager:  ancestryManager,
 		assets:           make(map[string]Asset),
 		convertUnchanged: convertUnchanged,
-	}, nil
+	}
 }
 
 // Converter knows how to convert terraform resources to their
