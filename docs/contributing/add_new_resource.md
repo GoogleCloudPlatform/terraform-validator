@@ -18,29 +18,26 @@ The first step in determining if a GCP resource is supported is to figure out th
 
 ## How to add support for a new resource
 
-A resource is "supported" by terraform-validator if it has an entry in [mappers.go](../converters/google/mappers.go). For example, you could search mappers.go for [`google_compute_disk`](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_disk) to see if that resource is supported. Each entry in mappers.go has the following keys:
+A resource is "supported" by terraform-validator if it has an entry in [mappers.go](https://github.com/GoogleCloudPlatform/terraform-google-conversion/blob/master/google/mappers.go). For example, you could search mappers.go for [`google_compute_disk`](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_disk) to see if that resource is supported.
 
-- `convert`: Required. This function does basic conversion of a Terraform resource to a CAI Asset, including converting nested structures and specifying what the [CAI Asset Type](https://cloud.google.com/asset-inventory/docs/supported-asset-types) is.
-- `fetch`, `mergeCreateUpdate`, `mergeDelete`: Optional. Some assets, like [IAM Members and Bindings](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_project_iam), have to be merged with remote data prior to validation in order to properly check whether policies are being followed. If you're not sure whether you need this, you probably don't.
+Adding support for a resource has two steps:
 
-The code referenced by the mappers comes from [terraform-google-conversion](https://github.com/GoogleCloudPlatform/terraform-google-conversion/tree/master/google), but that repository is generated using [Magic Modules](https://github.com/googleCloudPlatform/magic-modules/). Magic Modules uses a shared code base to generate terraform-google-conversion and the [google](https://github.com/hashicorp/terraform-provider-google) and [google-beta](https://github.com/hashicorp/terraform-provider-google-beta) Terraform providers.
+1. Make a PR for [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules) to add the necessary code to terraform-google-conversion. Once your PR is merged, the code will be automatically copied into terraform-google-conversion.
+2. Make a PR for terraform-validator that updates the version of terraform-google-conversion and adds tests for the new resource.
 
-So, adding support for a resource means:
-
-1. Make a PR for Magic Modules to add the necessary code to terraform-google-conversion. Once your PR is merged, the code will be automatically copied into terraform-google-conversion.
-2. Make a PR for terraform-validator that updates the version of terraform-google-conversion and adds a new mapper to mappers.go for the new resource, as well as new tests.
-
-Each of these steps is discussed in more detail below.
+Each of these is discussed in more detail below.
 
 **Note**: terraform-validator can only support resources that are supported by the GA terraform provider, not beta resources.
 
 ### 1. Magic Modules
 
-The goal of Magic Modules is to auto-generate code targeting specific API endpoints using [yaml files](https://github.com/GoogleCloudPlatform/magic-modules/tree/master/mmv1/products) which are grouped by product.
-By default, those yaml files will also be used to generate code for terraform-google-conversion.
+Magic Modules uses a shared code base to generate terraform-google-conversion and the [google](https://github.com/hashicorp/terraform-provider-google) and [google-beta](https://github.com/hashicorp/terraform-provider-google-beta) Terraform providers.
+Most Terraform resources are represented as [yaml files which are grouped by product](https://github.com/GoogleCloudPlatform/magic-modules/tree/master/mmv1/products).
+Each product has an `api.yaml` file (which defines the basic API schema) and a `terraform.yaml` file (which defines any terraform-specific overrides.)
 A `terraform.yaml` file can specify `exclude_validator: true` on a resource to skip terraform-google-conversion autogeneration, or `exclude_resource: true` to skip autogeneration for both terraform-google-conversion and the providers.
 
-If terraform-google-conversion code can't be auto-generated based on a yaml file, you can instead place a handwritten file in the [`magic-modules/mmv1/third_party/validator` folder](https://github.com/GoogleCloudPlatform/magic-modules/tree/master/mmv1/third_party/validator). Most resources will only need a conversion func, which should look something like:
+Auto-generating terraform-google-conversion code based on yaml files is strongly preferred; however, if that is not possible, you can instead place a handwritten file in the [`magic-modules/mmv1/third_party/validator` folder](https://github.com/GoogleCloudPlatform/magic-modules/tree/master/mmv1/third_party/validator).
+Most resources will only need a conversion func, which should look something like:
 
 ```golang
 func GetWhateverResourceCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
@@ -78,6 +75,11 @@ func GetWhateverResourceApiObject(d TerraformResourceData, config *Config) (map[
 }
 
 ```
+
+For handwritten conversion code, you will also need to add an entry to [`mappers.go.erb`](https://github.com/GoogleCloudPlatform/magic-modules/blob/master/mmv1/templates/validator/mappers/mappers.go.erb), which is used to generate the mappers.go file in terraform-google-conversion. Each entry in `mappers.go.erb` has the following keys:
+
+- `convert`: Required. This function does basic conversion of a Terraform resource to a CAI Asset, including converting nested structures and specifying what the [CAI Asset Type](https://cloud.google.com/asset-inventory/docs/supported-asset-types) is.
+- `fetch`, `mergeCreateUpdate`, `mergeDelete`: Optional. Some assets, like [IAM Members and Bindings](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_project_iam), have to be merged with remote data prior to validation in order to properly check whether policies are being followed. If you're not sure whether you need this, you probably don't.
 
 To generate terraform-google-conversion code locally, run the following from the root of the `magic-modules` repository:
 
