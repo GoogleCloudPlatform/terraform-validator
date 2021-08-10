@@ -91,8 +91,7 @@ You can then run `make test` inside your terraform-google-conversion repository 
 
 ### 2. Terraform Validator
 
-1. Run `go get github.com/GoogleCloudPlatform/terraform-google-conversion` to update the version of terraform-google-conversion in use. (You can also use a [`replace` directive](https://golang.org/ref/mod#go-mod-file-replace) to use your local copy of the repository.)
-2. Add a new entry to [mappers.go](../converters/google/mappers.go) for the new resource.
+Run `go get github.com/GoogleCloudPlatform/terraform-google-conversion` to update the version of terraform-google-conversion in use. (You can also use a [`replace` directive](https://golang.org/ref/mod#go-mod-file-replace) to use your local copy of the repository.)
 
 You can now build the binary (with `make build`) and test it. One way to do this would be to create a test project following the instructions in the [policy library user guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#for-local-development-environments) (but using the binary you just built.) It's easiest to use a [GCPAlwaysViolatesConstraintV1](https://github.com/GoogleCloudPlatform/terraform-validator/blob/master/testdata/sample_policies/always_violate/policies/constraints/always_violates.yaml) constraint for testing new resources; this is what the tests do. `terraform-validator convert tfplan.json` can show you what terraform-validator thinks the converted Asset looks like.
 
