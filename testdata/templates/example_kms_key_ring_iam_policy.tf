@@ -27,8 +27,14 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
+resource "google_kms_key_ring" "example_keyring" {
+  name     = "keyring-example"
+  location = "global"
+  project  = "{{.Provider.project}}"
+}
+
 resource "google_kms_key_ring_iam_policy" "key_ring" {
-  key_ring_id = "{{.Provider.project}}/global/keyring-example"
+  key_ring_id = google_kms_key_ring.example_keyring.id
   policy_data = jsonencode(
     {
       bindings = [

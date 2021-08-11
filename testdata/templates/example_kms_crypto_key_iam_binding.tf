@@ -27,8 +27,19 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
+resource "google_kms_key_ring" "example_keyring" {
+  name     = "keyring-example"
+  location = "global"
+  project  = "{{.Provider.project}}"
+}
+
+resource "google_kms_crypto_key" "example_crypto_key" {
+  name     = "crypto-key-example"
+  key_ring = google_kms_key_ring.example_keyring.id
+}
+
 resource "google_kms_crypto_key_iam_binding" "crypto_key" {
-  crypto_key_id = "{{.Provider.project}}/global/key-ring-test/crypto-key-example"
+  crypto_key_id = google_kms_crypto_key.example_crypto_key.id
   role          = "roles/cloudkms.admin"
   members = [
     "allUsers", "allAuthenticatedUsers"
