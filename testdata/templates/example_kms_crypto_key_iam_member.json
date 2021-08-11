@@ -29,7 +29,7 @@
     }
   },
   {
-    "name": "//kms.googleapis.com/projects/prj-dev-palani-ram/locations/global/keyRings/keyring-example",
+    "name": "//kms.googleapis.com/projects/{{.Provider.project}}/locations/global/keyRings/keyring-example",
     "asset_type": "kms.googleapis.com/KeyRing",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
