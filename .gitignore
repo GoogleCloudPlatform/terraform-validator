@@ -1,6 +1,6 @@
-# Binaries
-terraform-validator
-bin/terraform-validator*
+# Builds
+bin/
+release/
 
 # Sensitive
 credentials.json
