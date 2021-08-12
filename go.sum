@@ -69,6 +69,8 @@ github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-202105
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210519165700-76bc5cc4eeee/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210810210027-33c2d711b84d h1:zZH6CrLACkVWyAeya3k5WDv+zWKsUeaKgqPqK/5E+FY=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210810210027-33c2d711b84d/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210811152338-18c4b7d1129b h1:GvoFstkpfkgTsew0N2+jG4/NYeLVGH6trewyROiR9BA=
+github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210811152338-18c4b7d1129b/go.mod h1:G9nbobJVSUiZx3TTUnwk8d519lUtNR5UIoQweRUY3Rs=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
