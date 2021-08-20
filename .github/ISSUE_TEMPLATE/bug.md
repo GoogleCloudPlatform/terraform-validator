@@ -20,7 +20,7 @@ about: For when something is there, but doesn't work how it should.
 
 <!--- This is the version of terraform-validator you downloaded, or the SHA if you are building from source yourself --->
 
-terraform-validator: vXXXX-XX-XX
+terraform-validator: vX.X.X
 
 ### Affected Resource(s)
 
