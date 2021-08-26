@@ -27,12 +27,13 @@ import (
 
 var validateCmd = &cobra.Command{
 	Use:   "validate <tfplan>",
-	Short: "Validate resources in a Terraform plan by calling Forseti Config Validator.",
-	Long: `Validate (terraform-validator validate) converts supported Terraform
-resources (see: "terraform-validate list-supported-resources") into their CAI
-(Cloud Asset Inventory) format and calls Forseti Config Validator,
-returning the violations. If any violations are reported an exit code of 2
-is set.
+	Short: "Validate that a terraform plan conforms to Constraint Framework policies.",
+	Long: `Validate that a terraform plan conforms to a Constraint Framework
+policy library written to expect Google CAI (Cloud Asset Inventory) data. 
+Unsupported terraform resources (see: "terraform-validate list-supported-resources")
+are skipped.
+
+Policy violations will result in an exit code of 2.
 
 Example:
   terraform-validator validate ./example/terraform.tfplan \

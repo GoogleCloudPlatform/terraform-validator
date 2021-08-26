@@ -30,7 +30,7 @@ A Policy Library repository contains the following directories:
 
 ### 1. Duplicate Policy Library Repository
 
-Google provides a [sample repository](https://github.com/forseti-security/policy-library)
+Google provides a [sample repository](https://github.com/GoogleCloudPlatform/policy-library)
 with a set of pre-defined constraint templates. You can duplicate this repository
 into a private repository. First you should create a new **private** git repository.
 For example, if you use GitHub then you can use the [GitHub UI](https://github.com/new).
@@ -47,7 +47,7 @@ providers offer this feature as well.
 
 ```
 export GIT_REPO_ADDR="git@github.com:${YOUR_GITHUB_USERNAME}/policy-library.git"
-git clone --bare https://github.com/forseti-security/policy-library.git
+git clone --bare https://github.com/GoogleCloudPlatform/policy-library.git
 cd policy-library.git
 git push --mirror ${GIT_REPO_ADDR}
 cd ..
@@ -193,7 +193,7 @@ spec:
 
 ## Advanced usage
 
-If the existing constraint templates don't meet your needs, you can also [build your own constraint templates](https://github.com/forseti-security/policy-library/blob/master/docs/constraint_template_authoring.md).
+If the existing constraint templates don't meet your needs, you can also [build your own constraint templates](https://github.com/GoogleCloudPlatform/policy-library/blob/master/docs/constraint_template_authoring.md).
 
 ## Periodic updates
 
@@ -201,7 +201,7 @@ Periodically you should pull any changes from the public repository, which might
 contain new templates and Rego files.
 
 ```
-git remote add public https://github.com/forseti-security/policy-library.git
+git remote add public https://github.com/GoogleCloudPlatform/policy-library.git
 git pull public master
 git push origin master
 ```

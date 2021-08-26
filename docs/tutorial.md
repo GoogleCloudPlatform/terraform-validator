@@ -4,7 +4,7 @@ In this tutorial, you will apply a constraint that enforces IAM policy member
 domain restriction using [Cloud Shell](https://cloud.google.com/shell/).
 
 First click on this
-[link](https://console.cloud.google.com/cloudshell/open?cloudshell_image=gcr.io/graphite-cloud-shell-images/terraform:latest&cloudshell_git_repo=https://github.com/forseti-security/policy-library.git)
+[link](https://console.cloud.google.com/cloudshell/open?cloudshell_image=gcr.io/graphite-cloud-shell-images/terraform:latest&cloudshell_git_repo=https://github.com/GoogleCloudPlatform/policy-library.git)
 to open a new Cloud Shell session. The Cloud Shell session has Terraform
 pre-installed and the Policy Library repository cloned. Once you have the
 session open, the next step is to copy over the sample IAM domain restriction
