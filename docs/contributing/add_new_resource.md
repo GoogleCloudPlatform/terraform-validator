@@ -2,15 +2,13 @@
 
 ## terraform-validator vs config-validator
 
-At its core, terraform-validator is a thin layer on top of [config-validator](https://github.com/forseti-security/config-validator), a shared library that takes in a [policy library](https://github.com/forseti-security/policy-library) and a set of [CAI assets](https://cloud.google.com/asset-inventory/docs/overview) and reports back any violations of the specified policies.
+At its core, terraform-validator is a thin layer on top of [config-validator](https://github.com/GoogleCloudPlatform/config-validator), a shared library that takes in a [policy library](https://github.com/GoogleCloudPlatform/policy-library) and a set of [CAI assets](https://cloud.google.com/asset-inventory/docs/overview) and reports back any violations of the specified policies.
 
 terraform-validator consumes a Terraform plan and uses it to build CAI Assets, which then get run through config-validator. These built Assets only exist locally, in memory.
 
-**Note**: Although policy-library is a repository inside of the forseti-security organization, Terraform Validator does _not_ require an active installation of Forseti. Terraform Validator is a self-contained binary. Policy libraries are a configuration mechanism shared by a number of tools via config-validator.
-
 ### Adding a new constraint template
 
-If an existing [bundle](https://github.com/forseti-security/policy-library/blob/master/docs/index.md#policy-bundles) (for example, [CIS v1.1](https://github.com/forseti-security/policy-library/blob/master/docs/bundles/cis-v1.1.md)) doesn't support a check you need, please consider contributing a [new constraint template](https://github.com/forseti-security/policy-library/blob/master/docs/constraint_template_authoring.md) to the policy-library repository.
+If an existing [bundle](https://github.com/GoogleCloudPlatform/policy-library/blob/master/docs/index.md#policy-bundles) (for example, [CIS v1.1](https://github.com/GoogleCloudPlatform/policy-library/blob/master/docs/bundles/cis-v1.1.md)) doesn't support a check you need, please consider contributing a [new constraint template](https://github.com/GoogleCloudPlatform/policy-library/blob/master/docs/constraint_template_authoring.md) to the policy-library repository.
 
 ### Getting a terraform resource name from a GCP resource name
 
@@ -93,7 +91,7 @@ You can then run `make test` inside your terraform-google-conversion repository 
 
 Run `go get github.com/GoogleCloudPlatform/terraform-google-conversion` to update the version of terraform-google-conversion in use. (You can also use a [`replace` directive](https://golang.org/ref/mod#go-mod-file-replace) to use your local copy of the repository.)
 
-You can now build the binary (with `make build`) and test it. One way to do this would be to create a test project following the instructions in the [policy library user guide](https://github.com/forseti-security/policy-library/blob/master/docs/user_guide.md#for-local-development-environments) (but using the binary you just built.) It's easiest to use a [GCPAlwaysViolatesConstraintV1](https://github.com/GoogleCloudPlatform/terraform-validator/blob/master/testdata/sample_policies/always_violate/policies/constraints/always_violates.yaml) constraint for testing new resources; this is what the tests do. `terraform-validator convert tfplan.json` can show you what terraform-validator thinks the converted Asset looks like.
+You can now build the binary (with `make build`) and test it. One way to do this would be to create a test project following the instructions in the [policy library user guide](https://github.com/GoogleCloudPlatform/policy-library/blob/master/docs/user_guide.md#for-local-development-environments) (but using the binary you just built.) It's easiest to use a [GCPAlwaysViolatesConstraintV1](https://github.com/GoogleCloudPlatform/terraform-validator/blob/master/testdata/sample_policies/always_violate/policies/constraints/always_violates.yaml) constraint for testing new resources; this is what the tests do. `terraform-validator convert tfplan.json` can show you what terraform-validator thinks the converted Asset looks like.
 
 Be sure to add test cases to [test/cli_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/cli_test.go#L52) and [test/read_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/read_test.go#L24). The test names refer to files in [testdata/templates](https://github.com/GoogleCloudPlatform/terraform-validator/tree/master/testdata/templates). You will generally need to add the following files:
    - A .tf file.

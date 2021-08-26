@@ -14,5 +14,5 @@
 
 // Package tfgcv pulls together the other packages in this project to take
 // a terraform plan, extract the planned resources in Google CAI format,
-// and run those CAI assets through the Forseti Config Validator.
+// and run those CAI assets through the Config Validator.
 package tfgcv

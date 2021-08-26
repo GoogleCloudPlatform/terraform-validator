@@ -78,9 +78,9 @@ func Execute() {
 
 var rootCmd = &cobra.Command{
 	Use:   "terraform-validator",
-	Short: "Validate terraform plans using Forseti Config Validator.",
-	Long: fmt.Sprintf(`Validate terraform plans by converting terraform resources to their Google CAI 
-(Cloud Asset Inventory) format and passing them through Forseti Config Validator.
+	Short: "Validate that a terraform plan conforms to Constraint Framework policies.",
+	Long: fmt.Sprintf(`Validate that a terraform plan conforms to a Constraint Framework 
+policy library written to expect Google CAI (Cloud Asset Inventory) data.
 
 Supported Terraform versions = 0.12+`),
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

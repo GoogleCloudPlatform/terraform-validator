@@ -24,7 +24,7 @@ or as an audit of deployed resources. These constraints live in your
 organization's repository as the source of truth for your security and
 governance requirements. You can obtain constraints from the
 [Policy Library](./docs/policy_library.md), or
-[build your own constraint templates](https://github.com/forseti-security/policy-library/blob/master/docs/constraint_template_authoring.md).
+[build your own constraint templates](https://github.com/GoogleCloudPlatform/policy-library/blob/master/docs/constraint_template_authoring.md).
 
 ## Table of Contents
 
