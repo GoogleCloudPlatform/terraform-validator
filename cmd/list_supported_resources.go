@@ -21,16 +21,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listSupportedResourcesCmd = &cobra.Command{
-	Use:   "list-supported-resources",
-	Short: "List supported terraform resources.",
-	RunE: func(c *cobra.Command, args []string) error {
-		list := converter.SupportedTerraformResources()
+type listSupportedResourcesOptions struct {}
 
-		for _, resource := range list {
-			fmt.Println(resource)
-		}
+func newListSupportedResourcesCmd() *cobra.Command {
+	o := listSupportedResourcesOptions{}
 
-		return nil
-	},
+	cmd := &cobra.Command{
+		Use:   "list-supported-resources",
+		Short: "List supported terraform resources.",
+		RunE: func(c *cobra.Command, args []string) error {
+			return o.run()
+		},
+	}
+	return cmd
+}
+
+func (o *listSupportedResourcesOptions) run() error {
+	list := converter.SupportedTerraformResources()
+
+	for _, resource := range list {
+		fmt.Println(resource)
+	}
+
+	return nil
 }

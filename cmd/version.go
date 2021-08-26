@@ -22,11 +22,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display Terraform Validator version.",
-	RunE: func(c *cobra.Command, args []string) error {
-		fmt.Printf("Build version: %s\n", tfgcv.BuildVersion())
-		return nil
-	},
+type versionOptions struct {}
+
+func newVersionCmd() *cobra.Command {
+	o := versionOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "Display Terraform Validator version.",
+		RunE: func(c *cobra.Command, args []string) error {
+			return o.run()
+		},
+	}
+
+	return cmd
+}
+
+func (o *versionOptions) run() error {
+	fmt.Printf("Build version: %s\n", tfgcv.BuildVersion())
+	return nil
 }

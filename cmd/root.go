@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -26,68 +25,48 @@ import (
 // LoggerStdErr used by commands to print errors and warnings
 var LoggerStdErr = log.New(os.Stderr, "", log.LstdFlags)
 
-func init() {
-	rootCmd.PersistentFlags().BoolVar(&flags.verbose, "verbose", false, "Log output to stderr")
+const rootCmdDesc = `
+Validate that a terraform plan conforms to a Constraint Framework 
+policy library written to expect Google CAI (Cloud Asset Inventory) data.
 
-	validateCmd.Flags().StringVar(&flags.validate.policyPath, "policy-path", "", "Path to directory containing validation policies")
-	validateCmd.MarkFlagRequired("policy-path")
-	validateCmd.Flags().StringVar(&flags.validate.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when validating resources)")
-	validateCmd.Flags().StringVar(&flags.validate.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
-	validateCmd.Flags().BoolVar(&flags.validate.offline, "offline", false, "Do not make network requests")
-	validateCmd.Flags().BoolVar(&flags.validate.outputJSON, "output-json", false, "Print violations as JSON")
+Supported Terraform versions = 0.12+`
 
-	convertCmd.Flags().StringVar(&flags.convert.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when converting resources)")
-	convertCmd.Flags().StringVar(&flags.convert.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
-	convertCmd.Flags().BoolVar(&flags.convert.offline, "offline", false, "Do not make network requests")
-
-	rootCmd.AddCommand(convertCmd)
-	rootCmd.AddCommand(listSupportedResourcesCmd)
-	rootCmd.AddCommand(validateCmd)
-	rootCmd.AddCommand(versionCmd)
+type rootOptions struct {
+	verbose bool
 }
 
-// NOTE: We use a pkg-level var here instead of github.com/spf13/viper
-// to establish a pattern of passing down config rather than accessing it
-// globally.
-var flags struct {
-	// Common flags
-	verbose bool
+func newRootCmd() *cobra.Command {
+	o := &rootOptions{}
 
-	// flags that correspond to subcommands:
-	convert struct {
-		project  string
-		ancestry string
-		offline    bool
+	cmd := &cobra.Command{
+		Use:   "terraform-validator",
+		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
+		Long: rootCmdDesc,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if !o.verbose {
+				// Suppress chatty packages.
+				log.SetOutput(ioutil.Discard)
+			}
+			return nil
+		},
 	}
-	validate struct {
-		project    string
-		ancestry   string
-		offline    bool
-		policyPath string
-		outputJSON bool
-	}
-	listSupportedResources struct{}
+
+	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log output to stderr")
+
+	cmd.AddCommand(newConvertCmd())
+	cmd.AddCommand(newListSupportedResourcesCmd())
+	cmd.AddCommand(newValidateCmd())
+	cmd.AddCommand(newVersionCmd())
+
+	return cmd
 }
 
 // Execute is the entry-point for all commands.
+// This lets us keep all new command functions private.
 func Execute() {
+	rootCmd := newRootCmd()
+
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
-}
-
-var rootCmd = &cobra.Command{
-	Use:   "terraform-validator",
-	Short: "Validate that a terraform plan conforms to Constraint Framework policies.",
-	Long: fmt.Sprintf(`Validate that a terraform plan conforms to a Constraint Framework 
-policy library written to expect Google CAI (Cloud Asset Inventory) data.
-
-Supported Terraform versions = 0.12+`),
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if !flags.verbose {
-			// Suppress chatty packages.
-			log.SetOutput(ioutil.Discard)
-		}
-		return nil
-	},
 }
