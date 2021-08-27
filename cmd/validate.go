@@ -46,6 +46,7 @@ type validateOptions struct {
 	offline    bool
 	policyPath string
 	outputJSON bool
+	dryRun     bool
 }
 
 
@@ -60,6 +61,9 @@ func newValidateCmd() *cobra.Command {
 			return o.validateArgs(args)
 		},
 		RunE: func(c *cobra.Command, args []string) error {
+			if o.dryRun {
+				return nil
+			}
 			return o.run(args[0])
 		},
 	}
@@ -70,6 +74,8 @@ func newValidateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&o.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
 	cmd.Flags().BoolVar(&o.offline, "offline", false, "Do not make network requests")
 	cmd.Flags().BoolVar(&o.outputJSON, "output-json", false, "Print violations as JSON")
+	cmd.Flags().BoolVar(&o.dryRun, "dry-run", false, "Only parse & validate args")
+	cmd.Flags().MarkHidden("dry-run")
 
 	return cmd
 }
