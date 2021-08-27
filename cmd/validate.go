@@ -25,10 +25,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var validateCmd = &cobra.Command{
-	Use:   "validate <tfplan>",
-	Short: "Validate that a terraform plan conforms to Constraint Framework policies.",
-	Long: `Validate that a terraform plan conforms to a Constraint Framework
+const validateDesc = `
+Validate that a terraform plan conforms to a Constraint Framework
 policy library written to expect Google CAI (Cloud Asset Inventory) data. 
 Unsupported terraform resources (see: "terraform-validate list-supported-resources")
 are skipped.
@@ -40,54 +38,89 @@ Example:
     --project my-project \
     --ancestry organization/my-org/folder/my-folder \
     --policy-path ./path/to/my/gcv/policies
-`,
-	PreRunE: func(c *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("missing required argument <tfplan>")
+`
+
+type validateOptions struct {
+	project    string
+	ancestry   string
+	offline    bool
+	policyPath string
+	outputJSON bool
+}
+
+
+func newValidateCmd() *cobra.Command {
+	o := &validateOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "validate TFPLAN_JSON --policy-path=/path/to/policy/library",
+		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
+		Long: validateDesc,
+		PreRunE: func(c *cobra.Command, args []string) error {
+			return o.validateArgs(args)
+		},
+		RunE: func(c *cobra.Command, args []string) error {
+			return o.run(args[0])
+		},
+	}
+
+	cmd.Flags().StringVar(&o.policyPath, "policy-path", "", "Path to directory containing validation policies")
+	cmd.MarkFlagRequired("policy-path")
+	cmd.Flags().StringVar(&o.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when validating resources)")
+	cmd.Flags().StringVar(&o.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
+	cmd.Flags().BoolVar(&o.offline, "offline", false, "Do not make network requests")
+	cmd.Flags().BoolVar(&o.outputJSON, "output-json", false, "Print violations as JSON")
+
+	return cmd
+}
+
+func (o *validateOptions) validateArgs(args []string) error {
+	if len(args) != 1 {
+		return errors.New("missing required argument TFPLAN_JSON")
+	}
+	if o.offline && o.ancestry == "" {
+		return errors.New("please set ancestry via --ancestry in offline mode")
+	}
+	return nil
+}
+
+func (o *validateOptions) run(plan string) error {
+	ctx := context.Background()
+	assets, err := tfgcv.ReadPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	if err != nil {
+		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
+			return errors.New("unable to parse provider project, please use --project flag")
 		}
-		if flags.validate.offline && flags.validate.ancestry == "" {
-			return errors.New("please set ancestry via --ancestry in offline mode")
-		}
-		return nil
-	},
-	RunE: func(c *cobra.Command, args []string) error {
-		ctx := context.Background()
-		assets, err := tfgcv.ReadPlannedAssets(ctx, args[0], flags.validate.project, flags.validate.ancestry, flags.validate.offline, false)
-		if err != nil {
-			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
-				return errors.New("unable to parse provider project, please use --project flag")
+		return errors.Wrap(err, "converting tfplan to CAI assets")
+	}
+
+	auditResult, err := tfgcv.ValidateAssets(ctx, assets, o.policyPath)
+	if err != nil {
+		return errors.Wrap(err, "validating: FCV")
+	}
+
+	if len(auditResult.Violations) > 0 {
+		if o.outputJSON {
+			marshaller := &jsonpb.Marshaler{}
+			if err := marshaller.Marshal(os.Stdout, auditResult); err != nil {
+				return errors.Wrap(err, "marshalling violations to json")
 			}
-			return errors.Wrap(err, "converting tfplan to CAI assets")
-		}
-
-		auditResult, err := tfgcv.ValidateAssets(ctx, assets, flags.validate.policyPath)
-		if err != nil {
-			return errors.Wrap(err, "validating: FCV")
-		}
-
-		if len(auditResult.Violations) > 0 {
-			if flags.validate.outputJSON {
-				marshaller := &jsonpb.Marshaler{}
-				if err := marshaller.Marshal(os.Stdout, auditResult); err != nil {
-					return errors.Wrap(err, "marshalling violations to json")
-				}
-			} else {
-				fmt.Print("Found Violations:\n\n")
-				for _, v := range auditResult.Violations {
-					fmt.Printf("Constraint %v on resource %v: %v\n\n",
-						v.Constraint,
-						v.Resource,
-						v.Message,
-					)
-				}
+		} else {
+			fmt.Print("Found Violations:\n\n")
+			for _, v := range auditResult.Violations {
+				fmt.Printf("Constraint %v on resource %v: %v\n\n",
+					v.Constraint,
+					v.Resource,
+					v.Message,
+				)
 			}
-
-			os.Exit(2)
 		}
 
-		if !flags.validate.outputJSON {
-			fmt.Println("No violations found.")
-		}
-		return nil
-	},
+		os.Exit(2)
+	}
+
+	if !o.outputJSON {
+		fmt.Println("No violations found.")
+	}
+	return nil
 }

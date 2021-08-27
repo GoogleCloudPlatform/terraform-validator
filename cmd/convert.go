@@ -24,11 +24,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var convertCmd = &cobra.Command{
-	Use:   "convert <tfplan>",
-	Short: "Convert resources in a Terraform plan to their Google CAI representation.",
-	Long: `Convert (terraform-validator convert) will convert a Terraform plan file
-into CAI (Cloud Asset Inventory) resources and output them as a JSON array.
+const convertDesc = `
+This command will convert a Terraform plan file into CAI (Cloud Asset Inventory)
+resources and output them as a JSON array.
 
 Note:
   Only supported resources will be converted. Non supported resources are
@@ -39,30 +37,59 @@ Note:
 Example:
   terraform-validator convert ./example/terraform.tfplan --project my-project \
     --ancestry organization/my-org/folder/my-folder
-`,
-	PreRunE: func(c *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("missing required argument <tfplan>")
-		}
-		if flags.convert.offline && flags.convert.ancestry == "" {
-			return errors.New("please set ancestry via --ancestry in offline mode")
-		}
-		return nil
-	},
-	RunE: func(c *cobra.Command, args []string) error {
-		ctx := context.Background()
-		assets, err := tfgcv.ReadPlannedAssets(ctx, args[0], flags.convert.project, flags.convert.ancestry, flags.convert.offline, false)
-		if err != nil {
-			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
-				return errors.New("unable to parse provider project, please use --project flag")
-			}
-			return errors.Wrap(err, "converting tfplan to CAI assets")
-		}
+`
 
-		if err := json.NewEncoder(os.Stdout).Encode(assets); err != nil {
-			return errors.Wrap(err, "encoding json")
-		}
+type convertOptions struct {
+	project  string
+	ancestry string
+	offline  bool
+}
 
-		return nil
-	},
+func newConvertCmd() *cobra.Command {
+	o := &convertOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "convert TFPLAN_JSON",
+		Short: "convert a Terraform plan to Google CAI assets",
+		Long:  convertDesc,
+		PreRunE: func(c *cobra.Command, args []string) error {
+			return o.validateArgs(args)
+		},
+		RunE: func(c *cobra.Command, args []string) error {
+			return o.run(args[0])
+		},
+	}
+
+	cmd.Flags().StringVar(&o.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when converting resources)")
+	cmd.Flags().StringVar(&o.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
+	cmd.Flags().BoolVar(&o.offline, "offline", false, "Do not make network requests")
+
+	return cmd
+}
+
+func (o *convertOptions) validateArgs(args []string) error {
+	if len(args) != 1 {
+		return errors.New("missing required argument TFPLAN_JSON")
+	}
+	if o.offline && o.ancestry == "" {
+		return errors.New("please set ancestry via --ancestry in offline mode")
+	}
+	return nil
+}
+
+func (o *convertOptions) run(plan string) error {
+	ctx := context.Background()
+	assets, err := tfgcv.ReadPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	if err != nil {
+		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
+			return errors.New("unable to parse provider project, please use --project flag")
+		}
+		return errors.Wrap(err, "converting tfplan to CAI assets")
+	}
+
+	if err := json.NewEncoder(os.Stdout).Encode(assets); err != nil {
+		return errors.Wrap(err, "encoding json")
+	}
+
+	return nil
 }
