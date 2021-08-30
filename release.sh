@@ -37,12 +37,16 @@ architectures="amd64 arm64"
 platforms="linux windows darwin"
 skip_platform_arch_pairs=" windows/arm64 "
 
-binary_name=terraform-validator
 ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=v${version}"
 release_bucket=terraform-validator
 
 # Build release versions
 for platform in ${platforms}; do
+	if [[ "$platform" == "windows" ]]; then
+		binary_name=terraform-validator.exe
+	else
+		binary_name=terraform-validator
+	fi
 	for arch in ${architectures}; do
 		if [[ " ${skip_platform_arch_pairs[@]} " =~ " ${platform}/${arch} " ]]; then
 			echo "Skipped unsupported platform/arch pair ${platform}/${arch}"
