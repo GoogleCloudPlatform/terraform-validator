@@ -57,6 +57,7 @@ func newValidateCmd() *cobra.Command {
 		Use:   "validate TFPLAN_JSON --policy-path=/path/to/policy/library",
 		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
 		Long: validateDesc,
+		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},
