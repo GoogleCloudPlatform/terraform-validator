@@ -37,6 +37,10 @@ func GetConfig(ctx context.Context, project string, offline bool) (*converter.Co
 		"GOOGLE_OAUTH_ACCESS_TOKEN",
 	})
 
+	cfg.ImpersonateServiceAccount = multiEnvSearch([]string{
+		"GOOGLE_IMPERSONATE_SERVICE_ACCOUNT",
+	})
+
 	if !offline {
 		converter.ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(ctx); err != nil {
