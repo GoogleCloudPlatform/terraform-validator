@@ -52,6 +52,7 @@ func newConvertCmd() *cobra.Command {
 		Use:   "convert TFPLAN_JSON",
 		Short: "convert a Terraform plan to Google CAI assets",
 		Long:  convertDesc,
+		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},

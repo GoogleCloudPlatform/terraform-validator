@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 
@@ -30,6 +31,7 @@ func newVersionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display Terraform Validator version.",
+		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		RunE: func(c *cobra.Command, args []string) error {
 			return o.run()
 		},
