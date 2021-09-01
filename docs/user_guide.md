@@ -33,6 +33,10 @@ gcloud auth application-default login  # local development only
 GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
 ```
 
+### Service account impersonation
+
+You can specify a service account to impersonate for all Google API calls with the `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT` environment variable.
+
 ## `terraform-validator validate`
 
 This command allows you to validate your terraform plan JSON against a specific policy library.
