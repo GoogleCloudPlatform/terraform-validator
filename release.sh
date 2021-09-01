@@ -37,6 +37,7 @@ architectures="amd64 arm64"
 platforms="linux windows darwin"
 skip_platform_arch_pairs=" windows/arm64 "
 
+tar_gz_name=terraform-validator
 ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=v${version}"
 release_bucket=terraform-validator
 
@@ -55,9 +56,9 @@ for platform in ${platforms}; do
 
 		echo "Building ${binary_name} v${version} for platform ${platform} / arch ${arch}..."
 		GO111MODULE=on GOOS=${platform} GOARCH=${arch} CGO_ENABLED=0 go build -ldflags "${ldflags}" -o "${release_dir}/${binary_name}" .
-		echo "Creating ${release_dir}/${binary_name}_${platform}_${arch}-${version}.tar.gz"
+		echo "Creating ${release_dir}/${tar_gz_name}_${platform}_${arch}-${version}.tar.gz"
 		pushd "${release_dir}" > /dev/null
-		tar -czf "${binary_name}_${platform}_${arch}-${version}.tar.gz" "${binary_name}" "THIRD_PARTY_NOTICES.zip"
+		tar -czf "${tar_gz_name}_${platform}_${arch}-${version}.tar.gz" "${binary_name}" "THIRD_PARTY_NOTICES.zip"
 		popd > /dev/null
 	done
 done
@@ -69,9 +70,7 @@ echo "Github tag ${version} created"
 
 # Publish release versions
 echo "Pushing releases to Google Storage"
-for arch in ${architectures}; do
-	gsutil cp ${release_dir}/*.tar.gz gs://${release_bucket}/releases/v${version}
-done
+gsutil cp ${release_dir}/*.tar.gz gs://${release_bucket}/releases/v${version}
 echo "Releases pushed to Google Storage"
 
 echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=${version}&title=${version}"
