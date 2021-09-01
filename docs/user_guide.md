@@ -35,7 +35,7 @@ GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.
 
 ### Service account impersonation
 
-You can specify a service account to impersonate for all Google API calls with the `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT` environment variable.
+You can specify a [service account to impersonate](https://cloud.google.com/iam/docs/impersonating-service-accounts) for all Google API calls with the `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT` environment variable.
 
 ## `terraform-validator validate`
 
