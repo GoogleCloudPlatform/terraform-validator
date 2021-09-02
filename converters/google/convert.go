@@ -254,6 +254,9 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 				if errors.Cause(err) == converter.ErrEmptyIdentityField {
 					glog.Warningf("%s did not return a value for ID field. Skipping asset fetch.", key)
 					existingConverterAsset = nil
+				} else if errors.Cause(err) == converter.ErrLackingReadPermission {
+					glog.Warningf("Lacking read permissions for %s. Skipping asset fetch.", key)
+					existingConverterAsset = nil
 				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
 				} else {
@@ -304,6 +307,9 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 				asset, err := mapper.Fetch(&rd, c.cfg)
 				if errors.Cause(err) == converter.ErrEmptyIdentityField {
 					glog.Warningf("%s did not return a value for ID field. Skipping asset fetch.", key)
+					existingConverterAsset = nil
+				} else if errors.Cause(err) == converter.ErrLackingReadPermission {
+					glog.Warningf("Lacking read permissions for %s. Skipping asset fetch.", key)
 					existingConverterAsset = nil
 				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
