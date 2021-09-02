@@ -17,8 +17,11 @@ func getCredentials(cfg *converter.Config) string {
 func getAccessToken(cfg *converter.Config) string {
 	return cfg.AccessToken
 }
+func getImpersonateServiceAccount(cfg *converter.Config) string {
+	return cfg.ImpersonateServiceAccount
+}
 
-func TestNewConverterCredentials(t *testing.T) {
+func TestGetConfigExtractsEnvVars(t *testing.T) {
 	ctx := context.Background()
 	offline := true
 	cases := []struct {
@@ -50,6 +53,12 @@ func TestNewConverterCredentials(t *testing.T) {
 			envKey:         "GOOGLE_OAUTH_ACCESS_TOKEN",
 			envValue:       "whatever",
 			getConfigValue: getAccessToken,
+		},
+		{
+			name:           "GOOGLE_IMPERSONATE_SERVICE_ACCOUNT",
+			envKey:         "GOOGLE_IMPERSONATE_SERVICE_ACCOUNT",
+			envValue:       "whatever",
+			getConfigValue: getImpersonateServiceAccount,
 		},
 	}
 
