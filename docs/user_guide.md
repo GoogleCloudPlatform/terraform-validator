@@ -37,9 +37,14 @@ GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.
 
 You can specify a [service account to impersonate](https://cloud.google.com/iam/docs/impersonating-service-accounts) for all Google API calls with the `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT` environment variable.
 
-### Validating compliance IAM member & binding resources
+### Required permissions
 
-Validating compliance for an IAM policy requires the full policy. However, the Terraform Provider's IAM member & binding resources only manage a slice of an IAM resource. In order to work around this, Terraform Validator fetches the full IAM resource from GCP and merges it with the Terraform resources prior to validation. This means that users who are validating IAM member and binding resources need to have permissions to read IAM policies - for example, via the Security Reviewer role.
+The GCP account being used for validation must have the following permissions:
+
+- **getIamPolicy permissions for any IAM members and bindings that are being validated.**
+  - Terraform Validator needs to get full IAM policies and merge them with members and bindings to get an accurate end state to validate.
+- **resourcemanager.projects.get for any projects that validated resources are related to.**
+  - Terraform Validator needs to get project ancestry from the API in order to accurately construct a full CAI Asset Name for validation.
 
 ## `terraform-validator validate`
 
