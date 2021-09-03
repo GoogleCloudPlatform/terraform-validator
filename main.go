@@ -14,8 +14,18 @@
 
 package main
 
-import "github.com/GoogleCloudPlatform/terraform-validator/cmd"
+import (
+	"flag"
+
+	"github.com/GoogleCloudPlatform/terraform-validator/cmd"
+)
 
 func main() {
+	// Workaround for "ERROR: logging before flag.Parse"
+	// See https://github.com/GoogleCloudPlatform/terraform-validator/issues/122
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	_ = fs.Parse([]string{})
+	flag.CommandLine = fs
+
 	cmd.Execute()
 }
