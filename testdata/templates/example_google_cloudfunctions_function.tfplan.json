@@ -1,0 +1,389 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.14.11",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_cloudfunctions_function.function",
+                    "mode": "managed",
+                    "type": "google_cloudfunctions_function",
+                    "name": "function",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "available_memory_mb": 128,
+                        "build_environment_variables": null,
+                        "description": "My function",
+                        "entry_point": "helloGET",
+                        "environment_variables": {
+                            "MY_ENV_VAR": "my-env-var-value"
+                        },
+                        "ingress_settings": "ALLOW_ALL",
+                        "labels": {
+                            "my-label": "my-label-value"
+                        },
+                        "max_instances": 0,
+                        "name": "function-test",
+                        "runtime": "nodejs14",
+                        "source_archive_bucket": "test-bucket",
+                        "source_archive_object": "index.zip",
+                        "source_repository": [],
+                        "timeout": 60,
+                        "timeouts": null,
+                        "trigger_http": true,
+                        "vpc_connector": null
+                    }
+                },
+                {
+                    "address": "google_cloudfunctions_function_iam_member.invoker",
+                    "mode": "managed",
+                    "type": "google_cloudfunctions_function_iam_member",
+                    "name": "invoker",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "cloud_function": "function-test",
+                        "condition": [],
+                        "member": "user:myFunctionInvoker@example.com",
+                        "role": "roles/cloudfunctions.invoker"
+                    }
+                },
+                {
+                    "address": "google_storage_bucket.bucket",
+                    "mode": "managed",
+                    "type": "google_storage_bucket",
+                    "name": "bucket",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "cors": [],
+                        "default_event_based_hold": null,
+                        "encryption": [],
+                        "force_destroy": false,
+                        "labels": null,
+                        "lifecycle_rule": [],
+                        "location": "US",
+                        "logging": [],
+                        "name": "test-bucket",
+                        "requester_pays": null,
+                        "retention_policy": [],
+                        "storage_class": "STANDARD",
+                        "versioning": [],
+                        "website": []
+                    }
+                },
+                {
+                    "address": "google_storage_bucket_object.archive",
+                    "mode": "managed",
+                    "type": "google_storage_bucket_object",
+                    "name": "archive",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "bucket": "test-bucket",
+                        "cache_control": null,
+                        "content": null,
+                        "content_disposition": null,
+                        "content_encoding": null,
+                        "content_language": null,
+                        "customer_encryption": [],
+                        "detect_md5hash": "different hash",
+                        "event_based_hold": null,
+                        "metadata": null,
+                        "name": "index.zip",
+                        "source": "./path/to/zip/file/which/contains/code",
+                        "temporary_hold": null
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "google_cloudfunctions_function.function",
+            "mode": "managed",
+            "type": "google_cloudfunctions_function",
+            "name": "function",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "available_memory_mb": 128,
+                    "build_environment_variables": null,
+                    "description": "My function",
+                    "entry_point": "helloGET",
+                    "environment_variables": {
+                        "MY_ENV_VAR": "my-env-var-value"
+                    },
+                    "ingress_settings": "ALLOW_ALL",
+                    "labels": {
+                        "my-label": "my-label-value"
+                    },
+                    "max_instances": 0,
+                    "name": "function-test",
+                    "runtime": "nodejs14",
+                    "source_archive_bucket": "test-bucket",
+                    "source_archive_object": "index.zip",
+                    "source_repository": [],
+                    "timeout": 60,
+                    "timeouts": null,
+                    "trigger_http": true,
+                    "vpc_connector": null
+                },
+                "after_unknown": {
+                    "environment_variables": {},
+                    "event_trigger": true,
+                    "https_trigger_url": true,
+                    "id": true,
+                    "labels": {},
+                    "project": true,
+                    "region": true,
+                    "service_account_email": true,
+                    "source_repository": [],
+                    "vpc_connector_egress_settings": true
+                }
+            }
+        },
+        {
+            "address": "google_cloudfunctions_function_iam_member.invoker",
+            "mode": "managed",
+            "type": "google_cloudfunctions_function_iam_member",
+            "name": "invoker",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "cloud_function": "function-test",
+                    "condition": [],
+                    "member": "user:myFunctionInvoker@example.com",
+                    "role": "roles/cloudfunctions.invoker"
+                },
+                "after_unknown": {
+                    "condition": [],
+                    "etag": true,
+                    "id": true,
+                    "project": true,
+                    "region": true
+                }
+            }
+        },
+        {
+            "address": "google_storage_bucket.bucket",
+            "mode": "managed",
+            "type": "google_storage_bucket",
+            "name": "bucket",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "cors": [],
+                    "default_event_based_hold": null,
+                    "encryption": [],
+                    "force_destroy": false,
+                    "labels": null,
+                    "lifecycle_rule": [],
+                    "location": "US",
+                    "logging": [],
+                    "name": "test-bucket",
+                    "requester_pays": null,
+                    "retention_policy": [],
+                    "storage_class": "STANDARD",
+                    "versioning": [],
+                    "website": []
+                },
+                "after_unknown": {
+                    "bucket_policy_only": true,
+                    "cors": [],
+                    "encryption": [],
+                    "id": true,
+                    "lifecycle_rule": [],
+                    "logging": [],
+                    "project": true,
+                    "retention_policy": [],
+                    "self_link": true,
+                    "uniform_bucket_level_access": true,
+                    "url": true,
+                    "versioning": [],
+                    "website": []
+                }
+            }
+        },
+        {
+            "address": "google_storage_bucket_object.archive",
+            "mode": "managed",
+            "type": "google_storage_bucket_object",
+            "name": "archive",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bucket": "test-bucket",
+                    "cache_control": null,
+                    "content": null,
+                    "content_disposition": null,
+                    "content_encoding": null,
+                    "content_language": null,
+                    "customer_encryption": [],
+                    "detect_md5hash": "different hash",
+                    "event_based_hold": null,
+                    "metadata": null,
+                    "name": "index.zip",
+                    "source": "./path/to/zip/file/which/contains/code",
+                    "temporary_hold": null
+                },
+                "after_unknown": {
+                    "content_type": true,
+                    "crc32c": true,
+                    "customer_encryption": [],
+                    "id": true,
+                    "kms_key_name": true,
+                    "md5hash": true,
+                    "media_link": true,
+                    "output_name": true,
+                    "self_link": true,
+                    "storage_class": true
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "google": {
+                "name": "google"
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_cloudfunctions_function.function",
+                    "mode": "managed",
+                    "type": "google_cloudfunctions_function",
+                    "name": "function",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "available_memory_mb": {
+                            "constant_value": 128
+                        },
+                        "description": {
+                            "constant_value": "My function"
+                        },
+                        "entry_point": {
+                            "constant_value": "helloGET"
+                        },
+                        "environment_variables": {
+                            "constant_value": {
+                                "MY_ENV_VAR": "my-env-var-value"
+                            }
+                        },
+                        "labels": {
+                            "constant_value": {
+                                "my-label": "my-label-value"
+                            }
+                        },
+                        "name": {
+                            "constant_value": "function-test"
+                        },
+                        "runtime": {
+                            "constant_value": "nodejs14"
+                        },
+                        "source_archive_bucket": {
+                            "references": [
+                                "google_storage_bucket.bucket"
+                            ]
+                        },
+                        "source_archive_object": {
+                            "references": [
+                                "google_storage_bucket_object.archive"
+                            ]
+                        },
+                        "timeout": {
+                            "constant_value": 60
+                        },
+                        "trigger_http": {
+                            "constant_value": true
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "google_cloudfunctions_function_iam_member.invoker",
+                    "mode": "managed",
+                    "type": "google_cloudfunctions_function_iam_member",
+                    "name": "invoker",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "cloud_function": {
+                            "references": [
+                                "google_cloudfunctions_function.function"
+                            ]
+                        },
+                        "member": {
+                            "constant_value": "user:myFunctionInvoker@example.com"
+                        },
+                        "project": {
+                            "references": [
+                                "google_cloudfunctions_function.function"
+                            ]
+                        },
+                        "region": {
+                            "references": [
+                                "google_cloudfunctions_function.function"
+                            ]
+                        },
+                        "role": {
+                            "constant_value": "roles/cloudfunctions.invoker"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "google_storage_bucket.bucket",
+                    "mode": "managed",
+                    "type": "google_storage_bucket",
+                    "name": "bucket",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "test-bucket"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "google_storage_bucket_object.archive",
+                    "mode": "managed",
+                    "type": "google_storage_bucket_object",
+                    "name": "archive",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "bucket": {
+                            "references": [
+                                "google_storage_bucket.bucket"
+                            ]
+                        },
+                        "name": {
+                            "constant_value": "index.zip"
+                        },
+                        "source": {
+                            "constant_value": "./path/to/zip/file/which/contains/code"
+                        }
+                    },
+                    "schema_version": 0
+                }
+            ]
+        }
+    }
+}
