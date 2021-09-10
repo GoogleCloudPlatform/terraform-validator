@@ -20,7 +20,6 @@ import (
 	"os"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"github.com/spf13/cobra"
 )
 
@@ -33,23 +32,6 @@ Supported Terraform versions = 0.12+`
 type rootOptions struct {
 	verbose bool
 	logger *zap.Logger
-}
-
-func newLogger(verbose, useStructuredLogging bool) (*zap.Logger, error) {
-	loggerConfig := zap.NewDevelopmentConfig()
-
-	loggerConfig.EncoderConfig.TimeKey = "timestamp"
-	loggerConfig.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
-	if verbose {
-		loggerConfig.Level.SetLevel(zapcore.DebugLevel)
-	} else {
-		loggerConfig.Level.SetLevel(zapcore.InfoLevel)
-	}
-
-	if useStructuredLogging {
-		loggerConfig.Encoding = "json"
-	}
-	return loggerConfig.Build()
 }
 
 func newRootCmd() (*cobra.Command, *zap.Logger, error) {
@@ -66,10 +48,7 @@ func newRootCmd() (*cobra.Command, *zap.Logger, error) {
 	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log additional output")
 
 	useStructuredLogging := os.Getenv("USE_STRUCTURED_LOGGING") == "true"
-	logger, err := newLogger(o.verbose, useStructuredLogging)
-	if err != nil {
-		return nil, nil, err
-	}
+	logger := newLogger(o.verbose, useStructuredLogging)
 	defer logger.Sync()
 	zap.RedirectStdLog(logger)
 	o.logger = logger
