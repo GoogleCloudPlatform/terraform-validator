@@ -41,15 +41,19 @@ Example:
 `
 
 type convertOptions struct {
-	project  string
-	ancestry string
-	offline  bool
-	logger   *zap.Logger
+	project              string
+	ancestry             string
+	offline              bool
+	errorLogger          *zap.Logger
+	outputLogger         *zap.Logger
+	useStructuredLogging bool
 }
 
-func newConvertCmd(logger *zap.Logger) *cobra.Command {
+func newConvertCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
 	o := &convertOptions{
-		logger: logger,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
+		useStructuredLogging: useStructuredLogging,
 	}
 
 	cmd := &cobra.Command{
@@ -91,6 +95,15 @@ func (o *convertOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
+	if o.useStructuredLogging {
+		o.outputLogger.Info(
+			"converted resources",
+			zap.Any("resource_body", assets),
+		)
+		return nil
+	}
+
+	// Legacy behavior
 	if err := json.NewEncoder(os.Stdout).Encode(assets); err != nil {
 		return errors.Wrap(err, "encoding json")
 	}

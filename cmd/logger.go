@@ -22,8 +22,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-
-
 type errorDetails struct {
 	// error message
 	error string
@@ -37,19 +35,19 @@ func (ed errorDetails) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	return nil
 }
 
-type structuredEncoder struct {
+type errorEncoder struct {
 	zapcore.Encoder
 }
 
-func (enc structuredEncoder) Clone() zapcore.Encoder {
-	return structuredEncoder{
+func (enc errorEncoder) Clone() zapcore.Encoder {
+	return errorEncoder{
 		Encoder: enc.Encoder.Clone(),
 	}
 }
 
-func (enc structuredEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
+func (enc errorEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
 	ed := errorDetails{
-		error: ent.Message,
+		error:   ent.Message,
 		context: ent.Stack,
 	}
 	fields = append([]zapcore.Field{
@@ -58,20 +56,20 @@ func (enc structuredEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Fie
 	return enc.Encoder.EncodeEntry(ent, fields)
 }
 
-func newJSONEncoder(cfg zapcore.EncoderConfig) structuredEncoder {
-	return structuredEncoder{
+func newJSONEncoder(cfg zapcore.EncoderConfig) errorEncoder {
+	return errorEncoder{
 		Encoder: zapcore.NewJSONEncoder(cfg),
 	}
 }
 
-func newConsoleEncoder(cfg zapcore.EncoderConfig) structuredEncoder {
-	return structuredEncoder{
+func newConsoleEncoder(cfg zapcore.EncoderConfig) errorEncoder {
+	return errorEncoder{
 		Encoder: zapcore.NewConsoleEncoder(cfg),
 	}
 }
 
-func newLogger(verbose, useStructuredLogging bool) *zap.Logger {
-	// Return a logger that produces expected structured output format
+func newErrorLogger(verbose, useStructuredLogging bool) *zap.Logger {
+	// Return a logger that produces expected structured output format for errors
 	var level zap.AtomicLevel
 	options := []zap.Option{
 		zap.Fields(
@@ -89,19 +87,44 @@ func newLogger(verbose, useStructuredLogging bool) *zap.Logger {
 	}
 
 	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:        "timestamp",
-		LevelKey:       "level",
-		MessageKey:     "",
-		StacktraceKey:  "",
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
+		TimeKey:       "timestamp",
+		LevelKey:      "level",
+		MessageKey:    "",
+		StacktraceKey: "",
+		EncodeLevel:   zapcore.LowercaseLevelEncoder,
+		EncodeTime:    zapcore.RFC3339NanoTimeEncoder,
 	}
-	var encoder structuredEncoder
+	var encoder errorEncoder
 	if useStructuredLogging {
 		encoder = newJSONEncoder(encoderConfig)
 	} else {
 		encoder = newConsoleEncoder(encoderConfig)
 	}
 	core := zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), level)
+	return zap.New(core, options...)
+}
+
+func newOutputLogger() *zap.Logger {
+	// Return a logger that produces expected structured output format for output
+	options := []zap.Option{
+		zap.Fields(
+			// Message format version
+			zap.String("version", "v1.0.0"),
+		),
+	}
+
+	level := zap.NewAtomicLevelAt(zap.DebugLevel)
+	options = append(options, zap.AddStacktrace(zap.WarnLevel))
+
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:       "timestamp",
+		LevelKey:      "",
+		MessageKey:    "body",
+		StacktraceKey: "",
+		EncodeLevel:   zapcore.LowercaseLevelEncoder,
+		EncodeTime:    zapcore.RFC3339NanoTimeEncoder,
+	}
+	encoder := zapcore.NewJSONEncoder(encoderConfig)
+	core := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), level)
 	return zap.New(core, options...)
 }

@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"os"
 
-	"go.uber.org/zap"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const rootCmdDesc = `
@@ -30,35 +30,38 @@ policy library written to expect Google CAI (Cloud Asset Inventory) data.
 Supported Terraform versions = 0.12+`
 
 type rootOptions struct {
-	verbose bool
-	logger *zap.Logger
+	verbose     bool
+	errorLogger *zap.Logger
 }
 
 func newRootCmd() (*cobra.Command, *zap.Logger, error) {
 	o := &rootOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "terraform-validator",
-		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
-		Long: rootCmdDesc,
-		SilenceUsage: true,
+		Use:           "terraform-validator",
+		Short:         "Validate that a terraform plan conforms to Constraint Framework policies",
+		Long:          rootCmdDesc,
+		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
 
 	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log additional output")
 
 	useStructuredLogging := os.Getenv("USE_STRUCTURED_LOGGING") == "true"
-	logger := newLogger(o.verbose, useStructuredLogging)
-	defer logger.Sync()
-	zap.RedirectStdLog(logger)
-	o.logger = logger
+	errorLogger := newErrorLogger(o.verbose, useStructuredLogging)
+	defer errorLogger.Sync()
+	zap.RedirectStdLog(errorLogger)
+	o.errorLogger = errorLogger
 
-	cmd.AddCommand(newConvertCmd(logger))
+	outputLogger := newOutputLogger()
+	defer outputLogger.Sync()
+
+	cmd.AddCommand(newConvertCmd(errorLogger, outputLogger, useStructuredLogging))
 	cmd.AddCommand(newListSupportedResourcesCmd())
-	cmd.AddCommand(newValidateCmd(logger))
+	cmd.AddCommand(newValidateCmd(errorLogger, outputLogger, useStructuredLogging))
 	cmd.AddCommand(newVersionCmd())
 
-	return cmd, logger, nil
+	return cmd, errorLogger, nil
 }
 
 // Execute is the entry-point for all commands.

@@ -42,18 +42,22 @@ Example:
 `
 
 type validateOptions struct {
-	project    string
-	ancestry   string
-	offline    bool
-	policyPath string
-	outputJSON bool
-	dryRun     bool
-	logger     *zap.Logger
+	project              string
+	ancestry             string
+	offline              bool
+	policyPath           string
+	outputJSON           bool
+	dryRun               bool
+	errorLogger          *zap.Logger
+	outputLogger         *zap.Logger
+	useStructuredLogging bool
 }
 
-func newValidateCmd(logger *zap.Logger) *cobra.Command {
+func newValidateCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
 	o := &validateOptions{
-		logger: logger,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
+		useStructuredLogging: useStructuredLogging,
 	}
 
 	cmd := &cobra.Command{
@@ -108,6 +112,22 @@ func (o *validateOptions) run(plan string) error {
 		return errors.Wrap(err, "validating: FCV")
 	}
 
+	if o.useStructuredLogging {
+		msg := "No violations found"
+		if len(auditResult.Violations) > 0 {
+			msg = "Violations found"
+		}
+		o.outputLogger.Info(
+			msg,
+			zap.Any("resource_body", auditResult.Violations),
+		)
+		if len(auditResult.Violations) > 0 {
+			return errViolations
+		}
+		return nil
+	}
+
+	// Legacy behavior
 	if len(auditResult.Violations) > 0 {
 		if o.outputJSON {
 			marshaller := &jsonpb.Marshaler{}
