@@ -23,6 +23,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const validateDesc = `
@@ -47,17 +48,19 @@ type validateOptions struct {
 	policyPath string
 	outputJSON bool
 	dryRun     bool
+	logger     *zap.Logger
 }
 
 
-func newValidateCmd() *cobra.Command {
-	o := &validateOptions{}
+func newValidateCmd(logger *zap.Logger) *cobra.Command {
+	o := &validateOptions{
+		logger: logger,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "validate TFPLAN_JSON --policy-path=/path/to/policy/library",
 		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
 		Long: validateDesc,
-		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},
@@ -123,7 +126,7 @@ func (o *validateOptions) run(plan string) error {
 			}
 		}
 
-		os.Exit(2)
+		return errViolations
 	}
 
 	if !o.outputJSON {

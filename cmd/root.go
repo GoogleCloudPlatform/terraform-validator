@@ -15,15 +15,14 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"log"
+	"errors"
+	"fmt"
 	"os"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"github.com/spf13/cobra"
 )
-
-// LoggerStdErr used by commands to print errors and warnings
-var LoggerStdErr = log.New(os.Stderr, "", log.LstdFlags)
 
 const rootCmdDesc = `
 Validate that a terraform plan conforms to a Constraint Framework 
@@ -33,40 +32,74 @@ Supported Terraform versions = 0.12+`
 
 type rootOptions struct {
 	verbose bool
+	logger *zap.Logger
 }
 
-func newRootCmd() *cobra.Command {
+func newLogger(verbose, useStructuredLogging bool) (*zap.Logger, error) {
+	loggerConfig := zap.NewDevelopmentConfig()
+
+	loggerConfig.EncoderConfig.TimeKey = "timestamp"
+	loggerConfig.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	if verbose {
+		loggerConfig.Level.SetLevel(zapcore.DebugLevel)
+	} else {
+		loggerConfig.Level.SetLevel(zapcore.InfoLevel)
+	}
+
+	if useStructuredLogging {
+		loggerConfig.Encoding = "json"
+	}
+	return loggerConfig.Build()
+}
+
+func newRootCmd() (*cobra.Command, *zap.Logger, error) {
 	o := &rootOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "terraform-validator",
 		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
 		Long: rootCmdDesc,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if !o.verbose {
-				// Suppress chatty packages.
-				log.SetOutput(ioutil.Discard)
-			}
-			return nil
-		},
+		SilenceUsage: true,
+		SilenceErrors: true,
 	}
 
-	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log output to stderr")
+	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log additional output")
 
-	cmd.AddCommand(newConvertCmd())
+	useStructuredLogging := os.Getenv("USE_STRUCTURED_LOGGING") == "true"
+	logger, err := newLogger(o.verbose, useStructuredLogging)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer logger.Sync()
+	zap.RedirectStdLog(logger)
+	o.logger = logger
+
+	cmd.AddCommand(newConvertCmd(logger))
 	cmd.AddCommand(newListSupportedResourcesCmd())
-	cmd.AddCommand(newValidateCmd())
+	cmd.AddCommand(newValidateCmd(logger))
 	cmd.AddCommand(newVersionCmd())
 
-	return cmd
+	return cmd, logger, nil
 }
 
 // Execute is the entry-point for all commands.
 // This lets us keep all new command functions private.
 func Execute() {
-	rootCmd := newRootCmd()
+	rootCmd, logger, err := newRootCmd()
 
-	if err := rootCmd.Execute(); err != nil {
+	if err != nil {
+		fmt.Printf("Error creating root logger: %s", err)
+		os.Exit(1)
+	}
+
+	err = rootCmd.Execute()
+
+	if err == nil {
+		os.Exit(0)
+	} else if errors.Is(err, errViolations) {
+		os.Exit(2)
+	} else {
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 }

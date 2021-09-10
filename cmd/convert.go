@@ -22,6 +22,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const convertDesc = `
@@ -43,16 +44,18 @@ type convertOptions struct {
 	project  string
 	ancestry string
 	offline  bool
+	logger   *zap.Logger
 }
 
-func newConvertCmd() *cobra.Command {
-	o := &convertOptions{}
+func newConvertCmd(logger *zap.Logger) *cobra.Command {
+	o := &convertOptions{
+		logger: logger,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "convert TFPLAN_JSON",
 		Short: "convert a Terraform plan to Google CAI assets",
 		Long:  convertDesc,
-		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},

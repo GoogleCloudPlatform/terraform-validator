@@ -11,6 +11,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/zap v1.19.1 // indirect
 	google.golang.org/api v0.46.0
 	google.golang.org/genproto v0.0.0-20210503173045-b96a97608f20
 )
