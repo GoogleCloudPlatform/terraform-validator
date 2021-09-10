@@ -51,7 +51,6 @@ type validateOptions struct {
 	logger     *zap.Logger
 }
 
-
 func newValidateCmd(logger *zap.Logger) *cobra.Command {
 	o := &validateOptions{
 		logger: logger,
@@ -60,7 +59,7 @@ func newValidateCmd(logger *zap.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate TFPLAN_JSON --policy-path=/path/to/policy/library",
 		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
-		Long: validateDesc,
+		Long:  validateDesc,
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},

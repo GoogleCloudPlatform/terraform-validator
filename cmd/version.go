@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type versionOptions struct {}
+type versionOptions struct{}
 
 func newVersionCmd() *cobra.Command {
 	o := versionOptions{}

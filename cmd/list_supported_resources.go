@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type listSupportedResourcesOptions struct {}
+type listSupportedResourcesOptions struct{}
 
 func newListSupportedResourcesCmd() *cobra.Command {
 	o := listSupportedResourcesOptions{}
