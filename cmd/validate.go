@@ -51,6 +51,8 @@ type validateOptions struct {
 	errorLogger          *zap.Logger
 	outputLogger         *zap.Logger
 	useStructuredLogging bool
+	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
+	validateAssets       tfgcv.ValidateAssetsFunc
 }
 
 func newValidateCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
@@ -58,6 +60,8 @@ func newValidateCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging 
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
+		readPlannedAssets:    tfgcv.ReadPlannedAssets,
+		validateAssets:       tfgcv.ValidateAssets,
 	}
 
 	cmd := &cobra.Command{
@@ -99,7 +103,7 @@ func (o *validateOptions) validateArgs(args []string) error {
 
 func (o *validateOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := tfgcv.ReadPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
@@ -107,7 +111,7 @@ func (o *validateOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
-	auditResult, err := tfgcv.ValidateAssets(ctx, assets, o.policyPath)
+	auditResult, err := o.validateAssets(ctx, assets, o.policyPath)
 	if err != nil {
 		return errors.Wrap(err, "validating: FCV")
 	}

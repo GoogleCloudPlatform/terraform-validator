@@ -41,19 +41,21 @@ Example:
 `
 
 type convertOptions struct {
-	project              string
-	ancestry             string
-	offline              bool
-	errorLogger          *zap.Logger
-	outputLogger         *zap.Logger
+	project  string
+	ancestry string
+	offline  bool
+	errorLogger   *zap.Logger
+	outputLogger  *zap.Logger
 	useStructuredLogging bool
+	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
 }
 
 func newConvertCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
 	o := &convertOptions{
-		errorLogger:          errorLogger,
+		errorLogger: errorLogger,
 		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
+		readPlannedAssets:    tfgcv.ReadPlannedAssets,
 	}
 
 	cmd := &cobra.Command{
@@ -87,7 +89,7 @@ func (o *convertOptions) validateArgs(args []string) error {
 
 func (o *convertOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := tfgcv.ReadPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
