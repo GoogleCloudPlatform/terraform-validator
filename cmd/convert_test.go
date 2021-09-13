@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	"github.com/stretchr/testify/assert"
 )
 
 func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) ([]google.Asset, error) {
@@ -14,19 +14,19 @@ func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, 
 			Name: "//compute.googleapis.com/projects/my-project/zones/us-central1-a/disks/test-disk",
 			Type: "compute.googleapis.com/Disk",
 			Resource: &google.AssetResource{
-				Version: "v1",
+				Version:              "v1",
 				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
-				DiscoveryName: "Disk",
+				DiscoveryName:        "Disk",
 				Data: map[string]interface{}{
 					"labels": map[string]string{
 						"environment": "dev",
 					},
-					"name": "test-disk",
+					"name":                   "test-disk",
 					"physicalBlockSizeBytes": 4096,
-					"sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
-					"type": "projects/my-project/zones/us-central1-a/diskTypes/pd-ssd",
-					"zone": "projects/my-project/global/zones/us-central1-a",
-			 	},
+					"sourceImage":            "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+					"type":                   "projects/my-project/zones/us-central1-a/diskTypes/pd-ssd",
+					"zone":                   "projects/my-project/global/zones/us-central1-a",
+				},
 			},
 		},
 	}, nil
@@ -39,13 +39,13 @@ func TestConvertRun(t *testing.T) {
 	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
 	outputLogger, outputObservedLogs := newTestOutputLogger()
 	o := convertOptions{
-		project: "",
-		ancestry: "",
-		offline: false,
-		errorLogger: errorLogger,
-		outputLogger: outputLogger,
+		project:              "",
+		ancestry:             "",
+		offline:              false,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets: MockReadPlannedAssets,
+		readPlannedAssets:    MockReadPlannedAssets,
 	}
 
 	err := o.run("/path/to/plan")
@@ -71,13 +71,13 @@ func TestConvertRunLegacy(t *testing.T) {
 	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
 	outputLogger, outputObservedLogs := newTestOutputLogger()
 	o := convertOptions{
-		project: "",
-		ancestry: "",
-		offline: false,
-		errorLogger: errorLogger,
-		outputLogger: outputLogger,
+		project:              "",
+		ancestry:             "",
+		offline:              false,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets: MockReadPlannedAssets,
+		readPlannedAssets:    MockReadPlannedAssets,
 	}
 
 	err := o.run("/path/to/plan")

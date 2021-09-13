@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/forseti-security/config-validator/pkg/api/validator"
+	"github.com/stretchr/testify/assert"
 )
 
 func MockValidateAssetsNoViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
@@ -20,9 +20,9 @@ func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset
 		Violations: []*validator.Violation{
 			&validator.Violation{
 				Constraint: "GCPAlwaysViolatesConstraintV1.always_violates_project_match_target",
-				Resource: "//bigtable.googleapis.com/projects/my-project/instances/tf-instance",
-				Message: "Constraint GCPAlwaysViolatesConstraintV1.always_violates_project_match_target on resource //bigtable.googleapis.com/projects/my-project/instances/tf-instance",
-				Severity: "high",
+				Resource:   "//bigtable.googleapis.com/projects/my-project/instances/tf-instance",
+				Message:    "Constraint GCPAlwaysViolatesConstraintV1.always_violates_project_match_target on resource //bigtable.googleapis.com/projects/my-project/instances/tf-instance",
+				Severity:   "high",
 			},
 		},
 	}, nil
@@ -35,17 +35,17 @@ func TestValidateRun(t *testing.T) {
 	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
 	outputLogger, outputObservedLogs := newTestOutputLogger()
 	o := validateOptions{
-		project: "",
-		ancestry: "",
-		offline: false,
-		policyPath: "",
-		outputJSON: false,
-		dryRun:     false,
-		errorLogger: errorLogger,
-		outputLogger: outputLogger,
+		project:              "",
+		ancestry:             "",
+		offline:              false,
+		policyPath:           "",
+		outputJSON:           false,
+		dryRun:               false,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets: MockReadPlannedAssets,
-		validateAssets: MockValidateAssetsWithViolations,
+		readPlannedAssets:    MockReadPlannedAssets,
+		validateAssets:       MockValidateAssetsWithViolations,
 	}
 
 	err := o.run("/path/to/plan")
@@ -71,17 +71,17 @@ func TestValidateRunNoViolations(t *testing.T) {
 	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
 	outputLogger, outputObservedLogs := newTestOutputLogger()
 	o := validateOptions{
-		project: "",
-		ancestry: "",
-		offline: false,
-		policyPath: "",
-		outputJSON: false,
-		dryRun:     false,
-		errorLogger: errorLogger,
-		outputLogger: outputLogger,
+		project:              "",
+		ancestry:             "",
+		offline:              false,
+		policyPath:           "",
+		outputJSON:           false,
+		dryRun:               false,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets: MockReadPlannedAssets,
-		validateAssets: MockValidateAssetsNoViolations,
+		readPlannedAssets:    MockReadPlannedAssets,
+		validateAssets:       MockValidateAssetsNoViolations,
 	}
 
 	err := o.run("/path/to/plan")
@@ -107,17 +107,17 @@ func TestValidateRunLegacy(t *testing.T) {
 	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
 	outputLogger, outputObservedLogs := newTestOutputLogger()
 	o := validateOptions{
-		project: "",
-		ancestry: "",
-		offline: false,
-		policyPath: "",
-		outputJSON: false,
-		dryRun:     false,
-		errorLogger: errorLogger,
-		outputLogger: outputLogger,
+		project:              "",
+		ancestry:             "",
+		offline:              false,
+		policyPath:           "",
+		outputJSON:           false,
+		dryRun:               false,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets: MockReadPlannedAssets,
-		validateAssets: MockValidateAssetsWithViolations,
+		readPlannedAssets:    MockReadPlannedAssets,
+		validateAssets:       MockValidateAssetsWithViolations,
 	}
 
 	err := o.run("/path/to/plan")
@@ -138,17 +138,17 @@ func TestValidateRunNoViolationsLegacy(t *testing.T) {
 	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
 	outputLogger, outputObservedLogs := newTestOutputLogger()
 	o := validateOptions{
-		project: "",
-		ancestry: "",
-		offline: false,
-		policyPath: "",
-		outputJSON: false,
-		dryRun:     false,
-		errorLogger: errorLogger,
-		outputLogger: outputLogger,
+		project:              "",
+		ancestry:             "",
+		offline:              false,
+		policyPath:           "",
+		outputJSON:           false,
+		dryRun:               false,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets: MockReadPlannedAssets,
-		validateAssets: MockValidateAssetsNoViolations,
+		readPlannedAssets:    MockReadPlannedAssets,
+		validateAssets:       MockValidateAssetsNoViolations,
 	}
 
 	err := o.run("/path/to/plan")

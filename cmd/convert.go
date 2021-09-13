@@ -41,18 +41,18 @@ Example:
 `
 
 type convertOptions struct {
-	project  string
-	ancestry string
-	offline  bool
-	errorLogger   *zap.Logger
-	outputLogger  *zap.Logger
+	project              string
+	ancestry             string
+	offline              bool
+	errorLogger          *zap.Logger
+	outputLogger         *zap.Logger
 	useStructuredLogging bool
 	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
 }
 
 func newConvertCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
 	o := &convertOptions{
-		errorLogger: errorLogger,
+		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
 		useStructuredLogging: useStructuredLogging,
 		readPlannedAssets:    tfgcv.ReadPlannedAssets,
