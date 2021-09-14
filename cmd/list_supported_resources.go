@@ -16,13 +16,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/spf13/cobra"
 )
 
-type listSupportedResourcesOptions struct {}
+type listSupportedResourcesOptions struct{}
 
 func newListSupportedResourcesCmd() *cobra.Command {
 	o := listSupportedResourcesOptions{}
@@ -30,7 +29,6 @@ func newListSupportedResourcesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-supported-resources",
 		Short: "List supported terraform resources.",
-		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		RunE: func(c *cobra.Command, args []string) error {
 			return o.run()
 		},

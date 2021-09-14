@@ -15,15 +15,13 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"log"
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
-
-// LoggerStdErr used by commands to print errors and warnings
-var LoggerStdErr = log.New(os.Stderr, "", log.LstdFlags)
 
 const rootCmdDesc = `
 Validate that a terraform plan conforms to a Constraint Framework 
@@ -32,41 +30,58 @@ policy library written to expect Google CAI (Cloud Asset Inventory) data.
 Supported Terraform versions = 0.12+`
 
 type rootOptions struct {
-	verbose bool
+	verbose     bool
+	errorLogger *zap.Logger
 }
 
-func newRootCmd() *cobra.Command {
+func newRootCmd() (*cobra.Command, *zap.Logger, error) {
 	o := &rootOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "terraform-validator",
-		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
-		Long: rootCmdDesc,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if !o.verbose {
-				// Suppress chatty packages.
-				log.SetOutput(ioutil.Discard)
-			}
-			return nil
-		},
+		Use:           "terraform-validator",
+		Short:         "Validate that a terraform plan conforms to Constraint Framework policies",
+		Long:          rootCmdDesc,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
-	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log output to stderr")
+	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log additional output")
 
-	cmd.AddCommand(newConvertCmd())
+	useStructuredLogging := os.Getenv("USE_STRUCTURED_LOGGING") == "true"
+	errorLogger := newErrorLogger(o.verbose, useStructuredLogging)
+	defer errorLogger.Sync()
+	zap.RedirectStdLog(errorLogger)
+	o.errorLogger = errorLogger
+
+	outputLogger := newOutputLogger()
+	defer outputLogger.Sync()
+
+	cmd.AddCommand(newConvertCmd(errorLogger, outputLogger, useStructuredLogging))
 	cmd.AddCommand(newListSupportedResourcesCmd())
-	cmd.AddCommand(newValidateCmd())
+	cmd.AddCommand(newValidateCmd(errorLogger, outputLogger, useStructuredLogging))
 	cmd.AddCommand(newVersionCmd())
 
-	return cmd
+	return cmd, errorLogger, nil
 }
 
 // Execute is the entry-point for all commands.
 // This lets us keep all new command functions private.
 func Execute() {
-	rootCmd := newRootCmd()
+	rootCmd, logger, err := newRootCmd()
 
-	if err := rootCmd.Execute(); err != nil {
+	if err != nil {
+		fmt.Printf("Error creating root logger: %s", err)
+		os.Exit(1)
+	}
+
+	err = rootCmd.Execute()
+
+	if err == nil {
+		os.Exit(0)
+	} else if errors.Is(err, errViolations) {
+		os.Exit(2)
+	} else {
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 }

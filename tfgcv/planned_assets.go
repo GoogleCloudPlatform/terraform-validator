@@ -27,6 +27,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ReadPlannedAssetsFunc func(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) ([]google.Asset, error)
+
 // ReadPlannedAssets extracts CAI assets from a terraform plan file.
 // If ancestry path is provided, it assumes the project is in that path rather
 // than fetching the ancestry information using Google API. If convertUnchanged

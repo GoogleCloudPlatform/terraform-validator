@@ -23,6 +23,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const validateDesc = `
@@ -41,23 +42,32 @@ Example:
 `
 
 type validateOptions struct {
-	project    string
-	ancestry   string
-	offline    bool
-	policyPath string
-	outputJSON bool
-	dryRun     bool
+	project              string
+	ancestry             string
+	offline              bool
+	policyPath           string
+	outputJSON           bool
+	dryRun               bool
+	errorLogger          *zap.Logger
+	outputLogger         *zap.Logger
+	useStructuredLogging bool
+	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
+	validateAssets       tfgcv.ValidateAssetsFunc
 }
 
-
-func newValidateCmd() *cobra.Command {
-	o := &validateOptions{}
+func newValidateCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
+	o := &validateOptions{
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
+		useStructuredLogging: useStructuredLogging,
+		readPlannedAssets:    tfgcv.ReadPlannedAssets,
+		validateAssets:       tfgcv.ValidateAssets,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "validate TFPLAN_JSON --policy-path=/path/to/policy/library",
 		Short: "Validate that a terraform plan conforms to Constraint Framework policies",
-		Long: validateDesc,
-		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
+		Long:  validateDesc,
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},
@@ -93,7 +103,7 @@ func (o *validateOptions) validateArgs(args []string) error {
 
 func (o *validateOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := tfgcv.ReadPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
@@ -101,11 +111,27 @@ func (o *validateOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
-	auditResult, err := tfgcv.ValidateAssets(ctx, assets, o.policyPath)
+	auditResult, err := o.validateAssets(ctx, assets, o.policyPath)
 	if err != nil {
 		return errors.Wrap(err, "validating: FCV")
 	}
 
+	if o.useStructuredLogging {
+		msg := "No violations found"
+		if len(auditResult.Violations) > 0 {
+			msg = "Violations found"
+		}
+		o.outputLogger.Info(
+			msg,
+			zap.Any("resource_body", auditResult.Violations),
+		)
+		if len(auditResult.Violations) > 0 {
+			return errViolations
+		}
+		return nil
+	}
+
+	// Legacy behavior
 	if len(auditResult.Violations) > 0 {
 		if o.outputJSON {
 			marshaller := &jsonpb.Marshaler{}
@@ -123,7 +149,7 @@ func (o *validateOptions) run(plan string) error {
 			}
 		}
 
-		os.Exit(2)
+		return errViolations
 	}
 
 	if !o.outputJSON {

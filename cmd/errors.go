@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,30 +15,7 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
-
-	"github.com/spf13/cobra"
+	"github.com/pkg/errors"
 )
 
-type versionOptions struct{}
-
-func newVersionCmd() *cobra.Command {
-	o := versionOptions{}
-
-	cmd := &cobra.Command{
-		Use:   "version",
-		Short: "Display Terraform Validator version.",
-		RunE: func(c *cobra.Command, args []string) error {
-			return o.run()
-		},
-	}
-
-	return cmd
-}
-
-func (o *versionOptions) run() error {
-	fmt.Printf("Build version: %s\n", tfgcv.BuildVersion())
-	return nil
-}
+var errViolations = errors.New("Found violations")

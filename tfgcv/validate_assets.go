@@ -32,6 +32,8 @@ func BuildVersion() string {
 	return buildVersion
 }
 
+type ValidateAssetsFunc func(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error)
+
 // ValidateAssets instantiates GCV and audits CAI assets using "policies"
 // and "lib" folder under policyRootPath.
 func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {

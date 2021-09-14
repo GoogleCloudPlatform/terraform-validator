@@ -22,6 +22,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const convertDesc = `
@@ -40,19 +41,27 @@ Example:
 `
 
 type convertOptions struct {
-	project  string
-	ancestry string
-	offline  bool
+	project              string
+	ancestry             string
+	offline              bool
+	errorLogger          *zap.Logger
+	outputLogger         *zap.Logger
+	useStructuredLogging bool
+	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
 }
 
-func newConvertCmd() *cobra.Command {
-	o := &convertOptions{}
+func newConvertCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
+	o := &convertOptions{
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
+		useStructuredLogging: useStructuredLogging,
+		readPlannedAssets:    tfgcv.ReadPlannedAssets,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "convert TFPLAN_JSON",
 		Short: "convert a Terraform plan to Google CAI assets",
 		Long:  convertDesc,
-		SilenceUsage: os.Getenv("COBRA_SILENCE_USAGE") == "true",
 		PreRunE: func(c *cobra.Command, args []string) error {
 			return o.validateArgs(args)
 		},
@@ -80,7 +89,7 @@ func (o *convertOptions) validateArgs(args []string) error {
 
 func (o *convertOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := tfgcv.ReadPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
@@ -88,6 +97,15 @@ func (o *convertOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
+	if o.useStructuredLogging {
+		o.outputLogger.Info(
+			"converted resources",
+			zap.Any("resource_body", assets),
+		)
+		return nil
+	}
+
+	// Legacy behavior
 	if err := json.NewEncoder(os.Stdout).Encode(assets); err != nil {
 		return errors.Wrap(err, "encoding json")
 	}
