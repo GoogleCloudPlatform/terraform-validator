@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	provider "github.com/hashicorp/terraform-provider-google/v3/google"
@@ -30,6 +29,7 @@ import (
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+	"go.uber.org/zap"
 )
 
 var ErrDuplicateAsset = errors.New("duplicate asset")
@@ -126,7 +126,7 @@ type RestoreDefault struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(cfg *converter.Config, ancestryManager ancestrymanager.AncestryManager, offline bool, convertUnchanged bool) *Converter {
+func NewConverter(cfg *converter.Config, ancestryManager ancestrymanager.AncestryManager, offline bool, convertUnchanged bool, errorLogger *zap.Logger) *Converter {
 	return &Converter{
 		schema:           provider.Provider(),
 		mapperFuncs:      converter.Mappers(),
@@ -135,6 +135,7 @@ func NewConverter(cfg *converter.Config, ancestryManager ancestrymanager.Ancestr
 		ancestryManager:  ancestryManager,
 		assets:           make(map[string]Asset),
 		convertUnchanged: convertUnchanged,
+		errorLogger:      errorLogger,
 	}
 }
 
@@ -158,6 +159,9 @@ type Converter struct {
 
 	// When set, Converter will convert ResourceChanges with no-op "actions".
 	convertUnchanged bool
+
+	// For logging error / status information that doesn't warrant an outright failure
+	errorLogger *zap.Logger
 }
 
 // Schemas exposes the schemas of resources this converter knows about.
@@ -187,13 +191,13 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 	for _, rc := range changes {
 		// skip unknown resources
 		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
-			glog.Infof("unknown resource: %s", rc.Type)
+			c.errorLogger.Info(fmt.Sprintf("unknown resource: %s", rc.Type))
 			continue
 		}
 
 		// Skip unsupported resources
 		if _, ok := c.mapperFuncs[rc.Type]; !ok {
-			glog.Infof("unsupported resource: %s", rc.Type)
+			c.errorLogger.Info(fmt.Sprintf("unsupported resource: %s", rc.Type))
 			continue
 		}
 
@@ -209,7 +213,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 	for _, rc := range createOrUpdateOrNoops {
 		if err := c.addCreateOrUpdateOrNoop(rc); err != nil {
 			if errorssyslib.Is(err, ErrDuplicateAsset) {
-				glog.Warningf("adding resource change: %v", err)
+				c.errorLogger.Warn(fmt.Sprintf("adding resource change: %v", err))
 			} else {
 				return fmt.Errorf("adding resource create/update/no-op %w", err)
 			}
@@ -252,7 +256,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			} else if !c.offline {
 				asset, err := mapper.Fetch(&rd, c.cfg)
 				if errors.Cause(err) == converter.ErrEmptyIdentityField {
-					glog.Warningf("%s did not return a value for ID field. Skipping asset fetch.", key)
+					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
 					existingConverterAsset = nil
 				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
@@ -303,7 +307,7 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 			} else if mapper.Fetch != nil && !c.offline {
 				asset, err := mapper.Fetch(&rd, c.cfg)
 				if errors.Cause(err) == converter.ErrEmptyIdentityField {
-					glog.Warningf("%s did not return a value for ID field. Skipping asset fetch.", key)
+					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
 					existingConverterAsset = nil
 				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
@@ -350,7 +354,7 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *converter.Config, cai converter.Asset) (Asset, error) {
-	project, err := getProject(tfData, cfg, cai)
+	project, err := getProject(tfData, cfg, cai, c.errorLogger)
 	if err != nil {
 		return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
 	}

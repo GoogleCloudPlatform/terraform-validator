@@ -103,7 +103,7 @@ func (o *validateOptions) validateArgs(args []string) error {
 
 func (o *validateOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.errorLogger)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")

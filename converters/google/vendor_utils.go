@@ -16,9 +16,9 @@ package google
 
 import (
 	"fmt"
-	"log"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	"go.uber.org/zap"
 )
 
 // NOTE: These functions were pulled from github.com/terraform-providers/terraform-provider-google. They can go away when the functionality they are providing is implemented in the future github.com/GoogleCloudPlatform/terraform-converters package.
@@ -26,7 +26,8 @@ import (
 // getProject reads the "project" field from the given resource data and falls
 // back to the provider's value if not given. If the provider's value is not
 // given, an error is returned.
-func getProject(d converter.TerraformResourceData, config *converter.Config, cai converter.Asset) (string, error) {
+func getProject(d converter.TerraformResourceData, config *converter.Config, cai converter.Asset, errorLogger *zap.Logger) (string, error) {
+
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project",
 		"cloudbilling.googleapis.com/ProjectBillingInfo":
@@ -39,7 +40,7 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 		if ok {
 			return res.(string), nil
 		} else {
-			log.Printf("[WARN] Failed to retrieve project_id for %s from resource", cai.Name)
+			errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from resource", cai.Name))
 		}
 	case "storage.googleapis.com/Bucket":
 		if cai.Resource != nil {
@@ -48,7 +49,7 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 				return res.(string), nil
 			}
 		}
-		log.Printf("[WARN] Failed to retrieve project_id for %s from cai resource", cai.Name)
+		errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from cai resource", cai.Name))
 	}
 
 	return getProjectFromSchema("project", d, config)
