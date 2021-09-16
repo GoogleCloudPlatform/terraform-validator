@@ -81,4 +81,4 @@ make test-integration
 
 ### Add a new resource
 
-See [Add a new resource](./add_new_resource)
+See [Add a new resource](./add_new_resource.md)
