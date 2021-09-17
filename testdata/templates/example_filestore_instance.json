@@ -5,7 +5,7 @@
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
       "version": "v1",
-      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/filestore/v1/rest",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/file/v1/rest",
       "discovery_name": "Instance",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
