@@ -2,6 +2,7 @@ package tfgcv
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"path/filepath"
 	"testing"
 )
@@ -76,7 +77,7 @@ func TestReadPlannedAssets(t *testing.T) {
 			var offline bool
 			offline = true
 			ctx := context.Background()
-			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, tt.args.ancestry, offline, tt.args.convertUnchanged)
+			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, tt.args.ancestry, offline, tt.args.convertUnchanged, zap.NewExample())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadPlannedAssets() error = %v, wantErr %v", err, tt.wantErr)
 				return
