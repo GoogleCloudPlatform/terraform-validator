@@ -1,7 +1,7 @@
 [
   {
-    "name": "//filestore.googleapis.com/projects/{{.Provider.project}}/locations/us-central1-b/instances/test-instance",
-    "asset_type": "filestore.googleapis.com/Instance",
+    "name": "//file.googleapis.com/projects/{{.Provider.project}}/locations/us-central1-b/instances/test-instance",
+    "asset_type": "file.googleapis.com/Instance",
     "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
       "version": "v1",
