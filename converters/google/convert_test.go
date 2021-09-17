@@ -25,6 +25,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 const testProject = "test-project"
@@ -39,11 +40,12 @@ func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing configuration")
 	}
-	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline)
+	errorLogger := zap.NewExample()
+	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline, errorLogger)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource ancestryManager")
 	}
-	c := NewConverter(cfg, ancestryManager, offline, convertUnchanged)
+	c := NewConverter(cfg, ancestryManager, offline, convertUnchanged, errorLogger)
 	return c, nil
 }
 

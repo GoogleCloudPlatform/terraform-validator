@@ -13,6 +13,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
+	"go.uber.org/zap"
 )
 
 func TestReadPlannedAssetsCoverage(t *testing.T) {
@@ -92,7 +93,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 
 			planfile := filepath.Join(dir, c.name+".tfplan.json")
 			ctx := context.Background()
-			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], data.Ancestry, true, false)
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], data.Ancestry, true, false, zap.NewExample())
 			if err != nil {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], data.Ancestry, true, err)
 			}

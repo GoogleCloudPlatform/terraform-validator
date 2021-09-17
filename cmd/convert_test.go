@@ -6,9 +6,10 @@ import (
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
-func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool) ([]google.Asset, error) {
+func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
 	return []google.Asset{
 		google.Asset{
 			Name: "//compute.googleapis.com/projects/my-project/zones/us-central1-a/disks/test-disk",

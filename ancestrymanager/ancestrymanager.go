@@ -3,12 +3,12 @@ package ancestrymanager
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"google.golang.org/api/cloudresourcemanager/v1"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	"go.uber.org/zap"
 )
 
 // AncestryManager is the interface that wraps the GetAncestry method.
@@ -27,11 +27,12 @@ type ClientRetriever interface {
 
 // resourceAncestryManager provides common methods for retrieving ancestry from resources
 type resourceAncestryManager struct {
+	errorLogger *zap.Logger
 }
 
 func (m *resourceAncestryManager) getFolderAncestry(folderID string) ([]*cloudresourcemanager.Ancestor, error) {
 	// TODO(morgantep): Incorporate folders.GetAncestry from v2alpha1 API
-	log.Printf("[INFO] Retrieve ancestry for folder: %s", folderID)
+	m.errorLogger.Info(fmt.Sprintf("Retrieving ancestry for folder: %s", folderID))
 
 	return []*cloudresourcemanager.Ancestor{
 		&cloudresourcemanager.Ancestor{
@@ -50,7 +51,7 @@ func (m *resourceAncestryManager) getFolderAncestry(folderID string) ([]*cloudre
 }
 
 func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.TerraformResourceData, cai converter.Asset) ([]*cloudresourcemanager.Ancestor, bool) {
-	log.Printf("[INFO] Retrieving ancestry from resource (type=%s)", cai.Type)
+	m.errorLogger.Info(fmt.Sprintf("Retrieving ancestry from resource (type=%s)", cai.Type))
 
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
@@ -88,14 +89,14 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.Terra
 		if ok && folderID != "" {
 			folderAncestry, err := m.getFolderAncestry(folderID.(string))
 			if err != nil {
-				log.Printf("[ERROR] Failed to retrieve folder ancestry: %s", err)
+				m.errorLogger.Error(fmt.Sprintf("Failed to retrieve folder ancestry: %s", err))
 				return nil, false
 			}
 			return append(ancestry, folderAncestry...), true
 		}
 		return nil, false
 	default:
-		log.Printf("[INFO] Resource of type %s does not include sufficient data for ancestry retrieval", cai.Type)
+		m.errorLogger.Info(fmt.Sprintf("Resource of type %s does not include sufficient data for ancestry retrieval", cai.Type))
 		return nil, false
 	}
 }
@@ -138,7 +139,7 @@ func (m *onlineAncestryManager) GetAncestryWithResource(project string, tfData c
 		return "", err
 	}
 	path = ancestryPath(ancestry)
-	log.Printf("[INFO] [Online] Retrieved ancestry for %s: %s", project, path)
+	m.errorLogger.Info(fmt.Sprintf("[Online] Retrieved ancestry for %s: %s", project, path))
 	m.store(project, path)
 	return path, nil
 }
@@ -170,7 +171,7 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 	ancestry, ok := m.getAncestryFromResource(tfData, cai)
 	if ok {
 		path := ancestryPath(ancestry)
-		log.Printf("[INFO] [Offline] Retrieved ancestry for %s: %s", project, path)
+		m.errorLogger.Info(fmt.Sprintf("[Offline] Retrieved ancestry for %s: %s", project, path))
 		return path, nil
 	}
 
@@ -183,14 +184,14 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
-func New(retriever ClientRetriever, project, ancestry, userAgent string, offline bool) (AncestryManager, error) {
+func New(retriever ClientRetriever, project, ancestry, userAgent string, offline bool, errorLogger *zap.Logger) (AncestryManager, error) {
 	if ancestry != "" {
 		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
 	}
 	if offline {
-		return &offlineAncestryManager{project: project, ancestry: ancestry}, nil
+		return &offlineAncestryManager{project: project, ancestry: ancestry, resourceAncestryManager: resourceAncestryManager{errorLogger: errorLogger}}, nil
 	}
-	am := &onlineAncestryManager{ancestryCache: map[string]string{}}
+	am := &onlineAncestryManager{ancestryCache: map[string]string{}, resourceAncestryManager: resourceAncestryManager{errorLogger: errorLogger}}
 	am.store(project, ancestry)
 	rm := retriever.NewResourceManagerClient(userAgent)
 	am.resourceManager = rm
