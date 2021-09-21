@@ -1,105 +1,45 @@
 [
-      {
-        "name": "//cloudfunctions.googleapis.com/projects/test-project/locations/australia-southeast1/functions/test-function",
-        "asset_type": "cloudfunctions.googleapis.com/CloudFunction",
-        "resource": {
-          "version": "v1",
-          "discoveryDocumentUri": "https://cloudfunctions.googleapis.com/$discovery/rest",
-          "discoveryName": "CloudFunction",
-          "parent": "//cloudresourcemanager.googleapis.com/projects/123456789012",
-          "data": {
-            "description": "Cloud Function",
-            "runtime": "python37",
-            "labels": {
-              "test": "test"
-            },
-            "updateTime": "2021-07-28T02:04:12.847Z",
-            "versionId": "1",
-            "vpcConnectorEgressSettings": "ALL_TRAFFIC",
-            "status": "ACTIVE",
-            "eventTrigger": {
-              "eventType": "google.pubsub.topic.publish",
-              "failurePolicy": {
-                "retry": {}
-              },
-              "service": "pubsub.googleapis.com",
-              "resource": "projects/test-project/topics/test-topic"
-            },
-            "buildId": "2f54f5d2-5bb8-4a99-92cc-a5e48a7a28f7",
-            "availableMemoryMb": 256,
-            "buildName": "projects/123456789012/locations/australia-southeast1/builds/2f54f5d2-5bb8-4a99-92cc-a5e48a7a28f7",
-            "sourceArchiveUrl": "gs://test-project/cf_action/code1.zip",
-            "ingressSettings": "ALLOW_INTERNAL_ONLY",
-            "name": "projects/test-project/locations/australia-southeast1/functions/test-function",
-            "vpcConnector": "projects/network-project/locations/australia-southeast1/connectors/vpcac-blah",
-            "environmentVariables": {
-              "project_number": "123456789012"
-            },
-            "entryPoint": "subscribe",
-            "serviceAccountEmail": "test-function-account@test-project.iam.gserviceaccount.com",
-            "timeout": "540s"
+    {
+      "name": "//cloudfunctions.googleapis.com/projects/{{.Provider.project}}/locations/australia-southeast1/functions/function-test",
+      "asset_type": "cloudfunctions.googleapis.com/CloudFunction",
+      "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+      "resource": {
+        "version": "v1",
+        "discoveryDocumentUri": "https://cloudfunctions.googleapis.com/$discovery/rest",
+        "discoveryName": "CloudFunction",
+        "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+        "data": {
+          "buildId": "5ce08b75-19c6-46fa-87eb-fad8a71dbe20",
+          "httpsTrigger": {
+            "securityLevel": "SECURE_OPTIONAL",
+            "url": "https://australia-southeast1-{{.Provider.project}}.cloudfunctions.net/function-test"
           },
-          "location": "australia-southeast1"
+          "name": "projects/{{.Provider.project}}/locations/australia-southeast1/functions/function-test",
+          "description": "My function",
+          "sourceUploadUrl": "https://storage.googleapis.com/gcf-upload-australia-south-891dca49-2554-4711-a72e-f91eb6e9913e/f1744f40-a993-42a2-89ab-425ec3f0248e.zip",
+          "timeout": "60s",
+          "environmentVariables": {
+            "MY_ENV_VAR": "my-env-var-value"
+          },
+          "buildName": "projects/{{.Provider.project}}/locations/australia-southeast1/builds/5ce08b75-19c6-46fa-87eb-fad8a71dbe20",
+          "updateTime": "2021-09-21T05:28:14.084Z",
+          "ingressSettings": "ALLOW_ALL",
+          "availableMemoryMb": 128,
+          "runtime": "nodejs14",
+          "serviceAccountEmail": "{{.Provider.project}}@appspot.gserviceaccount.com",
+          "versionId": "3",
+          "status": "ACTIVE",
+          "labels": {
+            "my-label": "my-label-value"
+          },
+          "entryPoint": "helloHttp"
         },
-        "ancestors": [
-          "projects/123456789012",
-          "folders/098765432111",
-          "folders/123897128932",
-          "folders/6712678191010",
-          "organizations/1010101020201"
-        ],
-        "updateTime": "2021-07-28T06:37:32.291189Z"
+        "location": "australia-southeast1"
       },
-      {
-        "name": "//cloudfunctions.googleapis.com/projects/test-project/locations/australia-southeast1/functions/test-function2",
-        "asset_type": "cloudfunctions.googleapis.com/CloudFunction",
-        "resource": {
-          "version": "v1",
-          "discoveryDocumentUri": "https://cloudfunctions.googleapis.com/$discovery/rest",
-          "discoveryName": "CloudFunction",
-          "parent": "//cloudresourcemanager.googleapis.com/projects/123456789012",
-          "data": {
-            "sourceArchiveUrl": "gs://test-project/cf_decision/cf-decision-code.zip",
-            "buildId": "4cff4885-914d-4609-8a15-4fb9d27c9fe2",
-            "versionId": "1",
-            "buildName": "projects/123456789012/locations/australia-southeast1/builds/4cff4885-914d-4609-8a15-4fb9d27c9fe2",
-            "description": "Cloud Function 2",
-            "timeout": "540s",
-            "runtime": "python37",
-            "labels": {
-              "test": "test"
-            },
-            "ingressSettings": "ALLOW_INTERNAL_ONLY",
-            "entryPoint": "subscribe",
-            "serviceAccountEmail": "test-function2-account@test-project.iam.gserviceaccount.com",
-            "updateTime": "2021-07-28T02:05:27.989Z",
-            "name": "projects/test-project/locations/australia-southeast1/functions/test-function2",
-            "vpcConnectorEgressSettings": "ALL_TRAFFIC",
-            "status": "ACTIVE",
-            "availableMemoryMb": 256,
-            "eventTrigger": {
-              "resource": "projects/test-project/topics/source-topic",
-              "failurePolicy": {
-                "retry": {}
-              },
-              "service": "pubsub.googleapis.com",
-              "eventType": "google.pubsub.topic.publish"
-            },
-            "environmentVariables": {
-              "project_number": "123456789012",
-            },
-            "vpcConnector": "projects/network-project/locations/australia-southeast1/connectors/vpcac-blah"
-          },
-          "location": "australia-southeast1"
-        },
-        "ancestors": [
-          "projects/123456789012",
-          "folders/098765432111",
-          "folders/123897128932",
-          "folders/6712678191010",
-          "organizations/1010101020201"
-        ],
-        "updateTime": "2021-07-28T06:37:32.291189Z"
-      }
-]
-  
+      "ancestors": [
+        "projects/{{.Provider.project}}"
+      ],
+      "updateTime": "2021-09-21T05:28:15.951301Z"
+    }
+  ]
+
