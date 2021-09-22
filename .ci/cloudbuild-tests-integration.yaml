@@ -22,8 +22,8 @@ steps:
   args: [build]
 - id: test-integration
   name: 'hashicorp/terraform:$_TERRAFORM_VERSION'
-  entrypoint: /usr/bin/make
-  args: ['test-integration']
+  entrypoint: /bin/sh
+  args: ['-c', 'apk add make go && /usr/bin/make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
   waitFor: ['build']
