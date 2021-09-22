@@ -21,7 +21,7 @@ steps:
   entrypoint: /usr/bin/make
   args: [build]
 - id: test
-  name: 'gcr.io/cloud-builders/go'
+  name: 'golang:1.14'
   entrypoint: '/bin/bash'
   args: ['-c', 'make test']
   env:
