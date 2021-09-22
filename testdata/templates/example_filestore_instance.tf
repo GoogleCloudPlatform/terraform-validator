@@ -27,12 +27,7 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-provider "google-beta" {
-  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
-}
-
 resource "google_filestore_instance" "test" {
-  provider = google-beta
   name = "test-instance"
   zone = "us-central1-b"
   tier = "BASIC_SSD"

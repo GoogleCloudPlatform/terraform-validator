@@ -9,7 +9,7 @@
           "mode": "managed",
           "type": "google_filestore_instance",
           "name": "test",
-          "provider_name": "registry.terraform.io/hashicorp/google-beta",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 0,
           "values": {
             "description": null,
@@ -63,7 +63,7 @@
       "mode": "managed",
       "type": "google_filestore_instance",
       "name": "test",
-      "provider_name": "registry.terraform.io/hashicorp/google-beta",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
@@ -155,8 +155,8 @@
           }
         }
       },
-      "google-beta": {
-        "name": "google-beta",
+      "google": {
+        "name": "google",
         "expressions": {
           "project": {
             "constant_value": "{{.Provider.project}}"
@@ -171,7 +171,7 @@
           "mode": "managed",
           "type": "google_filestore_instance",
           "name": "test",
-          "provider_config_key": "google-beta",
+          "provider_config_key": "google",
           "expressions": {
             "file_shares": [
               {
