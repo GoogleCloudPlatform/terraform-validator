@@ -22,8 +22,8 @@ steps:
   args: [build]
 - id: test-integration
   name: 'hashicorp/terraform:$_TERRAFORM_VERSION'
-  entrypoint: '/bin/bash'
-  args: ['-c', 'make test-integration']
+  entrypoint: /usr/bin/make
+  args: ['test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
   waitFor: ['build']
