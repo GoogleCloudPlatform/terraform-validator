@@ -20,17 +20,10 @@ steps:
   name: 'gcr.io/cloud-builders/go'
   entrypoint: /usr/bin/make
   args: [build]
-- id: test
-  name: 'gcr.io/cloud-builders/go'
-  entrypoint: '/bin/bash'
-  args: ['-c', 'make test']
-  env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
-    - 'GOPATH=/gopath'
-  waitFor: ['build']
 - id: test-integration
   name: 'hashicorp/terraform:$_TERRAFORM_VERSION'
-  args: ['/bin/bash', '-c', 'make test-integration']
+  entrypoint: '/bin/bash'
+  args: ['-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
   waitFor: ['build']
