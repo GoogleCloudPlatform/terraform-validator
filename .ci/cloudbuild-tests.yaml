@@ -25,37 +25,37 @@ steps:
   args: ['/bin/bash', '-c', 'make test']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: build
+  waitFor: ['build']
 - id: test-integration-tf-0.12.31
   name: 'hashicorp/terraform:0.12.31'
   args: ['/bin/bash', '-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: build
+  waitFor: ['build']
 - id: test-integration-tf-0.13.7
   name: 'hashicorp/terraform:0.13.7'
   args: ['/bin/bash', '-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: build
+  waitFor: ['build']
 - id: test-integration-tf-0.14.11
   name: 'hashicorp/terraform:0.14.11'
   args: ['/bin/bash', '-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: build
+  waitFor: ['build']
 - id: test-integration-tf-0.15.5
   name: 'hashicorp/terraform:0.15.5'
   args: ['/bin/bash', '-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: build
+  waitFor: ['build']
 - id: test-integration-tf-1.0.7
   name: 'hashicorp/terraform:1.0.7'
   args: ['/bin/bash', '-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: build
+  waitFor: ['build']
 tags:
 - 'ci'
 - 'integration'
