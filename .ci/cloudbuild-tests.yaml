@@ -22,37 +22,14 @@ steps:
   args: [build]
 - id: test
   name: 'gcr.io/cloud-builders/go'
-  args: ['/bin/bash', '-c', 'make test']
+  entrypoint: '/bin/bash'
+  args: ['-c', 'make test']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
     - 'GOPATH=/gopath'
   waitFor: ['build']
-- id: test-integration-tf-0.12.31
-  name: 'hashicorp/terraform:0.12.31'
-  args: ['/bin/bash', '-c', 'make test-integration']
-  env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: ['build']
-- id: test-integration-tf-0.13.7
-  name: 'hashicorp/terraform:0.13.7'
-  args: ['/bin/bash', '-c', 'make test-integration']
-  env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: ['build']
-- id: test-integration-tf-0.14.11
-  name: 'hashicorp/terraform:0.14.11'
-  args: ['/bin/bash', '-c', 'make test-integration']
-  env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: ['build']
-- id: test-integration-tf-0.15.5
-  name: 'hashicorp/terraform:0.15.5'
-  args: ['/bin/bash', '-c', 'make test-integration']
-  env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
-  waitFor: ['build']
-- id: test-integration-tf-1.0.7
-  name: 'hashicorp/terraform:1.0.7'
+- id: test-integration
+  name: 'hashicorp/terraform:$_TERRAFORM_VERSION'
   args: ['/bin/bash', '-c', 'make test-integration']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
