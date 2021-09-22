@@ -25,6 +25,7 @@ steps:
   args: ['/bin/bash', '-c', 'make test']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
+    - 'GOPATH=/gopath'
   waitFor: ['build']
 - id: test-integration-tf-0.12.31
   name: 'hashicorp/terraform:0.12.31'
