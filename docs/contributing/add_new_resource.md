@@ -21,7 +21,7 @@ A resource is "supported" by terraform-validator if it has an entry in [mappers.
 Adding support for a resource has four steps:
 
 1. Make changes to [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules) to add any necessary code to terraform-google-conversion.
-2. Make changes to terraform-validator to adds tests for the new resource. Make sure the new tests pass locally.
+2. Add tests for the new resource to terraform-validator, and run them against a [locally-generated](https://github.com/GoogleCloudPlatform/magic-modules/#generating-terraform-google-conversion) copy of terraform-google-conversion.
 3. Make PRs for Magic Modules & terraform-validator with your changes. The reviewer will double-check that your code works and then merge the Magic Modules PR.
 4. Once the Magic Modules PR is merged, it will automatically update terraform-google-conversion with your changes. Update your terraform-validator PR to use the new version of terraform-google.conversion.
 
@@ -89,9 +89,9 @@ make validator OUTPUT_PATH="/path/to/your/terraform-google-conversion"
 
 You can then run `make test` inside your terraform-google-conversion repository to make sure those tests pass.
 
-### 2. Terraform Validator
+### 2. Terraform Validator tests
 
-Now that you have a local copy of terraform-google-conversion that has been generated from Magic Modules, you need to make Terraform Validator use it for local testing. You can do this with a [`replace` directive](https://golang.org/ref/mod#go-mod-file-replace):
+Now that you have a local copy of terraform-google-conversion that has been [generated from Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules/#generating-terraform-google-conversion), you need to make Terraform Validator use it for local testing. You can do this with a [`replace` directive](https://golang.org/ref/mod#go-mod-file-replace):
 
 ```
 replace github.com/GoogleCloudPlatform/terraform-google-conversion => /path/to/your/terraform-google-conversion
@@ -114,14 +114,14 @@ Now that you have your code working locally, open PRs for [Magic Modules](https:
 
 For the Magic Modules PR, the most important check is `terraform-google-conversion-test` - as long as that's passing, you're probably fine. If it is failing, go back to step 1 and try running `make test` for terraform-google-conversion to reproduce & fix the failure.
 
-For terraform-validator, the tests will not pass at this point, because the terraform-google-conversion dependency has not yet been updated. As long as the tests are passing locally for you, it should be fine.
+For terraform-validator, the CI tests will not pass at this point, because the terraform-google-conversion dependency has not yet been updated. As long as the tests are passing locally for you, it should be fine.
 
 ### 4. Update terraform-google-conversion dependency
 
-In your terraform-validator PR, update the terraform-google-conversion dependency. This command will make the necessary changes:
+After the Magic Modules PR is merged, and the terraform-google-conversion repository contains your changes, update the terraform-google-conversion dependency in your terraform-validator PR. This command will make the necessary changes:
 
 ```bash
 go get github.com/GoogleCloudPlatform/terraform-google-conversion
 ```
 
-If tf-validator-build is failing after you make this change, double-check that you're able to run `make test` locally inside the terraform-validator repository.
+If the CI tests are still failing after you make this change, double-check that you're able to run `make test` locally inside the terraform-validator repository using the updated (not replaced) dependency.
