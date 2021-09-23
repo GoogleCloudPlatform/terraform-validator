@@ -9,34 +9,14 @@
           "mode": "managed",
           "type": "google_filestore_instance",
           "name": "test",
-          "provider_name": "registry.terraform.io/hashicorp/google-beta",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 0,
           "values": {
             "description": null,
             "file_shares": [
               {
                 "capacity_gb": 2660,
-                "name": "share1",
-                "nfs_export_options": [
-                  {
-                    "access_mode": "READ_WRITE",
-                    "anon_gid": null,
-                    "anon_uid": null,
-                    "ip_ranges": [
-                      "10.0.0.0/24"
-                    ],
-                    "squash_mode": "NO_ROOT_SQUASH"
-                  },
-                  {
-                    "access_mode": "READ_ONLY",
-                    "anon_gid": 456,
-                    "anon_uid": 123,
-                    "ip_ranges": [
-                      "10.10.0.0/24"
-                    ],
-                    "squash_mode": "ROOT_SQUASH"
-                  }
-                ]
+                "name": "share1"
               }
             ],
             "labels": null,
@@ -63,7 +43,7 @@
       "mode": "managed",
       "type": "google_filestore_instance",
       "name": "test",
-      "provider_name": "registry.terraform.io/hashicorp/google-beta",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
@@ -74,27 +54,7 @@
           "file_shares": [
             {
               "capacity_gb": 2660,
-              "name": "share1",
-              "nfs_export_options": [
-                {
-                  "access_mode": "READ_WRITE",
-                  "anon_gid": null,
-                  "anon_uid": null,
-                  "ip_ranges": [
-                    "10.0.0.0/24"
-                  ],
-                  "squash_mode": "NO_ROOT_SQUASH"
-                },
-                {
-                  "access_mode": "READ_ONLY",
-                  "anon_gid": 456,
-                  "anon_uid": 123,
-                  "ip_ranges": [
-                    "10.10.0.0/24"
-                  ],
-                  "squash_mode": "ROOT_SQUASH"
-                }
-              ]
+              "name": "share1"
             }
           ],
           "labels": null,
@@ -114,22 +74,6 @@
         "after_unknown": {
           "create_time": true,
           "etag": true,
-          "file_shares": [
-            {
-              "nfs_export_options": [
-                {
-                  "ip_ranges": [
-                    false
-                  ]
-                },
-                {
-                  "ip_ranges": [
-                    false
-                  ]
-                }
-              ]
-            }
-          ],
           "id": true,
           "networks": [
             {
@@ -155,8 +99,8 @@
           }
         }
       },
-      "google-beta": {
-        "name": "google-beta",
+      "google": {
+        "name": "google",
         "expressions": {
           "project": {
             "constant_value": "{{.Provider.project}}"
@@ -171,7 +115,7 @@
           "mode": "managed",
           "type": "google_filestore_instance",
           "name": "test",
-          "provider_config_key": "google-beta",
+          "provider_config_key": "google",
           "expressions": {
             "file_shares": [
               {
@@ -180,41 +124,7 @@
                 },
                 "name": {
                   "constant_value": "share1"
-                },
-                "nfs_export_options": [
-                  {
-                    "access_mode": {
-                      "constant_value": "READ_WRITE"
-                    },
-                    "ip_ranges": {
-                      "constant_value": [
-                        "10.0.0.0/24"
-                      ]
-                    },
-                    "squash_mode": {
-                      "constant_value": "NO_ROOT_SQUASH"
-                    }
-                  },
-                  {
-                    "access_mode": {
-                      "constant_value": "READ_ONLY"
-                    },
-                    "anon_gid": {
-                      "constant_value": 456
-                    },
-                    "anon_uid": {
-                      "constant_value": 123
-                    },
-                    "ip_ranges": {
-                      "constant_value": [
-                        "10.10.0.0/24"
-                      ]
-                    },
-                    "squash_mode": {
-                      "constant_value": "ROOT_SQUASH"
-                    }
-                  }
-                ]
+                }
               }
             ],
             "name": {
