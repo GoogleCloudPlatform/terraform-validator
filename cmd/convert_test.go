@@ -10,7 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
 func testAssets() []google.Asset {
 	return []google.Asset{
 		google.Asset{
@@ -34,7 +33,6 @@ func testAssets() []google.Asset {
 		},
 	}
 }
-
 
 func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
 	return testAssets(), nil

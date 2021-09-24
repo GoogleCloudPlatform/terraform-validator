@@ -18,7 +18,6 @@ func (bws bufferWriteSyncer) Sync() error {
 	return nil
 }
 
-
 func newTestErrorLogger(verbose, useStructuredLogging bool) (*zap.Logger, *bytes.Buffer) {
 	buf := new(bytes.Buffer)
 	syncer := bufferWriteSyncer{Buffer: buf}
@@ -55,10 +54,10 @@ func TestErrorLoggerSchema(t *testing.T) {
 	json.Unmarshal(outputJSON, &output)
 
 	expectedOutput := map[string]interface{}{
-		"version": "v1.0.0",
+		"version":   "v1.0.0",
 		"timestamp": "tested separately",
 		"error_details": map[string]interface{}{
-			"error": "This is a message",
+			"error":   "This is a message",
 			"context": "",
 		},
 	}
