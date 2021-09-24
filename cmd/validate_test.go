@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
@@ -9,13 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func MockValidateAssetsNoViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
+func testAuditResponseNoViolations() *validator.AuditResponse {
 	return &validator.AuditResponse{
 		Violations: []*validator.Violation{},
-	}, nil
+	}
 }
 
-func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
+func MockValidateAssetsNoViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
+	return testAuditResponseNoViolations(), nil
+}
+
+func testAuditResponseWithViolations() *validator.AuditResponse {
 	return &validator.AuditResponse{
 		Violations: []*validator.Violation{
 			&validator.Violation{
@@ -25,15 +30,19 @@ func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset
 				Severity:   "high",
 			},
 		},
-	}, nil
+	}
+}
+
+func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
+	return testAuditResponseWithViolations(), nil
 }
 
 func TestValidateRun(t *testing.T) {
 	a := assert.New(t)
 	verbose := true
 	useStructuredLogging := true
-	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
-	outputLogger, outputObservedLogs := newTestOutputLogger()
+	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
 	o := validateOptions{
 		project:              "",
 		ancestry:             "",
@@ -51,25 +60,30 @@ func TestValidateRun(t *testing.T) {
 	err := o.run("/path/to/plan")
 	a.ErrorIs(err, errViolations)
 
-	errorLogs := errorObservedLogs.AllUntimed()
-	outputLogs := outputObservedLogs.AllUntimed()
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.Bytes()
 
-	a.Len(errorLogs, 0)
-	a.Len(outputLogs, 1)
+	a.Equal("", errorJSON)
+
+	var output map[string]interface{}
+	json.Unmarshal(outputJSON, &output)
 
 	// On a run with violations, we should see a list of violations in the resource_body field
-	fields := outputLogs[0].ContextMap()
-	a.Contains(fields, "resource_body")
-	a.Len(fields["resource_body"], 1)
-	a.IsType([]*validator.Violation{}, fields["resource_body"])
+	a.Contains(output, "resource_body")
+	a.Len(output["resource_body"], 1)
+
+	var expectedAuditResponse map[string]interface{}
+	expectedAuditResponseJSON, _ := json.Marshal(testAuditResponseWithViolations())
+	json.Unmarshal(expectedAuditResponseJSON, &expectedAuditResponse)
+	a.Equal(expectedAuditResponse["violations"], output["resource_body"])
 }
 
 func TestValidateRunNoViolations(t *testing.T) {
 	a := assert.New(t)
 	verbose := true
 	useStructuredLogging := true
-	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
-	outputLogger, outputObservedLogs := newTestOutputLogger()
+	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
 	o := validateOptions{
 		project:              "",
 		ancestry:             "",
@@ -87,25 +101,25 @@ func TestValidateRunNoViolations(t *testing.T) {
 	err := o.run("/path/to/plan")
 	a.Nil(err)
 
-	errorLogs := errorObservedLogs.AllUntimed()
-	outputLogs := outputObservedLogs.AllUntimed()
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.Bytes()
 
-	a.Len(errorLogs, 0)
-	a.Len(outputLogs, 1)
+	a.Equal("", errorJSON)
+
+	var output map[string]interface{}
+	json.Unmarshal(outputJSON, &output)
 
 	// On a run with no violations, we should see an empty list of violations in the resource_body field
-	fields := outputLogs[0].ContextMap()
-	a.Contains(fields, "resource_body")
-	a.Len(fields["resource_body"], 0)
-	a.IsType([]*validator.Violation{}, fields["resource_body"])
+	a.Contains(output, "resource_body")
+	a.Len(output["resource_body"], 0)
 }
 
 func TestValidateRunLegacy(t *testing.T) {
 	a := assert.New(t)
 	verbose := true
 	useStructuredLogging := false
-	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
-	outputLogger, outputObservedLogs := newTestOutputLogger()
+	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
 	o := validateOptions{
 		project:              "",
 		ancestry:             "",
@@ -123,20 +137,20 @@ func TestValidateRunLegacy(t *testing.T) {
 	err := o.run("/path/to/plan")
 	a.ErrorIs(err, errViolations)
 
-	errorLogs := errorObservedLogs.AllUntimed()
-	outputLogs := outputObservedLogs.AllUntimed()
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.String()
 
 	// On a legacy run with validation errors, loggers should not be used.
-	a.Len(errorLogs, 0)
-	a.Len(outputLogs, 0)
+	a.Equal("", errorJSON)
+	a.Equal("", outputJSON)
 }
 
 func TestValidateRunNoViolationsLegacy(t *testing.T) {
 	a := assert.New(t)
 	verbose := true
 	useStructuredLogging := false
-	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
-	outputLogger, outputObservedLogs := newTestOutputLogger()
+	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
 	o := validateOptions{
 		project:              "",
 		ancestry:             "",
@@ -154,10 +168,10 @@ func TestValidateRunNoViolationsLegacy(t *testing.T) {
 	err := o.run("/path/to/plan")
 	a.Nil(err)
 
-	errorLogs := errorObservedLogs.AllUntimed()
-	outputLogs := outputObservedLogs.AllUntimed()
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.String()
 
 	// On a legacy run with no validation errors, loggers should not be used.
-	a.Len(errorLogs, 0)
-	a.Len(outputLogs, 0)
+	a.Equal("", errorJSON)
+	a.Equal("", outputJSON)
 }

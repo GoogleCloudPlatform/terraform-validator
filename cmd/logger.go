@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"os"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
@@ -68,7 +66,7 @@ func newConsoleEncoder(cfg zapcore.EncoderConfig) errorEncoder {
 	}
 }
 
-func newErrorLogger(verbose, useStructuredLogging bool) *zap.Logger {
+func newErrorLogger(verbose, useStructuredLogging bool, writeSyncer zapcore.WriteSyncer) *zap.Logger {
 	// Return a logger that produces expected structured output format for errors
 	var level zap.AtomicLevel
 	options := []zap.Option{
@@ -100,11 +98,11 @@ func newErrorLogger(verbose, useStructuredLogging bool) *zap.Logger {
 	} else {
 		encoder = newConsoleEncoder(encoderConfig)
 	}
-	core := zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), level)
+	core := zapcore.NewCore(encoder, writeSyncer, level)
 	return zap.New(core, options...)
 }
 
-func newOutputLogger() *zap.Logger {
+func newOutputLogger(writeSyncer zapcore.WriteSyncer) *zap.Logger {
 	// Return a logger that produces expected structured output format for output
 	options := []zap.Option{
 		zap.Fields(
@@ -125,6 +123,6 @@ func newOutputLogger() *zap.Logger {
 		EncodeTime:    zapcore.RFC3339NanoTimeEncoder,
 	}
 	encoder := zapcore.NewJSONEncoder(encoderConfig)
-	core := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), level)
+	core := zapcore.NewCore(encoder, writeSyncer, level)
 	return zap.New(core, options...)
 }

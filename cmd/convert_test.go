@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
@@ -9,7 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
+
+func testAssets() []google.Asset {
 	return []google.Asset{
 		google.Asset{
 			Name: "//compute.googleapis.com/projects/my-project/zones/us-central1-a/disks/test-disk",
@@ -30,15 +32,20 @@ func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, 
 				},
 			},
 		},
-	}, nil
+	}
+}
+
+
+func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
+	return testAssets(), nil
 }
 
 func TestConvertRun(t *testing.T) {
 	a := assert.New(t)
 	verbose := true
 	useStructuredLogging := true
-	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
-	outputLogger, outputObservedLogs := newTestOutputLogger()
+	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
 	o := convertOptions{
 		project:              "",
 		ancestry:             "",
@@ -52,25 +59,30 @@ func TestConvertRun(t *testing.T) {
 	err := o.run("/path/to/plan")
 	a.Nil(err)
 
-	errorLogs := errorObservedLogs.AllUntimed()
-	outputLogs := outputObservedLogs.AllUntimed()
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.Bytes()
 
-	a.Len(errorLogs, 0)
-	a.Len(outputLogs, 1)
+	a.Equal(errorJSON, "")
+
+	var output map[string]interface{}
+	json.Unmarshal(outputJSON, &output)
 
 	// On a successful run, we should see a list of google assets in the resource_body field
-	fields := outputLogs[0].ContextMap()
-	a.Contains(fields, "resource_body")
-	a.Len(fields["resource_body"], 1)
-	a.IsType([]google.Asset{}, fields["resource_body"])
+	a.Contains(output, "resource_body")
+	a.Len(output["resource_body"], 1)
+
+	var expectedAssets []interface{}
+	expectedAssetJSON, _ := json.Marshal(testAssets())
+	json.Unmarshal(expectedAssetJSON, &expectedAssets)
+	a.Equal(expectedAssets, output["resource_body"])
 }
 
 func TestConvertRunLegacy(t *testing.T) {
 	a := assert.New(t)
 	verbose := true
 	useStructuredLogging := false
-	errorLogger, errorObservedLogs := newTestErrorLogger(verbose, useStructuredLogging)
-	outputLogger, outputObservedLogs := newTestOutputLogger()
+	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
 	o := convertOptions{
 		project:              "",
 		ancestry:             "",
@@ -84,10 +96,10 @@ func TestConvertRunLegacy(t *testing.T) {
 	err := o.run("/path/to/plan")
 	a.Nil(err)
 
-	errorLogs := errorObservedLogs.AllUntimed()
-	outputLogs := outputObservedLogs.AllUntimed()
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.String()
 
 	// On a successful legacy run, we don't output anything via loggers.
-	a.Len(errorLogs, 0)
-	a.Len(outputLogs, 0)
+	a.Equal(errorJSON, "")
+	a.Equal(outputJSON, "")
 }

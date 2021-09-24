@@ -21,6 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 const rootCmdDesc = `
@@ -48,12 +49,12 @@ func newRootCmd() (*cobra.Command, *zap.Logger, error) {
 	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log additional output")
 
 	useStructuredLogging := os.Getenv("USE_STRUCTURED_LOGGING") == "true"
-	errorLogger := newErrorLogger(o.verbose, useStructuredLogging)
+	errorLogger := newErrorLogger(o.verbose, useStructuredLogging, zapcore.Lock(os.Stderr))
 	defer errorLogger.Sync()
 	zap.RedirectStdLog(errorLogger)
 	o.errorLogger = errorLogger
 
-	outputLogger := newOutputLogger()
+	outputLogger := newOutputLogger(zapcore.Lock(os.Stdout))
 	defer outputLogger.Sync()
 
 	cmd.AddCommand(newConvertCmd(errorLogger, outputLogger, useStructuredLogging))
