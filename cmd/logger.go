@@ -86,7 +86,7 @@ func newErrorLogger(verbose, useStructuredLogging bool, writeSyncer zapcore.Writ
 
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:       "timestamp",
-		LevelKey:      "level",
+		LevelKey:      "",
 		MessageKey:    "",
 		StacktraceKey: "",
 		EncodeLevel:   zapcore.LowercaseLevelEncoder,
