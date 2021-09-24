@@ -59,6 +59,7 @@ func TestCLI(t *testing.T) {
 		{name: "firewall"},
 		{name: "instance"},
 		{name: "sql"},
+		{name: "example_access_context_manager_service_perimeter"},
 		{name: "example_bigquery_dataset"},
 		{name: "example_bigtable_instance"},
 		{name: "example_compute_disk"},
