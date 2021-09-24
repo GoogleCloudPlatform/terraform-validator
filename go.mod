@@ -3,7 +3,6 @@ module github.com/GoogleCloudPlatform/terraform-validator
 require (
 	github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210924222355-7083196d162b
 	github.com/forseti-security/config-validator v0.0.0-20210621194145-08e4202b50d8
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/terraform-json v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0
@@ -13,7 +12,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.19.1 // indirect
+	go.uber.org/zap v1.19.1
 	google.golang.org/api v0.56.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
 )
