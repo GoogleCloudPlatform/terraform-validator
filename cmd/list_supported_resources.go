@@ -16,6 +16,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"text/tabwriter"
 
 	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/spf13/cobra"
@@ -37,11 +41,30 @@ func newListSupportedResourcesCmd() *cobra.Command {
 }
 
 func (o *listSupportedResourcesOptions) run() error {
-	list := converter.SupportedTerraformResources()
+	converters := converter.ResourceConverters()
 
-	for _, resource := range list {
-		fmt.Println(resource)
+	// Get a sorted list of terraform resources
+	list := make([]string, 0, len(converters))
+	for k := range converters {
+		list = append(list, k)
 	}
+	sort.Strings(list)
+
+	// go through and print 
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+	for _, resource := range list {
+		seenAssetTypes := make(map[string]bool)
+		assetTypes := []string{}
+		for _, converter := range converters[resource] {
+			if _, exists := seenAssetTypes[converter.AssetType]; !exists {
+				seenAssetTypes[converter.AssetType] = true
+				assetTypes = append(assetTypes, converter.AssetType)
+			}
+		}
+		sort.Strings(assetTypes)
+		fmt.Fprintf(w, "%s\t%s\n", resource, strings.Join(assetTypes, ","))
+	}
+	w.Flush()
 
 	return nil
 }
