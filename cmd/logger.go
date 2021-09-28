@@ -66,9 +66,9 @@ func newConsoleEncoder(cfg zapcore.EncoderConfig) errorEncoder {
 	}
 }
 
-func newErrorLogger(verbose, useStructuredLogging bool, writeSyncer zapcore.WriteSyncer) *zap.Logger {
+func newErrorLogger(verbosity string, useStructuredLogging bool, writeSyncer zapcore.WriteSyncer) *zap.Logger {
 	// Return a logger that produces expected structured output format for errors
-	var level zap.AtomicLevel
+	var level zapcore.LevelEnabler
 	options := []zap.Option{
 		zap.Fields(
 			// Message format version
@@ -76,12 +76,25 @@ func newErrorLogger(verbose, useStructuredLogging bool, writeSyncer zapcore.Writ
 		),
 	}
 
-	if verbose {
-		level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	switch verbosity {
+	case "debug":
+		level = zap.DebugLevel
 		options = append(options, zap.AddStacktrace(zap.WarnLevel))
-	} else {
-		level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	// case "info" is handled by default
+	case "warning":
+		level = zap.WarnLevel
 		options = append(options, zap.AddStacktrace(zap.ErrorLevel))
+	case "error":
+		level = zap.ErrorLevel
+		options = append(options, zap.AddStacktrace(zap.ErrorLevel))
+	case "critical":
+		level = zap.PanicLevel
+		options = append(options, zap.AddStacktrace(zap.PanicLevel))
+	case "none":
+		return zap.NewNop()
+	default:
+		level = zap.InfoLevel
+		options = append(options, zap.AddStacktrace(zap.WarnLevel))
 	}
 
 	encoderConfig := zapcore.EncoderConfig{

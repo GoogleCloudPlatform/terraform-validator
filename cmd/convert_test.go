@@ -40,18 +40,22 @@ func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, 
 
 func TestConvertRun(t *testing.T) {
 	a := assert.New(t)
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := true
-	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
 	outputLogger, outputBuf := newTestOutputLogger()
-	o := convertOptions{
-		project:              "",
-		ancestry:             "",
-		offline:              false,
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    MockReadPlannedAssets,
+	}
+	o := convertOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
 	}
 
 	err := o.run("/path/to/plan")
@@ -77,18 +81,22 @@ func TestConvertRun(t *testing.T) {
 
 func TestConvertRunLegacy(t *testing.T) {
 	a := assert.New(t)
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := false
-	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
 	outputLogger, outputBuf := newTestOutputLogger()
-	o := convertOptions{
-		project:              "",
-		ancestry:             "",
-		offline:              false,
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    MockReadPlannedAssets,
+	}
+	o := convertOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
 	}
 
 	err := o.run("/path/to/plan")

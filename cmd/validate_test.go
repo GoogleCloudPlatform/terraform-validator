@@ -39,22 +39,26 @@ func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset
 
 func TestValidateRun(t *testing.T) {
 	a := assert.New(t)
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := true
-	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
 	outputLogger, outputBuf := newTestOutputLogger()
-	o := validateOptions{
-		project:              "",
-		ancestry:             "",
-		offline:              false,
-		policyPath:           "",
-		outputJSON:           false,
-		dryRun:               false,
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    MockReadPlannedAssets,
-		validateAssets:       MockValidateAssetsWithViolations,
+	}
+	o := validateOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		policyPath:        "",
+		outputJSON:        false,
+		dryRun:            false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
+		validateAssets:    MockValidateAssetsWithViolations,
 	}
 
 	err := o.run("/path/to/plan")
@@ -80,22 +84,26 @@ func TestValidateRun(t *testing.T) {
 
 func TestValidateRunNoViolations(t *testing.T) {
 	a := assert.New(t)
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := true
-	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
 	outputLogger, outputBuf := newTestOutputLogger()
-	o := validateOptions{
-		project:              "",
-		ancestry:             "",
-		offline:              false,
-		policyPath:           "",
-		outputJSON:           false,
-		dryRun:               false,
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    MockReadPlannedAssets,
-		validateAssets:       MockValidateAssetsNoViolations,
+	}
+	o := validateOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		policyPath:        "",
+		outputJSON:        false,
+		dryRun:            false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
+		validateAssets:    MockValidateAssetsNoViolations,
 	}
 
 	err := o.run("/path/to/plan")
@@ -116,22 +124,26 @@ func TestValidateRunNoViolations(t *testing.T) {
 
 func TestValidateRunLegacy(t *testing.T) {
 	a := assert.New(t)
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := false
-	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
 	outputLogger, outputBuf := newTestOutputLogger()
-	o := validateOptions{
-		project:              "",
-		ancestry:             "",
-		offline:              false,
-		policyPath:           "",
-		outputJSON:           false,
-		dryRun:               false,
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    MockReadPlannedAssets,
-		validateAssets:       MockValidateAssetsWithViolations,
+	}
+	o := validateOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		policyPath:        "",
+		outputJSON:        false,
+		dryRun:            false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
+		validateAssets:    MockValidateAssetsWithViolations,
 	}
 
 	err := o.run("/path/to/plan")
@@ -147,22 +159,26 @@ func TestValidateRunLegacy(t *testing.T) {
 
 func TestValidateRunNoViolationsLegacy(t *testing.T) {
 	a := assert.New(t)
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := false
-	errorLogger, errorBuf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
 	outputLogger, outputBuf := newTestOutputLogger()
-	o := validateOptions{
-		project:              "",
-		ancestry:             "",
-		offline:              false,
-		policyPath:           "",
-		outputJSON:           false,
-		dryRun:               false,
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
 		errorLogger:          errorLogger,
 		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    MockReadPlannedAssets,
-		validateAssets:       MockValidateAssetsNoViolations,
+	}
+	o := validateOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		policyPath:        "",
+		outputJSON:        false,
+		dryRun:            false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
+		validateAssets:    MockValidateAssetsNoViolations,
 	}
 
 	err := o.run("/path/to/plan")
