@@ -41,21 +41,17 @@ Example:
 `
 
 type convertOptions struct {
-	project              string
-	ancestry             string
-	offline              bool
-	errorLogger          *zap.Logger
-	outputLogger         *zap.Logger
-	useStructuredLogging bool
-	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
+	project           string
+	ancestry          string
+	offline           bool
+	rootOptions       *rootOptions
+	readPlannedAssets tfgcv.ReadPlannedAssetsFunc
 }
 
-func newConvertCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
+func newConvertCmd(rootOptions *rootOptions) *cobra.Command {
 	o := &convertOptions{
-		errorLogger:          errorLogger,
-		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    tfgcv.ReadPlannedAssets,
+		rootOptions:       rootOptions,
+		readPlannedAssets: tfgcv.ReadPlannedAssets,
 	}
 
 	cmd := &cobra.Command{
@@ -89,7 +85,7 @@ func (o *convertOptions) validateArgs(args []string) error {
 
 func (o *convertOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.errorLogger)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.rootOptions.errorLogger)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
@@ -97,8 +93,8 @@ func (o *convertOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
-	if o.useStructuredLogging {
-		o.outputLogger.Info(
+	if o.rootOptions.useStructuredLogging {
+		o.rootOptions.outputLogger.Info(
 			"converted resources",
 			zap.Any("resource_body", assets),
 		)

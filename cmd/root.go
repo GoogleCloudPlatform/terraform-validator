@@ -30,13 +30,26 @@ policy library written to expect Google CAI (Cloud Asset Inventory) data.
 
 Supported Terraform versions = 0.12+`
 
-type rootOptions struct {
-	verbose     bool
-	errorLogger *zap.Logger
+var allowedVerbosity = map[string]struct{}{
+	"debug":    struct{}{},
+	"info":     struct{}{},
+	"warning":  struct{}{},
+	"error":    struct{}{},
+	"critical": struct{}{},
+	"none":     struct{}{},
 }
 
-func newRootCmd() (*cobra.Command, *zap.Logger, error) {
-	o := &rootOptions{}
+type rootOptions struct {
+	verbosity            string
+	errorLogger          *zap.Logger
+	outputLogger         *zap.Logger
+	useStructuredLogging bool
+}
+
+func newRootCmd() (*cobra.Command, *rootOptions, error) {
+	o := &rootOptions{
+		useStructuredLogging: os.Getenv("USE_STRUCTURED_LOGGING") == "true",
+	}
 
 	cmd := &cobra.Command{
 		Use:           "terraform-validator",
@@ -44,31 +57,40 @@ func newRootCmd() (*cobra.Command, *zap.Logger, error) {
 		Long:          rootCmdDesc,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PersistentPreRunE: func(c *cobra.Command, args []string) error {
+			if _, ok := allowedVerbosity[o.verbosity]; !ok {
+				return errors.New("verbosity must be one of: debug, info, warning, error, critical, none.")
+			}
+
+			// set this up in PersistentPreRun because we need to wait for flags to be parsed
+			// to have accurate verbosity.
+			errorLogger := newErrorLogger(o.verbosity, o.useStructuredLogging, zapcore.Lock(os.Stderr))
+			defer errorLogger.Sync()
+			zap.RedirectStdLog(errorLogger)
+			o.errorLogger = errorLogger
+
+			outputLogger := newOutputLogger(zapcore.Lock(os.Stdout))
+			defer outputLogger.Sync()
+			o.outputLogger = outputLogger
+
+			return nil
+		},
 	}
 
-	cmd.PersistentFlags().BoolVar(&o.verbose, "verbose", false, "Log additional output")
+	cmd.PersistentFlags().StringVar(&o.verbosity, "verbosity", "info", "Set verbosity level. One of: debug, info, warning, error, critical, none.")
 
-	useStructuredLogging := os.Getenv("USE_STRUCTURED_LOGGING") == "true"
-	errorLogger := newErrorLogger(o.verbose, useStructuredLogging, zapcore.Lock(os.Stderr))
-	defer errorLogger.Sync()
-	zap.RedirectStdLog(errorLogger)
-	o.errorLogger = errorLogger
-
-	outputLogger := newOutputLogger(zapcore.Lock(os.Stdout))
-	defer outputLogger.Sync()
-
-	cmd.AddCommand(newConvertCmd(errorLogger, outputLogger, useStructuredLogging))
+	cmd.AddCommand(newConvertCmd(o))
 	cmd.AddCommand(newListSupportedResourcesCmd())
-	cmd.AddCommand(newValidateCmd(errorLogger, outputLogger, useStructuredLogging))
+	cmd.AddCommand(newValidateCmd(o))
 	cmd.AddCommand(newVersionCmd())
 
-	return cmd, errorLogger, nil
+	return cmd, o, nil
 }
 
 // Execute is the entry-point for all commands.
 // This lets us keep all new command functions private.
 func Execute() {
-	rootCmd, logger, err := newRootCmd()
+	rootCmd, rootOptions, err := newRootCmd()
 
 	if err != nil {
 		fmt.Printf("Error creating root logger: %s", err)
@@ -82,7 +104,11 @@ func Execute() {
 	} else if errors.Is(err, errViolations) {
 		os.Exit(2)
 	} else {
-		logger.Error(err.Error())
+		if rootOptions.errorLogger == nil {
+			fmt.Println(err.Error())
+		} else {
+			rootOptions.errorLogger.Error(err.Error())
+		}
 		os.Exit(1)
 	}
 }

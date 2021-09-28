@@ -42,26 +42,22 @@ Example:
 `
 
 type validateOptions struct {
-	project              string
-	ancestry             string
-	offline              bool
-	policyPath           string
-	outputJSON           bool
-	dryRun               bool
-	errorLogger          *zap.Logger
-	outputLogger         *zap.Logger
-	useStructuredLogging bool
-	readPlannedAssets    tfgcv.ReadPlannedAssetsFunc
-	validateAssets       tfgcv.ValidateAssetsFunc
+	project           string
+	ancestry          string
+	offline           bool
+	policyPath        string
+	outputJSON        bool
+	dryRun            bool
+	rootOptions       *rootOptions
+	readPlannedAssets tfgcv.ReadPlannedAssetsFunc
+	validateAssets    tfgcv.ValidateAssetsFunc
 }
 
-func newValidateCmd(errorLogger, outputLogger *zap.Logger, useStructuredLogging bool) *cobra.Command {
+func newValidateCmd(rootOptions *rootOptions) *cobra.Command {
 	o := &validateOptions{
-		errorLogger:          errorLogger,
-		outputLogger:         outputLogger,
-		useStructuredLogging: useStructuredLogging,
-		readPlannedAssets:    tfgcv.ReadPlannedAssets,
-		validateAssets:       tfgcv.ValidateAssets,
+		rootOptions:       rootOptions,
+		readPlannedAssets: tfgcv.ReadPlannedAssets,
+		validateAssets:    tfgcv.ValidateAssets,
 	}
 
 	cmd := &cobra.Command{
@@ -103,7 +99,7 @@ func (o *validateOptions) validateArgs(args []string) error {
 
 func (o *validateOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.errorLogger)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.rootOptions.errorLogger)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
@@ -116,12 +112,12 @@ func (o *validateOptions) run(plan string) error {
 		return errors.Wrap(err, "validating: FCV")
 	}
 
-	if o.useStructuredLogging {
+	if o.rootOptions.useStructuredLogging {
 		msg := "No violations found"
 		if len(auditResult.Violations) > 0 {
 			msg = "Violations found"
 		}
-		o.outputLogger.Info(
+		o.rootOptions.outputLogger.Info(
 			msg,
 			zap.Any("resource_body", auditResult.Violations),
 		)

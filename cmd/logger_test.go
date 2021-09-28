@@ -18,10 +18,10 @@ func (bws bufferWriteSyncer) Sync() error {
 	return nil
 }
 
-func newTestErrorLogger(verbose, useStructuredLogging bool) (*zap.Logger, *bytes.Buffer) {
+func newTestErrorLogger(verbosity string, useStructuredLogging bool) (*zap.Logger, *bytes.Buffer) {
 	buf := new(bytes.Buffer)
 	syncer := bufferWriteSyncer{Buffer: buf}
-	logger := newErrorLogger(verbose, useStructuredLogging, syncer)
+	logger := newErrorLogger(verbosity, useStructuredLogging, syncer)
 	return logger, syncer.Buffer
 }
 
@@ -42,10 +42,10 @@ func TestErrorLoggerSchema(t *testing.T) {
 	//         "context": "additional error context (optional)"
 	//     }
 	// }
-	verbose := true
+	verbosity := "debug"
 	useStructuredLogging := true
 
-	errorLogger, buf := newTestErrorLogger(verbose, useStructuredLogging)
+	errorLogger, buf := newTestErrorLogger(verbosity, useStructuredLogging)
 	errorLogger.Info("This is a message")
 
 	outputJSON := buf.Bytes()
