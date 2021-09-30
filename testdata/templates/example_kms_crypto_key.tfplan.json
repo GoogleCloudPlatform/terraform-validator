@@ -9,16 +9,22 @@
           "mode": "managed",
           "type": "google_kms_crypto_key",
           "name": "test",
-          "provider_name": "google",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 1,
           "values": {
             "key_ring": "key-ring-test",
-            "labels": null,
+            "labels": {
+              "sensitivity": "high"
+            },
             "name": "crypto-key-example",
             "purpose": "ENCRYPT_DECRYPT",
             "rotation_period": null,
             "skip_initial_version_creation": true,
             "timeouts": null
+          },
+          "sensitive_values": {
+            "labels": {},
+            "version_template": []
           }
         }
       ]
@@ -30,7 +36,7 @@
       "mode": "managed",
       "type": "google_kms_crypto_key",
       "name": "test",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
@@ -38,7 +44,9 @@
         "before": null,
         "after": {
           "key_ring": "key-ring-test",
-          "labels": null,
+          "labels": {
+            "sensitivity": "high"
+          },
           "name": "crypto-key-example",
           "purpose": "ENCRYPT_DECRYPT",
           "rotation_period": null,
@@ -46,9 +54,16 @@
           "timeouts": null
         },
         "after_unknown": {
+          "destroy_scheduled_duration": true,
           "id": true,
+          "labels": {},
           "self_link": true,
           "version_template": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "labels": {},
+          "version_template": []
         }
       }
     }
@@ -75,6 +90,11 @@
           "expressions": {
             "key_ring": {
               "constant_value": "key-ring-test"
+            },
+            "labels": {
+              "constant_value": {
+                "sensitivity": "high"
+              }
             },
             "name": {
               "constant_value": "crypto-key-example"

@@ -9,7 +9,10 @@
       "discovery_name": "CryptoKey",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "purpose": "ENCRYPT_DECRYPT"
+        "purpose": "ENCRYPT_DECRYPT",
+        "labels": {
+          "sensitivity": "high"
+        }
       }
     }
   }
