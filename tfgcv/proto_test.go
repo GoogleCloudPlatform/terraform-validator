@@ -18,8 +18,8 @@ import (
 	"testing"
 
 	"github.com/forseti-security/config-validator/pkg/api/validator"
-	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/golang/protobuf/proto"
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/genproto/googleapis/cloud/asset/v1"
 )

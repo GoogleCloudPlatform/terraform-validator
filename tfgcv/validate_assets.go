@@ -32,18 +32,18 @@ func BuildVersion() string {
 	return buildVersion
 }
 
-type ValidateAssetsFunc func(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error)
+type ValidateAssetsFunc func(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error)
 
 // ValidateAssets instantiates GCV and audits CAI assets using "policies"
 // and "lib" folder under policyRootPath.
-func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
+func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error) {
 	return ValidateAssetsWithLibrary(ctx, assets,
 		[]string{filepath.Join(policyRootPath, "policies")},
 		filepath.Join(policyRootPath, "lib"))
 }
 
 // ValidateAssetsWithLibrary instantiates GCV and audits CAI assets.
-func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, policyPaths []string, policyLibraryDir string) (*validator.AuditResponse, error) {
+func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, policyPaths []string, policyLibraryDir string) ([]*validator.Violation, error) {
 	valid, err := gcv.NewValidator(policyPaths, policyLibraryDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "initializing gcv validator")
@@ -59,17 +59,19 @@ func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, polic
 
 	pbSplitAssets := splitAssets(pbAssets)
 
-	auditResult := &validator.AuditResponse{}
+	// Make an empty slice, not a nil slice, so that this
+	// can be properly serialized to JSON.
+	violations := []*validator.Violation{}
 	for _, asset := range pbSplitAssets {
-		violations, err := valid.ReviewAsset(context.Background(), asset)
+		newViolations, err := valid.ReviewAsset(context.Background(), asset)
 
 		if err != nil {
 			return nil, errors.Wrapf(err, "reviewing asset %s", asset)
 		}
-		auditResult.Violations = append(auditResult.Violations, violations...)
+		violations = append(violations, newViolations...)
 	}
 
-	return auditResult, nil
+	return violations, nil
 }
 
 // splitAssets split assets because for the GCP target Constraint

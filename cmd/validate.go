@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
+	"github.com/forseti-security/config-validator/pkg/api/validator"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -107,36 +108,38 @@ func (o *validateOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
-	auditResult, err := o.validateAssets(ctx, assets, o.policyPath)
+	violations, err := o.validateAssets(ctx, assets, o.policyPath)
 	if err != nil {
 		return errors.Wrap(err, "validating: FCV")
 	}
 
 	if o.rootOptions.useStructuredLogging {
 		msg := "No violations found"
-		if len(auditResult.Violations) > 0 {
+		if len(violations) > 0 {
 			msg = "Violations found"
 		}
 		o.rootOptions.outputLogger.Info(
 			msg,
-			zap.Any("resource_body", auditResult.Violations),
+			zap.Any("resource_body", violations),
 		)
-		if len(auditResult.Violations) > 0 {
+		if len(violations) > 0 {
 			return errViolations
 		}
 		return nil
 	}
 
 	// Legacy behavior
-	if len(auditResult.Violations) > 0 {
+	if len(violations) > 0 {
 		if o.outputJSON {
 			marshaller := &jsonpb.Marshaler{}
+			auditResult := &validator.AuditResponse{}
+			auditResult.Violations = violations
 			if err := marshaller.Marshal(os.Stdout, auditResult); err != nil {
 				return errors.Wrap(err, "marshalling violations to json")
 			}
 		} else {
 			fmt.Print("Found Violations:\n\n")
-			for _, v := range auditResult.Violations {
+			for _, v := range violations {
 				fmt.Printf("Constraint %v on resource %v: %v\n\n",
 					v.Constraint,
 					v.Resource,
