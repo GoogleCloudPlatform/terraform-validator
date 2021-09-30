@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -30,7 +31,7 @@ import (
 type FakeResourceData struct {
 	reader schema.FieldReader
 	kind   string
-	schema map[string]*schema.Schema
+	schema map[string]*tfjson.Schema
 }
 
 // Kind returns the type of resource (i.e. "google_storage_bucket").
@@ -80,7 +81,7 @@ func (d *FakeResourceData) SetId(string)                      {}
 func (d *FakeResourceData) GetProviderMeta(interface{}) error { return nil }
 func (d *FakeResourceData) Timeout(key string) time.Duration  { return time.Duration(1) }
 
-func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, values map[string]interface{}) FakeResourceData {
+func NewFakeResourceData(kind string, resourceSchema map[string]*tfjson.Schema, values map[string]interface{}) FakeResourceData {
 	state := map[string]string{}
 	var address []string
 	attributes(values, address, state, resourceSchema)
@@ -100,7 +101,7 @@ func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, 
 // schema. These are in order of the address (out to in).
 // NOTE: This function was copied from the terraform library:
 // github.com/hashicorp/terraform/helper/schema/field_reader.go
-func addrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.Schema {
+func addrToSchema(addr []string, schemaMap map[string]*tfjson.Schema) []*schema.Schema {
 	const typeObject = 999
 
 	current := &schema.Schema{
@@ -208,7 +209,7 @@ func addrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.
 				}
 			}
 
-			m := current.Elem.(map[string]*schema.Schema)
+			m := current.Elem.(map[string]*tfjson.Schema)
 			val, ok := m[k]
 			if !ok {
 				return nil
@@ -241,7 +242,7 @@ func addrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.
 //
 // Map above will be passed to schema.BasicMapReader that have all appropriate logic to read fields
 // correctly during conversion to CAI.
-func attributes(value interface{}, address []string, state map[string]string, schemas map[string]*schema.Schema) {
+func attributes(value interface{}, address []string, state map[string]string, schemas map[string]*tfjson.Schema) {
 	schemaArr := addrToSchema(address, schemas)
 	if len(schemaArr) == 0 {
 		return
