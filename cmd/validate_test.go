@@ -10,31 +10,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testAuditResponseNoViolations() *validator.AuditResponse {
-	return &validator.AuditResponse{
-		Violations: []*validator.Violation{},
-	}
+func testNoViolations() []*validator.Violation {
+	return []*validator.Violation{}
 }
 
-func MockValidateAssetsNoViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
-	return testAuditResponseNoViolations(), nil
+func MockValidateAssetsNoViolations(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error) {
+	return testNoViolations(), nil
 }
 
-func testAuditResponseWithViolations() *validator.AuditResponse {
-	return &validator.AuditResponse{
-		Violations: []*validator.Violation{
-			&validator.Violation{
-				Constraint: "GCPAlwaysViolatesConstraintV1.always_violates_project_match_target",
-				Resource:   "//bigtable.googleapis.com/projects/my-project/instances/tf-instance",
-				Message:    "Constraint GCPAlwaysViolatesConstraintV1.always_violates_project_match_target on resource //bigtable.googleapis.com/projects/my-project/instances/tf-instance",
-				Severity:   "high",
-			},
+func testWithViolations() []*validator.Violation {
+	return []*validator.Violation{
+		&validator.Violation{
+			Constraint: "GCPAlwaysViolatesConstraintV1.always_violates_project_match_target",
+			Resource:   "//bigtable.googleapis.com/projects/my-project/instances/tf-instance",
+			Message:    "Constraint GCPAlwaysViolatesConstraintV1.always_violates_project_match_target on resource //bigtable.googleapis.com/projects/my-project/instances/tf-instance",
+			Severity:   "high",
 		},
 	}
 }
 
-func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset, policyRootPath string) (*validator.AuditResponse, error) {
-	return testAuditResponseWithViolations(), nil
+func MockValidateAssetsWithViolations(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error) {
+	return testWithViolations(), nil
 }
 
 func TestValidateRun(t *testing.T) {
@@ -76,10 +72,10 @@ func TestValidateRun(t *testing.T) {
 	a.Contains(output, "resource_body")
 	a.Len(output["resource_body"], 1)
 
-	var expectedAuditResponse map[string]interface{}
-	expectedAuditResponseJSON, _ := json.Marshal(testAuditResponseWithViolations())
-	json.Unmarshal(expectedAuditResponseJSON, &expectedAuditResponse)
-	a.Equal(expectedAuditResponse["violations"], output["resource_body"])
+	var expectedViolations []interface{}
+	expectedViolationsJSON, _ := json.Marshal(testWithViolations())
+	json.Unmarshal(expectedViolationsJSON, &expectedViolations)
+	a.Equal(expectedViolations, output["resource_body"])
 }
 
 func TestValidateRunNoViolations(t *testing.T) {
