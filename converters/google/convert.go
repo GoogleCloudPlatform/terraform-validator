@@ -26,7 +26,7 @@ import (
 	provider "github.com/hashicorp/terraform-provider-google/v3/google"
 	"github.com/pkg/errors"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	tgc "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"go.uber.org/zap"
@@ -46,7 +46,7 @@ type Asset struct {
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
-	converterAsset converter.Asset
+	converterAsset tgc.Asset
 }
 
 // IAMPolicy is the representation of a Cloud IAM policy set on a cloud resource.
@@ -126,10 +126,10 @@ type RestoreDefault struct {
 }
 
 // NewConverter is a factory function for Converter.
-func NewConverter(cfg *converter.Config, ancestryManager ancestrymanager.AncestryManager, offline bool, convertUnchanged bool, errorLogger *zap.Logger) *Converter {
+func NewConverter(cfg *tgc.Config, ancestryManager ancestrymanager.AncestryManager, offline bool, convertUnchanged bool, errorLogger *zap.Logger) *Converter {
 	return &Converter{
 		schema:           provider.Provider(),
-		mapperFuncs:      converter.Mappers(),
+		converters:       tgc.ResourceConverters(),
 		offline:          offline,
 		cfg:              cfg,
 		ancestryManager:  ancestryManager,
@@ -145,11 +145,11 @@ type Converter struct {
 	schema *schema.Provider
 
 	// Map terraform resource kinds (i.e. "google_compute_instance")
-	// to their mapping/merging functions.
-	mapperFuncs map[string][]converter.Mapper
+	// to a ResourceConverter that can convert them to CAI assets.
+	converters map[string][]tgc.ResourceConverter
 
 	offline bool
-	cfg     *converter.Config
+	cfg     *tgc.Config
 
 	// ancestryManager provides a manager to find the ancestry information for a project.
 	ancestryManager ancestrymanager.AncestryManager
@@ -168,7 +168,7 @@ type Converter struct {
 func (c *Converter) Schemas() map[string]*schema.Resource {
 	supported := make(map[string]*schema.Resource)
 	for k := range c.schema.ResourcesMap {
-		if _, ok := c.mapperFuncs[k]; ok {
+		if _, ok := c.converters[k]; ok {
 			supported[k] = c.schema.ResourcesMap[k]
 		}
 	}
@@ -196,7 +196,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 		}
 
 		// Skip unsupported resources
-		if _, ok := c.mapperFuncs[rc.Type]; !ok {
+		if _, ok := c.converters[rc.Type]; !ok {
 			c.errorLogger.Info(fmt.Sprintf("unsupported resource: %s", rc.Type))
 			continue
 		}
@@ -223,7 +223,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 	return nil
 }
 
-// For deletions, we only need to handle mappers that support
+// For deletions, we only need to handle ResourceConverters that support
 // both fetch and mergeDelete. Supporting just one doesn't
 // make sense, and supporting neither means that the deletion
 // can just happen without needing to be merged.
@@ -234,14 +234,14 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 		resource.Schema,
 		rc.Change.Before.(map[string]interface{}),
 	)
-	for _, mapper := range c.mapperFuncs[rd.Kind()] {
-		if mapper.Fetch == nil || mapper.MergeDelete == nil {
+	for _, converter := range c.converters[rd.Kind()] {
+		if converter.FetchFullResource == nil || converter.MergeDelete == nil {
 			continue
 		}
-		convertedItems, err := mapper.Convert(&rd, c.cfg)
+		convertedItems, err := converter.Convert(&rd, c.cfg)
 
 		if err != nil {
-			if errors.Cause(err) == converter.ErrNoConversion {
+			if errors.Cause(err) == tgc.ErrNoConversion {
 				continue
 			}
 			return errors.Wrap(err, "converting asset")
@@ -250,12 +250,12 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 		for _, converted := range convertedItems {
 
 			key := converted.Type + converted.Name
-			var existingConverterAsset *converter.Asset
+			var existingConverterAsset *tgc.Asset
 			if existing, exists := c.assets[key]; exists {
 				existingConverterAsset = &existing.converterAsset
 			} else if !c.offline {
-				asset, err := mapper.Fetch(&rd, c.cfg)
-				if errors.Cause(err) == converter.ErrEmptyIdentityField {
+				asset, err := converter.FetchFullResource(&rd, c.cfg)
+				if errors.Cause(err) == tgc.ErrEmptyIdentityField {
 					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
 					existingConverterAsset = nil
 				} else if err != nil {
@@ -264,7 +264,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 					existingConverterAsset = &asset
 				}
 				if existingConverterAsset != nil {
-					converted = mapper.MergeDelete(*existingConverterAsset, converted)
+					converted = converter.MergeDelete(*existingConverterAsset, converted)
 					augmented, err := c.augmentAsset(&rd, c.cfg, converted)
 					if err != nil {
 						return errors.Wrap(err, "augmenting asset")
@@ -289,10 +289,10 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 		rc.Change.After.(map[string]interface{}),
 	)
 
-	for _, mapper := range c.mapperFuncs[rd.Kind()] {
-		convertedAssets, err := mapper.Convert(&rd, c.cfg)
+	for _, converter := range c.converters[rd.Kind()] {
+		convertedAssets, err := converter.Convert(&rd, c.cfg)
 		if err != nil {
-			if errors.Cause(err) == converter.ErrNoConversion {
+			if errors.Cause(err) == tgc.ErrNoConversion {
 				continue
 			}
 			return errors.Wrap(err, "converting asset")
@@ -301,12 +301,12 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 		for _, converted := range convertedAssets {
 			key := converted.Type + converted.Name
 
-			var existingConverterAsset *converter.Asset
+			var existingConverterAsset *tgc.Asset
 			if existing, exists := c.assets[key]; exists {
 				existingConverterAsset = &existing.converterAsset
-			} else if mapper.Fetch != nil && !c.offline {
-				asset, err := mapper.Fetch(&rd, c.cfg)
-				if errors.Cause(err) == converter.ErrEmptyIdentityField {
+			} else if converter.FetchFullResource != nil && !c.offline {
+				asset, err := converter.FetchFullResource(&rd, c.cfg)
+				if errors.Cause(err) == tgc.ErrEmptyIdentityField {
 					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
 					existingConverterAsset = nil
 				} else if err != nil {
@@ -317,12 +317,12 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 			}
 
 			if existingConverterAsset != nil {
-				if mapper.MergeCreateUpdate == nil {
+				if converter.MergeCreateUpdate == nil {
 					// If a merge function does not exist ignore the asset and return
 					// a checkable error.
 					return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
 				}
-				converted = mapper.MergeCreateUpdate(*existingConverterAsset, converted)
+				converted = converter.MergeCreateUpdate(*existingConverterAsset, converted)
 			}
 
 			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
@@ -353,7 +353,7 @@ func (c *Converter) Assets() []Asset {
 }
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
-func (c *Converter) augmentAsset(tfData converter.TerraformResourceData, cfg *converter.Config, cai converter.Asset) (Asset, error) {
+func (c *Converter) augmentAsset(tfData tgc.TerraformResourceData, cfg *tgc.Config, cai tgc.Asset) (Asset, error) {
 	project, err := getProject(tfData, cfg, cai, c.errorLogger)
 	if err != nil {
 		return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
