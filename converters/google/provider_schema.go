@@ -5,12 +5,12 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 )
 
-//go:embed provider_schema.json
-var providerSchemaBytes []byte
+//go:embed google-3.86.0.json
+var google3_86Bytes []byte
 
 func getProviderSchema() *tfjson.ProviderSchema {
 	schemas := &tfjson.ProviderSchemas{}
-	err := schemas.UnmarshalJSON(providerSchemaBytes)
+	err := schemas.UnmarshalJSON(google3_86Bytes)
 	if err != nil {
 		// We control this file. If it can't be loaded as json, we truly cannot and
 		// should not proceed.
