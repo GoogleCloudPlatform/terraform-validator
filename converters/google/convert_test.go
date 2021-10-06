@@ -114,7 +114,7 @@ func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
 
 	// fake that this resource is known to the provider; it will never be "supported" by the
 	// converter.
-	c.schema.ResourcesMap[rc.Type] = c.schema.ResourcesMap["google_compute_disk"]
+	c.resourceSchemas[rc.Type] = c.resourceSchemas["google_compute_disk"]
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)

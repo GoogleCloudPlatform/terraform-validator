@@ -125,9 +125,9 @@ type RestoreDefault struct {
 
 // NewConverter is a factory function for Converter.
 func NewConverter(cfg *tgc.Config, ancestryManager ancestrymanager.AncestryManager, offline bool, convertUnchanged bool, errorLogger *zap.Logger) *Converter {
-	schema := getProviderSchema()
+	providerSchema := getProviderSchema()
 	return &Converter{
-		schema:           schema,
+		resourceSchemas:  providerSchema.ResourceSchemas,
 		converters:       tgc.ResourceConverters(),
 		offline:          offline,
 		cfg:              cfg,
@@ -141,7 +141,7 @@ func NewConverter(cfg *tgc.Config, ancestryManager ancestrymanager.AncestryManag
 // Converter knows how to convert terraform resources to their
 // Google CAI (Cloud Asset Inventory) format (the Asset type).
 type Converter struct {
-	schema *tfjson.ProviderSchema
+	resourceSchemas map[string]*tfjson.Schema
 
 	// Map terraform resource kinds (i.e. "google_compute_instance")
 	// to a ResourceConverter that can convert them to CAI assets.
@@ -166,9 +166,9 @@ type Converter struct {
 // Schemas exposes the schemas of resources this converter knows about.
 func (c *Converter) Schemas() map[string]*tfjson.Schema {
 	supported := make(map[string]*tfjson.Schema)
-	for k := range c.schema.ResourceSchemas {
+	for k := range c.resourceSchemas {
 		if _, ok := c.converters[k]; ok {
-			supported[k] = c.schema.ResourceSchemas[k]
+			supported[k] = c.resourceSchemas[k]
 		}
 	}
 	return supported
@@ -189,7 +189,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 	var createOrUpdateOrNoops []*tfjson.ResourceChange
 	for _, rc := range changes {
 		// skip unknown resources
-		if _, ok := c.schema.ResourceSchemas[rc.Type]; !ok {
+		if _, ok := c.resourceSchemas[rc.Type]; !ok {
 			c.errorLogger.Info(fmt.Sprintf("unknown resource: %s", rc.Type))
 			continue
 		}
@@ -227,7 +227,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 // make sense, and supporting neither means that the deletion
 // can just happen without needing to be merged.
 func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
-	resourceSchema, _ := c.schema.ResourceSchemas[rc.Type]
+	resourceSchema, _ := c.resourceSchemas[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
 		resourceSchema,
@@ -281,7 +281,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 // and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
 // to be present.
 func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
-	resourceSchema, _ := c.schema.ResourceSchemas[rc.Type]
+	resourceSchema, _ := c.resourceSchemas[rc.Type]
 	rd := NewFakeResourceData(
 		rc.Type,
 		resourceSchema,
