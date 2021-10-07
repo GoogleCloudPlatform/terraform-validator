@@ -35,6 +35,4 @@ require (
 >>>>>>> 5f796ae ( KMS crypto-key and key-ring IAM tests added)
 )
 
-replace github.com/GoogleCloudPlatform/terraform-google-conversion => /Users/palani/SMC/Rekha/code/terraform-google-conversion
-
 go 1.14
