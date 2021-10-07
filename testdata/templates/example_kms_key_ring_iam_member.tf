@@ -34,7 +34,6 @@ resource "google_kms_key_ring" "example_keyring" {
 }
 
 resource "google_kms_key_ring_iam_member" "key_ring" {
-  //key_ring_id = "{{.Provider.project}}/global/keyring-example"
   key_ring_id = google_kms_key_ring.example_keyring.id
   role        = "roles/cloudkms.admin"
   member      = "allAuthenticatedUsers"

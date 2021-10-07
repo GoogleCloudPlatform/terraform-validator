@@ -39,8 +39,6 @@ resource "google_kms_crypto_key" "example_crypto_key" {
 }
 
 resource "google_kms_crypto_key_iam_member" "crypto_key" {
-  //crypto_key_id = "{{.Provider.project}}/global/key-ring-test/crypto-key-example"
-  # key_ring_id = google_kms_key_ring.example_keyring.
   crypto_key_id = google_kms_crypto_key.example_crypto_key.id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "allUsers"
