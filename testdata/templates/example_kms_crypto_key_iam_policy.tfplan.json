@@ -3,7 +3,18 @@
     "terraform_version": "0.15.3",
     "planned_values": {
         "root_module": {
-            "resources": [
+            "resources": [ 
+                {
+                    "address": "google_kms_crypto_key_iam_policy.crypto_key",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key_iam_policy",
+                    "name": "crypto_key",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"serviceAccount:998476993360@cloudservices.gserviceaccount.com\"],\"role\":\"roles/cloudkms.admin\"}]}"
+                    }
+                },
                 {
                     "address": "google_kms_crypto_key.example_crypto_key",
                     "mode": "managed",
@@ -18,17 +29,6 @@
                         "rotation_period": null,
                         "skip_initial_version_creation": false,
                         "timeouts": null
-                    }
-                },
-                {
-                    "address": "google_kms_crypto_key_iam_policy.crypto_key",
-                    "mode": "managed",
-                    "type": "google_kms_crypto_key_iam_policy",
-                    "name": "crypto_key",
-                    "provider_name": "registry.terraform.io/hashicorp/google",
-                    "schema_version": 0,
-                    "values": {
-                        "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"serviceAccount:998476993360@cloudservices.gserviceaccount.com\"],\"role\":\"roles/cloudkms.admin\"}]}"
                     }
                 },
                 {
@@ -49,6 +49,29 @@
         }
     },
     "resource_changes": [
+        {
+            "address": "google_kms_crypto_key_iam_policy.crypto_key",
+            "mode": "managed",
+            "type": "google_kms_crypto_key_iam_policy",
+            "name": "crypto_key",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"serviceAccount:998476993360@cloudservices.gserviceaccount.com\"],\"role\":\"roles/cloudkms.admin\"}]}"
+                },
+                "after_unknown": {
+                    "crypto_key_id": true,
+                    "etag": true,
+                    "id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {}
+            }
+        },
         {
             "address": "google_kms_crypto_key.example_crypto_key",
             "mode": "managed",
@@ -78,29 +101,6 @@
                 "after_sensitive": {
                     "version_template": []
                 }
-            }
-        },
-        {
-            "address": "google_kms_crypto_key_iam_policy.crypto_key",
-            "mode": "managed",
-            "type": "google_kms_crypto_key_iam_policy",
-            "name": "crypto_key",
-            "provider_name": "registry.terraform.io/hashicorp/google",
-            "change": {
-                "actions": [
-                    "create"
-                ],
-                "before": null,
-                "after": {
-                    "policy_data": "{\"bindings\":[{\"members\":[\"allAuthenticatedUsers\",\"serviceAccount:998476993360@cloudservices.gserviceaccount.com\"],\"role\":\"roles/cloudkms.admin\"}]}"
-                },
-                "after_unknown": {
-                    "crypto_key_id": true,
-                    "etag": true,
-                    "id": true
-                },
-                "before_sensitive": false,
-                "after_sensitive": {}
             }
         },
         {

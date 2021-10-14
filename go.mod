@@ -26,10 +26,15 @@ require (
 	go.uber.org/zap v1.19.1
 	google.golang.org/api v0.56.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
+<<<<<<< HEAD
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 	sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4 // indirect
+=======
+>>>>>>> 5f796ae ( KMS crypto-key and key-ring IAM tests added)
 )
+
+replace github.com/GoogleCloudPlatform/terraform-google-conversion => /Users/palani/SMC/Rekha/code/terraform-google-conversion
 
 go 1.14
