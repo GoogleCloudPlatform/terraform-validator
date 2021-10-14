@@ -79,17 +79,12 @@ github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24 h1:sHglBQTwgx+rW
 github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24/go.mod h1:4UJr5HIiMZrwgkSPdsjy2uOQExX/WEILpIrO9UPGuXs=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210519165700-76bc5cc4eeee h1:WZLlNdsfnB6FHmuyYtMaCEBVoKgUDW4YtXLGac5uB54=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210519165700-76bc5cc4eeee/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
-<<<<<<< HEAD
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210929201636-4f607239a42a h1:Qxf6GAn7dnwHI69E9fWhnVqBng4lpVjAJcLEuf1vffs=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210929201636-4f607239a42a/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210924222355-7083196d162b h1:K5lLH92cha1COyc3a2r0rCK7xaMNx/OLMKgrrGMGSKc=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210924222355-7083196d162b/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210928201353-269f626f74ff h1:LsgBSJIeybfUlv7yLeGLPYsC0HYfE7DR8wHEpeW7neo=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210928201353-269f626f74ff/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
-=======
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20211006065412-20190b340d8d h1:aD9DNHnR714EHM2qkKNdzaLFoyeA2RRciu5qWP8SSSc=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20211006065412-20190b340d8d/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
->>>>>>> 178d3c8 (update google conversion go module)
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20211006191017-fc61aa82d908 h1:Pm1X3H2Igas9U086n4WVvnmqtoNr6X2r+Wn1B2Yv2KQ=
 github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20211006191017-fc61aa82d908/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
