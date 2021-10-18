@@ -150,7 +150,7 @@ func normalizeAssets(t *testing.T, got []google.Asset, offline bool) []byte {
 		}
 	}
 	// Replace placeholder in names.
-	re := regexp.MustCompile(`/placeholder-.*`)
+	re := regexp.MustCompile(`/placeholder-[^/]+`)
 	for i := range got {
 		got[i].Name = re.ReplaceAllString(got[i].Name, "/placeholder-foobar")
 	}
