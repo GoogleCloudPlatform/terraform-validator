@@ -5,92 +5,98 @@
 If you want terraform validator to add support for a resource, please [open an enhancement request](https://github.com/GoogleCloudPlatform/terraform-validator/issues/new?assignees=&labels=enhancement&template=enhancement.md) and consider [contributing code](./contributing/index.md).
 
 ```
-google_bigquery_dataset
-google_bigquery_table_iam_binding
-google_bigquery_table_iam_member
-google_bigquery_table_iam_policy
-google_bigtable_instance
-google_binary_authorization_attestor_iam_binding
-google_binary_authorization_attestor_iam_member
-google_binary_authorization_attestor_iam_policy
-google_cloudfunctions_function_iam_binding
-google_cloudfunctions_function_iam_member
-google_cloudfunctions_function_iam_policy
-google_compute_disk
-google_compute_disk_iam_binding
-google_compute_disk_iam_member
-google_compute_disk_iam_policy
-google_compute_firewall
-google_compute_forwarding_rule
-google_compute_global_forwarding_rule
-google_compute_image_iam_binding
-google_compute_image_iam_member
-google_compute_image_iam_policy
-google_compute_instance
-google_compute_instance_iam_binding
-google_compute_instance_iam_member
-google_compute_instance_iam_policy
-google_compute_network
-google_compute_region_disk_iam_binding
-google_compute_region_disk_iam_member
-google_compute_region_disk_iam_policy
-google_compute_subnetwork
-google_compute_subnetwork_iam_binding
-google_compute_subnetwork_iam_member
-google_compute_subnetwork_iam_policy
-google_container_cluster
-google_container_node_pool
-google_data_catalog_entry_group_iam_binding
-google_data_catalog_entry_group_iam_member
-google_data_catalog_entry_group_iam_policy
-google_data_catalog_tag_template_iam_binding
-google_data_catalog_tag_template_iam_member
-google_data_catalog_tag_template_iam_policy
-google_endpoints_service_iam_binding
-google_endpoints_service_iam_member
-google_endpoints_service_iam_policy
-google_filestore_instance
-google_folder_iam_binding
-google_folder_iam_member
-google_folder_iam_policy
-google_healthcare_consent_store_iam_binding
-google_healthcare_consent_store_iam_member
-google_healthcare_consent_store_iam_policy
-google_iap_tunnel_iam_binding
-google_iap_tunnel_iam_member
-google_iap_tunnel_iam_policy
-google_iap_tunnel_instance_iam_binding
-google_iap_tunnel_instance_iam_member
-google_iap_tunnel_instance_iam_policy
-google_iap_web_iam_binding
-google_iap_web_iam_member
-google_iap_web_iam_policy
-google_kms_crypto_key
-google_kms_key_ring
-google_notebooks_instance_iam_binding
-google_notebooks_instance_iam_member
-google_notebooks_instance_iam_policy
-google_organization_iam_binding
-google_organization_iam_member
-google_organization_iam_policy
-google_project
-google_project_iam_binding
-google_project_iam_member
-google_project_iam_policy
-google_project_organization_policy
-google_project_service
-google_pubsub_subscription
-google_pubsub_topic
-google_pubsub_topic_iam_binding
-google_pubsub_topic_iam_member
-google_pubsub_topic_iam_policy
-google_secret_manager_secret_iam_binding
-google_secret_manager_secret_iam_member
-google_secret_manager_secret_iam_policy
-google_spanner_instance
-google_sql_database_instance
-google_storage_bucket
-google_storage_bucket_iam_binding
-google_storage_bucket_iam_member
-google_storage_bucket_iam_policy
+Terraform resource                               | CAI Asset Type
+------------------------------------------------ | ------------------------------------------------
+google_access_context_manager_service_perimeter  | accesscontextmanager.googleapis.com/ServicePerimeter
+google_bigquery_dataset                          | bigquery.googleapis.com/Dataset
+google_bigquery_table_iam_binding                | bigquery.googleapis.com/Table
+google_bigquery_table_iam_member                 | bigquery.googleapis.com/Table
+google_bigquery_table_iam_policy                 | bigquery.googleapis.com/Table
+google_bigtable_instance                         | bigtableadmin.googleapis.com/Cluster,bigtableadmin.googleapis.com/Instance
+google_binary_authorization_attestor_iam_binding | binaryauthorization.googleapis.com/Attestor
+google_binary_authorization_attestor_iam_member  | binaryauthorization.googleapis.com/Attestor
+google_binary_authorization_attestor_iam_policy  | binaryauthorization.googleapis.com/Attestor
+google_cloudfunctions_function_iam_binding       | cloudfunctions.googleapis.com/CloudFunction
+google_cloudfunctions_function_iam_member        | cloudfunctions.googleapis.com/CloudFunction
+google_cloudfunctions_function_iam_policy        | cloudfunctions.googleapis.com/CloudFunction
+google_compute_disk                              | compute.googleapis.com/Disk
+google_compute_disk_iam_binding                  | compute.googleapis.com/Disk
+google_compute_disk_iam_member                   | compute.googleapis.com/Disk
+google_compute_disk_iam_policy                   | compute.googleapis.com/Disk
+google_compute_firewall                          | compute.googleapis.com/Firewall
+google_compute_forwarding_rule                   | compute.googleapis.com/ForwardingRule
+google_compute_global_forwarding_rule            | compute.googleapis.com/GlobalForwardingRule
+google_compute_image_iam_binding                 | compute.googleapis.com/Image
+google_compute_image_iam_member                  | compute.googleapis.com/Image
+google_compute_image_iam_policy                  | compute.googleapis.com/Image
+google_compute_instance                          | compute.googleapis.com/Instance
+google_compute_instance_iam_binding              | compute.googleapis.com/Instance
+google_compute_instance_iam_member               | compute.googleapis.com/Instance
+google_compute_instance_iam_policy               | compute.googleapis.com/Instance
+google_compute_network                           | compute.googleapis.com/Network
+google_compute_region_disk_iam_binding           | compute.googleapis.com/RegionDisk
+google_compute_region_disk_iam_member            | compute.googleapis.com/RegionDisk
+google_compute_region_disk_iam_policy            | compute.googleapis.com/RegionDisk
+google_compute_subnetwork                        | compute.googleapis.com/Subnetwork
+google_compute_subnetwork_iam_binding            | compute.googleapis.com/Subnetwork
+google_compute_subnetwork_iam_member             | compute.googleapis.com/Subnetwork
+google_compute_subnetwork_iam_policy             | compute.googleapis.com/Subnetwork
+google_container_cluster                         | container.googleapis.com/Cluster
+google_container_node_pool                       | container.googleapis.com/NodePool
+google_data_catalog_entry_group_iam_binding      | datacatalog.googleapis.com/EntryGroup
+google_data_catalog_entry_group_iam_member       | datacatalog.googleapis.com/EntryGroup
+google_data_catalog_entry_group_iam_policy       | datacatalog.googleapis.com/EntryGroup
+google_data_catalog_tag_template_iam_binding     | datacatalog.googleapis.com/TagTemplate
+google_data_catalog_tag_template_iam_member      | datacatalog.googleapis.com/TagTemplate
+google_data_catalog_tag_template_iam_policy      | datacatalog.googleapis.com/TagTemplate
+google_endpoints_service_iam_binding             | servicemanagement.googleapis.com/Service
+google_endpoints_service_iam_member              | servicemanagement.googleapis.com/Service
+google_endpoints_service_iam_policy              | servicemanagement.googleapis.com/Service
+google_filestore_instance                        | file.googleapis.com/Instance
+google_folder_iam_binding                        | cloudresourcemanager.googleapis.com/Folder
+google_folder_iam_member                         | cloudresourcemanager.googleapis.com/Folder
+google_folder_iam_policy                         | cloudresourcemanager.googleapis.com/Folder
+google_healthcare_consent_store_iam_binding      | healthcare.googleapis.com/ConsentStore
+google_healthcare_consent_store_iam_member       | healthcare.googleapis.com/ConsentStore
+google_healthcare_consent_store_iam_policy       | healthcare.googleapis.com/ConsentStore
+google_iap_tunnel_iam_binding                    | iap.googleapis.com/Tunnel
+google_iap_tunnel_iam_member                     | iap.googleapis.com/Tunnel
+google_iap_tunnel_iam_policy                     | iap.googleapis.com/Tunnel
+google_iap_tunnel_instance_iam_binding           | iap.googleapis.com/TunnelInstance
+google_iap_tunnel_instance_iam_member            | iap.googleapis.com/TunnelInstance
+google_iap_tunnel_instance_iam_policy            | iap.googleapis.com/TunnelInstance
+google_iap_web_iam_binding                       | iap.googleapis.com/Web
+google_iap_web_iam_member                        | iap.googleapis.com/Web
+google_iap_web_iam_policy                        | iap.googleapis.com/Web
+google_kms_crypto_key                            | cloudkms.googleapis.com/CryptoKey
+google_kms_key_ring                              | cloudkms.googleapis.com/KeyRing
+google_notebooks_instance_iam_binding            | notebooks.googleapis.com/Instance
+google_notebooks_instance_iam_member             | notebooks.googleapis.com/Instance
+google_notebooks_instance_iam_policy             | notebooks.googleapis.com/Instance
+google_organization_iam_binding                  | cloudresourcemanager.googleapis.com/Organization
+google_organization_iam_member                   | cloudresourcemanager.googleapis.com/Organization
+google_organization_iam_policy                   | cloudresourcemanager.googleapis.com/Organization
+google_privateca_ca_pool_iam_binding             | privateca.googleapis.com/CaPool
+google_privateca_ca_pool_iam_member              | privateca.googleapis.com/CaPool
+google_privateca_ca_pool_iam_policy              | privateca.googleapis.com/CaPool
+google_project                                   | cloudbilling.googleapis.com/ProjectBillingInfo,cloudresourcemanager.googleapis.com/Project
+google_project_iam_binding                       | cloudresourcemanager.googleapis.com/Project
+google_project_iam_member                        | cloudresourcemanager.googleapis.com/Project
+google_project_iam_policy                        | cloudresourcemanager.googleapis.com/Project
+google_project_organization_policy               | cloudresourcemanager.googleapis.com/Project
+google_project_service                           | serviceusage.googleapis.com/Service
+google_pubsub_subscription                       | pubsub.googleapis.com/Subscription
+google_pubsub_topic                              | pubsub.googleapis.com/Topic
+google_pubsub_topic_iam_binding                  | pubsub.googleapis.com/Topic
+google_pubsub_topic_iam_member                   | pubsub.googleapis.com/Topic
+google_pubsub_topic_iam_policy                   | pubsub.googleapis.com/Topic
+google_secret_manager_secret_iam_binding         | secretmanager.googleapis.com/Secret
+google_secret_manager_secret_iam_member          | secretmanager.googleapis.com/Secret
+google_secret_manager_secret_iam_policy          | secretmanager.googleapis.com/Secret
+google_spanner_instance                          | spanner.googleapis.com/Instance
+google_sql_database_instance                     | sqladmin.googleapis.com/Instance
+google_storage_bucket                            | storage.googleapis.com/Bucket
+google_storage_bucket_iam_binding                | storage.googleapis.com/Bucket
+google_storage_bucket_iam_member                 | storage.googleapis.com/Bucket
+google_storage_bucket_iam_policy                 | storage.googleapis.com/Bucket
 ```
