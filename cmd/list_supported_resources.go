@@ -21,7 +21,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/spf13/cobra"
 )
 

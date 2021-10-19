@@ -81,12 +81,6 @@ github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-202105
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210519165700-76bc5cc4eeee/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210929201636-4f607239a42a h1:Qxf6GAn7dnwHI69E9fWhnVqBng4lpVjAJcLEuf1vffs=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210929201636-4f607239a42a/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210924222355-7083196d162b h1:K5lLH92cha1COyc3a2r0rCK7xaMNx/OLMKgrrGMGSKc=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210924222355-7083196d162b/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210928201353-269f626f74ff h1:LsgBSJIeybfUlv7yLeGLPYsC0HYfE7DR8wHEpeW7neo=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20210928201353-269f626f74ff/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20211006191017-fc61aa82d908 h1:Pm1X3H2Igas9U086n4WVvnmqtoNr6X2r+Wn1B2Yv2KQ=
-github.com/GoogleCloudPlatform/terraform-google-conversion v0.0.0-20211006191017-fc61aa82d908/go.mod h1:fISAtsaiVKCO4yOHfGKVUJOINPPrT++rmkpbIJ8PY/A=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=

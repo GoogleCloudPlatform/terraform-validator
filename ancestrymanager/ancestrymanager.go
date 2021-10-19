@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/api/cloudresourcemanager/v1"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"go.uber.org/zap"
 )
 

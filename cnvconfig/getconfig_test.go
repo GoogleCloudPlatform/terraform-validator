@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/stretchr/testify/assert"
 )
 
