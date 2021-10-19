@@ -26,7 +26,7 @@ import (
 // getProject reads the "project" field from the given resource data and falls
 // back to the provider's value if not given. If the provider's value is not
 // given, an error is returned.
-func getProject(d converter.TerraformResourceData, config *converter.Config, cai converter.Asset, errorLogger *zap.Logger) (string, error) {
+func getProject(d resources.TerraformResourceData, config *resources.Config, cai resources.Asset, errorLogger *zap.Logger) (string, error) {
 
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project",
@@ -55,7 +55,7 @@ func getProject(d converter.TerraformResourceData, config *converter.Config, cai
 	return getProjectFromSchema("project", d, config)
 }
 
-func getProjectFromSchema(projectSchemaField string, d converter.TerraformResourceData, config *converter.Config) (string, error) {
+func getProjectFromSchema(projectSchemaField string, d resources.TerraformResourceData, config *resources.Config) (string, error) {
 	res, ok := d.GetOk(projectSchemaField)
 	if ok && projectSchemaField != "" {
 		return res.(string), nil
