@@ -17,12 +17,12 @@ package cnvconfig
 import (
 	"context"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/pkg/errors"
 )
 
-func GetConfig(ctx context.Context, project string, offline bool) (*converter.Config, error) {
-	cfg := &converter.Config{
+func GetConfig(ctx context.Context, project string, offline bool) (*resources.Config, error) {
+	cfg := &resources.Config{
 		Project: project,
 	}
 
@@ -42,7 +42,7 @@ func GetConfig(ctx context.Context, project string, offline bool) (*converter.Co
 	})
 
 	if !offline {
-		converter.ConfigureBasePaths(cfg)
+		resources.ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(ctx); err != nil {
 			return nil, errors.Wrap(err, "load and validate config")
 		}

@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/api/cloudresourcemanager/v1"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"go.uber.org/zap"
 )
 
@@ -16,7 +16,7 @@ type AncestryManager interface {
 	// GetAncestry takes a project name to return an ancestry path
 	GetAncestry(project string) (string, error)
 	// GetAncestry takes a project name and resource data to return an ancestry path
-	GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error)
+	GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error)
 }
 
 // ClientRetriever is the interface that returns an instance of various clients.
@@ -50,7 +50,7 @@ func (m *resourceAncestryManager) getFolderAncestry(folderID string) ([]*cloudre
 	}, nil
 }
 
-func (m *resourceAncestryManager) getAncestryFromResource(tfData converter.TerraformResourceData, cai converter.Asset) ([]*cloudresourcemanager.Ancestor, bool) {
+func (m *resourceAncestryManager) getAncestryFromResource(tfData resources.TerraformResourceData, cai resources.Asset) ([]*cloudresourcemanager.Ancestor, bool) {
 	m.errorLogger.Info(fmt.Sprintf("Retrieving ancestry from resource (type=%s)", cai.Type))
 
 	switch cai.Type {
@@ -128,7 +128,7 @@ func (m *onlineAncestryManager) GetAncestry(project string) (string, error) {
 
 // GetAncestryWithResource first attempts to get Ancestry from the API
 // If that fails, it falls back to inspecting the resource.
-func (m *onlineAncestryManager) GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error) {
+func (m *onlineAncestryManager) GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error) {
 	path, err := m.GetAncestry(project)
 	if path != "" {
 		return path, nil
@@ -167,7 +167,7 @@ func (m *offlineAncestryManager) GetAncestry(project string) (string, error) {
 
 // GetAncestryWithResource first attempts to get Ancestry from the resource
 // If that fails, it falls back to the offline cache.
-func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData converter.TerraformResourceData, cai converter.Asset) (string, error) {
+func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error) {
 	ancestry, ok := m.getAncestryFromResource(tfData, cai)
 	if ok {
 		path := ancestryPath(ancestry)

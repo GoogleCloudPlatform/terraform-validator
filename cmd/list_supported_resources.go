@@ -21,7 +21,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	converter "github.com/GoogleCloudPlatform/terraform-google-conversion/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +41,7 @@ func newListSupportedResourcesCmd() *cobra.Command {
 }
 
 func (o *listSupportedResourcesOptions) run() error {
-	converters := converter.ResourceConverters()
+	converters := resources.ResourceConverters()
 
 	// Get a sorted list of terraform resources
 	list := make([]string, 0, len(converters))
@@ -55,10 +55,10 @@ func (o *listSupportedResourcesOptions) run() error {
 	for _, resource := range list {
 		seenAssetTypes := make(map[string]bool)
 		assetTypes := []string{}
-		for _, converter := range converters[resource] {
-			if _, exists := seenAssetTypes[converter.AssetType]; !exists {
-				seenAssetTypes[converter.AssetType] = true
-				assetTypes = append(assetTypes, converter.AssetType)
+		for _, resources := range converters[resource] {
+			if _, exists := seenAssetTypes[resources.AssetType]; !exists {
+				seenAssetTypes[resources.AssetType] = true
+				assetTypes = append(assetTypes, resources.AssetType)
 			}
 		}
 		sort.Strings(assetTypes)
