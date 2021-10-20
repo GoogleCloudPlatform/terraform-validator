@@ -9,7 +9,7 @@
           "mode": "managed",
           "type": "google_kms_crypto_key",
           "name": "test",
-          "provider_name": "google",
+          "provider_name": "registry.terraform.io/hashicorp/google",
           "schema_version": 1,
           "values": {
             "key_ring": "key-ring-test",
@@ -36,7 +36,7 @@
       "mode": "managed",
       "type": "google_kms_crypto_key",
       "name": "test",
-      "provider_name": "google",
+      "provider_name": "registry.terraform.io/hashicorp/google",
       "change": {
         "actions": [
           "create"
