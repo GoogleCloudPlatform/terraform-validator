@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// In order to interact with terraform-google-conversion, we need to be able to create
+// In order to interact with resource converters, we need to be able to create
 // "terraform resource data" that supports a very limited subset of the API actually
 // used during the conversion process.
 package google

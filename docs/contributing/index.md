@@ -44,17 +44,22 @@ bin/terraform-validator convert example/tfplan.json
 
 ## Testing
 
+**Note:** Integration tests require a test project. For manual tests, you can follow the [tutorial](../tutorial.md) but use your locally built binary. It's easiest to use a [GCPAlwaysViolatesConstraintV1](https://github.com/GoogleCloudPlatform/terraform-validator/blob/master/testdata/sample_policies/always_violate/policies/constraints/always_violates.yaml) constraint for testing new resources; this is what most of the automated tests do.
+
 ```
 # Unit tests
 make test
 
 # Integration tests (interacts with real APIs)
+# These use your built copy of terraform-validator
 gcloud auth application-default login
 export TEST_PROJECT=my-project-id
 export TEST_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
+make build
 make test-integration
 
 # Specific integration test
+make build
 go test -v -run=<test name or prefix> ./test
 ```
 
