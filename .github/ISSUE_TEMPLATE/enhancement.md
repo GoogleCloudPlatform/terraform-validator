@@ -26,11 +26,11 @@ about: For when something (a resource, field, etc.) is missing, and should be ad
 
 * google_XXXXX
 
-### Terraform-google-conversion support?
+### Resource converter exists?
 
-<!-- Is this enhancement already supported by terraform-google-conversion? (If relevant.) https://github.com/GoogleCloudPlatform/terraform-google-conversion/tree/master/google -->
+<!-- Does this resource already have a resource converter? (If relevant.) https://github.com/GoogleCloudPlatform/terraform-validator/tree/main/converters/google/resources -->
 
-- [google_XXXXX is in terraform-google-conversion](https://github.com/GoogleCloudPlatform/terraform-google-conversion/tree/master/google)
+- [google_XXXXX has a resource converter](https://github.com/GoogleCloudPlatform/terraform-validator/tree/main/converters/google/resources)
 - google_YYYYY is not
 
 ### References
