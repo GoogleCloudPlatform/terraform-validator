@@ -1231,7 +1231,7 @@ func expandComputeRegionBackendServiceLogConfig(v interface{}, d TerraformResour
 	transformedEnable, err := expandComputeRegionBackendServiceLogConfigEnable(original["enable"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedEnable); val.IsValid() && !isEmptyValue(val) {
+	} else {
 		transformed["enable"] = transformedEnable
 	}
 
