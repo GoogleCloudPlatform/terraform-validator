@@ -24,6 +24,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// suppress changes on sample_rate if log_config is set to disabled.
+func suppressWhenDisabled(k, old, new string, d *schema.ResourceData) bool {
+	_, n := d.GetChange("log_config.0.enable")
+	if isEmptyValue(reflect.ValueOf(n)) {
+		return true
+	}
+	return false
+}
+
 // Whether the backend is a global or regional NEG
 func isNegBackend(backend map[string]interface{}) bool {
 	backendGroup, ok := backend["group"]
@@ -1233,7 +1242,7 @@ func expandComputeBackendServiceLogConfig(v interface{}, d TerraformResourceData
 	transformedEnable, err := expandComputeBackendServiceLogConfigEnable(original["enable"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedEnable); val.IsValid() && !isEmptyValue(val) {
+	} else {
 		transformed["enable"] = transformedEnable
 	}
 
