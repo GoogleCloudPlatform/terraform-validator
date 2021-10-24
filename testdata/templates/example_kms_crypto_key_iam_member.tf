@@ -41,6 +41,5 @@ resource "google_kms_crypto_key" "example_crypto_key" {
 resource "google_kms_crypto_key_iam_member" "crypto_key" {
   crypto_key_id = google_kms_crypto_key.example_crypto_key.id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
-  members        = ["allUsers"]
-  depends_on    = []
+  member        = "allUsers"
 }

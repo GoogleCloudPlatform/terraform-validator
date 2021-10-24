@@ -15,7 +15,7 @@
 					"name": "crypto-key-example",
 					"purpose": "ENCRYPT_DECRYPT",
 					"rotation_period": null,
-					"skip_initial_version_creation": null,
+					"skip_initial_version_creation": false,
 					"timeouts": null
 				}
 			}, {
@@ -27,7 +27,7 @@
 				"schema_version": 0,
 				"values": {
 					"condition": [],
-					"members": ["allUsers"],
+					"member": "allUsers",
 					"role": "roles/cloudkms.cryptoKeyEncrypterDecrypter"
 				}
 			}, {
@@ -51,7 +51,7 @@
 		"mode": "managed",
 		"type": "google_kms_crypto_key",
 		"name": "example_crypto_key",
-		"provider_name": "registry.terraform.io/hashicorp/google",
+		"provider_name": "google",
 		"change": {
 			"actions": ["create"],
 			"before": null,
@@ -60,7 +60,7 @@
 				"name": "crypto-key-example",
 				"purpose": "ENCRYPT_DECRYPT",
 				"rotation_period": null,
-				"skip_initial_version_creation": null,
+				"skip_initial_version_creation": false,
 				"timeouts": null
 			},
 			"after_unknown": {
@@ -85,7 +85,7 @@
 			"before": null,
 			"after": {
 				"condition": [],
-				"members": ["allUsers"],
+				"member": "allUsers",
 				"role": "roles/cloudkms.cryptoKeyEncrypterDecrypter"
 			},
 			"after_unknown": {
@@ -159,8 +159,8 @@
 					"crypto_key_id": {
 						"references": ["google_kms_crypto_key.example_crypto_key"]
 					},
-					"members": {
-						"constant_value": ["allUsers"]
+					"member": {
+						"constant_value": "allUsers"
 					},
 					"role": {
 						"constant_value": "roles/cloudkms.cryptoKeyEncrypterDecrypter"
