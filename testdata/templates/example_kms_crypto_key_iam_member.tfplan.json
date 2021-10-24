@@ -27,8 +27,8 @@
 				"schema_version": 0,
 				"values": {
 					"condition": [],
-					"member": "allUsers",
-					"role": "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+					"member": "allAuthenticatedUsers",
+					"role": "roles/cloudkms.admin"
 				}
 			}, {
 				"address": "google_kms_key_ring.example_keyring",
@@ -85,8 +85,8 @@
 			"before": null,
 			"after": {
 				"condition": [],
-				"member": "allUsers",
-				"role": "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+				"member": "allAuthenticatedUsers",
+				"role": "roles/cloudkms.admin"
 			},
 			"after_unknown": {
 				"condition": [],
@@ -160,10 +160,10 @@
 						"references": ["google_kms_crypto_key.example_crypto_key"]
 					},
 					"member": {
-						"constant_value": "allUsers"
+						"constant_value": "allAuthenticatedUsers"
 					},
 					"role": {
-						"constant_value": "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+						"constant_value": "roles/cloudkms.admin"
 					}
 				},
 				"schema_version": 0

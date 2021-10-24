@@ -38,8 +38,19 @@ resource "google_kms_crypto_key" "example_crypto_key" {
   key_ring = google_kms_key_ring.example_keyring.id
 }
 
-resource "google_kms_crypto_key_iam_member" "crypto_key" {
+resource "google_kms_crypto_key_iam_policy" "crypto_key" {
   crypto_key_id = google_kms_crypto_key.example_crypto_key.id
-  role          = "roles/cloudkms.admin"
-  member        = "allAuthenticatedUsers"
+  policy_data = jsonencode(
+    {
+      bindings = [
+        {
+          members = [
+            "allAuthenticatedUsers",
+            "serviceAccount:998476993360@cloudservices.gserviceaccount.com",
+          ]
+          role = "roles/cloudkms.admin"
+        }
+      ]
+    }
+  )
 }

@@ -20,9 +20,9 @@
         "iam_policy": {
             "bindings": [
                 {
-                    "role": "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+                    "role": "roles/cloudkms.admin",
                     "members": [
-                        "allUsers"
+                        "allAuthenticatedUsers"
                     ]
                 }
             ]
