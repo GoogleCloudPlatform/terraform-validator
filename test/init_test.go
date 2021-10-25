@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -140,24 +141,32 @@ func generateTestFiles(t *testing.T, sourceDir string, targetDir string, selecto
 	}
 }
 
-func normalizeAssets(t *testing.T, got []google.Asset, offline bool) []byte {
+func normalizeAssets(t *testing.T, assets []google.Asset, offline bool) []google.Asset {
 	t.Helper()
-	if !offline {
-		// remove the ancestry as the value of that is dependent on project,
-		// and is not important for the test.
-		for i := range got {
-			got[i].Ancestry = ""
-		}
-	}
-	// Replace placeholder in names.
+	ret := make([]google.Asset, len(assets))
 	re := regexp.MustCompile(`/placeholder-[^/]+`)
-	for i := range got {
-		got[i].Name = re.ReplaceAllString(got[i].Name, "/placeholder-foobar")
+	for i := range assets {
+		// Get conformity by converting to/from json.
+		bytes, err := json.Marshal(assets[i])
+		if err != nil {
+			t.Fatalf("marshaling: %v", err)
+		}
+
+		var asset google.Asset
+		err = json.Unmarshal(bytes, &asset)
+		if err != nil {
+			t.Fatalf("marshaling: %v", err)
+		}
+		if !offline {
+			// remove the ancestry as the value of that is dependent on project,
+			// and is not important for the test.
+			asset.Ancestry = ""
+		}
+		// Replace placeholder in names. This allows us to compare generated placeholders
+		// (for example due to "unknown after apply") with the values in the expected
+		// output files.
+		asset.Name = re.ReplaceAllString(asset.Name, fmt.Sprintf("/placeholder-foobar"))
+		ret[i] = asset
 	}
-	// compare assets
-	gotJSON, err := json.Marshal(got)
-	if err != nil {
-		t.Fatalf("marshaling: %v", err)
-	}
-	return gotJSON
+	return ret
 }

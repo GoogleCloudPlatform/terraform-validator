@@ -55,8 +55,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_binding"},
 		{name: "example_storage_bucket_iam_member"},
-		// This test is flakey - see https://github.com/GoogleCloudPlatform/terraform-validator/issues/259
-		// {name: "example_storage_bucket_iam_member_random_suffix"},
+		{name: "example_storage_bucket_iam_member_random_suffix"},
 		{name: "example_storage_bucket_iam_policy"},
 		{name: "full_compute_firewall"},
 		{name: "full_compute_instance"},
@@ -99,9 +98,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], data.Ancestry, true, err)
 			}
 
-			gotJSON := normalizeAssets(t, got, true)
-			wantJSON := normalizeAssets(t, want, true)
-			require.JSONEq(t, string(wantJSON), string(gotJSON))
+			expectedAssets := normalizeAssets(t, got, true)
+			actualAssets := normalizeAssets(t, want, true)
+			require.ElementsMatch(t, actualAssets, expectedAssets)
 		})
 	}
 }

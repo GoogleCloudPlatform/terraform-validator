@@ -186,9 +186,9 @@ func TestCLI(t *testing.T) {
 type compareConvertOutputFunc func(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool)
 
 func compareUnmergedConvertOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
-	expectedJSON := normalizeAssets(t, expected, offline)
-	actualJSON := normalizeAssets(t, actual, offline)
-	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+	expectedAssets := normalizeAssets(t, expected, offline)
+	actualAssets := normalizeAssets(t, actual, offline)
+	require.ElementsMatch(t, expectedAssets, actualAssets)
 }
 
 // For merged IAM members, only consider whether the expected members are present.
@@ -227,9 +227,9 @@ func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual 
 		normalizedActual = append(normalizedActual, normalizedActualAsset)
 	}
 
-	expectedJSON := normalizeAssets(t, expected, offline)
-	actualJSON := normalizeAssets(t, normalizedActual, offline)
-	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+	expectedAssets := normalizeAssets(t, expected, offline)
+	actualAssets := normalizeAssets(t, normalizedActual, offline)
+	require.ElementsMatch(t, expectedAssets, actualAssets)
 }
 
 // For merged IAM bindings, only consider whether the expected bindings are as expected.
@@ -257,9 +257,9 @@ func compareMergedIamBindingOutput(t *testing.T, expected []google.Asset, actual
 		normalizedActual = append(normalizedActual, normalizedActualAsset)
 	}
 
-	expectedJSON := normalizeAssets(t, expected, offline)
-	actualJSON := normalizeAssets(t, normalizedActual, offline)
-	require.JSONEq(t, string(expectedJSON), string(actualJSON))
+	expectedAssets := normalizeAssets(t, expected, offline)
+	actualAssets := normalizeAssets(t, normalizedActual, offline)
+	require.ElementsMatch(t, expectedAssets, actualAssets)
 }
 
 func testConvertCommand(t *testing.T, dir, name string, offline bool, compare compareConvertOutputFunc) {
