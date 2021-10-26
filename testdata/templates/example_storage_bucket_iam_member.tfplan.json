@@ -78,7 +78,7 @@
           "website": []
         },
         "after_unknown": {
-          "bucket_policy_only": true,
+          "uniform_bucket_level_access": true,
           "cors": [],
           "encryption": [],
           "id": true,

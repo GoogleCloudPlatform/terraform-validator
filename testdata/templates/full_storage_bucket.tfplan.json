@@ -12,7 +12,7 @@
           "provider_name": "google",
           "schema_version": 0,
           "values": {
-            "bucket_policy_only": true,
+            "uniform_bucket_level_access": true,
             "cors": [
               {
                 "max_age_seconds": 42,
@@ -144,7 +144,7 @@
         ],
         "before": null,
         "after": {
-          "bucket_policy_only": true,
+          "uniform_bucket_level_access": true,
           "cors": [
             {
               "max_age_seconds": 42,
@@ -362,7 +362,7 @@
           "name": "full-list-default",
           "provider_config_key": "google",
           "expressions": {
-            "bucket_policy_only": {
+            "uniform_bucket_level_access": {
               "constant_value": true
             },
             "cors": [

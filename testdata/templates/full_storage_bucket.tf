@@ -31,7 +31,7 @@ resource "google_storage_bucket" "full-list-default" {
   name     = "image-store-bucket"
   location = "EU"
 
-  bucket_policy_only = true
+  uniform_bucket_level_access = true
   cors {
     origin          = ["test-origin1", "test-origin2"]
     method          = ["test-method1", "test-method2"]

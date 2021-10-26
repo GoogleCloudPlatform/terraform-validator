@@ -200,7 +200,7 @@
           "provider_name": "google",
           "schema_version": 0,
           "values": {
-            "bucket_policy_only": true,
+            "uniform_bucket_level_access": true,
             "cors": [
               {
                 "max_age_seconds": 0,
@@ -625,7 +625,7 @@
           "no-op"
         ],
         "before": {
-          "bucket_policy_only": true,
+          "uniform_bucket_level_access": true,
           "cors": [
             {
               "max_age_seconds": 0,
@@ -665,7 +665,7 @@
           ]
         },
         "after": {
-          "bucket_policy_only": true,
+          "uniform_bucket_level_access": true,
           "cors": [
             {
               "max_age_seconds": 0,
@@ -974,7 +974,7 @@
             "provider_name": "google",
             "schema_version": 0,
             "values": {
-              "bucket_policy_only": true,
+              "uniform_bucket_level_access": true,
               "cors": [
                 {
                   "max_age_seconds": 0,
