@@ -17,4 +17,4 @@ examples/*.tfstate*
 
 # Mac OSX
 .DS_Store
-vendor/
+
