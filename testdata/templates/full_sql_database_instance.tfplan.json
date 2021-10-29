@@ -80,10 +80,6 @@
             "settings": [
               {
                 "activation_policy": "test-activation_policy",
-                "authorized_gae_applications": [
-                  "test-authorized_gae_application1",
-                  "test-authorized_gae_application2"
-                ],
                 "availability_type": "REGIONAL",
                 "backup_configuration": [
                   {
@@ -93,7 +89,6 @@
                     "location": "us"
                   }
                 ],
-                "crash_safe_replication": true,
                 "database_flags": [
                   {
                     "name": "test-name1",
@@ -139,7 +134,6 @@
                   }
                 ],
                 "pricing_plan": "test-pricing_plan",
-                "replication_type": "test-replication_type",
                 "tier": "db-f1-micro",
                 "user_labels": {
                   "user_labels_foo": "user_labels_bar"
@@ -272,10 +266,6 @@
           "settings": [
             {
               "activation_policy": "test-activation_policy",
-              "authorized_gae_applications": [
-                "test-authorized_gae_application1",
-                "test-authorized_gae_application2"
-              ],
               "availability_type": "REGIONAL",
               "backup_configuration": [
                 {
@@ -285,7 +275,6 @@
                   "location": "us"
                 }
               ],
-              "crash_safe_replication": true,
               "database_flags": [
                 {
                   "name": "test-name1",
@@ -331,7 +320,6 @@
                 }
               ],
               "pricing_plan": "test-pricing_plan",
-              "replication_type": "test-replication_type",
               "tier": "db-f1-micro",
               "user_labels": {
                 "user_labels_foo": "user_labels_bar"
@@ -356,10 +344,6 @@
           "service_account_email_address": true,
           "settings": [
             {
-              "authorized_gae_applications": [
-                false,
-                false
-              ],
               "backup_configuration": [
                 {}
               ],
@@ -527,12 +511,6 @@
                 "activation_policy": {
                   "constant_value": "test-activation_policy"
                 },
-                "authorized_gae_applications": {
-                  "constant_value": [
-                    "test-authorized_gae_application1",
-                    "test-authorized_gae_application2"
-                  ]
-                },
                 "availability_type": {
                   "constant_value": "REGIONAL"
                 },
@@ -552,9 +530,6 @@
                     }
                   }
                 ],
-                "crash_safe_replication": {
-                  "constant_value": true
-                },
                 "database_flags": [
                   {
                     "name": {
@@ -646,9 +621,6 @@
                 ],
                 "pricing_plan": {
                   "constant_value": "test-pricing_plan"
-                },
-                "replication_type": {
-                  "constant_value": "test-replication_type"
                 },
                 "tier": {
                   "constant_value": "db-f1-micro"

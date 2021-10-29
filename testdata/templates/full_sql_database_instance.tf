@@ -54,7 +54,6 @@ resource "google_sql_database_instance" "master" {
   }
   settings {
     activation_policy           = "test-activation_policy"
-    authorized_gae_applications = ["test-authorized_gae_application1", "test-authorized_gae_application2"]
     availability_type           = "REGIONAL"
     backup_configuration {
       binary_log_enabled = true
@@ -62,7 +61,6 @@ resource "google_sql_database_instance" "master" {
       start_time         = "42:42"
       location           = "us"
     }
-    crash_safe_replication = true
     database_flags {
       name  = "test-name1"
       value = "test-value1"
@@ -99,7 +97,6 @@ resource "google_sql_database_instance" "master" {
       update_track = "test-update_track"
     }
     pricing_plan     = "test-pricing_plan"
-    replication_type = "test-replication_type"
     tier             = "db-f1-micro"
     user_labels = {
       user_labels_foo = "user_labels_bar"

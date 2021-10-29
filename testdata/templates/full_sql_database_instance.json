@@ -31,10 +31,7 @@
         },
         "settings": {
           "activationPolicy": "test-activation_policy",
-          "authorizedGaeApplications": [
-            "test-authorized_gae_application1",
-            "test-authorized_gae_application2"
-          ],
+
           "availabilityType": "REGIONAL",
           "backupConfiguration": {
             "binaryLogEnabled": true,
@@ -42,7 +39,6 @@
             "startTime": "42:42",
             "location": "us"
           },
-          "crashSafeReplicationEnabled": true,
           "dataDiskSizeGb": "42",
           "dataDiskType": "test-disk_type",
           "databaseFlags": [
@@ -81,7 +77,6 @@
             "updateTrack": "test-update_track"
           },
           "pricingPlan": "test-pricing_plan",
-          "replicationType": "test-replication_type",
           "storageAutoResize": true,
           "tier": "db-f1-micro",
           "userLabels": {

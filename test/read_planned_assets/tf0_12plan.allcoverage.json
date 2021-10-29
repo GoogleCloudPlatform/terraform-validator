@@ -307,7 +307,6 @@
             "region": "us-central1",
             "settings": [
               {
-                "authorized_gae_applications": null,
                 "database_flags": [
 
                 ],
@@ -316,7 +315,6 @@
 
                 ],
                 "pricing_plan": "PER_USE",
-                "replication_type": "SYNCHRONOUS",
                 "tier": "db-f1-micro",
                 "user_labels": null
               }
@@ -1098,7 +1096,6 @@
           "region": "us-central1",
           "settings": [
             {
-              "authorized_gae_applications": null,
               "database_flags": [
 
               ],
@@ -1107,7 +1104,6 @@
 
               ],
               "pricing_plan": "PER_USE",
-              "replication_type": "SYNCHRONOUS",
               "tier": "db-f1-micro",
               "user_labels": null
             }
@@ -1120,7 +1116,6 @@
           "region": "us-central1",
           "settings": [
             {
-              "authorized_gae_applications": null,
               "database_flags": [
 
               ],
@@ -1129,7 +1124,6 @@
 
               ],
               "pricing_plan": "PER_USE",
-              "replication_type": "SYNCHRONOUS",
               "tier": "db-f1-micro",
               "user_labels": null
             }
@@ -1154,7 +1148,6 @@
               "activation_policy": true,
               "availability_type": true,
               "backup_configuration": true,
-              "crash_safe_replication": true,
               "database_flags": [
 
               ],
