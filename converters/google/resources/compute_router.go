@@ -96,6 +96,12 @@ func GetComputeRouterApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("bgp"); ok || !reflect.DeepEqual(v, bgpProp) {
 		obj["bgp"] = bgpProp
 	}
+	encryptedInterconnectRouterProp, err := expandComputeRouterEncryptedInterconnectRouter(d.Get("encrypted_interconnect_router"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("encrypted_interconnect_router"); !isEmptyValue(reflect.ValueOf(encryptedInterconnectRouterProp)) && (ok || !reflect.DeepEqual(v, encryptedInterconnectRouterProp)) {
+		obj["encryptedInterconnectRouter"] = encryptedInterconnectRouterProp
+	}
 	regionProp, err := expandComputeRouterRegion(d.Get("region"), d, config)
 	if err != nil {
 		return nil, err
@@ -208,6 +214,10 @@ func expandComputeRouterBgpAdvertisedIpRangesRange(v interface{}, d TerraformRes
 }
 
 func expandComputeRouterBgpAdvertisedIpRangesDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRouterEncryptedInterconnectRouter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
