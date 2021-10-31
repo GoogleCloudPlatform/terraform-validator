@@ -15,7 +15,6 @@ import (
 type testRetriever struct {
 	online      bool
 	opts        []option.ClientOption
-	errorLogger *zap.Logger
 }
 
 func (tr *testRetriever) NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service {
@@ -96,13 +95,17 @@ func TestGetAncestry(t *testing.T) {
 
 	// option.WithEndpoint(ts.URL), option.WithoutAuthentication()
 	trOnline := &testRetriever{online: true, opts: []option.ClientOption{option.WithEndpoint(ts.URL), option.WithoutAuthentication()}}
-	amOnline, err := New(trOnline, ownerProject, ownerAncestry, "", false, zap.NewExample())
+
+	entries:=map[string]string{
+		ownerProject: ownerAncestry,
+	}
+	amOnline, err := New(false, trOnline, entries,"", zap.NewExample())
 	if err != nil {
 		t.Fatalf("failed to create online ancestry manager: %s", err)
 	}
 
 	trOffline := &testRetriever{online: false}
-	amOffline, err := New(trOffline, ownerProject, ownerAncestry, "", true, zap.NewExample())
+	amOffline, err := New(true, trOffline, entries,  "",  zap.NewExample())
 	if err != nil {
 		t.Fatalf("failed to create offline ancestry manager: %s", err)
 	}
