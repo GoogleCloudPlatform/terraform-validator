@@ -87,10 +87,8 @@
           "settings": [
             {
               "activation_policy": true,
-              "authorized_gae_applications": true,
               "availability_type": true,
               "backup_configuration": true,
-              "crash_safe_replication": true,
               "database_flags": [],
               "disk_size": true,
               "disk_type": true,
@@ -98,7 +96,6 @@
               "ip_configuration": true,
               "location_preference": true,
               "maintenance_window": [],
-              "replication_type": true,
               "user_labels": true,
               "version": true
             }

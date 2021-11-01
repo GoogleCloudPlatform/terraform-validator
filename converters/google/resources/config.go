@@ -26,11 +26,9 @@ import (
 	"google.golang.org/api/cloudkms/v1"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	resourceManagerV2 "google.golang.org/api/cloudresourcemanager/v2"
-	composer "google.golang.org/api/composer/v1beta1"
-	computeBeta "google.golang.org/api/compute/v0.beta"
+	"google.golang.org/api/composer/v1"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
-	containerBeta "google.golang.org/api/container/v1beta1"
 	dataflow "google.golang.org/api/dataflow/v1b3"
 	"google.golang.org/api/dataproc/v1"
 	"google.golang.org/api/dns/v1"
@@ -148,10 +146,7 @@ type Config struct {
 
 	CloudBillingBasePath      string
 	ComposerBasePath          string
-	ComputeBetaBasePath       string
 	ContainerBasePath         string
-	ContainerBetaBasePath     string
-	DataprocBetaBasePath      string
 	DataflowBasePath          string
 	IamCredentialsBasePath    string
 	ResourceManagerV2BasePath string
@@ -240,10 +235,7 @@ const VPCAccessBasePathKey = "VPCAccess"
 const WorkflowsBasePathKey = "Workflows"
 const CloudBillingBasePathKey = "CloudBilling"
 const ComposerBasePathKey = "Composer"
-const ComputeBetaBasePathKey = "ComputeBeta"
 const ContainerBasePathKey = "Container"
-const DataprocBetaBasePathKey = "DataprocBeta"
-const ContainerBetaBasePathKey = "ContainerBeta"
 const DataflowBasePathKey = "Dataflow"
 const IAMBasePathKey = "IAM"
 const IamCredentialsBasePathKey = "IamCredentials"
@@ -322,10 +314,7 @@ var DefaultBasePaths = map[string]string{
 	WorkflowsBasePathKey:            "https://workflows.googleapis.com/v1/",
 	CloudBillingBasePathKey:         "https://cloudbilling.googleapis.com/v1/",
 	ComposerBasePathKey:             "https://composer.googleapis.com/v1/",
-	ComputeBetaBasePathKey:          "https://www.googleapis.com/compute/beta/",
 	ContainerBasePathKey:            "https://container.googleapis.com/v1/",
-	ContainerBetaBasePathKey:        "https://container.googleapis.com/v1beta1/",
-	DataprocBetaBasePathKey:         "https://dataproc.googleapis.com/v1beta2/",
 	DataflowBasePathKey:             "https://dataflow.googleapis.com/v1b3/",
 	IAMBasePathKey:                  "https://iam.googleapis.com/v1/",
 	IamCredentialsBasePathKey:       "https://iamcredentials.googleapis.com/v1/",
@@ -520,19 +509,6 @@ func (c *Config) NewComputeClient(userAgent string) *compute.Service {
 	return clientCompute
 }
 
-func (c *Config) NewComputeBetaClient(userAgent string) *computeBeta.Service {
-	log.Printf("[INFO] Instantiating GCE Beta client for path %s", c.ComputeBetaBasePath)
-	clientComputeBeta, err := computeBeta.NewService(c.context, option.WithHTTPClient(c.client))
-	if err != nil {
-		log.Printf("[WARN] Error creating client compute beta: %s", err)
-		return nil
-	}
-	clientComputeBeta.UserAgent = userAgent
-	clientComputeBeta.BasePath = c.ComputeBetaBasePath
-
-	return clientComputeBeta
-}
-
 func (c *Config) NewContainerClient(userAgent string) *container.Service {
 	containerClientBasePath := removeBasePathVersion(c.ContainerBasePath)
 	log.Printf("[INFO] Instantiating GKE client for path %s", containerClientBasePath)
@@ -545,20 +521,6 @@ func (c *Config) NewContainerClient(userAgent string) *container.Service {
 	clientContainer.BasePath = containerClientBasePath
 
 	return clientContainer
-}
-
-func (c *Config) NewContainerBetaClient(userAgent string) *containerBeta.Service {
-	containerBetaClientBasePath := removeBasePathVersion(c.ContainerBetaBasePath)
-	log.Printf("[INFO] Instantiating GKE Beta client for path %s", containerBetaClientBasePath)
-	clientContainerBeta, err := containerBeta.NewService(c.context, option.WithHTTPClient(c.client))
-	if err != nil {
-		log.Printf("[WARN] Error creating client container beta: %s", err)
-		return nil
-	}
-	clientContainerBeta.UserAgent = userAgent
-	clientContainerBeta.BasePath = containerBetaClientBasePath
-
-	return clientContainerBeta
 }
 
 func (c *Config) NewDnsClient(userAgent string) *dns.Service {
@@ -1175,9 +1137,7 @@ func ConfigureBasePaths(c *Config) {
 	// Handwritten Products / Versioned / Atypical Entries
 	c.CloudBillingBasePath = DefaultBasePaths[CloudBillingBasePathKey]
 	c.ComposerBasePath = DefaultBasePaths[ComposerBasePathKey]
-	c.ComputeBetaBasePath = DefaultBasePaths[ComputeBetaBasePathKey]
 	c.ContainerBasePath = DefaultBasePaths[ContainerBasePathKey]
-	c.ContainerBetaBasePath = DefaultBasePaths[ContainerBetaBasePathKey]
 	c.DataprocBasePath = DefaultBasePaths[DataprocBasePathKey]
 	c.DataflowBasePath = DefaultBasePaths[DataflowBasePathKey]
 	c.IamCredentialsBasePath = DefaultBasePaths[IamCredentialsBasePathKey]
