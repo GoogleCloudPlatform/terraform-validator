@@ -132,7 +132,7 @@ func (m *manager) GetAncestry(project string) (string, error) {
 }
 
 func (m *manager) store(project, ancestry string) {
-	if project != "" && ancestry != "" {
+	if project != "" {
 		m.ancestryCache[project] = ancestry
 	}
 }
@@ -143,7 +143,8 @@ func (m *manager) GetAncestryWithResource(project string, tfData resources.Terra
 	ancestry, ok := m.getAncestryFromResource(tfData, cai)
 	if ok {
 		path := ancestryPath(ancestry)
-		m.errorLogger.Info(fmt.Sprintf("[Offline] Retrieved ancestry for %s: %s", project, path))
+		m.store(project, path)
+		m.errorLogger.Info(fmt.Sprintf("Retrieved ancestry for %s: %s", project, path))
 		return path, nil
 	}
 
@@ -157,7 +158,7 @@ func (m *manager) GetAncestryWithResource(project string, tfData resources.Terra
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
 // entries takes project as key and ancestry as value
-func New(offline bool, retriever ClientRetriever, entries map[string]string, userAgent string, errorLogger *zap.Logger) (AncestryManager, error) {
+func New(retriever ClientRetriever, entries map[string]string, userAgent string, offline bool, errorLogger *zap.Logger) (AncestryManager, error) {
 	am := &manager{
 		ancestryCache: map[string]string{},
 		resourceAncestryManager: resourceAncestryManager{
