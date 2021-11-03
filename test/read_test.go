@@ -105,8 +105,8 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], data.Ancestry, true, err)
 			}
 
-			expectedAssets := normalizeAssets(t, got, true)
-			actualAssets := normalizeAssets(t, want, true)
+			expectedAssets := normalizeAssets(t, want, true)
+			actualAssets := normalizeAssets(t, got, true)
 			require.ElementsMatch(t, actualAssets, expectedAssets)
 		})
 	}
