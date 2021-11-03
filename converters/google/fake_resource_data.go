@@ -19,12 +19,16 @@ package google
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// Must be set to the same value as the internal typeObject const
+const typeObject schema.ValueType = 8
 
 // Compare to https://github.com/hashicorp/terraform-plugin-sdk/blob/97b4465/helper/schema/resource_data.go#L15
 type FakeResourceData struct {
@@ -52,7 +56,7 @@ func (d *FakeResourceData) Get(name string) interface{} {
 // Get reads a single field by key and returns a boolean indicating
 // whether the field exists.
 func (d *FakeResourceData) GetOk(name string) (interface{}, bool) {
-	res, err := d.reader.ReadField(strings.Split(name, "."))
+	r, err := d.reader.ReadField(strings.Split(name, "."))
 	if err != nil {
 		return nil, false
 	}
@@ -63,7 +67,26 @@ func (d *FakeResourceData) GetOk(name string) (interface{}, bool) {
 		return nil, false
 	}
 
-	return res.ValueOrZero(schemaPath[len(schemaPath)-1]), res.Exists && !res.Computed
+	exists := r.Exists && !r.Computed
+	s := schemaPath[len(schemaPath)-1]
+	value := r.Value
+
+	if value == nil && s != nil {
+		value = r.ValueOrZero(s)
+	}
+
+	if exists {
+		// Verify that it's not the zero-value
+		zero := s.Type.Zero()
+
+		if eq, ok := value.(schema.Equal); ok {
+			exists = !eq.Equal(zero)
+		} else {
+			exists = !reflect.DeepEqual(value, zero)
+		}
+	}
+
+	return value, exists
 }
 
 // GetOkExists currently just calls GetOk but should be updated to support
@@ -101,8 +124,6 @@ func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, 
 // NOTE: This function was copied from the terraform library:
 // github.com/hashicorp/terraform/helper/schema/field_reader.go
 func addrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.Schema {
-	const typeObject = 999
-
 	current := &schema.Schema{
 		Type: typeObject,
 		Elem: schemaMap,
