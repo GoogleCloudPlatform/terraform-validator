@@ -24,9 +24,9 @@ func TestFakeResourceData_kind(t *testing.T) {
 	p := provider.Provider()
 
 	values := map[string]interface{}{
-		"name": "test-disk",
-		"type": "pd-ssd",
-		"zone": "us-central1-a",
+		"name":  "test-disk",
+		"type":  "pd-ssd",
+		"zone":  "us-central1-a",
 		"image": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
 		"physical_block_size_bytes": 4096,
 	}
@@ -42,9 +42,9 @@ func TestFakeResourceData_id(t *testing.T) {
 	p := provider.Provider()
 
 	values := map[string]interface{}{
-		"name": "test-disk",
-		"type": "pd-ssd",
-		"zone": "us-central1-a",
+		"name":  "test-disk",
+		"type":  "pd-ssd",
+		"zone":  "us-central1-a",
 		"image": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
 		"physical_block_size_bytes": 4096,
 	}
@@ -60,9 +60,9 @@ func TestFakeResourceData_get(t *testing.T) {
 	p := provider.Provider()
 
 	values := map[string]interface{}{
-		"name": "test-disk",
-		"type": "pd-ssd",
-		"zone": "us-central1-a",
+		"name":  "test-disk",
+		"type":  "pd-ssd",
+		"zone":  "us-central1-a",
 		"image": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
 		"physical_block_size_bytes": 4096,
 	}
@@ -78,9 +78,9 @@ func TestFakeResourceData_getOkOk(t *testing.T) {
 	p := provider.Provider()
 
 	values := map[string]interface{}{
-		"name": "test-disk",
-		"type": "pd-ssd",
-		"zone": "us-central1-a",
+		"name":  "test-disk",
+		"type":  "pd-ssd",
+		"zone":  "us-central1-a",
 		"image": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
 		"physical_block_size_bytes": 4096,
 	}
@@ -98,9 +98,9 @@ func TestFakeResourceData_getOkNonexistentField(t *testing.T) {
 	p := provider.Provider()
 
 	values := map[string]interface{}{
-		"name": "test-disk",
-		"type": "pd-ssd",
-		"zone": "us-central1-a",
+		"name":  "test-disk",
+		"type":  "pd-ssd",
+		"zone":  "us-central1-a",
 		"image": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
 		"physical_block_size_bytes": 4096,
 	}
