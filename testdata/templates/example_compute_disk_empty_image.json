@@ -14,7 +14,6 @@
         },
         "name": "test-disk",
         "physicalBlockSizeBytes": 4096,
-        "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
         "type": "projects/{{.Provider.project}}/zones/us-central1-a/diskTypes/pd-ssd",
         "zone": "projects/{{.Provider.project}}/global/zones/us-central1-a"
       }
