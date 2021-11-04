@@ -78,6 +78,12 @@ func GetPubsubTopicApiObject(d TerraformResourceData, config *Config) (map[strin
 	} else if v, ok := d.GetOkExists("schema_settings"); !isEmptyValue(reflect.ValueOf(schemaSettingsProp)) && (ok || !reflect.DeepEqual(v, schemaSettingsProp)) {
 		obj["schemaSettings"] = schemaSettingsProp
 	}
+	messageRetentionDurationProp, err := expandPubsubTopicMessageRetentionDuration(d.Get("message_retention_duration"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("message_retention_duration"); !isEmptyValue(reflect.ValueOf(messageRetentionDurationProp)) && (ok || !reflect.DeepEqual(v, messageRetentionDurationProp)) {
+		obj["messageRetentionDuration"] = messageRetentionDurationProp
+	}
 
 	return resourcePubsubTopicEncoder(d, config, obj)
 }
@@ -160,5 +166,9 @@ func expandPubsubTopicSchemaSettingsSchema(v interface{}, d TerraformResourceDat
 }
 
 func expandPubsubTopicSchemaSettingsEncoding(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPubsubTopicMessageRetentionDuration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
