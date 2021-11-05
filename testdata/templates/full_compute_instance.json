@@ -10,9 +10,6 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "canIpForward": true,
-        "displayDevice": {
-          "enableDisplay": false
-        },
         "shieldedInstanceConfig": {
           "enableIntegrityMonitoring": true,
           "enableSecureBoot": true,
@@ -153,14 +150,6 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "canIpForward": false,
-        "displayDevice": {
-          "enableDisplay": false
-        },
-        "shieldedInstanceConfig": {
-          "enableIntegrityMonitoring": false,
-          "enableSecureBoot": false,
-          "enableVtpm": false
-        },
         "deletionProtection": false,
         "disks": [
           {

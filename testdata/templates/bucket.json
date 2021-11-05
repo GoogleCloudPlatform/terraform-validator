@@ -9,8 +9,9 @@
       "discovery_name": "Bucket",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "billing": {},
-        "lifecycle": {},
+        "lifecycle": {
+          "rule": []
+        },
         "iamConfiguration": {
           "uniformBucketLevelAccess": {
             "enabled": false

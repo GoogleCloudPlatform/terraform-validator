@@ -19,12 +19,27 @@ package google
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// Must be set to the same value as the internal typeObject const
+const typeObject schema.ValueType = 8
+
+
+// This is more or less equivalent to the internal getResult struct
+// used by schema.ResourceData
+type getResult struct {
+	Value interface{}
+	Computed bool
+	Exists bool
+	Schema *schema.Schema
+}
+
 
 // Compare to https://github.com/hashicorp/terraform-plugin-sdk/blob/97b4465/helper/schema/resource_data.go#L15
 type FakeResourceData struct {
@@ -43,6 +58,36 @@ func (d *FakeResourceData) Id() string {
 	return ""
 }
 
+func (d *FakeResourceData) getRaw(key string) getResult {
+	var parts []string
+	if key != "" {
+		parts = strings.Split(key, ".")
+	}
+	return d.get(parts)
+}
+
+func (d *FakeResourceData) get(addr []string) getResult {
+	r, err := d.reader.ReadField(addr)
+	if err != nil {
+		panic(err)
+	}
+
+	var s *schema.Schema
+	if schemaPath := addrToSchema(addr, d.schema); len(schemaPath) > 0 {
+		s = schemaPath[len(schemaPath)-1]
+	}
+	if r.Value == nil && s != nil {
+		r.Value = r.ValueOrZero(s)
+	}
+
+	return getResult{
+		Value: r.Value,
+		Computed: r.Computed,
+		Exists: r.Exists,
+		Schema: s,
+	}
+}
+
 // Get reads a single field by key.
 func (d *FakeResourceData) Get(name string) interface{} {
 	val, _ := d.GetOk(name)
@@ -52,24 +97,28 @@ func (d *FakeResourceData) Get(name string) interface{} {
 // Get reads a single field by key and returns a boolean indicating
 // whether the field exists.
 func (d *FakeResourceData) GetOk(name string) (interface{}, bool) {
-	res, err := d.reader.ReadField(strings.Split(name, "."))
-	if err != nil {
-		return nil, false
+	r := d.getRaw(name)
+	exists := r.Exists && !r.Computed
+
+	if exists {
+		// Verify that it's not the zero-value
+		value := r.Value
+		zero := r.Schema.Type.Zero()
+
+		if eq, ok := value.(schema.Equal); ok {
+			exists = !eq.Equal(zero)
+		} else {
+			exists = !reflect.DeepEqual(value, zero)
+		}
 	}
 
-	addr := strings.Split(name, ".")
-	schemaPath := addrToSchema(addr, d.schema)
-	if len(schemaPath) == 0 {
-		return nil, false
-	}
-
-	return res.ValueOrZero(schemaPath[len(schemaPath)-1]), res.Exists && !res.Computed
+	return r.Value, exists
 }
 
-// GetOkExists currently just calls GetOk but should be updated to support
-// schema.ResourceData.GetOkExists functionality.
-func (d *FakeResourceData) GetOkExists(name string) (interface{}, bool) {
-	return d.GetOk(name)
+func (d *FakeResourceData) GetOkExists(key string) (interface{}, bool) {
+	r := d.getRaw(key)
+	exists := r.Exists && !r.Computed
+	return r.Value, exists
 }
 
 // These methods are required by some mappers but we don't actually have (or need)
@@ -101,8 +150,6 @@ func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, 
 // NOTE: This function was copied from the terraform library:
 // github.com/hashicorp/terraform/helper/schema/field_reader.go
 func addrToSchema(addr []string, schemaMap map[string]*schema.Schema) []*schema.Schema {
-	const typeObject = 999
-
 	current := &schema.Schema{
 		Type: typeObject,
 		Elem: schemaMap,

@@ -24,6 +24,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_bigquery_dataset"},
 		{name: "example_bigtable_instance"},
 		{name: "example_compute_disk"},
+		{name: "example_compute_disk_empty_image"},
 		{name: "example_compute_firewall"},
 		// This test can't run in offline mode
 		// {name: "example_compute_instance"},
@@ -104,8 +105,8 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], data.Ancestry, true, err)
 			}
 
-			expectedAssets := normalizeAssets(t, got, true)
-			actualAssets := normalizeAssets(t, want, true)
+			expectedAssets := normalizeAssets(t, want, true)
+			actualAssets := normalizeAssets(t, got, true)
 			require.ElementsMatch(t, actualAssets, expectedAssets)
 		})
 	}
