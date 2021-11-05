@@ -1,6 +1,6 @@
 {
 	"format_version": "0.1",
-	"terraform_version": "0.12.31",
+	"terraform_version": "0.15.3",
 	"planned_values": {
 		"root_module": {
 			"resources": [{

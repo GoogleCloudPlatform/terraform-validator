@@ -1,5 +1,20 @@
 [
-    
+    {
+        "name": "//bigquery.googleapis.com/datasets/test-dataset",
+        "asset_type": "bigquery.googleapis.com/Dataset",
+        "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
+        "iam_policy": {
+            "bindings": [
+                {
+                    "role": "roles/editor",
+                    "members": [
+                        "serviceAccount:998476993360@cloudservices.gserviceaccount.com",
+                        "allAuthenticatedUsers"
+                    ]
+                }
+            ]
+        }
+    },
     {
         "name": "//bigquery.googleapis.com/projects/{{.Provider.project}}/datasets/test-dataset",
         "asset_type": "bigquery.googleapis.com/Dataset",
