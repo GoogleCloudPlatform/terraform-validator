@@ -165,13 +165,13 @@ func expandBillingBudgetBudgetFilterSubaccounts(v interface{}, d TerraformResour
 	return v, nil
 }
 
-func expandBillingBudgetBudgetFilterLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+func expandBillingBudgetBudgetFilterLabels(v interface{}, d TerraformResourceData, config *Config) (map[string][]string, error) {
 	if v == nil {
-		return map[string]string{}, nil
+		return map[string][]string{}, nil
 	}
-	m := make(map[string]string)
+	m := make(map[string][]string)
 	for k, val := range v.(map[string]interface{}) {
-		m[k] = val.(string)
+		m[k] = []string{val.(string)}
 	}
 	return m, nil
 }

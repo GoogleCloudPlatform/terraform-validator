@@ -9,13 +9,14 @@
       "discovery_name": "Bucket",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "billing": {},
         "iamConfiguration": {
           "uniformBucketLevelAccess": {
             "enabled": false
           }
         },
-        "lifecycle": {},
+        "lifecycle": {
+          "rule": []
+        },
         "location": "EU",
         "name": "image-store-bucket",
         "project": "{{.Provider.project}}",

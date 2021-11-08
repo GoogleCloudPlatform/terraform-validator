@@ -9,13 +9,14 @@
       "discovery_name": "Bucket",
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
-        "billing": {},
         "iamConfiguration": {
           "uniformBucketLevelAccess": {
             "enabled": true
           }
         },
-        "lifecycle": {},
+        "lifecycle": {
+          "rule": []
+        },
         "location": "EU",
         "project": "{{.Provider.project}}",
         "storageClass": "STANDARD"

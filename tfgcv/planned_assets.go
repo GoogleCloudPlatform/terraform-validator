@@ -67,7 +67,10 @@ func newConverter(ctx context.Context, path, project, ancestry string, offline, 
 		return nil, errors.Wrap(err, "building google configuration")
 	}
 	ua := fmt.Sprintf("config-validator-tf/%s", BuildVersion())
-	ancestryManager, err := ancestrymanager.New(cfg, project, ancestry, ua, offline, errorLogger)
+	entries := map[string]string{
+		project: ancestry,
+	}
+	ancestryManager, err := ancestrymanager.New(cfg, entries, ua, offline, errorLogger)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google ancestry manager")
 	}
