@@ -101,21 +101,26 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData resources.Terra
 	}
 }
 
-type onlineAncestryManager struct {
+type manager struct {
 	resourceAncestryManager
 	// Talk to GCP resource manager. This field would be nil in offline mode.
 	resourceManager *cloudresourcemanager.Service
 	// Cache to prevent multiple network calls for looking up the same project's ancestry
 	// map[project]ancestryPath
 	ancestryCache map[string]string
+	offline       bool
 }
 
 // GetAncestry uses the resource manager API to get ancestry paths for
 // projects. It implements a cache because many resources share the same
 // project.
-func (m *onlineAncestryManager) GetAncestry(project string) (string, error) {
+func (m *manager) GetAncestry(project string) (string, error) {
 	if path, ok := m.ancestryCache[project]; ok {
 		return path, nil
+	}
+
+	if m.offline {
+		return "", fmt.Errorf("cannot fetch ancestry in offline mode")
 	}
 	ancestry, err := m.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
 	if err != nil {
@@ -126,52 +131,20 @@ func (m *onlineAncestryManager) GetAncestry(project string) (string, error) {
 	return path, nil
 }
 
-// GetAncestryWithResource first attempts to get Ancestry from the API
-// If that fails, it falls back to inspecting the resource.
-func (m *onlineAncestryManager) GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error) {
-	path, err := m.GetAncestry(project)
-	if path != "" {
-		return path, nil
-	}
-
-	ancestry, ok := m.getAncestryFromResource(tfData, cai)
-	if !ok {
-		return "", err
-	}
-	path = ancestryPath(ancestry)
-	m.errorLogger.Info(fmt.Sprintf("[Online] Retrieved ancestry for %s: %s", project, path))
-	m.store(project, path)
-	return path, nil
-}
-
-func (m *onlineAncestryManager) store(project, ancestry string) {
+func (m *manager) store(project, ancestry string) {
 	if project != "" && ancestry != "" {
 		m.ancestryCache[project] = ancestry
 	}
 }
 
-type offlineAncestryManager struct {
-	resourceAncestryManager
-	project  string
-	ancestry string
-}
-
-// GetAncestry returns the ancestry for the project. It returns an error if
-// the project does not equal to the one provided during initialization.
-func (m *offlineAncestryManager) GetAncestry(project string) (string, error) {
-	if project != m.project {
-		return "", fmt.Errorf("cannot fetch ancestry in offline mode")
-	}
-	return m.ancestry, nil
-}
-
 // GetAncestryWithResource first attempts to get Ancestry from the resource
 // If that fails, it falls back to the offline cache.
-func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error) {
+func (m *manager) GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error) {
 	ancestry, ok := m.getAncestryFromResource(tfData, cai)
 	if ok {
 		path := ancestryPath(ancestry)
-		m.errorLogger.Info(fmt.Sprintf("[Offline] Retrieved ancestry for %s: %s", project, path))
+		m.store(project, path)
+		m.errorLogger.Info(fmt.Sprintf("Retrieved ancestry for %s: %s", project, path))
 		return path, nil
 	}
 
@@ -184,17 +157,25 @@ func (m *offlineAncestryManager) GetAncestryWithResource(project string, tfData 
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
-func New(retriever ClientRetriever, project, ancestry, userAgent string, offline bool, errorLogger *zap.Logger) (AncestryManager, error) {
-	if ancestry != "" {
-		ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
+// entries takes project as key and ancestry as value
+func New(retriever ClientRetriever, entries map[string]string, userAgent string, offline bool, errorLogger *zap.Logger) (AncestryManager, error) {
+	am := &manager{
+		ancestryCache: map[string]string{},
+		resourceAncestryManager: resourceAncestryManager{
+			errorLogger: errorLogger,
+		},
+		offline: offline,
 	}
-	if offline {
-		return &offlineAncestryManager{project: project, ancestry: ancestry, resourceAncestryManager: resourceAncestryManager{errorLogger: errorLogger}}, nil
+	if !offline {
+		rm := retriever.NewResourceManagerClient(userAgent)
+		am.resourceManager = rm
 	}
-	am := &onlineAncestryManager{ancestryCache: map[string]string{}, resourceAncestryManager: resourceAncestryManager{errorLogger: errorLogger}}
-	am.store(project, ancestry)
-	rm := retriever.NewResourceManagerClient(userAgent)
-	am.resourceManager = rm
+	for project, ancestry := range entries {
+		if ancestry != "" {
+			ancestry = fmt.Sprintf("%s/project/%s", ancestry, project)
+		}
+		am.store(project, ancestry)
+	}
 	return am, nil
 }
 
