@@ -29,9 +29,9 @@ governance requirements. You can obtain constraints from the
 ## Table of Contents
 
 - [Install Terraform Validator](./docs/install.md)
-- [User guide](./docs/user_guide.md)
 - [Tutorial](./docs/tutorial.md)
 - [Creating a policy library](./docs/policy_library.md)
+- [Using terraform validator](./docs/user_guide.md)
 - [Supported resources](./docs/supported_resources.md)
 - [Contributing](./docs/contributing/index.md)
   - [Add a new resource](./docs/contributing/add_new_resource.md)
