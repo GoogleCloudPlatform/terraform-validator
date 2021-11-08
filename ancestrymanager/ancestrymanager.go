@@ -132,7 +132,7 @@ func (m *manager) GetAncestry(project string) (string, error) {
 }
 
 func (m *manager) store(project, ancestry string) {
-	if project != "" {
+	if project != "" && ancestry != "" {
 		m.ancestryCache[project] = ancestry
 	}
 }

@@ -32,7 +32,7 @@ const testProject = "test-project"
 
 func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	ctx := context.Background()
-	ancestry := ""
+	ancestry := "default-ancestry"
 	ua := ""
 	project := testProject
 	offline := true
