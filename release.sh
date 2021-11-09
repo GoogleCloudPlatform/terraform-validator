@@ -63,14 +63,14 @@ for platform in ${platforms}; do
 	done
 done
 
-echo "Creating Github tag ${version}"
-git tag "${version}"
-git push origin "${version}"
-echo "Github tag ${version} created"
+echo "Creating Github tag v${version}"
+git tag "v${version}"
+git push origin "v${version}"
+echo "Github tag v${version} created"
 
 # Publish release versions
 echo "Pushing releases to Google Storage"
 gsutil cp ${release_dir}/*.tar.gz gs://${release_bucket}/releases/v${version}
 echo "Releases pushed to Google Storage"
 
-echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=${version}&title=${version}"
+echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=v${version}&title=v${version}"
