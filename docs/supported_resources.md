@@ -49,6 +49,7 @@ google_data_catalog_entry_group_iam_policy       | datacatalog.googleapis.com/En
 google_data_catalog_tag_template_iam_binding     | datacatalog.googleapis.com/TagTemplate
 google_data_catalog_tag_template_iam_member      | datacatalog.googleapis.com/TagTemplate
 google_data_catalog_tag_template_iam_policy      | datacatalog.googleapis.com/TagTemplate
+google_dns_managed_zone                          | dns.googleapis.com/ManagedZone
 google_endpoints_service_iam_binding             | servicemanagement.googleapis.com/Service
 google_endpoints_service_iam_member              | servicemanagement.googleapis.com/Service
 google_endpoints_service_iam_policy              | servicemanagement.googleapis.com/Service

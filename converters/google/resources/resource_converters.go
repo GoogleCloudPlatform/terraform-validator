@@ -70,6 +70,7 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_compute_subnetwork_iam_policy":             {resourceConverterComputeSubnetworkIamPolicy()},
 		"google_compute_subnetwork_iam_binding":            {resourceConverterComputeSubnetworkIamBinding()},
 		"google_compute_subnetwork_iam_member":             {resourceConverterComputeSubnetworkIamMember()},
+		"google_dns_managed_zone":                          {resourceConverterDNSManagedZone()},
 		"google_data_catalog_entry_group_iam_policy":       {resourceConverterDataCatalogEntryGroupIamPolicy()},
 		"google_data_catalog_entry_group_iam_binding":      {resourceConverterDataCatalogEntryGroupIamBinding()},
 		"google_data_catalog_entry_group_iam_member":       {resourceConverterDataCatalogEntryGroupIamMember()},
