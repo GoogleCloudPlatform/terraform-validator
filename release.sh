@@ -73,4 +73,4 @@ echo "Pushing releases to Google Storage"
 gsutil cp ${release_dir}/*.tar.gz gs://${release_bucket}/releases/v${version}
 echo "Releases pushed to Google Storage"
 
-echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=${version}&title=${version}"
+echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=v${version}&title=v${version}"
