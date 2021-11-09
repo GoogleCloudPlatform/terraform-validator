@@ -9,6 +9,9 @@ Terraform resource                               | CAI Asset Type
 ------------------------------------------------ | ------------------------------------------------
 google_access_context_manager_service_perimeter  | accesscontextmanager.googleapis.com/ServicePerimeter
 google_bigquery_dataset                          | bigquery.googleapis.com/Dataset
+google_bigquery_dataset_iam_binding              | bigquery.googleapis.com/Dataset
+google_bigquery_dataset_iam_member               | bigquery.googleapis.com/Dataset
+google_bigquery_dataset_iam_policy               | bigquery.googleapis.com/Dataset
 google_bigquery_table_iam_binding                | bigquery.googleapis.com/Table
 google_bigquery_table_iam_member                 | bigquery.googleapis.com/Table
 google_bigquery_table_iam_policy                 | bigquery.googleapis.com/Table
@@ -69,7 +72,13 @@ google_iap_web_iam_binding                       | iap.googleapis.com/Web
 google_iap_web_iam_member                        | iap.googleapis.com/Web
 google_iap_web_iam_policy                        | iap.googleapis.com/Web
 google_kms_crypto_key                            | cloudkms.googleapis.com/CryptoKey
+google_kms_crypto_key_iam_binding                | cloudkms.googleapis.com/CryptoKey
+google_kms_crypto_key_iam_member                 | cloudkms.googleapis.com/CryptoKey
+google_kms_crypto_key_iam_policy                 | cloudkms.googleapis.com/CryptoKey
 google_kms_key_ring                              | cloudkms.googleapis.com/KeyRing
+google_kms_key_ring_iam_binding                  | cloudkms.googleapis.com/KeyRing
+google_kms_key_ring_iam_member                   | cloudkms.googleapis.com/KeyRing
+google_kms_key_ring_iam_policy                   | cloudkms.googleapis.com/KeyRing
 google_notebooks_instance_iam_binding            | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_member             | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_policy             | notebooks.googleapis.com/Instance

@@ -115,7 +115,7 @@ Terraform Validator tests require setting up a few files in [`testdata/templates
 - example_product_resource.tfplan.json
   - A plan json file generated from example_product_resource.tf.
 - example_product_resource.json
-  - The results of funning [`terraform-validator convert example_product_resource.tfplan.json`](./index.md#convert-command)
+  - The results of running [`terraform-validator convert example_product_resource.tfplan.json`](./index.md#convert-command)
 
 It's easiest to set up a [test project](../tutorial.md) to create the initial versions of these files. Once you have initial versions completed, you need to make the following replacements in the .tfplan.json and .json files:
 
