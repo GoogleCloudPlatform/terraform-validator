@@ -63,10 +63,10 @@ for platform in ${platforms}; do
 	done
 done
 
-echo "Creating Github tag ${version}"
-git tag "${version}"
-git push origin "${version}"
-echo "Github tag ${version} created"
+echo "Creating Github tag v${version}"
+git tag "v${version}"
+git push origin "v${version}"
+echo "Github tag v${version} created"
 
 # Publish release versions
 echo "Pushing releases to Google Storage"
