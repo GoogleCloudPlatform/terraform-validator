@@ -76,6 +76,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_compute_network"},
 		{name: "example_compute_snapshot"},
 		{name: "example_compute_subnetwork"},
+		{name: "example_compute_global_address"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_container_cluster"},
 		{name: "example_dns_managed_zone"},

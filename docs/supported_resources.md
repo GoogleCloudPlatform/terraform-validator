@@ -29,6 +29,7 @@ google_compute_disk_iam_member                   | compute.googleapis.com/Disk
 google_compute_disk_iam_policy                   | compute.googleapis.com/Disk
 google_compute_firewall                          | compute.googleapis.com/Firewall
 google_compute_forwarding_rule                   | compute.googleapis.com/ForwardingRule
+google_compute_global_address                    | compute.googleapis.com/GlobalAddress
 google_compute_global_forwarding_rule            | compute.googleapis.com/GlobalForwardingRule
 google_compute_image_iam_binding                 | compute.googleapis.com/Image
 google_compute_image_iam_member                  | compute.googleapis.com/Image
