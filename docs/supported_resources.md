@@ -23,6 +23,7 @@ google_binary_authorization_attestor_iam_policy  | binaryauthorization.googleapi
 google_cloudfunctions_function_iam_binding       | cloudfunctions.googleapis.com/CloudFunction
 google_cloudfunctions_function_iam_member        | cloudfunctions.googleapis.com/CloudFunction
 google_cloudfunctions_function_iam_policy        | cloudfunctions.googleapis.com/CloudFunction
+google_compute_address                           | compute.googleapis.com/Address
 google_compute_disk                              | compute.googleapis.com/Disk
 google_compute_disk_iam_binding                  | compute.googleapis.com/Disk
 google_compute_disk_iam_member                   | compute.googleapis.com/Disk
