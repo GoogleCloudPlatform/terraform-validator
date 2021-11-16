@@ -25,6 +25,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_bigquery_dataset_iam_policy"},
 		{name: "example_bigquery_dataset_iam_binding"},
 		{name: "example_bigquery_dataset_iam_member"},
+		{name: "example_bigquery_table"},
 		{name: "example_bigtable_instance"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_disk_empty_image"},
