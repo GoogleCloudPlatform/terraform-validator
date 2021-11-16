@@ -118,7 +118,7 @@ func expandComputeBackendBucketCdnPolicy(v interface{}, d TerraformResourceData,
 	transformedMaxTtl, err := expandComputeBackendBucketCdnPolicyMaxTtl(original["max_ttl"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedMaxTtl); val.IsValid() && !isEmptyValue(val) {
+	} else {
 		transformed["maxTtl"] = transformedMaxTtl
 	}
 
