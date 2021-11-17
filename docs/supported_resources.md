@@ -84,6 +84,7 @@ google_notebooks_instance_iam_binding            | notebooks.googleapis.com/Inst
 google_notebooks_instance_iam_member             | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_policy             | notebooks.googleapis.com/Instance
 google_organization_iam_binding                  | cloudresourcemanager.googleapis.com/Organization
+google_organization_iam_custom_role              | iam.googleapis.com/Role
 google_organization_iam_member                   | cloudresourcemanager.googleapis.com/Organization
 google_organization_iam_policy                   | cloudresourcemanager.googleapis.com/Organization
 google_privateca_ca_pool_iam_binding             | privateca.googleapis.com/CaPool
@@ -91,6 +92,7 @@ google_privateca_ca_pool_iam_member              | privateca.googleapis.com/CaPo
 google_privateca_ca_pool_iam_policy              | privateca.googleapis.com/CaPool
 google_project                                   | cloudbilling.googleapis.com/ProjectBillingInfo,cloudresourcemanager.googleapis.com/Project
 google_project_iam_binding                       | cloudresourcemanager.googleapis.com/Project
+google_project_iam_custom_role                   | iam.googleapis.com/Role
 google_project_iam_member                        | cloudresourcemanager.googleapis.com/Project
 google_project_iam_policy                        | cloudresourcemanager.googleapis.com/Project
 google_project_organization_policy               | cloudresourcemanager.googleapis.com/Project
