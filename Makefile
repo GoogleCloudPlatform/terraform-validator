@@ -16,7 +16,7 @@ test-integration:
 
 test-go-licenses:
 	cd .. && go version && go get github.com/google/go-licenses
-	go-licenses check .
+	$$(go env GOPATH)/bin/go-licenses check .
 
 
 build-docker:
