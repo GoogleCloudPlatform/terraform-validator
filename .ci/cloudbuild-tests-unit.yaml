@@ -22,7 +22,7 @@ steps:
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
     - 'GOPATH=/gopath'
-  args: ['-c', 'make build', 'make test-go-licenses', 'make test', ]
+  args: ['-c', 'make build && make test-go-licenses && make test', ]
 tags:
 - 'ci'
 options:
