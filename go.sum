@@ -86,6 +86,8 @@ github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-202109
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20210929201636-4f607239a42a/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211021165233-f4f2a757f9e0 h1:GQS66Qx0pa9JHrjKyI5AHesSPeFNlHebXlASOXzCJKY=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211021165233-f4f2a757f9e0/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211027225138-ef28ca390518 h1:tFdFasG+VDpnn+BfVbZrfGcoH6pw6s7ODYlZlhTO3UM=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211027225138-ef28ca390518/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
@@ -715,8 +717,10 @@ github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.0/go.mod h1:JBItawj+j8Ssla5Ib6
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.2/go.mod h1:jgCWyjKf1BRqzuA3IPJb6PJ2YY86ePJurX9xfJtuYNU=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0 h1:4EHNOAjwiYCeBxY16rt2KwyRNNVsCaVO3kWBbiXfYM0=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0/go.mod h1:z+cMZ0iswzZOahBJ3XmNWgWkVnAd2bl8g+FhyyuPDH4=
-github.com/hashicorp/terraform-provider-google v1.20.0 h1:dVzBoqMHZA4PDAJaH3ztIey2cxFx6e+kRDAr3bMSrmI=
-github.com/hashicorp/terraform-provider-google v1.20.0/go.mod h1:19QAcvJTh1z3BfW6cxR5MQd89aIurcIIur99oJGbv/E=
+github.com/hashicorp/terraform-provider-google/v3 v3.0.0-20211117190748-d65dc11ef418 h1:oAw9K9i7KgUJ3IWk/fDpFcj2c4hti1kpH+X407WwPh4=
+github.com/hashicorp/terraform-provider-google/v3 v3.0.0-20211117190748-d65dc11ef418/go.mod h1:THTH3h3KJAPJSYV7/NtSjNyof6TxbuKs4xgW1WsmXxA=
+github.com/hashicorp/terraform-provider-google/v3 v3.0.0-20211117194448-dc1c5c34e620 h1:NJHhVMuUgUTW+Pb4vUlQs3sl6/wkSNLOl4yR+TL9zG4=
+github.com/hashicorp/terraform-provider-google/v3 v3.0.0-20211117194448-dc1c5c34e620/go.mod h1:t7Dd7KlzkIQAP/Mkj9AEoQv2dxmMXM5uLGD6Ha2OIHU=
 github.com/hashicorp/terraform-provider-google/v3 v3.58.0 h1:eACS6rci1JDOSJToROXE7bkLYOTo6VjTrW8VT7PD4v4=
 github.com/hashicorp/terraform-provider-google/v3 v3.58.0/go.mod h1:ceSYchi/pjMrQHCCOEmekhEO2T9A0BwXEe/nmB5DKyQ=
 github.com/hashicorp/terraform-provider-google/v3 v3.70.1-0.20210603175730-be2009058913 h1:XIlhXbbahWxwJNPsxK/aBeyXsNMLOTPknF4IsRe5blc=

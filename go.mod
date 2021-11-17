@@ -1,7 +1,5 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
-replace github.com/hashicorp/terraform-provider-google/v3 => /Users/slevenick/go-workspace/src/github.com/terraform-providers/terraform-provider-google
-
 require (
 	cloud.google.com/go/bigtable v1.10.1
 	github.com/apparentlymart/go-cidr v1.1.0
@@ -20,8 +18,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0
-	github.com/hashicorp/terraform-provider-google v1.20.0 // indirect
-	github.com/hashicorp/terraform-provider-google/v3 v3.0.0-20211117190748-d65dc11ef418 // indirect
+	github.com/hashicorp/terraform-provider-google/v3 v3.0.0-20211117194448-dc1c5c34e620
 	github.com/klauspost/cpuid v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
