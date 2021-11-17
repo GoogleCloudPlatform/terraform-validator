@@ -1,7 +1,6 @@
 build_dir=./bin
 name=terraform-validator
 
-
 test:
 	# Skip integration tests in ./test/ using -short flag
 	GO111MODULE=on go test -short ./...
