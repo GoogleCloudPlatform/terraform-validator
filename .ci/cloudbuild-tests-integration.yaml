@@ -18,6 +18,7 @@ timeout: 3600s
 steps:
 - id: build
   name: 'gcr.io/graphite-docker-images/terraform-validator-builder'
+  entrypoint: /usr/bin/bash
   args: ['-c', 'make build']
 - id: test-integration
   name: 'hashicorp/terraform:$_TERRAFORM_VERSION'
