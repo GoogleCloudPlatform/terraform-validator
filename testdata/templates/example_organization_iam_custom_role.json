@@ -2,7 +2,7 @@
   {
     "name": "//iam.googleapis.com/organizations/{{.OrgID}}/roles/myCustomRole",
     "asset_type": "iam.googleapis.com/Role",
-    "ancestry_path": "{{.Ancestry}}/project/cpt-poc-1",
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://iam.googleapis.com/$discovery/rest?version=v1",
