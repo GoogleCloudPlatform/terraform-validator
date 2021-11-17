@@ -14,7 +14,7 @@ test-integration:
 	go test -v -run=CLI ./test
 
 test-go-licenses:
-	cd .. && echo "Go version: $(go version)" && go get github.com/google/go-licenses
+	cd .. && go version && go get github.com/google/go-licenses
 	go-licenses check .
 
 
