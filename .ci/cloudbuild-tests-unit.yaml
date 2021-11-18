@@ -17,12 +17,24 @@
 timeout: 1800s
 steps:
 - id: build
-  name: 'gcr.io/graphite-docker-images/terraform-validator-builder'
-  entrypoint: /bin/bash
+  name: 'gcr.io/cloud-builders/go:1.15'
+  entrypoint: /usr/bin/make
+  args: ['build']
+- id: test-go-licenses
+  name: 'gcr.io/cloud-builders/go:1.15'
+  entrypoint: /usr/bin/make
+  env:
+    - 'GO111MODULE=on'
+  args: ['test-go-licenses']
+  waitFor: ['build']
+- id: test
+  name: 'gcr.io/cloud-builders/go:1.15'
+  entrypoint: /usr/bin/make
+  args: ['test']
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
     - 'GOPATH=/gopath'
-  args: ['-c', 'make build && make test-go-licenses && make test', ]
+  waitFor: ['test-go-licenses']
 tags:
 - 'ci'
 options:
