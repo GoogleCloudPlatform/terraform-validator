@@ -40,6 +40,7 @@ google_compute_network                           | compute.googleapis.com/Networ
 google_compute_region_disk_iam_binding           | compute.googleapis.com/RegionDisk
 google_compute_region_disk_iam_member            | compute.googleapis.com/RegionDisk
 google_compute_region_disk_iam_policy            | compute.googleapis.com/RegionDisk
+google_compute_snapshot                          | compute.googleapis.com/Snapshot
 google_compute_subnetwork                        | compute.googleapis.com/Subnetwork
 google_compute_subnetwork_iam_binding            | compute.googleapis.com/Subnetwork
 google_compute_subnetwork_iam_member             | compute.googleapis.com/Subnetwork

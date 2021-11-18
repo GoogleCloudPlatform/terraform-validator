@@ -34,6 +34,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		// This test can't run in offline mode
 		// {name: "example_compute_instance"},
 		{name: "example_compute_network"},
+		{name: "example_compute_snapshot"},
 		{name: "example_compute_subnetwork"},
 		// This test can't run in offline mode.
 		// {name: "example_compute_forwarding_rule"},
