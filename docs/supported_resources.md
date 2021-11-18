@@ -105,6 +105,10 @@ google_pubsub_topic_iam_policy                   | pubsub.googleapis.com/Topic
 google_secret_manager_secret_iam_binding         | secretmanager.googleapis.com/Secret
 google_secret_manager_secret_iam_member          | secretmanager.googleapis.com/Secret
 google_secret_manager_secret_iam_policy          | secretmanager.googleapis.com/Secret
+google_spanner_database                          | spanner.googleapis.com/Database
+google_spanner_database_iam_binding              | spanner.googleapis.com/Database
+google_spanner_database_iam_member               | spanner.googleapis.com/Database
+google_spanner_database_iam_policy               | spanner.googleapis.com/Database
 google_spanner_instance                          | spanner.googleapis.com/Instance
 google_sql_database_instance                     | sqladmin.googleapis.com/Instance
 google_storage_bucket                            | storage.googleapis.com/Bucket
