@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "~> {{.Provider.version}}"
+    }
+  }
+}
 
 provider "google" {
-  project = "{{.Provider.project}}"
+  {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
 resource "google_compute_snapshot" "default" {
@@ -30,7 +38,6 @@ resource "google_compute_snapshot" "default" {
   storage_locations = ["us-central1"]
 }
 
-
 resource "google_compute_disk" "default" {
   name  = "debian-disk"
   image = "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
@@ -38,4 +45,3 @@ resource "google_compute_disk" "default" {
   type  = "pd-ssd"
   zone  = "us-central1-a"
 }
-
