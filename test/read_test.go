@@ -27,12 +27,15 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_bigquery_dataset_iam_member"},
 		{name: "example_bigquery_table"},
 		{name: "example_bigtable_instance"},
+		{name: "example_cloud_run_mapping"},
+		{name: "example_cloud_run_service"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_disk_empty_image"},
 		{name: "example_compute_firewall"},
 		// This test can't run in offline mode
 		// {name: "example_compute_instance"},
 		{name: "example_compute_network"},
+		{name: "example_compute_snapshot"},
 		{name: "example_compute_subnetwork"},
 		// This test can't run in offline mode.
 		// {name: "example_compute_forwarding_rule"},
