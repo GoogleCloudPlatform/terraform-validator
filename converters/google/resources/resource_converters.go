@@ -50,6 +50,7 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_access_context_manager_service_perimeter":  {resourceConverterAccessContextManagerServicePerimeter()},
 		"google_cloud_run_service":                         {resourceConverterCloudRunService()},
 		"google_cloud_run_domain_mapping":                  {resourceConverterCloudRunDomainMapping()},
+    "google_bigquery_table":                            {resourceConverterBigQueryTable()},
 		"google_bigquery_table_iam_policy":                 {resourceConverterBigQueryTableIamPolicy()},
 		"google_bigquery_table_iam_binding":                {resourceConverterBigQueryTableIamBinding()},
 		"google_bigquery_table_iam_member":                 {resourceConverterBigQueryTableIamMember()},
