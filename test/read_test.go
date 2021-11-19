@@ -22,6 +22,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 	}{
 		{name: "example_access_context_manager_service_perimeter"},
 		{name: "example_bigquery_dataset"},
+		{name: "example_bigquery_dataset_iam_policy"},
+		{name: "example_bigquery_dataset_iam_binding"},
+		{name: "example_bigquery_dataset_iam_member"},
 		{name: "example_bigtable_instance"},
 		{name: "example_cloud_run_mapping"},
 		{name: "example_cloud_run_service"},
@@ -37,6 +40,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		// {name: "example_compute_forwarding_rule"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_container_cluster"},
+		{name: "example_dns_managed_zone"},
 		{name: "example_filestore_instance"},
 		{name: "example_kms_crypto_key"},
 		{name: "example_kms_crypto_key_iam_binding"},
