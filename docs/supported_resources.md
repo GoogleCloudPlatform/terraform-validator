@@ -12,6 +12,7 @@ google_bigquery_dataset                          | bigquery.googleapis.com/Datas
 google_bigquery_dataset_iam_binding              | bigquery.googleapis.com/Dataset
 google_bigquery_dataset_iam_member               | bigquery.googleapis.com/Dataset
 google_bigquery_dataset_iam_policy               | bigquery.googleapis.com/Dataset
+google_bigquery_table                            | bigquery.googleapis.com/Table
 google_bigquery_table_iam_binding                | bigquery.googleapis.com/Table
 google_bigquery_table_iam_member                 | bigquery.googleapis.com/Table
 google_bigquery_table_iam_policy                 | bigquery.googleapis.com/Table
