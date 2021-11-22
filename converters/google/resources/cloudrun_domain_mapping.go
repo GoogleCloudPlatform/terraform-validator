@@ -43,7 +43,7 @@ func domainMappingLabelDiffSuppress(k, old, new string, d *schema.ResourceData) 
 	return false
 }
 
-const CloudRunDomainMappingAssetType string = "{{location}}-run.googleapis.com/DomainMapping"
+const CloudRunDomainMappingAssetType string = "run.googleapis.com/DomainMapping"
 
 func resourceConverterCloudRunDomainMapping() ResourceConverter {
 	return ResourceConverter{
@@ -53,7 +53,7 @@ func resourceConverterCloudRunDomainMapping() ResourceConverter {
 }
 
 func GetCloudRunDomainMappingCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//{{location}}-run.googleapis.com/apis/domains.cloudrun.com/namespaces/{{project}}/domainmappings/{{name}}")
+	name, err := assetName(d, config, "//run.googleapis.com/projects/{{project}}/locations/{{location}}/DomainMappings/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -63,7 +63,7 @@ func GetCloudRunDomainMappingCaiObject(d TerraformResourceData, config *Config) 
 			Type: CloudRunDomainMappingAssetType,
 			Resource: &AssetResource{
 				Version:              "v1",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{location}}-run/v1/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/run/v1/rest",
 				DiscoveryName:        "DomainMapping",
 				Data:                 obj,
 			},

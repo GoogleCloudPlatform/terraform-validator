@@ -12,6 +12,7 @@ google_bigquery_dataset                          | bigquery.googleapis.com/Datas
 google_bigquery_dataset_iam_binding              | bigquery.googleapis.com/Dataset
 google_bigquery_dataset_iam_member               | bigquery.googleapis.com/Dataset
 google_bigquery_dataset_iam_policy               | bigquery.googleapis.com/Dataset
+google_bigquery_table                            | bigquery.googleapis.com/Table
 google_bigquery_table_iam_binding                | bigquery.googleapis.com/Table
 google_bigquery_table_iam_member                 | bigquery.googleapis.com/Table
 google_bigquery_table_iam_policy                 | bigquery.googleapis.com/Table
@@ -40,6 +41,7 @@ google_compute_network                           | compute.googleapis.com/Networ
 google_compute_region_disk_iam_binding           | compute.googleapis.com/RegionDisk
 google_compute_region_disk_iam_member            | compute.googleapis.com/RegionDisk
 google_compute_region_disk_iam_policy            | compute.googleapis.com/RegionDisk
+google_compute_snapshot                          | compute.googleapis.com/Snapshot
 google_compute_subnetwork                        | compute.googleapis.com/Subnetwork
 google_compute_subnetwork_iam_binding            | compute.googleapis.com/Subnetwork
 google_compute_subnetwork_iam_member             | compute.googleapis.com/Subnetwork

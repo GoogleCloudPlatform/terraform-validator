@@ -16,7 +16,7 @@ package google
 import (
 	"testing"
 
-	provider "github.com/hashicorp/terraform-provider-google/v3/google"
+	provider "github.com/hashicorp/terraform-provider-google/v4/google"
 	"github.com/stretchr/testify/assert"
 )
 
