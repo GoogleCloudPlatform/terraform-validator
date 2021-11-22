@@ -42,9 +42,7 @@
         "masterAuth": {
           "clientCertificateConfig": {
             "issueClientCertificate": true
-          },
-          "password": "test-password",
-          "username": "test-username"
+          }
         },
         "masterAuthorizedNetworksConfig": {
           "cidrBlocks": [

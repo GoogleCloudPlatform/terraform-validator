@@ -27,21 +27,25 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_compute_snapshot" "default" {
-  name = "test-instance"
+resource "google_bigquery_table" "table" {
+dataset_id          = "dataset"
+project             = "{{.Provider.project}}"
+table_id            = "table"
+friendly_name       = "friendly table"
 
-  source_disk = google_compute_disk.default.name
-  zone  = "us-central1-a"
-  labels = {
-    test-name = "test-value"
+schema = <<EOF
+[
+  {
+    "name": "Card_Number",
+    "mode": "NULLABLE",
+    "type": "STRING"
+  },
+  {
+    "name": "Card_Holders_Name",
+    "mode": "NULLABLE",
+    "type": "STRING"
   }
-  storage_locations = ["us-central1"]
-}
+]
+EOF
 
-resource "google_compute_disk" "default" {
-  name  = "debian-disk"
-  image = "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
-  size  = 10
-  type  = "pd-ssd"
-  zone  = "us-central1-a"
 }

@@ -27,21 +27,35 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_compute_snapshot" "default" {
-  name = "test-instance"
 
-  source_disk = google_compute_disk.default.name
-  zone  = "us-central1-a"
-  labels = {
-    test-name = "test-value"
+resource "google_cloud_run_service" "default" {
+    name     = "tf-test-cloudrun-srv-beep"
+    location = "us-central1"
+    project  = "{{.Provider.project}}"
+
+    metadata {
+      namespace = "{{.Provider.project}}"
+    }
+
+    template {
+      spec {
+        containers {
+          image = "us-docker.pkg.dev/cloudrun/container/hello"
+        }
+      }
+    }
   }
-  storage_locations = ["us-central1"]
-}
 
-resource "google_compute_disk" "default" {
-  name  = "debian-disk"
-  image = "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
-  size  = 10
-  type  = "pd-ssd"
-  zone  = "us-central1-a"
+resource "google_cloud_run_domain_mapping" "default" {
+  location = "us-central1"
+  name     = "tf-test-domain-meep.gcp.tfacc.hashicorptest.com"
+  project  = "{{.Provider.project}}"
+
+  metadata {
+    namespace = "{{.Provider.project}}"
+  }
+
+  spec {
+    route_name = google_cloud_run_service.default.name
+  }
 }

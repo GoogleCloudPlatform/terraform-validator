@@ -27,21 +27,40 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_compute_snapshot" "default" {
-  name = "test-instance"
+resource "google_cloud_run_service" "default" {
+  name     = "cloudrun-to-get-cai"
+  location = "us-central1"
+  project="{{.Provider.project}}"
 
-  source_disk = google_compute_disk.default.name
-  zone  = "us-central1-a"
-  labels = {
-    test-name = "test-value"
+  metadata {
+  namespace = "{{.Provider.project}}"
+  annotations = {
+      generated-by = "magic-modules"
+    }
   }
-  storage_locations = ["us-central1"]
-}
 
-resource "google_compute_disk" "default" {
-  name  = "debian-disk"
-  image = "projects/debian-cloud/global/images/debian-8-jessie-v20170523"
-  size  = 10
-  type  = "pd-ssd"
-  zone  = "us-central1-a"
+  template {
+    spec {
+      containers {
+        image = "gcr.io/cloudrun/hello"
+        args  = ["arrgs"]
+        ports {
+          container_port = 8080
+        }
+      }
+	  container_concurrency = 10
+	  timeout_seconds = 600
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
+  }
 }
