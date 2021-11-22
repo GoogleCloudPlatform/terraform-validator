@@ -47,6 +47,7 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_kms_key_ring":                              {resourceConverterKMSKeyRing()},
 		"google_filestore_instance":                        {resourceConverterFilestoreInstance()},
 		"google_access_context_manager_service_perimeter":  {resourceConverterAccessContextManagerServicePerimeter()},
+		"google_monitoring_alert_policy":                   {resourceConverterMonitoringAlertPolicy()},
 		"google_bigquery_table_iam_policy":                 {resourceConverterBigQueryTableIamPolicy()},
 		"google_bigquery_table_iam_binding":                {resourceConverterBigQueryTableIamBinding()},
 		"google_bigquery_table_iam_member":                 {resourceConverterBigQueryTableIamMember()},

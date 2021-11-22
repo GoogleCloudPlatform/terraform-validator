@@ -80,6 +80,7 @@ google_kms_key_ring                              | cloudkms.googleapis.com/KeyRi
 google_kms_key_ring_iam_binding                  | cloudkms.googleapis.com/KeyRing
 google_kms_key_ring_iam_member                   | cloudkms.googleapis.com/KeyRing
 google_kms_key_ring_iam_policy                   | cloudkms.googleapis.com/KeyRing
+google_monitoring_alert_policy                   | monitoring.googleapis.com/AlertPolicy
 google_notebooks_instance_iam_binding            | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_member             | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_policy             | notebooks.googleapis.com/Instance
