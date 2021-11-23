@@ -17,16 +17,17 @@ terraform show -json ./tfplan.tfplan > ./tfplan.json
 
 In particular, you can use the following environment variables (in order of precedence) to provide a [service account key file](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference#full-reference):
 
-
+- `GOOGLE_APPLICATION_CREDENTIALS`
 - `GOOGLE_CREDENTIALS`
 - `GOOGLE_CLOUD_KEYFILE_JSON`
 - `GOOGLE_KEYFILE_JSON`
+- `GOOGLE_OAUTH_ACCESS_TOKEN`*
+
+<sub>*[uses oauth2 token](https://developers.google.com/identity/protocols/oauth2)</sub>
 
 Using Terraform-Validator-specific [service accounts](https://cloud.google.com/docs/authentication/getting-started) is the recommended practice when using Terraform Validator.
 
-You can also authenticate using an [OAuth 2.0 access token](https://developers.google.com/identity/protocols/OAuth2), which can be provided via the `GOOGLE_OAUTH_ACCESS_TOKEN` environment variable.
-
-For local development, you can also use [Google Application Default Credentials](https://cloud.google.com/docs/authentication/production) by providing the path to your application default credentials file via the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+You can also use [Google Application Default Credentials](https://cloud.google.com/docs/authentication/production) by providing the path to your application default credentials file via the `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This strategy is only recommended for local development
 
 ```
 gcloud auth application-default login  # local development only

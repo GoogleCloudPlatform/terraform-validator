@@ -19,7 +19,8 @@ A Policy Library repository contains the following directories:
 *   `policies`
     *   `constraints`: This is initially empty. You should place your constraint
         files here.
-    *   `templates`: This directory contains pre-defined constraint templates.
+    *   `templates`: This directory contains pre-defined constraint template logic
+        that constraints then parameterize.
 *   `validator`: This directory contains the `.rego` files and their associated
     unit tests. You do not need to touch this directory unless you intend to
     modify existing constraint templates or create new ones. Running `make
@@ -40,11 +41,6 @@ This policy library can also be made public, but it is not recommended. By
 making your policy library public, it would be allowing others to see what you
 are and __ARE NOT__ scanning for.
 
-To run the following commands, you will need to configure git to connect
-securely. It is recommended to connect with SSH. [Here is a helpful resource](https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh) for learning about how
-this works, including steps to set this up for GitHub repositories; other
-providers offer this feature as well.
-
 ```
 export GIT_REPO_ADDR="git@github.com:${YOUR_GITHUB_USERNAME}/policy-library.git"
 git clone --bare https://github.com/GoogleCloudPlatform/policy-library.git
@@ -59,7 +55,7 @@ git clone ${GIT_REPO_ADDR}
 
 Then you need to examine the available constraint templates inside the
 `templates` directory. Pick the constraint templates that you wish to use,
-create constraint YAML files corresponding to those templates, and place them
+create constraint YAML files [providing the inputs for those templates](https://github.com/GoogleCloudPlatform/policy-library/blob/aeb91d2274d14a52d5f6ecd5723ea509e3d94050/samples/allowed_resource_types.yaml), and place them
 under `policies/constraints`. Commit the newly created constraint files to
 **your** Git repository. For example, assuming you have created a Git repository
 named "policy-library" under your GitHub account, you can use the following
