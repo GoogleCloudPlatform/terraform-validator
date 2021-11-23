@@ -27,7 +27,7 @@ steps:
   env:
     - 'TEST_PROJECT=$_TEST_PROJECT'
     - 'GOPATH=/gopath'
-  waitFor: ['test-go-licenses']
+  waitFor: ['build']
 tags:
 - 'ci'
 options:
