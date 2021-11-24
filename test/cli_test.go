@@ -97,6 +97,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_kms_key_ring_iam_binding"},
 		{name: "example_kms_key_ring_iam_member"},
 		{name: "example_kms_key_ring_iam_policy"},
+		{name: "example_monitoring_alert_policy"},
 		{name: "example_organization_iam_binding"},
 		{name: "example_organization_iam_custom_role"},
 		{name: "example_organization_iam_member"},
