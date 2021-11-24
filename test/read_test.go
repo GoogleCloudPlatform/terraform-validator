@@ -38,6 +38,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_bigtable_instance"},
 		{name: "example_cloud_run_mapping"},
 		{name: "example_cloud_run_service"},
+		{name: "example_compute_address"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_disk_empty_image"},
 		{name: "example_compute_firewall"},
