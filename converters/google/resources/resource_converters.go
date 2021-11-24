@@ -51,6 +51,7 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_access_context_manager_service_perimeter":  {resourceConverterAccessContextManagerServicePerimeter()},
 		"google_cloud_run_service":                         {resourceConverterCloudRunService()},
 		"google_cloud_run_domain_mapping":                  {resourceConverterCloudRunDomainMapping()},
+		"google_monitoring_notification_channel":           {resourceConverterMonitoringNotificationChannel()},
 		"google_monitoring_alert_policy":                   {resourceConverterMonitoringAlertPolicy()},
 		"google_apigee_environment_iam_policy":             {resourceConverterApigeeEnvironmentIamPolicy()},
 		"google_apigee_environment_iam_binding":            {resourceConverterApigeeEnvironmentIamBinding()},
