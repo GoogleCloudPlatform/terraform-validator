@@ -20,7 +20,6 @@ steps:
   name: 'gcr.io/graphite-docker-images/terraform-validator-builder'
   entrypoint: /bin/bash
   args: ['-c', 'make test-go-licenses']
-  waitFor: ['build']
 tags:
 - 'ci'
 options:
