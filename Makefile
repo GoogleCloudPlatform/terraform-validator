@@ -13,6 +13,11 @@ test-integration:
 	terraform --version
 	go test -v -run=CLI ./test
 
+test-go-licenses:
+	cd .. && go version && go get github.com/google/go-licenses
+	$$(go env GOPATH)/bin/go-licenses check .
+
+
 build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .
 
