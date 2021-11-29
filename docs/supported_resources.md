@@ -8,6 +8,9 @@ If you want terraform validator to add support for a resource, please [open an e
 Terraform resource                               | CAI Asset Type
 ------------------------------------------------ | ------------------------------------------------
 google_access_context_manager_service_perimeter  | accesscontextmanager.googleapis.com/ServicePerimeter
+google_apigee_environment_iam_binding            | apigee.googleapis.com/Environment
+google_apigee_environment_iam_member             | apigee.googleapis.com/Environment
+google_apigee_environment_iam_policy             | apigee.googleapis.com/Environment
 google_bigquery_dataset                          | bigquery.googleapis.com/Dataset
 google_bigquery_dataset_iam_binding              | bigquery.googleapis.com/Dataset
 google_bigquery_dataset_iam_member               | bigquery.googleapis.com/Dataset
@@ -20,15 +23,19 @@ google_bigtable_instance                         | bigtableadmin.googleapis.com/
 google_binary_authorization_attestor_iam_binding | binaryauthorization.googleapis.com/Attestor
 google_binary_authorization_attestor_iam_member  | binaryauthorization.googleapis.com/Attestor
 google_binary_authorization_attestor_iam_policy  | binaryauthorization.googleapis.com/Attestor
+google_cloud_run_domain_mapping                  | run.googleapis.com/DomainMapping
+google_cloud_run_service                         | run.googleapis.com/Service
 google_cloudfunctions_function_iam_binding       | cloudfunctions.googleapis.com/CloudFunction
 google_cloudfunctions_function_iam_member        | cloudfunctions.googleapis.com/CloudFunction
 google_cloudfunctions_function_iam_policy        | cloudfunctions.googleapis.com/CloudFunction
+google_compute_address                           | compute.googleapis.com/Address
 google_compute_disk                              | compute.googleapis.com/Disk
 google_compute_disk_iam_binding                  | compute.googleapis.com/Disk
 google_compute_disk_iam_member                   | compute.googleapis.com/Disk
 google_compute_disk_iam_policy                   | compute.googleapis.com/Disk
 google_compute_firewall                          | compute.googleapis.com/Firewall
 google_compute_forwarding_rule                   | compute.googleapis.com/ForwardingRule
+google_compute_global_address                    | compute.googleapis.com/GlobalAddress
 google_compute_global_forwarding_rule            | compute.googleapis.com/GlobalForwardingRule
 google_compute_image_iam_binding                 | compute.googleapis.com/Image
 google_compute_image_iam_member                  | compute.googleapis.com/Image
@@ -42,6 +49,7 @@ google_compute_region_disk_iam_binding           | compute.googleapis.com/Region
 google_compute_region_disk_iam_member            | compute.googleapis.com/RegionDisk
 google_compute_region_disk_iam_policy            | compute.googleapis.com/RegionDisk
 google_compute_snapshot                          | compute.googleapis.com/Snapshot
+google_compute_ssl_policy                        | compute.googleapis.com/SslPolicy
 google_compute_subnetwork                        | compute.googleapis.com/Subnetwork
 google_compute_subnetwork_iam_binding            | compute.googleapis.com/Subnetwork
 google_compute_subnetwork_iam_member             | compute.googleapis.com/Subnetwork
@@ -55,6 +63,7 @@ google_data_catalog_tag_template_iam_binding     | datacatalog.googleapis.com/Ta
 google_data_catalog_tag_template_iam_member      | datacatalog.googleapis.com/TagTemplate
 google_data_catalog_tag_template_iam_policy      | datacatalog.googleapis.com/TagTemplate
 google_dns_managed_zone                          | dns.googleapis.com/ManagedZone
+google_dns_policy                                | dns.googleapis.com/Policy
 google_endpoints_service_iam_binding             | servicemanagement.googleapis.com/Service
 google_endpoints_service_iam_member              | servicemanagement.googleapis.com/Service
 google_endpoints_service_iam_policy              | servicemanagement.googleapis.com/Service
@@ -82,10 +91,16 @@ google_kms_key_ring                              | cloudkms.googleapis.com/KeyRi
 google_kms_key_ring_iam_binding                  | cloudkms.googleapis.com/KeyRing
 google_kms_key_ring_iam_member                   | cloudkms.googleapis.com/KeyRing
 google_kms_key_ring_iam_policy                   | cloudkms.googleapis.com/KeyRing
+google_monitoring_alert_policy                   | monitoring.googleapis.com/AlertPolicy
+google_monitoring_notification_channel           | monitoring.googleapis.com/NotificationChannel
 google_notebooks_instance_iam_binding            | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_member             | notebooks.googleapis.com/Instance
 google_notebooks_instance_iam_policy             | notebooks.googleapis.com/Instance
+google_notebooks_runtime_iam_binding             | notebooks.googleapis.com/Runtime
+google_notebooks_runtime_iam_member              | notebooks.googleapis.com/Runtime
+google_notebooks_runtime_iam_policy              | notebooks.googleapis.com/Runtime
 google_organization_iam_binding                  | cloudresourcemanager.googleapis.com/Organization
+google_organization_iam_custom_role              | iam.googleapis.com/Role
 google_organization_iam_member                   | cloudresourcemanager.googleapis.com/Organization
 google_organization_iam_policy                   | cloudresourcemanager.googleapis.com/Organization
 google_privateca_ca_pool_iam_binding             | privateca.googleapis.com/CaPool
@@ -93,6 +108,7 @@ google_privateca_ca_pool_iam_member              | privateca.googleapis.com/CaPo
 google_privateca_ca_pool_iam_policy              | privateca.googleapis.com/CaPool
 google_project                                   | cloudbilling.googleapis.com/ProjectBillingInfo,cloudresourcemanager.googleapis.com/Project
 google_project_iam_binding                       | cloudresourcemanager.googleapis.com/Project
+google_project_iam_custom_role                   | iam.googleapis.com/Role
 google_project_iam_member                        | cloudresourcemanager.googleapis.com/Project
 google_project_iam_policy                        | cloudresourcemanager.googleapis.com/Project
 google_project_organization_policy               | cloudresourcemanager.googleapis.com/Project
