@@ -26,7 +26,7 @@ func resourceConverterFilestoreInstance() ResourceConverter {
 }
 
 func GetFilestoreInstanceCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//file.googleapis.com/projects/{{project}}/locations/{{zone}}/instances/{{name}}")
+	name, err := assetName(d, config, "//file.googleapis.com/projects/{{project}}/locations/{{location}}/instances/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
