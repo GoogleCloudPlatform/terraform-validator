@@ -22,7 +22,7 @@ build-docker:
 	docker build -f ./Dockerfile -t terraform-validator .
 
 build:
-	GO111MODULE=on go build -o ${build_dir}/${name}
+	GO111MODULE=on go build -ldflags="-w -s" -o ${build_dir}/${name}
 
 release:
 	./release.sh ${VERSION}
