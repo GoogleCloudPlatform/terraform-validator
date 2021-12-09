@@ -75,6 +75,8 @@ github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24 h1:sHglBQTwgx+rW
 github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24/go.mod h1:4UJr5HIiMZrwgkSPdsjy2uOQExX/WEILpIrO9UPGuXs=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211027225138-ef28ca390518 h1:tFdFasG+VDpnn+BfVbZrfGcoH6pw6s7ODYlZlhTO3UM=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211027225138-ef28ca390518/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211117235310-d31aef517fa2 h1:nEyJ0Cm2OP/ZVYBYRzatAvXeXAaUc3VLkWixaIqI034=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211117235310-d31aef517fa2/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
@@ -674,6 +676,8 @@ github.com/hashicorp/terraform-provider-google/v4 v4.0.0-20211117200325-befe8bda
 github.com/hashicorp/terraform-provider-google/v4 v4.0.0-20211117200325-befe8bda1419/go.mod h1:eUbSXbhfBMNiOuofFo688iPhk42O782vze8drAN2sPA=
 github.com/hashicorp/terraform-provider-google/v4 v4.2.0 h1:w0r/YEy7ZM5mTMAarRUpS7eyYrXTN5mazwHtLnEGAk8=
 github.com/hashicorp/terraform-provider-google/v4 v4.2.0/go.mod h1:eUbSXbhfBMNiOuofFo688iPhk42O782vze8drAN2sPA=
+github.com/hashicorp/terraform-provider-google/v4 v4.3.1-0.20211209181635-946df0bfaeb0 h1:hExZICWqxlGD4hhXepW8hJiUnIvU3MAkMUt12M/TaDM=
+github.com/hashicorp/terraform-provider-google/v4 v4.3.1-0.20211209181635-946df0bfaeb0/go.mod h1:ucZwOiqv/twkoAMCGLAvW5LrVwG3TXZo5xL/B4haFko=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d h1:kJCB4vdITiW1eC1vq2e6IsrXKrZit1bv/TDYFGMp4BQ=
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
