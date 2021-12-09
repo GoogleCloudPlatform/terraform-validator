@@ -19,8 +19,8 @@ import (
 	"path/filepath"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
-	"github.com/forseti-security/config-validator/pkg/api/validator"
-	"github.com/forseti-security/config-validator/pkg/gcv"
+	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
+	"github.com/GoogleCloudPlatform/config-validator/pkg/gcv"
 	"github.com/pkg/errors"
 )
 
