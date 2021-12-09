@@ -45,6 +45,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_compute_global_address"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_compute_network"},
+		{name: "example_compute_security_policy"},
 		{name: "example_compute_snapshot"},
 		{name: "example_compute_ssl_policy"},
 		{name: "example_compute_subnetwork"},
