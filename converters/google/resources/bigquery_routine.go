@@ -81,6 +81,12 @@ func GetBigQueryRoutineApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("return_type"); !isEmptyValue(reflect.ValueOf(returnTypeProp)) && (ok || !reflect.DeepEqual(v, returnTypeProp)) {
 		obj["returnType"] = returnTypeProp
 	}
+	returnTableTypeProp, err := expandBigQueryRoutineReturnTableType(d.Get("return_table_type"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("return_table_type"); !isEmptyValue(reflect.ValueOf(returnTableTypeProp)) && (ok || !reflect.DeepEqual(v, returnTableTypeProp)) {
+		obj["returnTableType"] = returnTableTypeProp
+	}
 	importedLibrariesProp, err := expandBigQueryRoutineImportedLibraries(d.Get("imported_libraries"), d, config)
 	if err != nil {
 		return nil, err
@@ -196,6 +202,18 @@ func expandBigQueryRoutineArgumentsDataType(v interface{}, d TerraformResourceDa
 }
 
 func expandBigQueryRoutineReturnType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	b := []byte(v.(string))
+	if len(b) == 0 {
+		return nil, nil
+	}
+	m := make(map[string]interface{})
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func expandBigQueryRoutineReturnTableType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	b := []byte(v.(string))
 	if len(b) == 0 {
 		return nil, nil
