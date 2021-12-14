@@ -109,6 +109,7 @@ func newErrorLogger(verbosity string, useStructuredLogging bool, writeSyncer zap
 	if useStructuredLogging {
 		encoder = newJSONEncoder(encoderConfig)
 	} else {
+		encoderConfig.LevelKey = "level"
 		encoder = newConsoleEncoder(encoderConfig)
 	}
 	core := zapcore.NewCore(encoder, writeSyncer, level)
