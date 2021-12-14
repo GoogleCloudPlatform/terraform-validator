@@ -19,7 +19,7 @@ import (
 	"reflect"
 )
 
-const PubsubLiteTopicAssetType string = "{{region}}-pubsublite.googleapis.com/Topic"
+const PubsubLiteTopicAssetType string = "pubsublite.googleapis.com/Topic"
 
 func resourceConverterPubsubLiteTopic() ResourceConverter {
 	return ResourceConverter{
@@ -29,7 +29,7 @@ func resourceConverterPubsubLiteTopic() ResourceConverter {
 }
 
 func GetPubsubLiteTopicCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//{{region}}-pubsublite.googleapis.com/projects/{{project}}/locations/{{zone}}/topics/{{name}}")
+	name, err := assetName(d, config, "//pubsublite.googleapis.com/projects/{{project}}/locations/{{zone}}/topics/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -39,7 +39,7 @@ func GetPubsubLiteTopicCaiObject(d TerraformResourceData, config *Config) ([]Ass
 			Type: PubsubLiteTopicAssetType,
 			Resource: &AssetResource{
 				Version:              "admin",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{region}}-pubsublite/admin/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/pubsublite/admin/rest",
 				DiscoveryName:        "Topic",
 				Data:                 obj,
 			},

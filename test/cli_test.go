@@ -114,6 +114,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_project_in_org"},
 		{name: "example_project_organization_policy"},
 		{name: "example_project_service"},
+		{name: "example_pubsub_lite_topic"},
 		{name: "example_pubsub_schema"},
 		{name: "example_pubsub_subscription"},
 		{name: "example_pubsub_subscription_iam_binding"},
