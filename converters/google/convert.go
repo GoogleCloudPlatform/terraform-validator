@@ -26,8 +26,8 @@ import (
 	provider "github.com/hashicorp/terraform-provider-google/v4/google"
 	"github.com/pkg/errors"
 
-	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"go.uber.org/zap"
 )
@@ -258,6 +258,9 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 				if errors.Cause(err) == resources.ErrEmptyIdentityField {
 					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
 					existingConverterAsset = nil
+				} else if errors.Cause(err) == resources.ErrResourceInaccessible {
+					c.errorLogger.Warn(fmt.Sprintf("%s was not able to be fetched due to not existing or insufficient permission. Skipping asset fetch.", key))
+					existingConverterAsset = nil
 				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
 				} else {
@@ -308,6 +311,9 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 				asset, err := converter.FetchFullResource(&rd, c.cfg)
 				if errors.Cause(err) == resources.ErrEmptyIdentityField {
 					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
+					existingConverterAsset = nil
+				} else if errors.Cause(err) == resources.ErrResourceInaccessible {
+					c.errorLogger.Warn(fmt.Sprintf("%s was not able to be fetched due to not existing or insufficient permission. Skipping asset fetch.", key))
 					existingConverterAsset = nil
 				} else if err != nil {
 					return errors.Wrap(err, "fetching asset")
