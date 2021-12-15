@@ -52,6 +52,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_container_cluster"},
 		{name: "example_dns_managed_zone"},
 		{name: "example_dns_policy"},
+		{name: "example_filestore_instance"},
 		{name: "example_kms_crypto_key"},
 		{name: "example_kms_crypto_key_iam_binding"},
 		{name: "example_kms_crypto_key_iam_member"},
