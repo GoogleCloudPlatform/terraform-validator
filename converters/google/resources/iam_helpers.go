@@ -134,7 +134,7 @@ func mergeDeleteAdditiveBindings(existing, incoming []IAMBinding) []IAMBinding {
 		}
 		if newMembers != nil {
 			newExisting = append(newExisting, IAMBinding{
-				Role: binding.Role,
+				Role:    binding.Role,
 				Members: newMembers,
 			})
 		}
@@ -203,7 +203,7 @@ func fetchIamPolicy(
 
 	iamPolicy, err := updater.GetResourceIamPolicy()
 	if isGoogleApiErrorWithCode(err, 403) {
-		return Asset{}, ErrLackingReadPermission
+		return Asset{}, ErrResourceInaccessible
 	}
 
 	if err != nil {
