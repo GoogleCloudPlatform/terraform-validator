@@ -81,6 +81,7 @@ func newRootCmd() (*cobra.Command, *rootOptions, error) {
 
 	cmd.AddCommand(newConvertCmd(o))
 	cmd.AddCommand(newListSupportedResourcesCmd())
+	cmd.AddCommand(newListUnsupportedResourcesCmd())
 	cmd.AddCommand(newValidateCmd(o))
 	cmd.AddCommand(newVersionCmd())
 
