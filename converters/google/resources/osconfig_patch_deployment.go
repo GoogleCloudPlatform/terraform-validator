@@ -101,6 +101,8 @@ func resourceOSConfigPatchDeploymentEncoder(d TerraformResourceData, meta interf
 			obj["recurringSchedule"].(map[string]interface{})["frequency"] = "MONTHLY"
 		} else if schedule["weekly"] != nil {
 			obj["recurringSchedule"].(map[string]interface{})["frequency"] = "WEEKLY"
+		} else {
+			obj["recurringSchedule"].(map[string]interface{})["frequency"] = "DAILY"
 		}
 	}
 
