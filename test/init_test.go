@@ -137,7 +137,7 @@ func generateTestFiles(t *testing.T, sourceDir string, targetDir string, selecto
 		if err := f.Close(); err != nil {
 			t.Fatalf("closing file %v: %v", path, err)
 		}
-		log.Printf("Successfully created file %v", path)
+		t.Logf("Successfully created file %v", path)
 	}
 }
 
