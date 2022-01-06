@@ -11,7 +11,7 @@ run-docker:
 test-integration:
 	go version
 	terraform --version
-	go test -v -run=CLI ./test
+	go test -run=CLI ./test
 
 test-go-licenses:
 	cd .. && go version && go get github.com/google/go-licenses

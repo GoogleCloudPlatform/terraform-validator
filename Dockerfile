@@ -9,7 +9,7 @@ RUN set -e \
 
 FROM alpine:latest
 
-ARG TERRAFORM_VERSION 0.13.7
+ARG TERRAFORM_VERSION=0.13.7
 RUN set -e \
   && wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
   && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/local/bin \

@@ -605,6 +605,13 @@ func expandCloudBuildTriggerBuild(v interface{}, d TerraformResourceData, config
 		transformed["secrets"] = transformedSecret
 	}
 
+	transformedAvailableSecrets, err := expandCloudBuildTriggerBuildAvailableSecrets(original["available_secrets"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAvailableSecrets); val.IsValid() && !isEmptyValue(val) {
+		transformed["availableSecrets"] = transformedAvailableSecrets
+	}
+
 	transformedStep, err := expandCloudBuildTriggerBuildStep(original["step"], d, config)
 	if err != nil {
 		return nil, err
@@ -880,6 +887,62 @@ func expandCloudBuildTriggerBuildSecretSecretEnv(v interface{}, d TerraformResou
 		m[k] = val.(string)
 	}
 	return m, nil
+}
+
+func expandCloudBuildTriggerBuildAvailableSecrets(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedSecretManager, err := expandCloudBuildTriggerBuildAvailableSecretsSecretManager(original["secret_manager"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedSecretManager); val.IsValid() && !isEmptyValue(val) {
+		transformed["secretManager"] = transformedSecretManager
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerBuildAvailableSecretsSecretManager(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedVersionName, err := expandCloudBuildTriggerBuildAvailableSecretsSecretManagerVersionName(original["version_name"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedVersionName); val.IsValid() && !isEmptyValue(val) {
+			transformed["versionName"] = transformedVersionName
+		}
+
+		transformedEnv, err := expandCloudBuildTriggerBuildAvailableSecretsSecretManagerEnv(original["env"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedEnv); val.IsValid() && !isEmptyValue(val) {
+			transformed["env"] = transformedEnv
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandCloudBuildTriggerBuildAvailableSecretsSecretManagerVersionName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBuildAvailableSecretsSecretManagerEnv(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandCloudBuildTriggerBuildStep(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

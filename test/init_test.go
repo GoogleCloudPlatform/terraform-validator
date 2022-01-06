@@ -21,7 +21,7 @@ const (
 	defaultOrganization    = "12345"
 	defaultFolder          = "67890"
 	defaultProject         = "foobar"
-	defaultProviderVersion = "3.84.0"
+	defaultProviderVersion = "4.4.0"
 )
 
 var (
@@ -137,7 +137,7 @@ func generateTestFiles(t *testing.T, sourceDir string, targetDir string, selecto
 		if err := f.Close(); err != nil {
 			t.Fatalf("closing file %v: %v", path, err)
 		}
-		log.Printf("Successfully created file %v", path)
+		t.Logf("Successfully created file %v", path)
 	}
 }
 

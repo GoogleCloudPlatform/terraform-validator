@@ -10,10 +10,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestReadPlannedAssetsCoverage(t *testing.T) {
@@ -38,6 +39,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_bigtable_instance"},
 		{name: "example_cloud_run_mapping"},
 		{name: "example_cloud_run_service"},
+		{name: "example_cloud_run_service_iam_binding"},
+		{name: "example_cloud_run_service_iam_member"},
+		{name: "example_cloud_run_service_iam_policy"},
 		{name: "example_compute_address"},
 		{name: "example_compute_disk"},
 		{name: "example_compute_disk_empty_image"},
@@ -45,12 +49,14 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_compute_global_address"},
 		{name: "example_compute_global_forwarding_rule"},
 		{name: "example_compute_network"},
+		{name: "example_compute_security_policy"},
 		{name: "example_compute_snapshot"},
 		{name: "example_compute_ssl_policy"},
 		{name: "example_compute_subnetwork"},
 		{name: "example_container_cluster"},
 		{name: "example_dns_managed_zone"},
 		{name: "example_dns_policy"},
+		{name: "example_filestore_instance"},
 		{name: "example_kms_crypto_key"},
 		{name: "example_kms_crypto_key_iam_binding"},
 		{name: "example_kms_crypto_key_iam_member"},
@@ -72,13 +78,23 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_project_in_org"},
 		{name: "example_project_organization_policy"},
 		{name: "example_project_service"},
+		{name: "example_pubsub_lite_reservation"},
+		{name: "example_pubsub_lite_subscription"},
+		{name: "example_pubsub_lite_topic"},
+		{name: "example_pubsub_schema"},
 		{name: "example_pubsub_subscription"},
+		{name: "example_pubsub_subscription_iam_binding"},
+		{name: "example_pubsub_subscription_iam_member"},
+		{name: "example_pubsub_subscription_iam_policy"},
 		{name: "example_pubsub_topic"},
 		{name: "example_redis_instance"},
 		{name: "example_spanner_database"},
 		{name: "example_spanner_database_iam_binding"},
 		{name: "example_spanner_database_iam_member"},
 		{name: "example_spanner_database_iam_policy"},
+		{name: "example_spanner_instance_iam_binding"},
+		{name: "example_spanner_instance_iam_member"},
+		{name: "example_spanner_instance_iam_policy"},
 		{name: "example_sql_database_instance"},
 		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_member_random_suffix"},
@@ -119,7 +135,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 
 			planfile := filepath.Join(dir, c.name+".tfplan.json")
 			ctx := context.Background()
-			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], data.Ancestry, true, false, zap.NewExample())
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], data.Ancestry, true, false, zaptest.NewLogger(t))
 			if err != nil {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], data.Ancestry, true, err)
 			}

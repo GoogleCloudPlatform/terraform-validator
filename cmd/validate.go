@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
-	"github.com/forseti-security/config-validator/pkg/api/validator"
+	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"

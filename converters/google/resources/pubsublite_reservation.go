@@ -16,7 +16,7 @@ package google
 
 import "reflect"
 
-const PubsubLiteReservationAssetType string = "{{region}}-pubsublite.googleapis.com/Reservation"
+const PubsubLiteReservationAssetType string = "pubsublite.googleapis.com/Reservation"
 
 func resourceConverterPubsubLiteReservation() ResourceConverter {
 	return ResourceConverter{
@@ -26,7 +26,7 @@ func resourceConverterPubsubLiteReservation() ResourceConverter {
 }
 
 func GetPubsubLiteReservationCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//{{region}}-pubsublite.googleapis.com/projects/{{project}}/locations/{{region}}/reservations/{{name}}")
+	name, err := assetName(d, config, "//pubsublite.googleapis.com/projects/{{project}}/locations/{{region}}/reservations/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -36,7 +36,7 @@ func GetPubsubLiteReservationCaiObject(d TerraformResourceData, config *Config) 
 			Type: PubsubLiteReservationAssetType,
 			Resource: &AssetResource{
 				Version:              "admin",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{region}}-pubsublite/admin/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/pubsublite/admin/rest",
 				DiscoveryName:        "Reservation",
 				Data:                 obj,
 			},

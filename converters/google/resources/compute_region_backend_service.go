@@ -307,7 +307,7 @@ func resourceComputeRegionBackendServiceEncoder(d TerraformResourceData, meta in
 		obj["iap"] = iap
 	}
 
-	if d.Get("load_balancing_scheme").(string) == "INTERNAL_MANAGED" {
+	if d.Get("load_balancing_scheme").(string) == "EXTERNAL_MANAGED" || d.Get("load_balancing_scheme").(string) == "INTERNAL_MANAGED" {
 		return obj, nil
 	}
 
