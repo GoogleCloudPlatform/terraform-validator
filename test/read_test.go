@@ -14,6 +14,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestReadPlannedAssetsCoverage(t *testing.T) {
