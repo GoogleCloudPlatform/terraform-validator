@@ -90,7 +90,7 @@ func newBinaryAuthorizationAttestorIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//binaryauthorization.googleapis.com/{{attestor}}")
+	name, err := assetName(d, config, "//binaryauthorization.googleapis.com/projects/{{project}}/attestors/{{attestor}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -114,7 +114,7 @@ func FetchBinaryAuthorizationAttestorIamPolicy(d TerraformResourceData, config *
 		BinaryAuthorizationAttestorIamUpdaterProducer,
 		d,
 		config,
-		"//binaryauthorization.googleapis.com/{{attestor}}",
+		"//binaryauthorization.googleapis.com/projects/{{project}}/attestors/{{attestor}}",
 		BinaryAuthorizationAttestorIAMAssetType,
 	)
 }

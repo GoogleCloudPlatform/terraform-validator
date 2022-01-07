@@ -90,7 +90,7 @@ func newCloudFunctionsCloudFunctionIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//cloudfunctions.googleapis.com/{{cloudfunction}}")
+	name, err := assetName(d, config, "//cloudfunctions.googleapis.com/projects/{{project}}/locations/{{region}}/functions/{{cloud_function}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newCloudFunctionsCloudFunctionIamAsset(
 
 func FetchCloudFunctionsCloudFunctionIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{cloudfunction}}"); !ok {
+	if _, ok := d.GetOk("{{region}}"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("{{cloud_function}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchCloudFunctionsCloudFunctionIamPolicy(d TerraformResourceData, config *
 		CloudFunctionsCloudFunctionIamUpdaterProducer,
 		d,
 		config,
-		"//cloudfunctions.googleapis.com/{{cloudfunction}}",
+		"//cloudfunctions.googleapis.com/projects/{{project}}/locations/{{region}}/functions/{{cloud_function}}",
 		CloudFunctionsCloudFunctionIAMAssetType,
 	)
 }

@@ -90,7 +90,7 @@ func newComputeRegionDiskIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/{{regiondisk}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/disks/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newComputeRegionDiskIamAsset(
 
 func FetchComputeRegionDiskIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{regiondisk}}"); !ok {
+	if _, ok := d.GetOk("{{region}}"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("{{name}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchComputeRegionDiskIamPolicy(d TerraformResourceData, config *Config) (A
 		ComputeRegionDiskIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/{{regiondisk}}",
+		"//compute.googleapis.com/projects/{{project}}/regions/{{region}}/disks/{{name}}",
 		ComputeRegionDiskIAMAssetType,
 	)
 }

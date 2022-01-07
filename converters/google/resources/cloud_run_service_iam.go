@@ -90,7 +90,7 @@ func newCloudRunServiceIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//run.googleapis.com/{{service}}")
+	name, err := assetName(d, config, "//run.googleapis.com/projects/{{project}}/locations/{{location}}/services/{{service}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,6 +106,9 @@ func newCloudRunServiceIamAsset(
 
 func FetchCloudRunServiceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
+	if _, ok := d.GetOk("{{location}}"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
 	if _, ok := d.GetOk("{{service}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
@@ -114,7 +117,7 @@ func FetchCloudRunServiceIamPolicy(d TerraformResourceData, config *Config) (Ass
 		CloudRunServiceIamUpdaterProducer,
 		d,
 		config,
-		"//run.googleapis.com/{{service}}",
+		"//run.googleapis.com/projects/{{project}}/locations/{{location}}/services/{{service}}",
 		CloudRunServiceIAMAssetType,
 	)
 }

@@ -90,7 +90,7 @@ func newSecretManagerSecretIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//secretmanager.googleapis.com/{{secret}}")
+	name, err := assetName(d, config, "//secretmanager.googleapis.com/projects/{{project}}/secrets/{{secret_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,7 @@ func newSecretManagerSecretIamAsset(
 
 func FetchSecretManagerSecretIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{secret}}"); !ok {
+	if _, ok := d.GetOk("{{secret_id}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +114,7 @@ func FetchSecretManagerSecretIamPolicy(d TerraformResourceData, config *Config) 
 		SecretManagerSecretIamUpdaterProducer,
 		d,
 		config,
-		"//secretmanager.googleapis.com/{{secret}}",
+		"//secretmanager.googleapis.com/projects/{{project}}/secrets/{{secret_id}}",
 		SecretManagerSecretIAMAssetType,
 	)
 }

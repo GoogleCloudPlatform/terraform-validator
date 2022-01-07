@@ -90,7 +90,7 @@ func newComputeImageIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/{{image}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/global/images/{{image}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -114,7 +114,7 @@ func FetchComputeImageIamPolicy(d TerraformResourceData, config *Config) (Asset,
 		ComputeImageIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/{{image}}",
+		"//compute.googleapis.com/projects/{{project}}/global/images/{{image}}",
 		ComputeImageIAMAssetType,
 	)
 }

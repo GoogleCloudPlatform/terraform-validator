@@ -90,7 +90,7 @@ func newIapTunnelIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//iap.googleapis.com/{{tunnel}}")
+	name, err := assetName(d, config, "//iap.googleapis.com/projects/{{project}}/iap_tunnel")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,15 +106,12 @@ func newIapTunnelIamAsset(
 
 func FetchIapTunnelIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{tunnel}}"); !ok {
-		return Asset{}, ErrEmptyIdentityField
-	}
 
 	return fetchIamPolicy(
 		IapTunnelIamUpdaterProducer,
 		d,
 		config,
-		"//iap.googleapis.com/{{tunnel}}",
+		"//iap.googleapis.com/projects/{{project}}/iap_tunnel",
 		IapTunnelIAMAssetType,
 	)
 }

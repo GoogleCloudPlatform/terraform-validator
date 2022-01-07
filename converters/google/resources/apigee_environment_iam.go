@@ -90,7 +90,7 @@ func newApigeeEnvironmentIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//apigee.googleapis.com/{{environment}}")
+	name, err := assetName(d, config, "//apigee.googleapis.com/{{org_id}}/environments/{{env_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newApigeeEnvironmentIamAsset(
 
 func FetchApigeeEnvironmentIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{environment}}"); !ok {
+	if _, ok := d.GetOk("{{org_id}}"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("{{env_id}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchApigeeEnvironmentIamPolicy(d TerraformResourceData, config *Config) (A
 		ApigeeEnvironmentIamUpdaterProducer,
 		d,
 		config,
-		"//apigee.googleapis.com/{{environment}}",
+		"//apigee.googleapis.com/{{org_id}}/environments/{{env_id}}",
 		ApigeeEnvironmentIAMAssetType,
 	)
 }
