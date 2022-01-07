@@ -78,6 +78,12 @@ func GetMonitoringAlertPolicyApiObject(d TerraformResourceData, config *Config) 
 	} else if v, ok := d.GetOkExists("notification_channels"); !isEmptyValue(reflect.ValueOf(notificationChannelsProp)) && (ok || !reflect.DeepEqual(v, notificationChannelsProp)) {
 		obj["notificationChannels"] = notificationChannelsProp
 	}
+	alertStrategyProp, err := expandMonitoringAlertPolicyAlertStrategy(d.Get("alert_strategy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("alert_strategy"); !isEmptyValue(reflect.ValueOf(alertStrategyProp)) && (ok || !reflect.DeepEqual(v, alertStrategyProp)) {
+		obj["alertStrategy"] = alertStrategyProp
+	}
 	userLabelsProp, err := expandMonitoringAlertPolicyUserLabels(d.Get("user_labels"), d, config)
 	if err != nil {
 		return nil, err
@@ -149,6 +155,13 @@ func expandMonitoringAlertPolicyConditions(v interface{}, d TerraformResourceDat
 			return nil, err
 		} else if val := reflect.ValueOf(transformedDisplayName); val.IsValid() && !isEmptyValue(val) {
 			transformed["displayName"] = transformedDisplayName
+		}
+
+		transformedConditionMatchedLog, err := expandMonitoringAlertPolicyConditionsConditionMatchedLog(original["condition_matched_log"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedConditionMatchedLog); val.IsValid() && !isEmptyValue(val) {
+			transformed["conditionMatchedLog"] = transformedConditionMatchedLog
 		}
 
 		req = append(req, transformed)
@@ -620,7 +633,101 @@ func expandMonitoringAlertPolicyConditionsDisplayName(v interface{}, d Terraform
 	return v, nil
 }
 
+func expandMonitoringAlertPolicyConditionsConditionMatchedLog(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedFilter, err := expandMonitoringAlertPolicyConditionsConditionMatchedLogFilter(original["filter"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedFilter); val.IsValid() && !isEmptyValue(val) {
+		transformed["filter"] = transformedFilter
+	}
+
+	transformedLabelExtractors, err := expandMonitoringAlertPolicyConditionsConditionMatchedLogLabelExtractors(original["label_extractors"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedLabelExtractors); val.IsValid() && !isEmptyValue(val) {
+		transformed["labelExtractors"] = transformedLabelExtractors
+	}
+
+	return transformed, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMatchedLogFilter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMatchedLogLabelExtractors(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+	if v == nil {
+		return map[string]string{}, nil
+	}
+	m := make(map[string]string)
+	for k, val := range v.(map[string]interface{}) {
+		m[k] = val.(string)
+	}
+	return m, nil
+}
+
 func expandMonitoringAlertPolicyNotificationChannels(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyAlertStrategy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedNotificationRateLimit, err := expandMonitoringAlertPolicyAlertStrategyNotificationRateLimit(original["notification_rate_limit"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedNotificationRateLimit); val.IsValid() && !isEmptyValue(val) {
+		transformed["notificationRateLimit"] = transformedNotificationRateLimit
+	}
+
+	transformedAutoClose, err := expandMonitoringAlertPolicyAlertStrategyAutoClose(original["auto_close"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAutoClose); val.IsValid() && !isEmptyValue(val) {
+		transformed["autoClose"] = transformedAutoClose
+	}
+
+	return transformed, nil
+}
+
+func expandMonitoringAlertPolicyAlertStrategyNotificationRateLimit(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPeriod, err := expandMonitoringAlertPolicyAlertStrategyNotificationRateLimitPeriod(original["period"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPeriod); val.IsValid() && !isEmptyValue(val) {
+		transformed["period"] = transformedPeriod
+	}
+
+	return transformed, nil
+}
+
+func expandMonitoringAlertPolicyAlertStrategyNotificationRateLimitPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyAlertStrategyAutoClose(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
