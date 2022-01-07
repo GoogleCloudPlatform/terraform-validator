@@ -90,7 +90,7 @@ func newNotebooksRuntimeIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//notebooks.googleapis.com/{{runtime}}")
+	name, err := assetName(d, config, "//notebooks.googleapis.com/projects/{{project}}/locations/{{location}}/runtimes/{{runtime_name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newNotebooksRuntimeIamAsset(
 
 func FetchNotebooksRuntimeIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{runtime}}"); !ok {
+	if _, ok := d.GetOk("{{location}}"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("{{runtime_name}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchNotebooksRuntimeIamPolicy(d TerraformResourceData, config *Config) (As
 		NotebooksRuntimeIamUpdaterProducer,
 		d,
 		config,
-		"//notebooks.googleapis.com/{{runtime}}",
+		"//notebooks.googleapis.com/projects/{{project}}/locations/{{location}}/runtimes/{{runtime_name}}",
 		NotebooksRuntimeIAMAssetType,
 	)
 }

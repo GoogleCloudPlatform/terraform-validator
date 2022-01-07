@@ -90,7 +90,7 @@ func newIapWebIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//iap.googleapis.com/{{web}}")
+	name, err := assetName(d, config, "//iap.googleapis.com/projects/{{project}}/iap_web")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,15 +106,12 @@ func newIapWebIamAsset(
 
 func FetchIapWebIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{web}}"); !ok {
-		return Asset{}, ErrEmptyIdentityField
-	}
 
 	return fetchIamPolicy(
 		IapWebIamUpdaterProducer,
 		d,
 		config,
-		"//iap.googleapis.com/{{web}}",
+		"//iap.googleapis.com/projects/{{project}}/iap_web",
 		IapWebIAMAssetType,
 	)
 }
