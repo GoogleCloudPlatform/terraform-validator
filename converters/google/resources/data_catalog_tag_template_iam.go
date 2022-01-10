@@ -90,7 +90,7 @@ func newDataCatalogTagTemplateIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/tag_templates/{{tag_template}}")
+	name, err := assetName(d, config, "//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/tagTemplates/{{tag_template}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -117,7 +117,7 @@ func FetchDataCatalogTagTemplateIamPolicy(d TerraformResourceData, config *Confi
 		DataCatalogTagTemplateIamUpdaterProducer,
 		d,
 		config,
-		"//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/tag_templates/{{tag_template}}",
+		"//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/tagTemplates/{{tag_template}}",
 		DataCatalogTagTemplateIAMAssetType,
 	)
 }

@@ -90,7 +90,7 @@ func newPrivatecaCaPoolIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//privateca.googleapis.com/projects/{{project}}/locations/{{location}}/ca_pools/{{ca_pool}}")
+	name, err := assetName(d, config, "//privateca.googleapis.com/projects/{{project}}/locations/{{location}}/caPools/{{ca_pool}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -117,7 +117,7 @@ func FetchPrivatecaCaPoolIamPolicy(d TerraformResourceData, config *Config) (Ass
 		PrivatecaCaPoolIamUpdaterProducer,
 		d,
 		config,
-		"//privateca.googleapis.com/projects/{{project}}/locations/{{location}}/ca_pools/{{ca_pool}}",
+		"//privateca.googleapis.com/projects/{{project}}/locations/{{location}}/caPools/{{ca_pool}}",
 		PrivatecaCaPoolIAMAssetType,
 	)
 }
