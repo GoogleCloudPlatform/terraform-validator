@@ -90,7 +90,7 @@ func newHealthcareConsentStoreIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//healthcare.googleapis.com/{{dataset}}/consent_stores/{{consent_store_id}}")
+	name, err := assetName(d, config, "//healthcare.googleapis.com/{{dataset}}/consentStores/{{consent_store_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -117,7 +117,7 @@ func FetchHealthcareConsentStoreIamPolicy(d TerraformResourceData, config *Confi
 		HealthcareConsentStoreIamUpdaterProducer,
 		d,
 		config,
-		"//healthcare.googleapis.com/{{dataset}}/consent_stores/{{consent_store_id}}",
+		"//healthcare.googleapis.com/{{dataset}}/consentStores/{{consent_store_id}}",
 		HealthcareConsentStoreIAMAssetType,
 	)
 }
