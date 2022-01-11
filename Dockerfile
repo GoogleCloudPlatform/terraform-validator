@@ -1,4 +1,4 @@
-FROM golang:alpine AS builder
+FROM golang:1.14-alpine AS builder
 
 ENV GO111MODULE=on
 WORKDIR /terraform-validator
