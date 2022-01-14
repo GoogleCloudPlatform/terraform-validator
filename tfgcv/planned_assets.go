@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
-	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -62,7 +62,7 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 }
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) (*google.Converter, error) {
-	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
+	cfg, err := resources.GetConfig(ctx, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}
