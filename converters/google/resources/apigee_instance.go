@@ -66,6 +66,12 @@ func GetApigeeInstanceApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("peering_cidr_range"); !isEmptyValue(reflect.ValueOf(peeringCidrRangeProp)) && (ok || !reflect.DeepEqual(v, peeringCidrRangeProp)) {
 		obj["peeringCidrRange"] = peeringCidrRangeProp
 	}
+	ipRangeProp, err := expandApigeeInstanceIpRange(d.Get("ip_range"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("ip_range"); !isEmptyValue(reflect.ValueOf(ipRangeProp)) && (ok || !reflect.DeepEqual(v, ipRangeProp)) {
+		obj["ipRange"] = ipRangeProp
+	}
 	descriptionProp, err := expandApigeeInstanceDescription(d.Get("description"), d, config)
 	if err != nil {
 		return nil, err
@@ -97,6 +103,10 @@ func expandApigeeInstanceLocation(v interface{}, d TerraformResourceData, config
 }
 
 func expandApigeeInstancePeeringCidrRange(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandApigeeInstanceIpRange(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
