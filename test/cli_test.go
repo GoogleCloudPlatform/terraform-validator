@@ -133,6 +133,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_member_random_suffix"},
 		{name: "example_storage_bucket_iam_policy"},
+		{name: "example_vpc_access_connector"},
 		{name: "full_compute_firewall"},
 		{name: "full_compute_instance"},
 		{name: "full_container_cluster"},
