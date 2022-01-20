@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
+	"path"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
@@ -108,4 +110,51 @@ func TestConvertRunLegacy(t *testing.T) {
 	// On a successful legacy run, we don't output anything via loggers.
 	a.Equal(errorJSON, "")
 	a.Equal(outputJSON, "")
+}
+
+func TestConvertRunOutputFile(t *testing.T) {
+	a := assert.New(t)
+	verbosity := "debug"
+	useStructuredLogging := false
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
+	}
+	outputPath := path.Join(t.TempDir(), "converted.json")
+	o := convertOptions{
+		project:           "",
+		ancestry:          "",
+		offline:           false,
+		rootOptions:       ro,
+		readPlannedAssets: MockReadPlannedAssets,
+		outputPath:        outputPath,
+	}
+
+	err := o.run("/path/to/plan")
+	a.Nil(err)
+
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.String()
+
+	a.Equal(errorJSON, "")
+	a.Equal(outputJSON, "")
+
+	b, err := ioutil.ReadFile(outputPath)
+	if err != nil {
+		a.Failf("Unable to read file %s: %s", outputPath, err)
+	}
+	var gotAssets []interface{}
+	err = json.Unmarshal(b, &gotAssets)
+	if err != nil {
+		a.Failf("Failed to unmarshal file %s: %s", outputPath, err)
+	}
+
+	var expectedAssets []interface{}
+	expectedAssetJSON, _ := json.Marshal(testAssets())
+	json.Unmarshal(expectedAssetJSON, &expectedAssets)
+	a.Equal(expectedAssets, gotAssets)
 }

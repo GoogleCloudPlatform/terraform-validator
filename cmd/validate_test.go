@@ -3,10 +3,13 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
+	"os"
+	"path"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
+	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,7 +60,8 @@ func TestValidateRun(t *testing.T) {
 		validateAssets:    MockValidateAssetsWithViolations,
 	}
 
-	err := o.run("/path/to/plan")
+	inputPath := createEmptyFile(t, []byte{'0'})
+	err := o.run(inputPath)
 	a.ErrorIs(err, errViolations)
 
 	errorJSON := errorBuf.String()
@@ -102,7 +106,8 @@ func TestValidateRunNoViolations(t *testing.T) {
 		validateAssets:    MockValidateAssetsNoViolations,
 	}
 
-	err := o.run("/path/to/plan")
+	inputPath := createEmptyFile(t, []byte{'0'})
+	err := o.run(inputPath)
 	a.Nil(err)
 
 	errorJSON := errorBuf.String()
@@ -142,7 +147,8 @@ func TestValidateRunLegacy(t *testing.T) {
 		validateAssets:    MockValidateAssetsWithViolations,
 	}
 
-	err := o.run("/path/to/plan")
+	inputPath := createEmptyFile(t, []byte{'0'})
+	err := o.run(inputPath)
 	a.ErrorIs(err, errViolations)
 
 	errorJSON := errorBuf.String()
@@ -177,7 +183,8 @@ func TestValidateRunNoViolationsLegacy(t *testing.T) {
 		validateAssets:    MockValidateAssetsNoViolations,
 	}
 
-	err := o.run("/path/to/plan")
+	inputPath := createEmptyFile(t, []byte{'0'})
+	err := o.run(inputPath)
 	a.Nil(err)
 
 	errorJSON := errorBuf.String()
@@ -186,4 +193,51 @@ func TestValidateRunNoViolationsLegacy(t *testing.T) {
 	// On a legacy run with no validation errors, loggers should not be used.
 	a.Equal("", errorJSON)
 	a.Equal("", outputJSON)
+}
+
+func TestValidateRunWithConvertedAssets(t *testing.T) {
+	a := assert.New(t)
+	verbosity := "debug"
+	useStructuredLogging := false
+	errorLogger, errorBuf := newTestErrorLogger(verbosity, useStructuredLogging)
+	outputLogger, outputBuf := newTestOutputLogger()
+	ro := &rootOptions{
+		verbosity:            verbosity,
+		useStructuredLogging: useStructuredLogging,
+		errorLogger:          errorLogger,
+		outputLogger:         outputLogger,
+	}
+	o := validateOptions{
+		project:        "",
+		ancestry:       "",
+		offline:        false,
+		policyPath:     "",
+		outputJSON:     false,
+		dryRun:         false,
+		rootOptions:    ro,
+		validateAssets: MockValidateAssetsNoViolations,
+	}
+
+	data, err := json.Marshal(testAssets())
+	if err != nil {
+		t.Fatalf("Failed to marshal assets: %s", err)
+	}
+	inputPath := createEmptyFile(t, data)
+	err = o.run(inputPath)
+	a.Nil(err)
+
+	errorJSON := errorBuf.String()
+	outputJSON := outputBuf.String()
+
+	// On a legacy run with no validation errors, loggers should not be used.
+	a.Equal("", errorJSON)
+	a.Equal("", outputJSON)
+}
+
+func createEmptyFile(t *testing.T, data []byte) string {
+	assetPath := path.Join(t.TempDir(), "testfile.json")
+	if err := ioutil.WriteFile(assetPath, data, os.ModePerm); err != nil {
+		t.Fatalf("Failed to write file %s: %s", assetPath, err)
+	}
+	return assetPath
 }

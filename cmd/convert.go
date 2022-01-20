@@ -46,6 +46,7 @@ type convertOptions struct {
 	offline           bool
 	rootOptions       *rootOptions
 	readPlannedAssets tfgcv.ReadPlannedAssetsFunc
+	outputPath        string
 }
 
 func newConvertCmd(rootOptions *rootOptions) *cobra.Command {
@@ -69,6 +70,7 @@ func newConvertCmd(rootOptions *rootOptions) *cobra.Command {
 	cmd.Flags().StringVar(&o.project, "project", "", "Provider project override (override the default project configuration assigned to the google terraform provider when converting resources)")
 	cmd.Flags().StringVar(&o.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
 	cmd.Flags().BoolVar(&o.offline, "offline", false, "Do not make network requests")
+	cmd.Flags().StringVar(&o.outputPath, "output-path", "", "If specified, write the convert result into the specified output file")
 
 	return cmd
 }
@@ -93,6 +95,19 @@ func (o *convertOptions) run(plan string) error {
 		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
+	if len(o.outputPath) > 0 {
+		f, err := os.OpenFile(o.outputPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		if err := json.NewEncoder(f).Encode(assets); err != nil {
+			return errors.Wrap(err, "encoding json")
+		}
+		return nil
+	}
+
 	if o.rootOptions.useStructuredLogging {
 		o.rootOptions.outputLogger.Info(
 			"converted resources",
@@ -105,6 +120,5 @@ func (o *convertOptions) run(plan string) error {
 	if err := json.NewEncoder(os.Stdout).Encode(assets); err != nil {
 		return errors.Wrap(err, "encoding json")
 	}
-
 	return nil
 }
