@@ -22,8 +22,8 @@ steps:
   args: [build]
 - id: test-integration
   name: 'gcr.io/graphite-docker-images/terraform-validator-tester-integration'
-  entrypoint: /usr/bin/make
-  args: ['test-integration']
+  entrypoint: /bin/sh
+  args: ['-c', 'mv /terraform/$_TERRAFORM_VERSION /bin/terraform && /usr/bin/make test-integration']
   env:
     - TEST_PROJECT=$_TEST_PROJECT
     - TERRAFORM_VERSION=$_TERRAFORM_VERSION
