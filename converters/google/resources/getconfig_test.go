@@ -69,7 +69,7 @@ func TestGetConfigExtractsEnvVars(t *testing.T) {
 				t.Fatalf("error setting env var %s=%s: %s", c.envKey, c.envValue, err)
 			}
 
-			cfg, err := GetConfig(ctx, "project", offline)
+			cfg, err := GetConfig(ctx, "project", "userAgent", offline)
 			if err != nil {
 				t.Fatalf("error building converter: %s", err)
 			}

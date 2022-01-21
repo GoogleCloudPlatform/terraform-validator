@@ -33,10 +33,10 @@ const testProject = "test-project"
 func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	ctx := context.Background()
 	ancestry := "default-ancestry"
-	ua := ""
+	userAgent := ""
 	project := testProject
 	offline := true
-	cfg, err := resources.GetConfig(ctx, project, offline)
+	cfg, err := resources.GetConfig(ctx, project, userAgent, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing configuration")
 	}
@@ -44,7 +44,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	entries := map[string]string{
 		project: ancestry,
 	}
-	ancestryManager, err := ancestrymanager.New(cfg, entries, ua, offline, errorLogger)
+	ancestryManager, err := ancestrymanager.New(cfg.NewResourceManagerClient(userAgent), entries, errorLogger)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource ancestryManager")
 	}

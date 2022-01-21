@@ -2,13 +2,16 @@ package google
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 )
 
-func GetConfig(ctx context.Context, project string, offline bool) (*Config, error) {
+func GetConfig(ctx context.Context, project, userAgent string, offline bool) (*Config, error) {
 	cfg := &Config{
-		Project: project,
+		Project:   project,
+		userAgent: userAgent,
 	}
 
 	// Search for default credentials
@@ -25,6 +28,12 @@ func GetConfig(ctx context.Context, project string, offline bool) (*Config, erro
 	cfg.ImpersonateServiceAccount = multiEnvSearch([]string{
 		"GOOGLE_IMPERSONATE_SERVICE_ACCOUNT",
 	})
+
+	// opt in extension for adding to the User-Agent header
+	if ext := os.Getenv("GOOGLE_TERRAFORM_VALIDATOR_USERAGENT_EXTENSION"); ext != "" {
+		ua := cfg.userAgent
+		cfg.userAgent = fmt.Sprintf("%s %s", ua, ext)
+	}
 
 	if !offline {
 		ConfigureBasePaths(cfg)

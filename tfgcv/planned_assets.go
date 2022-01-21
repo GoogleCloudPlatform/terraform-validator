@@ -20,12 +20,16 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"google.golang.org/api/cloudresourcemanager/v1"
+
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 type ReadPlannedAssetsFunc func(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error)
@@ -62,15 +66,20 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 }
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) (*google.Converter, error) {
-	cfg, err := resources.GetConfig(ctx, project, offline)
+	userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
+
+	cfg, err := resources.GetConfig(ctx, project, userAgent, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}
-	ua := fmt.Sprintf("config-validator-tf/%s", BuildVersion())
 	entries := map[string]string{
 		project: ancestry,
 	}
-	ancestryManager, err := ancestrymanager.New(cfg, entries, ua, offline, errorLogger)
+	var resourceManager *cloudresourcemanager.Service
+	if !offline {
+		resourceManager = cfg.NewResourceManagerClient(userAgent)
+	}
+	ancestryManager, err := ancestrymanager.New(resourceManager, entries, errorLogger)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google ancestry manager")
 	}
