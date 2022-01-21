@@ -16,18 +16,13 @@
 
 timeout: 3600s
 steps:
-- id: build
-  name: 'gcr.io/cloud-builders/go:1.16'
-  entrypoint: /usr/bin/make
-  args: [build]
 - id: test-integration
   name: 'gcr.io/graphite-docker-images/terraform-validator-tester-integration'
   entrypoint: /bin/sh
-  args: ['-c', 'mv /terraform/$_TERRAFORM_VERSION /bin/terraform && /usr/bin/make test-integration']
+  args: ['-c', 'mv /terraform/$_TERRAFORM_VERSION /bin/terraform && /usr/bin/make build && /usr/bin/make test-integration']
   env:
     - TEST_PROJECT=$_TEST_PROJECT
     - TERRAFORM_VERSION=$_TERRAFORM_VERSION
-  waitFor: ['build']
 tags:
 - 'ci'
 - 'integration'
