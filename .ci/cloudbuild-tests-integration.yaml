@@ -17,7 +17,7 @@
 timeout: 3600s
 steps:
 - id: build
-  name: 'gcr.io/cloud-builders/go:1.15'
+  name: 'gcr.io/cloud-builders/go:1.16'
   entrypoint: /usr/bin/make
   args: [build]
 - id: test-integration
