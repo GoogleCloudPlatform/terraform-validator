@@ -6,12 +6,19 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
-func GetConfig(ctx context.Context, project, userAgent string, offline bool) (*Config, error) {
+// Return the value of the private userAgent field
+func (c *Config) UserAgent() string {
+	return c.userAgent
+}
+
+func GetConfig(ctx context.Context, project string, offline bool) (*Config, error) {
 	cfg := &Config{
 		Project:   project,
-		userAgent: userAgent,
+		userAgent: fmt.Sprintf("config-validator-tf/%s", version.BuildVersion()),
 	}
 
 	// Search for default credentials

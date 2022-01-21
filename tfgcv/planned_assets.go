@@ -28,8 +28,6 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 )
 
 type ReadPlannedAssetsFunc func(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error)
@@ -66,9 +64,7 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 }
 
 func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) (*google.Converter, error) {
-	userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
-
-	cfg, err := resources.GetConfig(ctx, project, userAgent, offline)
+	cfg, err := resources.GetConfig(ctx, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}
@@ -77,7 +73,7 @@ func newConverter(ctx context.Context, path, project, ancestry string, offline, 
 	}
 	var resourceManager *cloudresourcemanager.Service
 	if !offline {
-		resourceManager = cfg.NewResourceManagerClient(userAgent)
+		resourceManager = cfg.NewResourceManagerClient(cfg.UserAgent())
 	}
 	ancestryManager, err := ancestrymanager.New(resourceManager, entries, errorLogger)
 	if err != nil {
