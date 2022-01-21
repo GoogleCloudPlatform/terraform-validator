@@ -21,11 +21,12 @@ steps:
   entrypoint: /usr/bin/make
   args: [build]
 - id: test-integration
-  name: 'hashicorp/terraform:$_TERRAFORM_VERSION'
-  entrypoint: /bin/sh
-  args: ['-c', 'apk add make go && /usr/bin/make test-integration']
+  name: 'gcr.io/graphite-docker-images/terraform-validator-tester-integration'
+  entrypoint: /usr/bin/make
+  args: ['test-integration']
   env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
+    - TEST_PROJECT=$_TEST_PROJECT
+    - TERRAFORM_VERSION=$_TERRAFORM_VERSION
   waitFor: ['build']
 tags:
 - 'ci'
