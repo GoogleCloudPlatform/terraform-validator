@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -58,7 +57,7 @@ func tpuNodeCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, meta int
 
 	if networkLinkRegex.MatchString(old.(string)) {
 		parts := networkLinkRegex.FindStringSubmatch(old.(string))
-		i, err := strconv.ParseInt(parts[1], 10, 64)
+		i, err := stringToFixed64(parts[1])
 		if err == nil {
 			if project.ProjectNumber == i {
 				if err := diff.SetNew("network", old); err != nil {
