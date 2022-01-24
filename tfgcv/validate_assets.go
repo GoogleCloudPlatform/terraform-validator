@@ -18,19 +18,11 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/gcv"
+	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/pkg/errors"
 )
-
-// To be set by Go build tools.
-var buildVersion string
-
-// BuildVersion returns the build version of Terraform Validator.
-func BuildVersion() string {
-	return buildVersion
-}
 
 type ValidateAssetsFunc func(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error)
 

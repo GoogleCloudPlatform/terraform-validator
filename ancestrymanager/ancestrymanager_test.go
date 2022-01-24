@@ -12,22 +12,14 @@ import (
 	"google.golang.org/api/option"
 )
 
-type testRetriever struct {
-	online bool
-	opts   []option.ClientOption
-}
-
-func (tr *testRetriever) NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service {
+func newTestResourceManagerClient(opts []option.ClientOption) *cloudresourcemanager.Service {
 	ctx := context.Background()
 
-	if tr.online {
-		rm, err := cloudresourcemanager.NewService(ctx, tr.opts...)
-		if err != nil {
-			panic(err)
-		}
-		return rm
+	rm, err := cloudresourcemanager.NewService(ctx, opts...)
+	if err != nil {
+		panic(err)
 	}
-	return nil
+	return rm
 }
 
 func TestAncestryPath(t *testing.T) {
@@ -94,18 +86,17 @@ func TestGetAncestry(t *testing.T) {
 	defer ts.Close()
 
 	// option.WithEndpoint(ts.URL), option.WithoutAuthentication()
-	trOnline := &testRetriever{online: true, opts: []option.ClientOption{option.WithEndpoint(ts.URL), option.WithoutAuthentication()}}
+	rm := newTestResourceManagerClient([]option.ClientOption{option.WithEndpoint(ts.URL), option.WithoutAuthentication()})
 
 	entries := map[string]string{
 		ownerProject: ownerAncestry,
 	}
-	amOnline, err := New(trOnline, entries, "", false, zap.NewExample())
+	amOnline, err := New(rm, entries, zap.NewExample())
 	if err != nil {
 		t.Fatalf("failed to create online ancestry manager: %s", err)
 	}
 
-	trOffline := &testRetriever{online: false}
-	amOffline, err := New(trOffline, entries, "", true, zap.NewExample())
+	amOffline, err := New(nil, entries, zap.NewExample())
 	if err != nil {
 		t.Fatalf("failed to create offline ancestry manager: %s", err)
 	}
