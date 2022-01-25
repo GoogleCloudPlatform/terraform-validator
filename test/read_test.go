@@ -85,7 +85,6 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_pubsub_subscription_iam_member"},
 		{name: "example_pubsub_subscription_iam_policy"},
 		{name: "example_pubsub_topic"},
-		{name: "example_redis_instance"},
 		{name: "example_spanner_database"},
 		{name: "example_spanner_database_iam_binding"},
 		{name: "example_spanner_database_iam_member"},
