@@ -19,7 +19,7 @@ import (
 	"sort"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
-	provider "github.com/hashicorp/terraform-provider-google/v4/google"
+	provider "github.com/hashicorp/terraform-provider-google/google"
 	"github.com/spf13/cobra"
 )
 
