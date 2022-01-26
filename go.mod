@@ -29,3 +29,5 @@ require (
 )
 
 go 1.16
+
+replace github.com/hashicorp/terraform-provider-google/v4 v4.4.1 => ./converters/google/provider
