@@ -47,6 +47,7 @@ type convertOptions struct {
 	rootOptions       *rootOptions
 	readPlannedAssets tfgcv.ReadPlannedAssetsFunc
 	outputPath        string
+	dryRun            bool
 }
 
 func newConvertCmd(rootOptions *rootOptions) *cobra.Command {
@@ -63,6 +64,9 @@ func newConvertCmd(rootOptions *rootOptions) *cobra.Command {
 			return o.validateArgs(args)
 		},
 		RunE: func(c *cobra.Command, args []string) error {
+			if o.dryRun {
+				return nil
+			}
 			return o.run(args[0])
 		},
 	}
@@ -71,6 +75,8 @@ func newConvertCmd(rootOptions *rootOptions) *cobra.Command {
 	cmd.Flags().StringVar(&o.ancestry, "ancestry", "", "Override the ancestry location of the project when validating resources")
 	cmd.Flags().BoolVar(&o.offline, "offline", false, "Do not make network requests")
 	cmd.Flags().StringVar(&o.outputPath, "output-path", "", "If specified, write the convert result into the specified output file")
+	cmd.Flags().BoolVar(&o.dryRun, "dry-run", false, "Only parse & validate args")
+	cmd.Flags().MarkHidden("dry-run")
 
 	return cmd
 }
