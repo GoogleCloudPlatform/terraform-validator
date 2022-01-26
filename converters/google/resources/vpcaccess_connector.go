@@ -92,7 +92,7 @@ func expandVPCAccessConnectorName(v interface{}, d TerraformResourceData, config
 }
 
 func expandVPCAccessConnectorNetwork(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
+	return GetResourceNameFromSelfLink(v.(string)), nil
 }
 
 func expandVPCAccessConnectorIpCidrRange(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
