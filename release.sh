@@ -34,11 +34,11 @@ zip -rq9D "THIRD_PARTY_NOTICES.zip" "THIRD_PARTY_NOTICES/"
 popd > /dev/null
 
 architectures="amd64 arm64"
-platforms="linux windows darwin"
+platforms="darwin linux windows"
 skip_platform_arch_pairs=" windows/arm64 "
 
 tar_gz_name=terraform-validator
-ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=v${version}"
+ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/version.buildVersion=v${version}"
 release_bucket=terraform-validator
 
 # Build release versions
@@ -56,6 +56,20 @@ for platform in ${platforms}; do
 
 		echo "Building ${binary_name} v${version} for platform ${platform} / arch ${arch}..."
 		GO111MODULE=on GOOS=${platform} GOARCH=${arch} CGO_ENABLED=0 go build -ldflags "${ldflags}" -o "${release_dir}/${binary_name}" .
+		if [[ "$platform" == "darwin" && "${arch}" == "amd64" ]]; then
+			echo "Testing version output"
+			echo "${release_dir}/${binary_name} version"
+			version_output="$(${release_dir}/${binary_name} version | grep "")"
+			expected_version_output="Build version: v${version}"
+			if [[ "${version_output}" != "${expected_version_output}" ]]; then
+				echo "${version_output} (Expected ${expected_version_output})"
+				echo "build var may not be set properly"
+				echo "Halting release"
+				exit 1
+			else
+				echo "${version_output}"
+			fi
+		fi
 		echo "Creating ${release_dir}/${tar_gz_name}_${platform}_${arch}-${version}.tar.gz"
 		pushd "${release_dir}" > /dev/null
 		tar -czf "${tar_gz_name}_${platform}_${arch}-${version}.tar.gz" "${binary_name}" "THIRD_PARTY_NOTICES.zip"
@@ -70,7 +84,7 @@ echo "Github tag v${version} created"
 
 # Publish release versions
 echo "Pushing releases to Google Storage"
-gsutil cp ${release_dir}/*.tar.gz gs://${release_bucket}/releases/v${version}
+gsutil cp "${release_dir}/*.tar.gz" "gs://${release_bucket}/releases/v${version}"
 echo "Releases pushed to Google Storage"
 
 echo "Create a new release by visiting https://github.com/GoogleCloudPlatform/terraform-validator/releases/new?tag=v${version}&title=v${version}"
