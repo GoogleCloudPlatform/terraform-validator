@@ -38,7 +38,7 @@ platforms="darwin linux windows"
 skip_platform_arch_pairs=" windows/arm64 "
 
 tar_gz_name=terraform-validator
-ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/tfgcv.buildVersion=v${version}"
+ldflags="-X github.com/GoogleCloudPlatform/terraform-validator/version.buildVersion=v${version}"
 release_bucket=terraform-validator
 
 # Build release versions
