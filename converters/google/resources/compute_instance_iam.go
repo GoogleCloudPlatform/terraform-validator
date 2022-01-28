@@ -106,10 +106,10 @@ func newComputeInstanceIamAsset(
 
 func FetchComputeInstanceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{zone}}"); !ok {
+	if _, ok := d.GetOk("zone"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{instance_name}}"); !ok {
+	if _, ok := d.GetOk("instance_name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

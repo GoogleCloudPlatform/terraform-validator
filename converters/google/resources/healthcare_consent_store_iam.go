@@ -106,10 +106,10 @@ func newHealthcareConsentStoreIamAsset(
 
 func FetchHealthcareConsentStoreIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{dataset}}"); !ok {
+	if _, ok := d.GetOk("dataset"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{consent_store_id}}"); !ok {
+	if _, ok := d.GetOk("consent_store_id"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

@@ -106,7 +106,7 @@ func newPubsubTopicIamAsset(
 
 func FetchPubsubTopicIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{topic}}"); !ok {
+	if _, ok := d.GetOk("topic"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

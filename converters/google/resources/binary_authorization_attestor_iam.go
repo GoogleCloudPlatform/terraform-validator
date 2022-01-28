@@ -106,7 +106,7 @@ func newBinaryAuthorizationAttestorIamAsset(
 
 func FetchBinaryAuthorizationAttestorIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{attestor}}"); !ok {
+	if _, ok := d.GetOk("attestor"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

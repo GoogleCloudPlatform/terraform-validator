@@ -106,10 +106,10 @@ func newCloudRunServiceIamAsset(
 
 func FetchCloudRunServiceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{location}}"); !ok {
+	if _, ok := d.GetOk("location"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{service}}"); !ok {
+	if _, ok := d.GetOk("service"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
