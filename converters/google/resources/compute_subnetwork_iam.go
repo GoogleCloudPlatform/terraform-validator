@@ -106,10 +106,10 @@ func newComputeSubnetworkIamAsset(
 
 func FetchComputeSubnetworkIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{region}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{subnetwork}}"); !ok {
+	if _, ok := d.GetOk("subnetwork"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

@@ -106,7 +106,7 @@ func newServiceManagementServiceIamAsset(
 
 func FetchServiceManagementServiceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{service_name}}"); !ok {
+	if _, ok := d.GetOk("service_name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

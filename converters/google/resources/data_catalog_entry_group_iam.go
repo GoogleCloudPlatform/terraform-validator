@@ -106,10 +106,10 @@ func newDataCatalogEntryGroupIamAsset(
 
 func FetchDataCatalogEntryGroupIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{region}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{entry_group}}"); !ok {
+	if _, ok := d.GetOk("entry_group"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

@@ -106,10 +106,10 @@ func newComputeRegionDiskIamAsset(
 
 func FetchComputeRegionDiskIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{region}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{name}}"); !ok {
+	if _, ok := d.GetOk("name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

@@ -106,10 +106,10 @@ func newIapTunnelInstanceIamAsset(
 
 func FetchIapTunnelInstanceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{zone}}"); !ok {
+	if _, ok := d.GetOk("zone"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{instance}}"); !ok {
+	if _, ok := d.GetOk("instance"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

@@ -106,10 +106,10 @@ func newCloudFunctionsCloudFunctionIamAsset(
 
 func FetchCloudFunctionsCloudFunctionIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{region}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{cloud_function}}"); !ok {
+	if _, ok := d.GetOk("cloud_function"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 

@@ -106,10 +106,10 @@ func newPrivatecaCaPoolIamAsset(
 
 func FetchPrivatecaCaPoolIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{location}}"); !ok {
+	if _, ok := d.GetOk("location"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-	if _, ok := d.GetOk("{{ca_pool}}"); !ok {
+	if _, ok := d.GetOk("ca_pool"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
