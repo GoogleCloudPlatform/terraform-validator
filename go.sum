@@ -76,8 +76,8 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24/go.mod h1:4UJr5HIiMZrwgkSPdsjy2uOQExX/WEILpIrO9UPGuXs=
 github.com/GoogleCloudPlatform/config-validator v0.0.0-20211122204404-f3fd77c5c355 h1:UQQJmJl5aZNwLISiq/YqEEFXxv042cYY6wD49TOzrco=
 github.com/GoogleCloudPlatform/config-validator v0.0.0-20211122204404-f3fd77c5c355/go.mod h1:MHzWJNkQiBhSRuWAOxdMBBR+acz6g+jXGDtZp5S7vzU=
-github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20220114025148-a9879027a727 h1:+s/Q1OtaOX8y10li7GLqeBx6e4jd3aF/YlLhXWG9Y9g=
-github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20220114025148-a9879027a727/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20220125025424-6dfdf699127c h1:6cvYJTwBPUv9kpg5aG5ktpKcsddjRChgh9UmIy569rc=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20220125025424-6dfdf699127c/go.mod h1:oEeBHikdF/NrnUy0ornVaY1OT+jGvTqm+LQS0+ZDKzU=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
