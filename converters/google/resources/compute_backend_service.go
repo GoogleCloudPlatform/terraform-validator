@@ -323,6 +323,12 @@ func GetComputeBackendServiceApiObject(d TerraformResourceData, config *Config) 
 	} else if v, ok := d.GetOkExists("security_policy"); !isEmptyValue(reflect.ValueOf(securityPolicyProp)) && (ok || !reflect.DeepEqual(v, securityPolicyProp)) {
 		obj["securityPolicy"] = securityPolicyProp
 	}
+	securitySettingsProp, err := expandComputeBackendServiceSecuritySettings(d.Get("security_settings"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("security_settings"); !isEmptyValue(reflect.ValueOf(securitySettingsProp)) && (ok || !reflect.DeepEqual(v, securitySettingsProp)) {
+		obj["securitySettings"] = securitySettingsProp
+	}
 	sessionAffinityProp, err := expandComputeBackendServiceSessionAffinity(d.Get("session_affinity"), d, config)
 	if err != nil {
 		return nil, err
@@ -1219,6 +1225,44 @@ func expandComputeBackendServiceProtocol(v interface{}, d TerraformResourceData,
 }
 
 func expandComputeBackendServiceSecurityPolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeBackendServiceSecuritySettings(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedClientTlsPolicy, err := expandComputeBackendServiceSecuritySettingsClientTlsPolicy(original["client_tls_policy"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedClientTlsPolicy); val.IsValid() && !isEmptyValue(val) {
+		transformed["clientTlsPolicy"] = transformedClientTlsPolicy
+	}
+
+	transformedSubjectAltNames, err := expandComputeBackendServiceSecuritySettingsSubjectAltNames(original["subject_alt_names"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedSubjectAltNames); val.IsValid() && !isEmptyValue(val) {
+		transformed["subjectAltNames"] = transformedSubjectAltNames
+	}
+
+	return transformed, nil
+}
+
+func expandComputeBackendServiceSecuritySettingsClientTlsPolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	f, err := parseGlobalFieldValue("regions", v.(string), "project", d, config, true)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid value for client_tls_policy: %s", err)
+	}
+	return f.RelativeLink(), nil
+}
+
+func expandComputeBackendServiceSecuritySettingsSubjectAltNames(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
