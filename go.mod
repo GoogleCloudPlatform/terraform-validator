@@ -15,6 +15,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/open-policy-agent/opa v0.36.1 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/r3labs/diff/v2 v2.14.6 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0

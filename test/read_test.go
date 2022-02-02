@@ -6,10 +6,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"fmt"
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
@@ -141,7 +142,10 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 
 			expectedAssets := normalizeAssets(t, want, true)
 			actualAssets := normalizeAssets(t, got, true)
-			require.ElementsMatch(t, actualAssets, expectedAssets)
+
+			change := getDiff(actualAssets, expectedAssets)
+			fmt.Println(change)
+			assert.Equal(t, len(change), 0, "There should not no difference")
 		})
 	}
 }
