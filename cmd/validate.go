@@ -123,7 +123,7 @@ func (o *validateOptions) run(plan string) error {
 
 	violations, err := o.validateAssets(ctx, assets, o.policyPath)
 	if err != nil {
-		return errors.Wrap(err, "validating: FCV")
+		return errors.Wrap(err, "validating")
 	}
 
 	if o.rootOptions.useStructuredLogging {
