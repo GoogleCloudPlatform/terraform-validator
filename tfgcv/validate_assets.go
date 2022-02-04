@@ -16,6 +16,8 @@ package tfgcv
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
@@ -29,6 +31,11 @@ type ValidateAssetsFunc func(ctx context.Context, assets []google.Asset, policyR
 // ValidateAssets instantiates GCV and audits CAI assets using "policies"
 // and "lib" folder under policyRootPath.
 func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error) {
+	policyLibPath := filepath.Join(policyRootPath, "policies", "lib")
+	_, err := os.Stat(policyLibPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read files in %s", policyLibPath)
+	}
 	return ValidateAssetsWithLibrary(ctx, assets,
 		[]string{filepath.Join(policyRootPath, "policies")},
 		filepath.Join(policyRootPath, "lib"))
