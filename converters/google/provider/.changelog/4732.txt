@@ -1,3 +1,0 @@
-```release-note:bug
-composer: changed master_ipv4_cidr_block to draw default from the API
-```

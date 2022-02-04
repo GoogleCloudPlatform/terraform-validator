@@ -1,3 +1,0 @@
-```release-note:bug
-monitoring: Fixed type of `google_monitoring_slo`'s `range` values - some `range` values are doubles, others are integers.
-```

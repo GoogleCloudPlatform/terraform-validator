@@ -1,3 +1,0 @@
-```release-note:bug
-healthcare: add retry logic on healthcare dataset not initialized error
-```

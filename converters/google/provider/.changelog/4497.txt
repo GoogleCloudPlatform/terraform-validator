@@ -1,3 +1,0 @@
-```release-note:bug
-apigee: fixed IDs when importing `google_apigee_organization` resource
-```

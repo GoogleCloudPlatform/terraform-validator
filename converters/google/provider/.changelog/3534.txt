@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed an issue where data source `google_organization` would ignore exact domain matches if multiple domains were found
-```

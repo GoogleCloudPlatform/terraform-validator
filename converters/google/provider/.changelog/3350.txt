@@ -1,3 +1,0 @@
-```release-note:bug
-* serviceusage: fixed issue where `google_project_services` attempted to read a project before enabling the API that allows that read
-```

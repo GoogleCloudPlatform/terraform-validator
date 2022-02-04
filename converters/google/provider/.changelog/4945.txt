@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added field `dns_config` to resource `google_container_cluster` (beta)
-```

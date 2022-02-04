@@ -1,3 +1,0 @@
-```release-note:enhancement
-* bigtable: added update support for `display_name` and `instance_type`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-dataflow: enabled updates for `google_dataflow_flex_template_job`
-```

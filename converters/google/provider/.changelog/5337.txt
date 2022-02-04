@@ -1,3 +1,0 @@
-```release-note:breaking-change
-sql: changed the `database_version` field to `Required` in `google_sql_database_instance` resource
-```

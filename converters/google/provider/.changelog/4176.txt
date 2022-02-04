@@ -1,4 +1,0 @@
-```release-note:none
-  docs updated to add logging bucket as sink destination
-
-```

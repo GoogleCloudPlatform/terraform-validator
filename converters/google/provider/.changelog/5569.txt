@@ -1,3 +1,0 @@
-```release-note:enhancement
-Added daily os config patch deployments
-```

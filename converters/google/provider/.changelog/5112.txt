@@ -1,3 +1,0 @@
-```release-note:bug
-sql: fixed bug in `google_sql_user` with CLOUD_IAM_USERs on POSTGRES.
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fix shielded instance config, which had been failing to apply due to a field rename on the GCP side.
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-storage: fixed a crash when `azure_credentials` was defined in `google_storage_transfer_job`
-```

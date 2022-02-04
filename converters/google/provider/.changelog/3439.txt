@@ -1,3 +1,0 @@
-```release-note:bug
-compute: Added lock to prevent `google_compute_route` from changing while peering operations are happening on its network
-```

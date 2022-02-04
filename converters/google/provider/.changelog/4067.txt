@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: added `MONTH` and `YEAR` as allowed values in `google_bigquery_table.time_partitioning.type`
-```

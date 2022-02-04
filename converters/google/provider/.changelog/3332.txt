@@ -1,3 +1,0 @@
-```release-note:enhancement
-appengine: Added `iap.enabled` field to `google_app_engine_application` resource
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-artifactregistry: fixed issue where updating `google_artifact_registry_repository` always failed
-```

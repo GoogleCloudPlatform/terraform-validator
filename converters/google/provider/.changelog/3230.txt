@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: Added `autoscaling_policy` to `google_compute_node_group`
-```

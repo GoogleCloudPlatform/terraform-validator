@@ -1,3 +1,0 @@
-```release-note:bug
-container: Added `user_project_override` support to the ContainerOperationWaiter used by `google_container_cluster`
-```

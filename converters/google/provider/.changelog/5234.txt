@@ -1,3 +1,0 @@
-```release-note:bug
-serviceusage: enabled the service api to retry on failed operation calls in anticipation of transient errors that occur when first enabling the service.
-```

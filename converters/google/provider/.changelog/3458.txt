@@ -1,3 +1,0 @@
-```release-note:bug
-storage: Fixed setting/reading `google_storage_bucket_object`  metadata on API object
-```

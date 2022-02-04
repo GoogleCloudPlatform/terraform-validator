@@ -1,3 +1,0 @@
-```release-note:enhancement
-composer: added field `environment_size` to resource `google_composer_environment` (beta)
-```

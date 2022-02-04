@@ -1,3 +1,0 @@
-```release-note:bug
-functions: Added retry to `google_cloudfunctions_function` creation when API returns error while pulling source from GCS
-```

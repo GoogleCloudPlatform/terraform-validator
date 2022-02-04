@@ -1,4 +1,0 @@
-```release-note:note
-biilingBudget : doc updated for `google_billing_budget'
-
-```

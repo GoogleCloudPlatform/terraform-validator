@@ -1,9 +1,0 @@
-```release-note:new-resource
-`google_compute_compute_organization_security_policy` (beta-only)
-```
-```release-note:new-resource
-`google_compute_compute_organization_security_policy_association` (beta-only)
-```
-```release-note:new-resource
-`google_compute_compute_organization_security_policy_rule` (beta-only)
-```

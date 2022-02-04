@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed a crash on `enable` field of `google_compute_router_peer`
-```

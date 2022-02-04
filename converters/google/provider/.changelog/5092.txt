@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed instances where compute resource calls would have their urls appended with a redundant `/projects` after the host
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-all: fixed an issue where some documentation for new resources was not showing up in the GA provider if it was beta-only.
-```

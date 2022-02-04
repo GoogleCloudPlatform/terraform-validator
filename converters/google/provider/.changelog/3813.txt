@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudfunctions: Updated the `google_cloudfunctions_function` datasource to include new fields available in the API.
-```

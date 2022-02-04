@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed operation polling to support custom endpoints.
-```

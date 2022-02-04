@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed two error messages in `google_compute_instance`
-```

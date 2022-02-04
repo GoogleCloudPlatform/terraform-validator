@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: Added `bfd` to `google_compute_router_peer`
-```

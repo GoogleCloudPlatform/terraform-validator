@@ -1,3 +1,0 @@
-```release-note:enhancement
-Added `ingress_settings` field to `google_cloudfunctions_function`
-```

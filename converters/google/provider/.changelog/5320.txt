@@ -1,3 +1,0 @@
-```release-note:bug
-composer: removed `config.node_config.zone` requirement on `google_composer_environment`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-composer: added field `enable_ip_masq_agent` to resource `google_composer_environment` (beta)
-```

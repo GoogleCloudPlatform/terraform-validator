@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added GRPC as a valid value for google_compute_(region)_backend_service.protocol
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `disk.resource_policies` field to resource `google_compute_instance_template`
-```

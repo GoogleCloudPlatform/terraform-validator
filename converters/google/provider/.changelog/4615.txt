@@ -1,3 +1,0 @@
-```release-note:bug
-notebooks: Fixed permadiff on labels for `google_notebook_instance`
-```

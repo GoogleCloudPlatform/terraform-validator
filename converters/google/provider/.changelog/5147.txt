@@ -1,3 +1,0 @@
-```release-note:bug
-spanner: fixed instance updates to processing units
-```

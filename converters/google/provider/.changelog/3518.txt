@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed an issue where `google_compute_route` creation failed while VPC peering was in progress.
-```

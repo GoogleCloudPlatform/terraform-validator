@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: Promoted gVNIC support for `google_compute_instance` resource to GA
-```

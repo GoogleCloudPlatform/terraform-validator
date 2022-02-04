@@ -1,3 +1,0 @@
-```release-note:bug
-apigee: fixed update behavior on `google_apigee_envgroup`
-```

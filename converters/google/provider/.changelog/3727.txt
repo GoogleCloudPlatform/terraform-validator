@@ -1,3 +1,0 @@
-```release-note:new-datasource
-google_game_services_game_server_deployment_rollout (beta only)
-```

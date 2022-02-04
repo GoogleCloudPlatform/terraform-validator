@@ -1,3 +1,0 @@
-```release-note:breaking-change
-container: changed default for `enable_shielded_nodes` to true for `google_container_cluster`
-```

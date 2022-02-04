@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed an issue in `google_bigquery_job` where non-US locations could not be read
-```

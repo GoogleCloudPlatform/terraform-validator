@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: Promoted `google_container_cluster` `database_encryption` to GA.
-```

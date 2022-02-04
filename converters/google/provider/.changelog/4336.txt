@@ -1,3 +1,0 @@
-```release-note:enhancement
-sql: added restore from backup support to `google_sql_database_instance`
-```

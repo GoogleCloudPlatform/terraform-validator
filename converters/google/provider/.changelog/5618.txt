@@ -1,3 +1,0 @@
-```release-note:bug
-storage: Fixed bug where the provider crashes when `Object.owner` is missing when using `google_storage_object_acl`
-```

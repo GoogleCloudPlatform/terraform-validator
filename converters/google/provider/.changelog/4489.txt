@@ -1,3 +1,0 @@
-```release-note:bug
-sql: Fixed case diff for `charset` in `google_sql_database`
-```

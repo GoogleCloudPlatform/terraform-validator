@@ -1,3 +1,0 @@
-```release-note:bug
-iam: fixed issue with principle and principleSet members not retaining their casing 
-```

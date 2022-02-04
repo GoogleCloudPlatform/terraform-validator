@@ -1,3 +1,0 @@
-```release-note:bug
-container: added the ability to update `database_encryption` without recreating the cluster.
-```

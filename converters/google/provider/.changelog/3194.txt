@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed a scenario where `google_compute_instance_template` would cause a crash.
-```

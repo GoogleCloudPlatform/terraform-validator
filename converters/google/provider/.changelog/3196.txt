@@ -1,3 +1,0 @@
-```release-note:enhancement
-provider: Added provider-wide request retries for common temporary GCP error codes and network errors
-```

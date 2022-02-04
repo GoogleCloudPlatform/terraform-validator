@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: Added `enable` attribute to `google_compute_router_peer`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `advanced_machine_features` to `google_compute_instance`
-```

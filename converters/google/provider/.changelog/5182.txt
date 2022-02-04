@@ -1,3 +1,0 @@
-```release-note:bug
-redis: extended the default timeouts on `google_redis_instance`
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-vpcaccess: fixed permadiff when `max_throughput` is not set on `google_vpc_access_connector`
-```

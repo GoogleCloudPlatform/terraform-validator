@@ -1,3 +1,0 @@
-```release-note:enhancement
-billingbudget: Added support for import of `google_billing_budget`
-```

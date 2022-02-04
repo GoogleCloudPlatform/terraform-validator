@@ -1,3 +1,0 @@
-```release-note:bug
-resourcemanager: bumped `google_project` timeout defaults to 10 minutes (from 4)
-```

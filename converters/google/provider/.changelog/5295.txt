@@ -1,3 +1,0 @@
-```release-note:bug
-container: fixed a crash on `monitoring_config` of `google_container_cluster`
-```

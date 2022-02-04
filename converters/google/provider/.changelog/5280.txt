@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed permadiff for `failover_policy` on `google_compute_region_backend_service`
-```

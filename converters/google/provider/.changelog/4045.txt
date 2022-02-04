@@ -1,3 +1,0 @@
-```release-note:enhancement
-dns: added `forwarding_path` field to `google_dns_policy` resource
-```

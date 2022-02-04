@@ -1,3 +1,0 @@
-```release-note:enhancement
-spanner: added `force_destroy` to `google_spanner_instance` to delete instances that have backups enabled.
-```

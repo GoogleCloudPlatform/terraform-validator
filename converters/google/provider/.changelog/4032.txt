@@ -1,3 +1,0 @@
-```release-note:bug
-resourcemanager: Fixed a bug in retrieving `google_active_folder` data source when the display name included whitespace
-```

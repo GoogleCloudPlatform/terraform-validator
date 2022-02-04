@@ -1,3 +1,0 @@
-```release-note:bug
-monitoring: fixed typo in `google_monitoring_uptime_check_config` where `NOT_MATCHES_REGEX` could not be specified.
-```

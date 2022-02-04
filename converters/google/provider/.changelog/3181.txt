@@ -1,3 +1,0 @@
-```release-note:bug
-storage: Added check for bucket retention policy list being empty.
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigtable: added support for specifying `duration` for `bigtable_gc_policy` to allow durations shorter than a day
-```

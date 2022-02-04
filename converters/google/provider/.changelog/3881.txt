@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: added `notification_pubsub_topic` field to `google_bigquery_data_transfer_config` resource
-```

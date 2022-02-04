@@ -1,3 +1,0 @@
-```release-note:bug
-all: fixed issue where nested objects were getting sent as null values to GCP on create instead of being omitted from requests
-```

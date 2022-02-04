@@ -1,3 +1,0 @@
-```release-note:enhancement
-functions: added `build_environment_variables` field to `google_cloudfunction_function`
-```

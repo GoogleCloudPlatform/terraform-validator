@@ -1,3 +1,0 @@
-```release-note:breaking-change
-compute: Fixed service account scope alias to be updated.
-```

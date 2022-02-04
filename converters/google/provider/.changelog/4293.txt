@@ -1,3 +1,0 @@
-```release-note:bug
-project: fixed a bug where `google_project_default_service_accounts` would delete all IAM bindings on a project when run with `action = "DEPRIVILEGE"`
-```

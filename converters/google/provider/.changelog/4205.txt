@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added update support for `google_compute_interconnect_attachment` `bandwidth` field
-```

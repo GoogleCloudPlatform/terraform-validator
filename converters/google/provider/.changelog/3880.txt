@@ -1,3 +1,0 @@
-```release-note:none
-dataflow: changed `google_dataflow_job` to return more fields on the read
-```

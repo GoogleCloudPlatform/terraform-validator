@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudfunctions: added support for `min_instances` to `google_cloudfunctions_function`
-```

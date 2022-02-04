@@ -1,3 +1,0 @@
-```release-note:enhancement
-resource-manager: updated documentation for `folder_iam_*` and `organization_iam_*` resources.
-```

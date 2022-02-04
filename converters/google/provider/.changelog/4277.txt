@@ -1,3 +1,0 @@
-```release-note:bug
-iam: fixed iam conflict handling so that optimistic-locking retries will succeed more often.
-```

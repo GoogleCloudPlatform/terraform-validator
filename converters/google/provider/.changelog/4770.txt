@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigtable: added `cluster.kms_key_name` field to `google_bigtable_instance`
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed `google_compute_security_policy` from allowing two rules with the same priority.
-```

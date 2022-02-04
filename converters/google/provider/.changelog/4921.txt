@@ -1,3 +1,0 @@
-```release-note:enhancement
-storage_bucket_object: added temporary_hold and event_based_hold attributes
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added field `public_access_prevention` to resource `bucket` (beta)
-```

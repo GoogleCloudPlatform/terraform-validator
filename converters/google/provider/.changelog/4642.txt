@@ -1,3 +1,0 @@
-```release-note:bug
-storage: fixed intermittent error in `google_storage_hmac_key`
-```

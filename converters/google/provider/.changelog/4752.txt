@@ -1,3 +1,0 @@
-```release-note:enhancement
-secretmanager: added support for setting a CMEK on `google_secret_manager_secret` 
-```

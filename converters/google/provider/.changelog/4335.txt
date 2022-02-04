@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `reservation_affinity` to `google_compute_instance` and `google_compute_instance_template`
-```

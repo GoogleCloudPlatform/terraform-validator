@@ -1,3 +1,0 @@
-```release-note:enhancement
-Avoid printing confusing (Compsoer version didn't match regexp) log entry when version is empty.
-```

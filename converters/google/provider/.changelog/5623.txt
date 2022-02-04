@@ -1,3 +1,0 @@
-```release-note:enhancement
-vpc_access_connector: Updated field `network` to accept self_link or name
-```

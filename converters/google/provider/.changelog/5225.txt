@@ -1,3 +1,0 @@
-```release-note:bug
-container: fixed an issue where a node pool created with error (eg. GKE_STOCKOUT) would not be captured in state
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-bigtable: added ignore_warnings flag to create call for `google_bigtable_app_profile`
-```

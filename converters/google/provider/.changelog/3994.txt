@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `SEV_CAPABLE` option to `guestOsFeatures` in `google_compute_image` resource.
-```

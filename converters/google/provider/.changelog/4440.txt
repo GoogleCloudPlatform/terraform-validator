@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed bug where you could not reorder columns on `schema` for resource `google_bigquery_table`
-```

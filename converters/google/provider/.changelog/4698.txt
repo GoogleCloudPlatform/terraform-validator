@@ -1,3 +1,0 @@
-```release-note:bug
-datacatalog: set default false for `force_delete` on `google_data_catalog_tag_template`
-```

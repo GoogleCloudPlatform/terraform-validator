@@ -1,3 +1,0 @@
-```release-note:bug
-cloudrun: added diff suppress function for `google_cloud_run_domain_mapping` `metadata.annotations` to ignore API-set fields
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-container: Fix crash due to nil exclusions object when updating an existent cluster with maintenance_policy but without exclusions
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-kms: fixed indirectly force replacement via `skip_initial_version_creation` on `google_kms_crypto_key`
-```

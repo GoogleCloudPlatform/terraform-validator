@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added support for `kubelet_config` and `linux_node_config` to GKE node pools (beta)
-```

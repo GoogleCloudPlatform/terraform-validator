@@ -1,3 +1,0 @@
-```release-note:bug
-notebooks: fixed permadiff in `google_notebooks_runtime.software_config`
-```

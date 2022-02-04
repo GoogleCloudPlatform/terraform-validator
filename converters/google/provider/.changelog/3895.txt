@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: added `schedule_options` field to `google_bigquery_data_transfer_config` resource
-```

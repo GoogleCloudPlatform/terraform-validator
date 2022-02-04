@@ -1,3 +1,0 @@
-```release-note:enhancement
-monitoring: Added window-based SLI to `google_monitoring_slo`
-```

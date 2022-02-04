@@ -1,3 +1,0 @@
-```release-note:bug
-datastore: Added retries to `google_datastore_index` requests when under contention.
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed an issue where exceeding the operation rate limit would fail without retrying
-```

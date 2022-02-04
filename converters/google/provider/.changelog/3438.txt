@@ -1,3 +1,0 @@
-```release-note:bug
-* container: fixed issue where terraform would error if a gke instance group was deleted out-of-band
-```
