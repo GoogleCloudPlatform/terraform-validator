@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed to make `description` updatable without recreation on `google_compute_instance_group_manager`
-```

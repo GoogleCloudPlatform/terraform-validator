@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudrun: Add support for a `google_cloud_run_service` datasource
-```

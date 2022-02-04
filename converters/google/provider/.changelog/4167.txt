@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_project_default_service_accounts`
-```

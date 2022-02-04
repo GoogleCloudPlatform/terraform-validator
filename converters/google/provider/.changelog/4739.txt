@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudrun: added support to bind secrets from Secret Manager to environment variables or files to `google_cloud_run_service`
-```

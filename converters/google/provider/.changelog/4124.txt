@@ -1,3 +1,0 @@
-```release-note:bug
-all: fixed misleading "empty non-retryable error" message that was appearing in debug logs
-```

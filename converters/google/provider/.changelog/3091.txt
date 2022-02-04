@@ -1,3 +1,0 @@
-```release-note:enhancement
-resourcemanager: fixed retry behavior for updates in `google_project`, added retries for billing metadata requests
-```

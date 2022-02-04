@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_org_policy_policy`
-```

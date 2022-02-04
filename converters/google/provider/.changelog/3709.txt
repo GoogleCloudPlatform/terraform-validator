@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added `networking_mode` to `google_container_cluster` (TPGB-only)
-```

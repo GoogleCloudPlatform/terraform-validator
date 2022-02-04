@@ -1,3 +1,0 @@
-```release-note:enhancement
-project: support `billing_project` for `google_project_service`
-```

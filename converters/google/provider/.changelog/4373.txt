@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudbuild: promote `github` fields in `google_cloud_build_trigger` to GA
-```

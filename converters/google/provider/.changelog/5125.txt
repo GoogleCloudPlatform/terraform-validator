@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigtable: enabled support for `user_project_override` in `google_bigtable_instance` and `google_bigtable_table`
-```

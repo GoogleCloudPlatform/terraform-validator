@@ -1,3 +1,0 @@
-```release-note:bug
-compute: Allow updating `google_compute_network_peering_routes_config ` `import_custom_routes` and  `export_custom_routes` to false
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-billing: made `all_updates_rule.*` fields updatable on `google_billing_budget`
-```

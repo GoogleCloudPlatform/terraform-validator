@@ -1,3 +1,0 @@
-```release-note:bug
-cloudfunction: added retry logic for `google_cloudfunctions_function` updates
-```

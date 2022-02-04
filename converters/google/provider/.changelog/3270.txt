@@ -1,3 +1,0 @@
-```release-note:bug
-logging: Fixed import issue with `google_logging_metric` in a non-default project.
-```

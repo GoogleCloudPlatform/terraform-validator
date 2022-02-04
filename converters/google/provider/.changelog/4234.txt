@@ -1,3 +1,0 @@
-```release-note:enhancement
-runtimeconfig: marked value and text fields in `google_runtimeconfig_variable` resource as sensitive 
-```

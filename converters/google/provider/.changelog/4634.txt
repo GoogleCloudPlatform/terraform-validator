@@ -1,3 +1,0 @@
-```release-note:bug
-compute: added minimum for `scopes` field to `google_compute_instance` resource
-```

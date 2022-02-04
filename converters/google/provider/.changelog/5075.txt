@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed null for `ignore_active_certificates_on_deletion` on the imported `google_privateca_certificate_authority`
-```

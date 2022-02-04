@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed bug where `dataset_access.iam_member` would produce inconsistent results after apply.
-```

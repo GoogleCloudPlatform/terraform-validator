@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed an issue where `google_compute_instance_template` would throw an error for unspecified `disk_size_gb` values while upgrading the provider.
-```

@@ -1,3 +1,0 @@
-```release-note:none
-datafusion: added `dataproc_service_account` field to `google_data_fusion_instance` (beta)
-```

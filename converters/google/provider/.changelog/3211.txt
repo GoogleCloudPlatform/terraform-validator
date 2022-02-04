@@ -1,3 +1,0 @@
-```release-note:bug
-cloudfunctions: fixed `vpc_connector` to be updated properly in `google_cloudfunctions_function`
-```

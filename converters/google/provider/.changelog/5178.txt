@@ -1,3 +1,0 @@
-```release-note:bug
-storage: fixed a undetected change on `days_since_noncurrent_time` of `google_storage_bucket`
-```

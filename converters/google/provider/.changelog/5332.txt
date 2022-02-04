@@ -1,3 +1,0 @@
-```release-note:breaking-change
-resourcemanager: changed the `project` field to `Required` in all `google_project_iam_*` resources
-```

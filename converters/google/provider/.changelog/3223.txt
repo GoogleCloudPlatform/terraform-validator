@@ -1,3 +1,0 @@
-```release-note:enhancement
-dialogflow: Changed `google_dialogflow_agent` to not read `tier` status
-```

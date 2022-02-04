@@ -1,3 +1,0 @@
-```release-note:bug
-pubsub: Fixed permadiff on push_config.attributes.
-```

@@ -1,3 +1,0 @@
-```release-note:breaking-change
-storage: removed `bucket_policy_only` from `google_storage_bucket`
-```

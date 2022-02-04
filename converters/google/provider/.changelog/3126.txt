@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added `dns_cache_config` field to `google_container_cluster` resource
-```

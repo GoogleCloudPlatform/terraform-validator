@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigtable: Reduced the minimum number of nodes for the `bigtable_instace` resource from 3 to 1.
-```

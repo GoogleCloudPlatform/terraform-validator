@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed bug where, when an organization security policy association was removed outside of terraform, the next plan/apply would fail.
-```

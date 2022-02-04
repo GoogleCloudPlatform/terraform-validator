@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added `spot` field to `node_config` sub-resource (beta)
-```

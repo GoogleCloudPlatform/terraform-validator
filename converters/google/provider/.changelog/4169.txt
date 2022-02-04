@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added SHARED_LOADBALANCER_VIP as a valid option for `google_compute_address.purpose`
-```

@@ -1,4 +1,0 @@
-```release-note:new-resource
-google_datastore_index
-
-```

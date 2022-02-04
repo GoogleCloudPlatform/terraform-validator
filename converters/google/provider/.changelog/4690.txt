@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed error when creating empty `scopes` on `google_compute_instance`
-```

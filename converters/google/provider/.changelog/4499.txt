@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: removed max items limit from `google_compute_target_ssl_proxy`. The API currently allows upto 15 Certificates.
-```

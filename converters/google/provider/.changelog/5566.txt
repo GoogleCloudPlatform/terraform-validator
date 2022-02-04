@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: Added field `identity_service_config` to `google_container_cluster` (beta)
-```

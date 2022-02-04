@@ -1,3 +1,0 @@
-```release-note:enhancement
-serviceaccount: added a `keepers` field to `google_service_account_key` that recreates the field when it is modified
-```

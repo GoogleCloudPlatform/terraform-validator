@@ -1,3 +1,0 @@
-```release-note:bug
-bigtable: fixed bug that would error if creating multiple bigtable gc policies at the same time
-```

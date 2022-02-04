@@ -1,3 +1,0 @@
-```release-note:enhancement
-storage: added field `path` to `google_storage_transfer_job`
-```

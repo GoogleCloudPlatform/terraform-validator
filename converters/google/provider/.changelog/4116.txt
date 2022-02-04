@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `interface` attribute to `google_compute_disk`
-```

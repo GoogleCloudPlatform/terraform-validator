@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `mtu` field to `google_compute_network` resource
-```

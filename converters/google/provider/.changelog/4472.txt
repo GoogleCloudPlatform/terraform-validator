@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed overly-aggressive detection of changes to google_compute_security_policy rules
-```

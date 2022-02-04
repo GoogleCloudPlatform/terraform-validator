@@ -1,3 +1,0 @@
-```release-note:bug
-appengine: added retry for P4SA propagation delay
-```

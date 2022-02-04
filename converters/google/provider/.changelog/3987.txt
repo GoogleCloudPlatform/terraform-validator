@@ -1,3 +1,0 @@
-```release-note:none
-google_compute_target_grpc_proxy: fixed a linter error on the google_compute_target_grpc_proxy website
-```

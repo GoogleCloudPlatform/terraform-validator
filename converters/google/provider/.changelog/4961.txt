@@ -1,3 +1,0 @@
-```release-note:enhancement
-composer: added field `maintenance_window` to resource `google_composer_environment` (beta)
-```

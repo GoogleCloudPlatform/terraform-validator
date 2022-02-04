@@ -1,3 +1,0 @@
-```release-note: enhancement
-container :  Added cluster_telemetry attribute to `google_container_cluster`
-```

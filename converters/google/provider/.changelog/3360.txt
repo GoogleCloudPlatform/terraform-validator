@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_artifact_registry_repository` beta-only
-```

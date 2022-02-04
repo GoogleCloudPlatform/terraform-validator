@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed an issue where `google_bigquery_table` would crash while reading an empty schema
-```

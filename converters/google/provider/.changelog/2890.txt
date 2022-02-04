@@ -1,3 +1,0 @@
-```release-note:enhancement
-Support for range-based partitioning in BigQuery tables has landed. Fixes https://github.com/terraform-providers/terraform-provider-google/issues/5239.
-```

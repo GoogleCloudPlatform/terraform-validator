@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed perma-diff in `google_compute_instance`
-```

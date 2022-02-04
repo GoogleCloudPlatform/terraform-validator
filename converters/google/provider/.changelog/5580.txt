@@ -1,3 +1,0 @@
-```release-note:none
-cloud_composer: Added a warning to the Cloud Composer documentation.
-```

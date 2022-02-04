@@ -1,3 +1,0 @@
-```release-note:bug
-container: fixed a regression in `google_container_cluster` where the location was not inferred when using a `subnetwork` shortname value like `name`
-```

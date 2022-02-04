@@ -1,3 +1,0 @@
-```release-note:enhancement
-artifactregistry: relaxed field validations for format field of `google_artifact_registry_repository`
-```

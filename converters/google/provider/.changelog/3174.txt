@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigtable: Added support for full-name/id `instance` value in `google_bigtable_app_profile`
-```

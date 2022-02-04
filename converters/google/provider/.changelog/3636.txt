@@ -1,3 +1,0 @@
-```release-note:enhancement
-enable google_dns_policy to accept network id #6577
-```

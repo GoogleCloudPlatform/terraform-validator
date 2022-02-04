@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `scaling_schedules` fields to `google_compute_autoscaler` and `google_compute_region_autoscaler` (beta)
-```

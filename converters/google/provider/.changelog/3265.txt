@@ -1,3 +1,0 @@
-```release-note:enhancement
-Add region_backend_service portName parameter
-```

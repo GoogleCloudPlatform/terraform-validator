@@ -1,3 +1,0 @@
-```release-note:bug
-storage: fixed a bug to better handle eventual consistency among `google_storage_bucket` resources.
-```

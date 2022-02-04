@@ -1,3 +1,0 @@
-```release-note:bug
-sourcerepo: fixed perma-diff in `google_sourcerepo_repository`
-```

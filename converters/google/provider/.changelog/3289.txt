@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added field `network` to `google_compute_region_backend_service`, which allows internal load balancers to target the non-primary interface of an instance. (GA only)
-```

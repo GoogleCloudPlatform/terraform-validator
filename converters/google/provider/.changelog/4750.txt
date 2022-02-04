@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `initial_size` to account for scenarios where size may change under the hood in resource `google_compute_node_group`
-```

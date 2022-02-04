@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: Fixed `google_bigquery_table.schema` handling of policyTags
-```

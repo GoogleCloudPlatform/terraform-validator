@@ -1,6 +1,0 @@
-```release-note:new-resource
-`google_notebook_instance`
-```
-```release-note:new-resource
-`google_notebook_environment`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-kms: added support for EKM to `google_kms_crypto_key.protection_level`
-```

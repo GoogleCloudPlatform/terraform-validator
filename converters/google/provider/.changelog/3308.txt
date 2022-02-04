@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added ability to resize `google_compute_reservation`
-```

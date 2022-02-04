@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: Added `current_status` field to `data.google_compute_instance`
-```

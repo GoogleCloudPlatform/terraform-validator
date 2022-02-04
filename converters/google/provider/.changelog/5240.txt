@@ -1,4 +1,0 @@
-```release-note:none
-- Ephemeral IPs are subjected to refresh after restart, so using static IP for HTTP External LB Example.
-
-```

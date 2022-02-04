@@ -1,3 +1,0 @@
-```release-note:enhancement
-accesscontextmanager: Added support for `google_access_context_manager_gcp_user_access_binding`
-```

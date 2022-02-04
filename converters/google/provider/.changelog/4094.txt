@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: `google_bigquery_dataset_access` now retries quota errors since quota refreshes quickly.
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-Add support for Cloud Composer v2 in GA.
-```

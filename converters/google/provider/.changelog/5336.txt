@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed a bug in updating multiple `ttl` fields on `google_compute_backend_bucket`
-```

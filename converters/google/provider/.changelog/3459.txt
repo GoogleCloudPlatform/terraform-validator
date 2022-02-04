@@ -1,3 +1,0 @@
-```release-note:enhancement
-* container: added `kalm_config` addon to `google_container_cluster` (beta-only)
-```

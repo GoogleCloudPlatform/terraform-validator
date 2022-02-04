@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudbuild: added support for available_secrets to google_cloudbuild_trigger
-```

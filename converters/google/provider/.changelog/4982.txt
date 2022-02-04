@@ -1,3 +1,0 @@
-```release-note:enhancement
-gkehub: promoted `google_gke_hub_membership` to GA
-```

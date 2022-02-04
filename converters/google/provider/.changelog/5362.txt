@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed a bug of cannot add required fields to an existing schema on `google_bigquery_table`
-```

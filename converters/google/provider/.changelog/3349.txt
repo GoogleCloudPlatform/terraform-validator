@@ -1,3 +1,0 @@
-```release-note:bug
-iap: `project` can now be unset in `iap_web_iam_member` and will read from the default `project`
-```

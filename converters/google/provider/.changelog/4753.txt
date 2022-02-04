@@ -1,3 +1,0 @@
-```release-note:bug
-pubsub: fixed diff for `minimum_backoff & maximum_backoff` on `google_pubsub_subscription`
-```

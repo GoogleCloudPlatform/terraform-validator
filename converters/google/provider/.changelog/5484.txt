@@ -1,3 +1,0 @@
-```release-note:bug
-compute: Fixed incorrectly failing validation for `INTERNAL_MANAGED` `google_compute_region_backend_service`.
-```

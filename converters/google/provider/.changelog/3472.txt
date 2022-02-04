@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: Moved `google_container_cluster.enable_shielded_nodes` from beta to GA.
-```

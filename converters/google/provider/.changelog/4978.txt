@@ -1,3 +1,0 @@
-```release-note:bug
-bigquerydatatransfer: fixed a bug where `destination_dataset_id` was required, it is now optional.
-```

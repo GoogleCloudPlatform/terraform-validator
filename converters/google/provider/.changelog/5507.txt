@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_recaptcha_enterprise_key`
-```

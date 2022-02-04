@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: enhanced diff suppress to ignore certain api divergences on resource `table`
-```

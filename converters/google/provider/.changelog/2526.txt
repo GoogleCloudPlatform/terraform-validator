@@ -1,3 +1,0 @@
-```release-note:enhancement
-[beta-only]dataproc: added component gateway support to `google_dataproc_cluster`
-```

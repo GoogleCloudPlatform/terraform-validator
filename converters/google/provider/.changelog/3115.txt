@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: `google_container_cluster` will allow importing / updating / deleting clusters in error states
-```

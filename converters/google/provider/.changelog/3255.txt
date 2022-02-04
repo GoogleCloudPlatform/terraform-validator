@@ -1,3 +1,0 @@
-```release-note:bug
-kms: Fixed an issue in `google_kms_crypto_key_version` where `public_key` would return empty after apply
-```

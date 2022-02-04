@@ -1,3 +1,0 @@
-```release-note:none
-This only contain a spelling fix in some comments, which doesn't seem worth mentioning in a release note.
-```

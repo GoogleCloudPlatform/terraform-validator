@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added `release_channel` to `google_container-cluster` (GA)
-```

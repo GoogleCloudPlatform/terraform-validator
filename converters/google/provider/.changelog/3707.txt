@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: Added `"HOUR"` option for `google_bigquery_table` time partitioning (`type`)
-```

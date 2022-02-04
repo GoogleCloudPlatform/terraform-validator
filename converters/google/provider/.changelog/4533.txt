@@ -1,3 +1,0 @@
-```release-note:bug
-bigtable: required resource recreation if any fields change on `resource_bigtable_gc_policy`
-```

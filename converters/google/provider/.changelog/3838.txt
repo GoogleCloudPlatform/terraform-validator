@@ -1,3 +1,0 @@
-```release-note:bug
-artifactrepository: Fix import failure of `google_artifact_registry_repository`.
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-compute: Fixed an issue where `google_compute_region_backend_service` required `healthChecks` for a serverless network endpoint group.
-```

@@ -1,3 +1,0 @@
-```release-note:bug
-firestore: removed diff for server generated field `__name__` on `google_firestore_index`
-```

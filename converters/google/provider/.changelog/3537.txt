@@ -1,3 +1,0 @@
-```release-note:enhancement
-appengine: add `inbound_services` to `StandardAppVersion` resource
-```

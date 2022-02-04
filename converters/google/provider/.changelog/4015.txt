@@ -1,3 +1,0 @@
-```release-note:enhancement
-provider: added support for service account impersonation.
-```

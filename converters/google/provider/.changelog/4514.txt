@@ -1,3 +1,0 @@
-```release-note:enhancement
-datafusion : new instance type added for the resource `google_data_fusion_instance`
-```

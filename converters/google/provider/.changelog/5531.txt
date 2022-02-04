@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added support for regional external HTTP(S) load balancer
-```

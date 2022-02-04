@@ -1,3 +1,0 @@
-```release-note:enhancement
-dns: added ability to update `google_dns_managed_zone.dnssec_config`
-```

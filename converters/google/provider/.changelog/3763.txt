@@ -1,3 +1,0 @@
-```release-note:enhancement
-resourcemanager: added `folder_id` as computed attribute to `google_folder` resource and datasource.
-```
