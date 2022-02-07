@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20220204195356-b3e9e3868f93
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20220207165913-7630114cff3a
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/gomega v1.17.0 // indirect
