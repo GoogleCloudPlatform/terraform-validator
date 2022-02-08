@@ -89,7 +89,107 @@ func GetProductResourceApiObject(d TerraformResourceData, config *Config) (map[s
 
 ```
 
-You will also need to add an entry to [`resource_converters.go.erb`](https://github.com/GoogleCloudPlatform/magic-modules/blob/master/mmv1/templates/validator/resource_converters.go.erb), which is used to generate [`converters/google/resources/resource_converters.go`](https://github.com/GoogleCloudPlatform/terraform-validator/blob/main/converters/google/resources/resource_converters.go). Each entry in `resource_converters.go.erb` maps a terraform resource name to a function that returns a ResourceConverter - in this case:
+For IAM resources, the resource converter functions should include iam policy, iam member and iam binding. The convert functions are similar to the above example. In addition, the converter needs to cover the merge functions and fetch full resource functions. This might look like
+
+
+```golang
+
+func resourceConverterProductResourceIamPolicy() ResourceConverter {
+	return ResourceConverter{
+    // The type comes from https://cloud.google.com/asset-inventory/docs/supported-asset-types
+		AssetType:         "whatever.googleapis.com/asset-type",
+		Convert:           GetProductResourceIamPolicyCaiObject,
+		MergeCreateUpdate: MergeProductResourceIamPolicy,
+	}
+}
+
+func resourceConverterProductResourceIamMember() ResourceConverter {
+	return ResourceConverter{
+    // The type comes from https://cloud.google.com/asset-inventory/docs/supported-asset-types
+		AssetType:         "whatever.googleapis.com/asset-type",
+		Convert:           GetProductResourceIamMemberCaiObject,
+		FetchFullResource: FetchProductResourceIamPolicy,
+		MergeCreateUpdate: MergeProductResourceIamMember,
+		MergeDelete:       MergeProductResourceIamMemberDelete,
+	}
+}
+
+func resourceConverterProductResourceIamBinding() ResourceConverter {
+	return ResourceConverter{
+    // The type comes from https://cloud.google.com/asset-inventory/docs/supported-asset-types
+		AssetType:         "whatever.googleapis.com/asset-type",
+		Convert:           GetProductResourceIamBindingCaiObject,
+		FetchFullResource: FetchProductResourceIamPolicy,
+		MergeCreateUpdate: MergeProductResourceIamBinding,
+		MergeDelete:       MergeProductResourceIamBindingDelete,
+	}
+}
+
+
+func MergeProductResourceIamPolicy(existing, incoming Asset) Asset {
+	existing.IAMPolicy = incoming.IAMPolicy
+	return existing
+}
+
+func MergeProductResourceIamBinding(existing, incoming Asset) Asset {
+	return mergeIamAssets(existing, incoming, mergeAuthoritativeBindings)
+}
+
+func MergeProductResourceIamBindingDelete(existing, incoming Asset) Asset {
+	return mergeDeleteIamAssets(existing, incoming, mergeDeleteAuthoritativeBindings)
+}
+
+func MergeProductResourceIamMember(existing, incoming Asset) Asset {
+	return mergeIamAssets(existing, incoming, mergeAdditiveBindings)
+}
+
+func MergeProductResourceIamMemberDelete(existing, incoming Asset) Asset {
+	return mergeDeleteIamAssets(existing, incoming, mergeDeleteAdditiveBindings)
+}
+
+func FetchProductResourceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
+	// Check one or more identity fields are available
+	if _, ok := d.GetOk("some-identity"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+
+	return fetchIamPolicy(
+		NewProductResourceApiObjectUpdater,
+		d,
+		config,
+    // Asset name template, the format should match what is specified at https://cloud.google.com/asset-inventory/docs/supported-asset-types
+		"//whatever.googleapis.com/projects/{{project}}/whatevers/{{name}}",
+    // The type comes from https://cloud.google.com/asset-inventory/docs/supported-asset-types
+		"whatever.googleapis.com/asset-type",
+	)
+}
+
+```
+
+After creating the handwritten file, you will need to add a copy entry in [`magic-modules/mmv1/provider/terraform_validator.rb`](https://github.com/GoogleCloudPlatform/magic-modules/blob/master/mmv1/provider/terraform_validator.rb) specifying the handwritten file path and the desired destination in terraform-validator repository.
+
+If your handwritten file is a `.erb` file, add an entry into the `compile_file_list` parameter inside function `def compile_common_files`.
+
+```ruby
+compile_file_list(output_folder, [
+  ...
+  ['converters/google/resources/[YOUR-FILE].go',  # destination in terraform-validator
+   'third_party/[PATH]/[YOUR-FILE].go.erb'],  # your handwritten file location
+  ...
+
+```
+
+If your handwritten file is a `.go` file, add an entry into the `copy_file_list` list inside function `def copy_common_files`.
+
+```ruby
+copy_file_list(output_folder, [
+  ...
+  ['converters/google/resources/[YOUR-FILE].go',  # destination in terraform-validator
+   'third_party/validator/[YOUR-FILE].go'],  # your handwritten file location
+  ...
+
+```
+You will also need to add an entry to [`resource_converters.go.erb`](https://github.com/GoogleCloudPlatform/magic-modules/blob/master/mmv1/templates/validator/resource_converters.go.erb), which is used to generate [`converters/google/resources/resource_converters.go`](https://github.com/GoogleCloudPlatform/terraform-validator/blob/main/converters/google/resources/resource_converters.go). For IAM resource, you will need to add entries each for IAM policy, IAM binding, and IAM member. Each entry in `resource_converters.go.erb` maps a terraform resource name to a function that returns a ResourceConverter - in this case:
 
 ```golang
 // ...
@@ -100,7 +200,6 @@ You will also need to add an entry to [`resource_converters.go.erb`](https://git
 To generate terraform-validator code locally, run the following from the root of the `magic-modules` repository:
 
 ```
-cd mmv1
 make validator OUTPUT_PATH="/path/to/your/terraform-validator"
 ```
 
@@ -117,7 +216,22 @@ Terraform Validator tests require setting up a few files in [`testdata/templates
 - example_product_resource.json
   - The results of running [`terraform-validator convert example_product_resource.tfplan.json`](./index.md#convert-command)
 
-It's easiest to set up a [test project](../tutorial.md) to create the initial versions of these files. Once you have initial versions completed, you need to make the following replacements in the .tfplan.json and .json files:
+It's easiest to set up a [test project](../tutorial.md) to create the initial versions of these files. The idea is to use the terraform-validator binary to invoke a convert operation, and replace the strings specific to your test project in the generated files. The followings are typical steps that you can take:
+
+1. Compile terraform-validator binary.
+2. Create `example_product_resource.tf`, where the content is the resource that you would like to test, and place it in a new folder.
+3. Within the new folder, run these commands to get resource files in json format.
+```bash
+  terraform init
+  terraform plan -out=example_product_resource.tfplan
+  terraform show -json example_product_resource.tfplan > example_product_resource.tfplan.json
+```
+4. Using the newly compiled binary, run
+```bash
+  terraform-validator convert example_product_resource.tfplan.json --project=[YOUR-PROJECT] > example_product_resource.json
+```
+
+Once you have initial versions completed, you need to make the following replacements in the .tfplan.json and .json files:
 
 1. Test project ancestry => `{{.Ancestry}}/project/{{.Provider.project}}`
 1. Test project id (without ancestry) => `{{.Provider.project}}`
@@ -134,6 +248,6 @@ Now [run your tests](./index.md#testing) and make sure they pass locally before 
 
 Now that you have your code working locally, open PRs for [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules) and terraform-validator.
 
-For the Magic Modules PR, the most important check is `terraform-validator-test` - the other checks only matter if you're also making changes to the terraform provider. 
+For the Magic Modules PR, the most important check is `terraform-validator-test` - the other checks only matter if you're also making changes to the terraform provider.
 
 If any of the checks on your terraform validator PR are failing, make sure you can run the unit and integration tests successfully locally.
