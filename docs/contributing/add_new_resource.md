@@ -21,8 +21,8 @@ A resource is "supported" by terraform-validator if it has an entry in [`convert
 Adding support for a resource has four steps:
 
 1. Make changes to [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules) to add or modify resource conversion code. Run [Magic Modules generation](https://github.com/GoogleCloudPlatform/magic-modules/#generating-terraform-validator) to update your local terraform validator.
-2. Add tests for the new resource to terraform-validator.
-3. Make PRs for Magic Modules & terraform-validator with your changes.
+2. Add tests for the new resource into [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules).
+3. Make PRs for Magic Modules with your changes.
 
 Each of these is discussed in more detail below.
 
@@ -89,7 +89,7 @@ func GetProductResourceApiObject(d TerraformResourceData, config *Config) (map[s
 
 ```
 
-For IAM resources, the resource converter functions should include iam policy, iam member and iam binding. The convert functions are similar to the above example. In addition, the converter needs to cover the merge functions and fetch full resource functions. This might look like
+For IAM resources, the resource converter should include IAM policy, IAM member and IAM binding. The convert functions are similar to the above example. In addition, the converter needs to add the merge functions and fetch full resource functions. This might look like
 
 
 ```golang
@@ -218,7 +218,7 @@ Terraform Validator tests require setting up a few files in [`testdata/templates
 
 It's easiest to set up a [test project](../tutorial.md) to create the initial versions of these files. The idea is to use the terraform-validator binary to invoke a convert operation, and replace the strings specific to your test project in the generated files. The followings are typical steps that you can take:
 
-1. Compile terraform-validator binary.
+1. Run `make build` to compile the terraform-validator binary.
 2. Create `example_product_resource.tf`, where the content is the resource that you would like to test, and place it in a new folder.
 3. Within the new folder, run these commands to get resource files in json format.
 ```bash
@@ -240,14 +240,20 @@ Once you have initial versions completed, you need to make the following replace
 1. Test folder id => `{{.FolderID}}`
 1. Test billing account => `{{.Project.BillingAccountName}}`
 
-Add your new test cases to [test/cli_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/cli_test.go#L52) and [test/read_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/read_test.go#L24). Add the name of your files (i.e. `example_product_resource` to the lists of test cases in each file.
+Add your template test files, eg. `example_product_resource.tf`, `example_product_resource.tfplan.tfplan.json`, `example_product_resource.json` to folder [`magic-modules/mmv1/third_party/validator/tests/data`](https://github.com/GoogleCloudPlatform/magic-modules/tree/master/mmv1/third_party/validator/tests/data).
+
+Run the following from the root of the `magic-modules` repository again, it should auto-generate an entry with the name of your files (i.e. `example_product_resource`) to the lists of test cases in [test/cli_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/cli_test.go#L52) and [test/read_test.go](https://github.com/GoogleCloudPlatform/terraform-validator/blob/c1295c541897e1357eb3e4d93a88d7083ff41c90/test/read_test.go#L24), along with your test files copied to terraform-validator repository.
+
+```
+make validator OUTPUT_PATH="/path/to/your/terraform-validator"
+```
 
 Now [run your tests](./index.md#testing) and make sure they pass locally before proceeding. (But you can also go ahead and open PRs if you're running into issues you can't figure out how to resolve.)
 
 ### 3. Make PRs
 
-Now that you have your code working locally, open PRs for [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules) and terraform-validator.
+Now that you have your code working locally, open PRs for [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules).
 
 For the Magic Modules PR, the most important check is `terraform-validator-test` - the other checks only matter if you're also making changes to the terraform provider.
 
-If any of the checks on your terraform validator PR are failing, make sure you can run the unit and integration tests successfully locally.
+If the `terraform-validator-test` is failing, make sure you can run the unit and integration tests successfully locally.
