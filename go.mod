@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20220207165913-7630114cff3a
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20220208174318-86df8cec73a5
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/gomega v1.17.0 // indirect
@@ -27,9 +27,8 @@ require (
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	google.golang.org/api v0.63.0
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa
+	google.golang.org/api v0.65.0
+	google.golang.org/genproto v0.0.0-20220111164026-67b88f271998
 	google.golang.org/grpc v1.43.0
 )
 
