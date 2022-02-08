@@ -252,7 +252,7 @@ Now [run your tests](./index.md#testing) and make sure they pass locally before 
 
 ### 3. Make PRs
 
-Now that you have your code working locally, open PRs for [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules).
+Now that you have your code working locally, open a PR for [Magic Modules](https://github.com/GoogleCloudPlatform/magic-modules).
 
 For the Magic Modules PR, the most important check is `terraform-validator-test` - the other checks only matter if you're also making changes to the terraform provider.
 
