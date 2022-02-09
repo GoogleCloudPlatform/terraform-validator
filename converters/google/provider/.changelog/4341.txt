@@ -1,3 +1,0 @@
-```release-note:bug
-dataproc: jobs no longer wait for job completion during create
-```

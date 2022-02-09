@@ -1,3 +1,0 @@
-```release-note:enhancement
-Added retries for common network errors we've encountered.
-```

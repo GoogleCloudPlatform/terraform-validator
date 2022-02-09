@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added `provisioned_iops` to `google_compute_disk`
-```

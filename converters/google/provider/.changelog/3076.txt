@@ -1,3 +1,0 @@
-```release-note:REPLACEME
-Configure autoscaling profile in GKE clusters (https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-autoscaler#autoscaling_profiles)
-```

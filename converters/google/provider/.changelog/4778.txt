@@ -1,3 +1,0 @@
-```release-note:bug
-compute: added mutex in `google_compute_metadata_item` to reduce retries + quota errors
-```

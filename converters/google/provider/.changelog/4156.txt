@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: added `email_preferences ` field to `google_bigquery_data_transfer_config` resource
-```

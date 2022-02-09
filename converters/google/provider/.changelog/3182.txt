@@ -1,3 +1,0 @@
-```release-note:enhancement
-`google_project_service` will no longer attempt to enable a service that is already enabled.
-```

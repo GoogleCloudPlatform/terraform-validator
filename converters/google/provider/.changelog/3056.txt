@@ -1,3 +1,0 @@
-```release-note:none
-No release note needed as this is a follow up to https://github.com/GoogleCloudPlatform/magic-modules/pull/3045
-```

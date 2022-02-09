@@ -1,3 +1,0 @@
-```release-note:new-datasource
-`google_secret_manager_secret`
-```

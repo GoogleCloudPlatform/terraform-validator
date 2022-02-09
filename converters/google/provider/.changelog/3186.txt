@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_sql_source_representation_instance`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-`privateca`: Added `certificate_template` to `google_privateca_certificate`.
-```

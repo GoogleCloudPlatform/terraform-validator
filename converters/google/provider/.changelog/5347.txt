@@ -1,3 +1,0 @@
-```release-note:enhancement
-pubsub: added `message_retention_duration` field to `google_pubsub_topic`
-```

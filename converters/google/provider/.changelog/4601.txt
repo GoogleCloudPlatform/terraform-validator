@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed datatype for `mtu` in `google_compute_interconnect_attachment`
-```

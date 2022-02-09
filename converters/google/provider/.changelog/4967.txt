@@ -1,3 +1,0 @@
-```release-note:enhancement
-dlp: added `crypto_replace_ffx_fpe_config` and `crypto_replace_ffx_fpe_config` as primitive transformation types to `google_data_loss_prevention_deidentify_template`
-```

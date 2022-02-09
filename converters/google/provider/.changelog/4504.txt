@@ -1,3 +1,0 @@
-```release-note:bug
-`cloud_identity`: fixed a bug where `google_cloud_identity_group` would periodically fail with a 403
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added `release_channel_default_version` field to `data.google_container_engine_versions` (GA) 
-```

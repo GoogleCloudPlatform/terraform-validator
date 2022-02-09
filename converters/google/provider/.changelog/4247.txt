@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: promoted `google_compute_managed_ssl_certificate` to GA
-```

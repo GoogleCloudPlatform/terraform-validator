@@ -1,3 +1,0 @@
-```release-note:bug
-container: fixed bug where `enable_shielded_nodes` could not be false on resource `google_container_cluster`
-```

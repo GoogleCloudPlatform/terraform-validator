@@ -1,3 +1,0 @@
-```release-note:enhancement
-vpcaccess: added `subnet`, `machine_type` beta fields to `google_vpc_access_connector`
-```

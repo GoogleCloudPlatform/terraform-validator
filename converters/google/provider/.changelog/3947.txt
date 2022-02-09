@@ -1,3 +1,0 @@
-```release-note:enhancement
-spanner: Added schema update/update ddl support for `google_spanner_database`
-```

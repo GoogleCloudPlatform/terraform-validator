@@ -1,3 +1,0 @@
-```release-note:enhancement
-dataflow: added `job_id` field to `google_dataflow_job`
-```

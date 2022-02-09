@@ -1,3 +1,0 @@
-```release-note:bug
-spanner: fixed the schema for `data.google_spanner_instance` so that non-configurable fields are considered outputs
-```

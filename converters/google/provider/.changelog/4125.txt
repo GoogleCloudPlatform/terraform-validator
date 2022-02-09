@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: relax `load_balancing_scheme` validation of `google_compute_region_backend_service` to support external network load-balancers
-```

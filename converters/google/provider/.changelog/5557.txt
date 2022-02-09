@@ -1,3 +1,0 @@
-```release-note:enhancement
-redis: added `maintenance_policy` and `maintenance_schedule` to `google_redis_instance`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-filestore: added `connect_mode` to `networks` field in `google_filestore_instance` (beta)
-```

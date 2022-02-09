@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: Added `shareSettings` in `google_compute_reservation`
-```

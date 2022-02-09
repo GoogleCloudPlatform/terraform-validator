@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: added support for BigQuery custom schemas for external data using CSV / NDJSON 
-```

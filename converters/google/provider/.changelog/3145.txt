@@ -1,3 +1,0 @@
-```release-note:bug
-compute: Updated `google_project` to check for valid permissions on the parent billing account before creating and tainting the resource.
-```

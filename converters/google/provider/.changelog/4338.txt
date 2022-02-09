@@ -1,3 +1,0 @@
-```release-note:enhancement
-provider: added plan time validations for fields that expect base64 values.
-```

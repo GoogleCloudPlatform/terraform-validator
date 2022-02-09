@@ -1,3 +1,0 @@
-```release-note:bug
-functions: fixed a error message on `google_cloudfunctions_function`
-```

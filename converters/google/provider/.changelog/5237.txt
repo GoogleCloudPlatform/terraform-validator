@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudbuild: added field `service_account` to `google_cloudbuild_trigger`
-```

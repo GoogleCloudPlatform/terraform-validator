@@ -1,3 +1,0 @@
-```release-note:enhancement
-redis: Add validation for name attribute in `redis_instance` 
-```

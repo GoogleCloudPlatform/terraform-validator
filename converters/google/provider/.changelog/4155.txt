@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigquery: Added BigTable source format in BigQuery table
-```

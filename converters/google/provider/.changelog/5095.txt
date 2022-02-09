@@ -1,3 +1,0 @@
-```release-note:bug
-sql: fixed a permadiff bug for `type` when BUILT_IN on `google_sql_user` 
-```

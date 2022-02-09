@@ -1,3 +1,0 @@
-```release-note:enhancement
-resource-manager: added additional fields to `google_projects` datasource
-```

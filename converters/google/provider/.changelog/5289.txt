@@ -1,3 +1,0 @@
-```release-note:note
-container: Added note about why node pools should be defined separately from the cluster
-```

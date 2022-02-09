@@ -1,3 +1,0 @@
-```release-note:none
-Fix typos in composer docs.
-```

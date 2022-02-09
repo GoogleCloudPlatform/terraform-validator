@@ -1,3 +1,0 @@
-```release-note:enhancement
-google_project_service_identity: add `email` output.
-```

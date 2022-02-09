@@ -1,3 +1,0 @@
-```release-note:enhancement
-storage: added `ARCHIVE` as an accepted class for `google_storage_bucket` and `google_storage_bucket_object`
-```

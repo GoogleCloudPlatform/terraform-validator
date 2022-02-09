@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed an issue in `google_compute_instance` where `min_node_cpus` could not be set
-```

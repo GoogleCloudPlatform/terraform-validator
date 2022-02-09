@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed an issue where `google_secret_manager_secret_version` would crash due to insufficient permissions
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-iam: added `disabled` field to `google_service_account` resource
-```

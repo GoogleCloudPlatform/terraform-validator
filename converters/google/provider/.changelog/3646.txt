@@ -1,3 +1,0 @@
-```release-note:enhancement
-app_engine: added the option to specify `database_type` in `google_app_engine_application`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added support for setting `kms_key_name` on `google_compute_machine_image`
-```

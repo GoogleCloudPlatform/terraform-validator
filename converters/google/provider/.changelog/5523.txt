@@ -1,3 +1,0 @@
-```release-note:enhancement
-composer: added support for Private Service Connect by adding field `cloud_composer_connection_subnetwork` in `google_composer_environment` 
-```

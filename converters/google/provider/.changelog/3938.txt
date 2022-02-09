@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed issue where `google_compute_[region_]backend_service.backend.max_utilization` could not be updated
-```

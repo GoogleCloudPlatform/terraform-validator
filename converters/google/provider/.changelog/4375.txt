@@ -1,3 +1,0 @@
-```release-note:enhancement
-dataproc: Added field `temp_bucket` to `google_dataproc_cluster` cluster config.
-```

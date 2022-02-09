@@ -1,3 +1,0 @@
-```release-note:enhancement
-container_cluster: Updated `monitoring_config` to accept `WORKLOAD`
-```

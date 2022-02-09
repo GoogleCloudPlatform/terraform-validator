@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: added additional validation to `google_cloud_router`'s `bgp.asn` field.
-```

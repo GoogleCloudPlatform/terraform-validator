@@ -1,3 +1,0 @@
-```release-note:bug
-google_compute_security_policy: raise limit on number of  srcIpRange values to supported 10
-```

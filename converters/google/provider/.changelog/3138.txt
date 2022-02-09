@@ -1,3 +1,0 @@
-```release-note:enhancement
-dataflow: added computed `type` field to `google_dataflow_job`.
-```

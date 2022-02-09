@@ -1,3 +1,0 @@
-```release-note:bug
-appengine: fixed bug where `deployment.container.image` would update to an old version even if in `ignore_changes`
-```

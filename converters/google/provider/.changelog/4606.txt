@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed issue where you couldn't extend an existing `schema` with additional columns in `google_bigquery_table`
-```

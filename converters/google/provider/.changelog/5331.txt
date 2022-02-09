@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudrun: fixed a permadiff on the field `template.spec.containers.ports.name` of the `google_cloud_run_service` resource
-```

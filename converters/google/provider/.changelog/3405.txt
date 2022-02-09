@@ -1,3 +1,0 @@
-```release-note:enhancement
-* bigquery: added `service_account_name` field to `google_bigquery_data_transfer_config` resource
-```

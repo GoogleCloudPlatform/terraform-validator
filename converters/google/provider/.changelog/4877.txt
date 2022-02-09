@@ -1,3 +1,0 @@
-```release-note:new-resource
-google_cloudbuild_worker_pool
-```

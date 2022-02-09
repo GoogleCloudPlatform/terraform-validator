@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added support for GCPFilestoreCSIDriver addon to `google_container_cluster` resource.
-```

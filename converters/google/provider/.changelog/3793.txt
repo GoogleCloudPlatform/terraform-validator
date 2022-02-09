@@ -1,3 +1,0 @@
-```release-note:enhancement
-bigtable: add support for labels in `google_bigtable_instance`
-```

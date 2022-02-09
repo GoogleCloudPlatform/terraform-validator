@@ -1,3 +1,0 @@
-```release-note:enhancement
-Make check for retrying "connection reset by peer" errors more generic
-```

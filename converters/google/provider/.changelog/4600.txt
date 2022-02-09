@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_gke_hub_membership`
-```

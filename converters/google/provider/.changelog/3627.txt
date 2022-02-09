@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudbuild: added tags, source, queue_ttl, logs_bucket, substitutions, and secrets to `google_cloudbuild_trigger`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-composer: added field `scheduler_count` to `google_composer_environment`
-```

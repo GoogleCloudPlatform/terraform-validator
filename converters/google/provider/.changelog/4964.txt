@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed a crash on `azure_blob_storage_data_source` for `google_storage_transfer_job`
-```

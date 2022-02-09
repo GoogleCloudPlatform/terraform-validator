@@ -1,3 +1,0 @@
-```release-note:enhancement
-sql: added support for setting the `type` field on `google_sql_user` to support IAM authentication
-```

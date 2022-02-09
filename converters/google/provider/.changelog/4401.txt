@@ -1,3 +1,0 @@
-```release-note:bug
-resourcemanager: fixed an inconsistent result when IAM conditions are specified with `google_folder_iam_*`
-```

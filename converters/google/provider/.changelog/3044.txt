@@ -1,3 +1,0 @@
-```release-note:enhancement
-container: added `boot_disk_kms_key` to `node_config` block.
-```

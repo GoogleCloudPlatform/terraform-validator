@@ -1,3 +1,0 @@
-```release-note:enhancement
-sql: added `settings.0.backup_configuration.transaction_log_retention_days` and `settings.0.backup_configuration.transaction_log_retention_days` fields to `google_sql_database_instance`
-```

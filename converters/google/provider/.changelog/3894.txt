@@ -1,3 +1,0 @@
-```release-note:note
-Drop recommendation to use -provider= on import in documentation
-```

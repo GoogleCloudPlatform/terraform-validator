@@ -1,3 +1,0 @@
-```release-note:bug
-bigquery: fixed permadiff on expiration_ms for `google_bigquery_table`
-```

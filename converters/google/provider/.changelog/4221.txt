@@ -1,3 +1,0 @@
-```release-note:enhancement
-storage: added more lifecycle conditions to `google_storage_bucket` resource
-```

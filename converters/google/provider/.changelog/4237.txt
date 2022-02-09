@@ -1,3 +1,0 @@
-```release-note:none
-Added sdk v2 imports, some unstable imports, conditional erb compile tags and changed generateUserAgentString signature
-```

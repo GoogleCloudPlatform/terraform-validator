@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: allowed setting `ip_address` field of `google_compute_router_peer`
-```

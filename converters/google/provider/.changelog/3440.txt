@@ -1,3 +1,0 @@
-```release-note:new-resource
-`google_compute_per_instance_config` (Beta)
-```

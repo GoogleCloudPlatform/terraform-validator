@@ -1,3 +1,0 @@
-```release-note:bug
-storage: fixed handling of object paths that contain slashes for `google_storage_object_access_control`
-```

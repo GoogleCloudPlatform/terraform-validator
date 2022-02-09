@@ -1,3 +1,0 @@
-```release-note:enhancement
-Promoted `google_container_cluster.workload_identity_config` to GA.
-```

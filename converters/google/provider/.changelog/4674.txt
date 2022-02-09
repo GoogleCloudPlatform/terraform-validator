@@ -1,3 +1,0 @@
-```release-note:bug
-container: fixed a bug that allowed specifying `node_config` on `google_container_cluster` when autopilot is used
-```

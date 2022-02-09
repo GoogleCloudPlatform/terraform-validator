@@ -1,3 +1,0 @@
-```release-note:bug
-platform: fixed a bug in wrongly writing to state when creation failed on `google_organization_policy`
-```

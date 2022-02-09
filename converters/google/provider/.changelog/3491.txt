@@ -1,3 +1,0 @@
-```release-note:enhancement
-monitoring: Added `request_based` SLI support to `google_monitoring_slo` 
-```

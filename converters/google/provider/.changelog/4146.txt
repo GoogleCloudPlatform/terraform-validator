@@ -1,3 +1,0 @@
-```release-note:enhancement
-dlp: added `custom_info_types` to `google_dlp_inspect_template`
-```

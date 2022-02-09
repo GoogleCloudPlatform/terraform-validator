@@ -1,3 +1,0 @@
-```release-note:bug
-Endpoints: fixed a timezone discrepancy in `config_id` on `google_endpoints_service` 
-```

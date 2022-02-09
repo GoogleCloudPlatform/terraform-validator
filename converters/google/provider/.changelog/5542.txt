@@ -1,3 +1,0 @@
-```release-note:enhancement
-storage: added configurable read timeout to `google_storage_bucket`
-```

@@ -1,3 +1,0 @@
-```release-note:enhancement
-compute: marked scheduling.0.node_affinities as updatable in `google_compute_instance` 
-```

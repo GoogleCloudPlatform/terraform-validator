@@ -1,3 +1,0 @@
-```release-note:bug
-Fixed crash due to nil context when loading credentials
-```

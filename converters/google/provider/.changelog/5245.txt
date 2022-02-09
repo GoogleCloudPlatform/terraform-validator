@@ -1,3 +1,0 @@
-```release-note:breaking-change
-pubsub: Removed `path` from `google_pubsub_subscription`
-```

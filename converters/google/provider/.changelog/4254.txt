@@ -1,3 +1,0 @@
-```release-note:new-datasource
-`google_storage_bucket_object_content`
-```

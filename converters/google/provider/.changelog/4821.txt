@@ -1,3 +1,0 @@
-```release-note:enhancement
-secretmanager: added `ttl`, `expire_time`, `topics` and `rotation` fields to `google_secret_manager_secret`
-```

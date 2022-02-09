@@ -1,3 +1,0 @@
-```release-note:bug
-container: fixed an issue where release channel UNSPECIFIED could not be set
-```

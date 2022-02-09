@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloud_tasks: added stackdriver_logging_config` field to `cloud_tasks_queue` resource
-```

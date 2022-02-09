@@ -1,3 +1,0 @@
-```release-note:enhancement
-project: added new restore_policy `REVERT_AND_IGNORE_FAILURE` to `google_project_default_service_accounts`
-```

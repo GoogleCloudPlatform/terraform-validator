@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudrun: added ability to autogenerate revision name
-```

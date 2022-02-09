@@ -1,3 +1,0 @@
-```release-note:bug
-composer: fixed a check that did not allow for preview versions in `google_composer_environment`
-```

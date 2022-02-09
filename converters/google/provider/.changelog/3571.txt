@@ -1,3 +1,0 @@
-```release-note:bug
-provider: Removed credentials from output error when provider cannot parse given credentials
-```

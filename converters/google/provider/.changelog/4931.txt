@@ -1,3 +1,0 @@
-```release-note:enhancement
-cloudbuild: Added `pubsub_config` and `webhook_config` parameter to `google_cloudbuild_trigger`.
-```

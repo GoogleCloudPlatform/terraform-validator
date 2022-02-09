@@ -1,3 +1,0 @@
-```release-note:enhancement
-pubsub: Add polling to ensure correct resource state for negative-cached PubSub resources 
-```

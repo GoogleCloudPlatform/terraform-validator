@@ -1,3 +1,0 @@
-```release-note:enhancement
-provider: added retries for the `resourceNotReady` error returned when attempting to add resources to a recently-modified subnetwork
-```

@@ -1,3 +1,0 @@
-```release-note:none
-healthcare: Added the required option to `version` for FHIR stores to discourage users from accidentally using older versions.
-```

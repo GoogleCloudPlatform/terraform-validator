@@ -1,3 +1,0 @@
-```release-note:bug
-compute: fixed a panic on empty `target_size` in `google_compute_region_instance_group_manager`
-```

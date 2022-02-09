@@ -1,3 +1,0 @@
-```release-note:bug
-compute: allowed `source_disk` to accept full image path on `google_compute_snapshot`
-```

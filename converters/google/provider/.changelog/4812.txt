@@ -1,6 +1,0 @@
-```release-note:new-resource
-google_gkehub_feature
-```
-```release-note:new-resource
-google_gkehub_feature_membership
-```

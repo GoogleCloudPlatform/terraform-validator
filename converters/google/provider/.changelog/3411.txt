@@ -1,3 +1,0 @@
-```release-note:enhancement
-* bigtable: added ability to add/remove column families in `google_bigtable_table`
-```

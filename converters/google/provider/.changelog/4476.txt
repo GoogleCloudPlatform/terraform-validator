@@ -1,3 +1,0 @@
-```release-note:new-resource
-google_eventarc_trigger
-```
