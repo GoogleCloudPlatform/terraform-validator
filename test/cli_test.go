@@ -229,7 +229,7 @@ type compareConvertOutputFunc func(t *testing.T, expected []google.Asset, actual
 func compareUnmergedConvertOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, actual, offline)
-	change := getDiff(actualAssets, expectedAssets)
+	change := getDiff(t, actualAssets, expectedAssets)
 	assert.Equal(t, len(change), 0, "There should not no difference")
 
 }
@@ -272,7 +272,7 @@ func compareMergedIamMemberOutput(t *testing.T, expected []google.Asset, actual 
 
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, normalizedActual, offline)
-	change := getDiff(actualAssets, expectedAssets)
+	change := getDiff(t, actualAssets, expectedAssets)
 	assert.Equal(t, len(change), 0, "There should not no difference")
 }
 
@@ -303,6 +303,6 @@ func compareMergedIamBindingOutput(t *testing.T, expected []google.Asset, actual
 
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, normalizedActual, offline)
-	change := getDiff(actualAssets, expectedAssets)
+	change := getDiff(t, actualAssets, expectedAssets)
 	assert.Equal(t, len(change), 0, "There should not no difference")
 }

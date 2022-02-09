@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -143,8 +142,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 			expectedAssets := normalizeAssets(t, want, true)
 			actualAssets := normalizeAssets(t, got, true)
 
-			change := getDiff(actualAssets, expectedAssets)
-			fmt.Println(change)
+			change := getDiff(t, actualAssets, expectedAssets)
 			assert.Equal(t, len(change), 0, "There should not no difference")
 		})
 	}

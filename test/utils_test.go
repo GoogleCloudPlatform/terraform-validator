@@ -13,15 +13,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/r3labs/diff/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func defaultCompareConverterOutput(t *testing.T, expected []google.Asset, actual []google.Asset, offline bool) {
 	expectedAssets := normalizeAssets(t, expected, offline)
 	actualAssets := normalizeAssets(t, actual, offline)
-	change := getDiff(actualAssets, expectedAssets)
+	change := getDiff(t, actualAssets, expectedAssets)
 	assert.Equal(t, len(change), 0, "There should not no difference")
 }
 
@@ -235,7 +235,7 @@ func getTestPrefix() string {
 `, data.Provider["version"], credentials)
 }
 
-func getDiff(actualAssets, expectedAssets []google.Asset) (diff.Changelog) {
+func getDiff(t *testing.T, actualAssets, expectedAssets []google.Asset) diff.Changelog {
 	d, err := diff.NewDiffer(diff.SliceOrdering(false))
 	if err != nil {
 		panic(err)
@@ -245,8 +245,8 @@ func getDiff(actualAssets, expectedAssets []google.Asset) (diff.Changelog) {
 		return changes
 	}
 	for _, i := range changes {
-		fmt.Println("Folllowing change has occoured-")
-		fmt.Printf("Element has been %sd having value %v\n", i.Type, i.To)
+		t.Log("[Error] The folllowing change has occoured")
+		t.Logf("        Element %v has been %sd from `%v` to  `%v`\n", i.Path, i.Type, i.From, i.To)
 	}
 	return changes
 }
