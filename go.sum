@@ -706,8 +706,8 @@ github.com/hashicorp/terraform-plugin-log v0.2.0/go.mod h1:E1kJmapEHzqu1x6M++gjv
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.0/go.mod h1:JBItawj+j8Ssla5Ib6BC/W9VQkOucBfnX7VRtyx1vw8=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1 h1:B9AocC+dxrCqcf4vVhztIkSkt3gpRjUkEka8AmZWGlQ=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1/go.mod h1:FjM9DXWfP0w/AeOtJoSKHBZ01LqmaO6uP4bXhv3fekw=
-github.com/hashicorp/terraform-provider-google v1.20.1-0.20220209002219-a811d436d7b0 h1:1R/xjEwLCaQx8bP+4u4n3gV0f7NPayuUqwQGc1Ogp8I=
-github.com/hashicorp/terraform-provider-google v1.20.1-0.20220209002219-a811d436d7b0/go.mod h1:GS15ggbms0kmg5zKK1qCcnUKpLUEL2OL91hvuxFjKrA=
+github.com/hashicorp/terraform-provider-google v1.20.1-0.20220210170443-600b4046f7da h1:yjOC2q43koFVq+ITSjQkDgsNWpZ11+3ZNL/nkgIuS/s=
+github.com/hashicorp/terraform-provider-google v1.20.1-0.20220210170443-600b4046f7da/go.mod h1:GS15ggbms0kmg5zKK1qCcnUKpLUEL2OL91hvuxFjKrA=
 github.com/hashicorp/terraform-registry-address v0.0.0-20210412075316-9b2996cce896 h1:1FGtlkJw87UsTMg5s8jrekrHmUPUJaMcu6ELiVhQrNw=
 github.com/hashicorp/terraform-registry-address v0.0.0-20210412075316-9b2996cce896/go.mod h1:bzBPnUIkI0RxauU8Dqo+2KrZZ28Cf48s8V6IHt3p4co=
 github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 h1:HKLsbzeOsfXmKNpr3GiT18XAblV0BjCbzL8KQAMZGa0=
@@ -1062,8 +1062,6 @@ github.com/quasilyte/go-ruleguard/dsl v0.3.2/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQP
 github.com/quasilyte/go-ruleguard/rules v0.0.0-20201231183845-9e62ed36efe1/go.mod h1:7JTjp89EGyU1d6XfBiXihJNG37wB2VRkd125Q1u7Plc=
 github.com/quasilyte/go-ruleguard/rules v0.0.0-20210203162857-b223e0831f88/go.mod h1:4cgAphtvu7Ftv7vOT2ZOYhC6CvBxZixcasr8qIOTA50=
 github.com/quasilyte/regex/syntax v0.0.0-20200407221936-30656e2c4a95/go.mod h1:rlzQ04UMyJXu/aOvhd8qT+hvDrFpiwqp8MRXDY9szc0=
-github.com/r3labs/diff/v2 v2.14.6 h1:jd/9mrYWG3rQLhdqGEAChzbV8HOk9iL2b+LPre8yqzU=
-github.com/r3labs/diff/v2 v2.14.6/go.mod h1:I8noH9Fc2fjSaMxqF3G2lhDdC0b+JXCfyx85tWFM9kc=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 h1:MkV+77GLUNo5oJ0jf870itWm3D0Sjh7+Za9gazKc5LQ=
 github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=

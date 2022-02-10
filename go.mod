@@ -12,13 +12,12 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20220209002219-a811d436d7b0
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20220210170443-600b4046f7da
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/gomega v1.17.0 // indirect
 	github.com/open-policy-agent/opa v0.36.1 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/r3labs/diff/v2 v2.14.6
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
