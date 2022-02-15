@@ -90,7 +90,7 @@ func newComputeSubnetworkIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/{{subnetwork}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/subnetworks/{{subnetwork}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newComputeSubnetworkIamAsset(
 
 func FetchComputeSubnetworkIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{subnetwork}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("subnetwork"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchComputeSubnetworkIamPolicy(d TerraformResourceData, config *Config) (A
 		ComputeSubnetworkIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/{{subnetwork}}",
+		"//compute.googleapis.com/projects/{{project}}/regions/{{region}}/subnetworks/{{subnetwork}}",
 		ComputeSubnetworkIAMAssetType,
 	)
 }

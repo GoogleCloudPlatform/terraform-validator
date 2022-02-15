@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
-	"github.com/GoogleCloudPlatform/terraform-validator/cnvconfig"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -33,10 +33,9 @@ const testProject = "test-project"
 func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	ctx := context.Background()
 	ancestry := "default-ancestry"
-	ua := ""
 	project := testProject
 	offline := true
-	cfg, err := cnvconfig.GetConfig(ctx, project, offline)
+	cfg, err := resources.GetConfig(ctx, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing configuration")
 	}
@@ -44,7 +43,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	entries := map[string]string{
 		project: ancestry,
 	}
-	ancestryManager, err := ancestrymanager.New(cfg, entries, ua, offline, errorLogger)
+	ancestryManager, err := ancestrymanager.New(cfg.NewResourceManagerClient(cfg.UserAgent()), entries, errorLogger)
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing resource ancestryManager")
 	}

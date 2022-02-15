@@ -90,7 +90,7 @@ func newDataCatalogTagTemplateIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//datacatalog.googleapis.com/{{tagtemplate}}")
+	name, err := assetName(d, config, "//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/tagTemplates/{{tag_template}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newDataCatalogTagTemplateIamAsset(
 
 func FetchDataCatalogTagTemplateIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{tagtemplate}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("tag_template"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchDataCatalogTagTemplateIamPolicy(d TerraformResourceData, config *Confi
 		DataCatalogTagTemplateIamUpdaterProducer,
 		d,
 		config,
-		"//datacatalog.googleapis.com/{{tagtemplate}}",
+		"//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/tagTemplates/{{tag_template}}",
 		DataCatalogTagTemplateIAMAssetType,
 	)
 }

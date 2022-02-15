@@ -945,6 +945,13 @@ func expandCloudRunServiceSpecTemplateSpecVolumesSecret(v interface{}, d Terrafo
 		transformed["secretName"] = transformedSecretName
 	}
 
+	transformedDefaultMode, err := expandCloudRunServiceSpecTemplateSpecVolumesSecretDefaultMode(original["default_mode"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDefaultMode); val.IsValid() && !isEmptyValue(val) {
+		transformed["defaultMode"] = transformedDefaultMode
+	}
+
 	transformedItems, err := expandCloudRunServiceSpecTemplateSpecVolumesSecretItems(original["items"], d, config)
 	if err != nil {
 		return nil, err
@@ -956,6 +963,10 @@ func expandCloudRunServiceSpecTemplateSpecVolumesSecret(v interface{}, d Terrafo
 }
 
 func expandCloudRunServiceSpecTemplateSpecVolumesSecretSecretName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunServiceSpecTemplateSpecVolumesSecretDefaultMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -983,6 +994,13 @@ func expandCloudRunServiceSpecTemplateSpecVolumesSecretItems(v interface{}, d Te
 			transformed["path"] = transformedPath
 		}
 
+		transformedMode, err := expandCloudRunServiceSpecTemplateSpecVolumesSecretItemsMode(original["mode"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedMode); val.IsValid() && !isEmptyValue(val) {
+			transformed["mode"] = transformedMode
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -993,6 +1011,10 @@ func expandCloudRunServiceSpecTemplateSpecVolumesSecretItemsKey(v interface{}, d
 }
 
 func expandCloudRunServiceSpecTemplateSpecVolumesSecretItemsPath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunServiceSpecTemplateSpecVolumesSecretItemsMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

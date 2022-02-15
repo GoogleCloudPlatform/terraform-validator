@@ -90,7 +90,7 @@ func newNotebooksInstanceIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//notebooks.googleapis.com/{{instance}}")
+	name, err := assetName(d, config, "//notebooks.googleapis.com/projects/{{project}}/locations/{{location}}/instances/{{instance_name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newNotebooksInstanceIamAsset(
 
 func FetchNotebooksInstanceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{instance}}"); !ok {
+	if _, ok := d.GetOk("location"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("instance_name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchNotebooksInstanceIamPolicy(d TerraformResourceData, config *Config) (A
 		NotebooksInstanceIamUpdaterProducer,
 		d,
 		config,
-		"//notebooks.googleapis.com/{{instance}}",
+		"//notebooks.googleapis.com/projects/{{project}}/locations/{{location}}/instances/{{instance_name}}",
 		NotebooksInstanceIAMAssetType,
 	)
 }

@@ -90,7 +90,7 @@ func newPubsubTopicIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//pubsub.googleapis.com/{{topic}}")
+	name, err := assetName(d, config, "//pubsub.googleapis.com/projects/{{project}}/topics/{{topic}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,7 @@ func newPubsubTopicIamAsset(
 
 func FetchPubsubTopicIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{topic}}"); !ok {
+	if _, ok := d.GetOk("topic"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +114,7 @@ func FetchPubsubTopicIamPolicy(d TerraformResourceData, config *Config) (Asset, 
 		PubsubTopicIamUpdaterProducer,
 		d,
 		config,
-		"//pubsub.googleapis.com/{{topic}}",
+		"//pubsub.googleapis.com/projects/{{project}}/topics/{{topic}}",
 		PubsubTopicIAMAssetType,
 	)
 }

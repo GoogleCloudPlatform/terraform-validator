@@ -90,7 +90,7 @@ func newServiceManagementServiceIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//servicemanagement.googleapis.com/{{service}}")
+	name, err := assetName(d, config, "//servicemanagement.googleapis.com/services/{{service_name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,7 @@ func newServiceManagementServiceIamAsset(
 
 func FetchServiceManagementServiceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{service}}"); !ok {
+	if _, ok := d.GetOk("service_name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +114,7 @@ func FetchServiceManagementServiceIamPolicy(d TerraformResourceData, config *Con
 		ServiceManagementServiceIamUpdaterProducer,
 		d,
 		config,
-		"//servicemanagement.googleapis.com/{{service}}",
+		"//servicemanagement.googleapis.com/services/{{service_name}}",
 		ServiceManagementServiceIAMAssetType,
 	)
 }

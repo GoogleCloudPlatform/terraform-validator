@@ -90,7 +90,7 @@ func newComputeInstanceIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/{{instance}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/instances/{{instance}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newComputeInstanceIamAsset(
 
 func FetchComputeInstanceIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{instance}}"); !ok {
+	if _, ok := d.GetOk("zone"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("instance_name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchComputeInstanceIamPolicy(d TerraformResourceData, config *Config) (Ass
 		ComputeInstanceIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/{{instance}}",
+		"//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/instances/{{instance}}",
 		ComputeInstanceIAMAssetType,
 	)
 }

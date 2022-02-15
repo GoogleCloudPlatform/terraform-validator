@@ -1,3 +1,5 @@
+_A gcloud integration for Terraform Validator is in [Private Preview](https://cloud.google.com/products#product-launch-stages). If you are working with a dedicated Technical Account Manager / Customer Engineer and are interested in participating in this Private Preview, please [get in touch via this form](https://docs.google.com/forms/d/e/1FAIpQLSfkN3AZtAtajy_-0100Kmwz-sA822DkAI__hPtYjvr2z-T8tw/viewform?usp=sf_link)._
+
 # Install Terraform Validator
 
 Terraform Validator is compatible with Terraform 0.12+.

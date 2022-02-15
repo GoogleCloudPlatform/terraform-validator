@@ -16,11 +16,14 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
+	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -29,7 +32,7 @@ import (
 
 const validateDesc = `
 Validate that a terraform plan conforms to a Constraint Framework
-policy library written to expect Google CAI (Cloud Asset Inventory) data. 
+policy library written to expect Google CAI (Cloud Asset Inventory) data.
 Unsupported terraform resources (see: "terraform-validate list-supported-resources")
 are skipped.
 
@@ -100,17 +103,27 @@ func (o *validateOptions) validateArgs(args []string) error {
 
 func (o *validateOptions) run(plan string) error {
 	ctx := context.Background()
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.rootOptions.errorLogger)
+
+	content, err := ioutil.ReadFile(plan)
 	if err != nil {
-		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
-			return errors.New("unable to parse provider project, please use --project flag")
+		return fmt.Errorf("unable to read file %s", plan)
+	}
+	// if input file is not Asset, try convert
+	var assets []google.Asset
+	if err := json.Unmarshal(content, &assets); err != nil {
+		var err error
+		assets, err = o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.rootOptions.errorLogger)
+		if err != nil {
+			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
+				return errors.New("unable to parse provider project, please use --project flag")
+			}
+			return errors.Wrap(err, "converting tfplan to CAI assets")
 		}
-		return errors.Wrap(err, "converting tfplan to CAI assets")
 	}
 
 	violations, err := o.validateAssets(ctx, assets, o.policyPath)
 	if err != nil {
-		return errors.Wrap(err, "validating: FCV")
+		return errors.Wrap(err, "validating")
 	}
 
 	if o.rootOptions.useStructuredLogging {

@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 
 	"github.com/spf13/cobra"
 )
@@ -39,6 +39,6 @@ func newVersionCmd() *cobra.Command {
 }
 
 func (o *versionOptions) run() error {
-	fmt.Printf("Build version: %s\n", tfgcv.BuildVersion())
+	fmt.Printf("Build version: %s\n", version.BuildVersion())
 	return nil
 }

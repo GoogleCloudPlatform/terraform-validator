@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
@@ -57,6 +56,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_dns_managed_zone"},
 		{name: "example_dns_policy"},
 		{name: "example_filestore_instance"},
+		{name: "example_google_cloudfunctions_function"},
 		{name: "example_kms_crypto_key"},
 		{name: "example_kms_crypto_key_iam_binding"},
 		{name: "example_kms_crypto_key_iam_member"},
@@ -65,12 +65,12 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_kms_key_ring_iam_binding"},
 		{name: "example_kms_key_ring_iam_member"},
 		{name: "example_kms_key_ring_iam_policy"},
-		{name: "example_monitoring_alert_policy"},
 		{name: "example_monitoring_notification_channel"},
 		{name: "example_organization_iam_binding"},
 		{name: "example_organization_iam_custom_role"},
 		{name: "example_organization_iam_member"},
 		{name: "example_organization_iam_policy"},
+		{name: "example_organization_policy"},
 		{name: "example_project_iam"},
 		{name: "example_project_iam_custom_role"},
 		{name: "example_project_iam_policy"},
@@ -87,7 +87,6 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_pubsub_subscription_iam_member"},
 		{name: "example_pubsub_subscription_iam_policy"},
 		{name: "example_pubsub_topic"},
-		{name: "example_redis_instance"},
 		{name: "example_spanner_database"},
 		{name: "example_spanner_database_iam_binding"},
 		{name: "example_spanner_database_iam_member"},
@@ -99,6 +98,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_member_random_suffix"},
 		{name: "example_storage_bucket_iam_policy"},
+		{name: "example_vpc_access_connector"},
 		{name: "full_compute_firewall"},
 		{name: "full_compute_instance"},
 		{name: "full_container_cluster"},

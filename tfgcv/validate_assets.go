@@ -16,30 +16,34 @@ package tfgcv
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"path/filepath"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/gcv"
+	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/pkg/errors"
 )
-
-// To be set by Go build tools.
-var buildVersion string
-
-// BuildVersion returns the build version of Terraform Validator.
-func BuildVersion() string {
-	return buildVersion
-}
 
 type ValidateAssetsFunc func(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error)
 
 // ValidateAssets instantiates GCV and audits CAI assets using "policies"
 // and "lib" folder under policyRootPath.
 func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath string) ([]*validator.Violation, error) {
+	policiesPath := filepath.Join(policyRootPath, "policies")
+	libPath := filepath.Join(policyRootPath, "lib")
+	_, err := os.Stat(policiesPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read files in %s", policiesPath)
+	}
+	_, err = os.Stat(libPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read files in %s", libPath)
+	}
 	return ValidateAssetsWithLibrary(ctx, assets,
-		[]string{filepath.Join(policyRootPath, "policies")},
-		filepath.Join(policyRootPath, "lib"))
+		[]string{policiesPath},
+		libPath)
 }
 
 // ValidateAssetsWithLibrary instantiates GCV and audits CAI assets.

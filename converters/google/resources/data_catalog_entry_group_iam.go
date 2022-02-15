@@ -90,7 +90,7 @@ func newDataCatalogEntryGroupIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//datacatalog.googleapis.com/{{entrygroup}}")
+	name, err := assetName(d, config, "//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/entryGroups/{{entry_group}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newDataCatalogEntryGroupIamAsset(
 
 func FetchDataCatalogEntryGroupIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{entrygroup}}"); !ok {
+	if _, ok := d.GetOk("region"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("entry_group"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchDataCatalogEntryGroupIamPolicy(d TerraformResourceData, config *Config
 		DataCatalogEntryGroupIamUpdaterProducer,
 		d,
 		config,
-		"//datacatalog.googleapis.com/{{entrygroup}}",
+		"//datacatalog.googleapis.com/projects/{{project}}/locations/{{region}}/entryGroups/{{entry_group}}",
 		DataCatalogEntryGroupIAMAssetType,
 	)
 }

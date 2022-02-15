@@ -56,6 +56,7 @@ func TestErrorLoggerSchema(t *testing.T) {
 	expectedOutput := map[string]interface{}{
 		"version":   "v1.0.0",
 		"timestamp": "tested separately",
+		"level":     "info",
 		"error_details": map[string]interface{}{
 			"error":   "This is a message",
 			"context": "",

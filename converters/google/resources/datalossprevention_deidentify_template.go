@@ -506,11 +506,11 @@ func expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransform
 		original := raw.(map[string]interface{})
 		transformed := make(map[string]interface{})
 
-		transformedCharacterToSkip, err := expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransformationsTransformationsPrimitiveTransformationCharacterMaskConfigCharactersToIgnoreCharacterToSkip(original["character_to_skip"], d, config)
+		transformedCharactersToSkip, err := expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransformationsTransformationsPrimitiveTransformationCharacterMaskConfigCharactersToIgnoreCharactersToSkip(original["characters_to_skip"], d, config)
 		if err != nil {
 			return nil, err
-		} else if val := reflect.ValueOf(transformedCharacterToSkip); val.IsValid() && !isEmptyValue(val) {
-			transformed["characterToSkip"] = transformedCharacterToSkip
+		} else if val := reflect.ValueOf(transformedCharactersToSkip); val.IsValid() && !isEmptyValue(val) {
+			transformed["charactersToSkip"] = transformedCharactersToSkip
 		}
 
 		transformedCommonCharactersToIgnore, err := expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransformationsTransformationsPrimitiveTransformationCharacterMaskConfigCharactersToIgnoreCommonCharactersToIgnore(original["common_characters_to_ignore"], d, config)
@@ -525,7 +525,7 @@ func expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransform
 	return req, nil
 }
 
-func expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransformationsTransformationsPrimitiveTransformationCharacterMaskConfigCharactersToIgnoreCharacterToSkip(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandDataLossPreventionDeidentifyTemplateDeidentifyConfigInfoTypeTransformationsTransformationsPrimitiveTransformationCharacterMaskConfigCharactersToIgnoreCharactersToSkip(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

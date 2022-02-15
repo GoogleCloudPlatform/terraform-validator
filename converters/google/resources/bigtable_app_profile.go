@@ -92,7 +92,15 @@ func expandBigtableAppProfileMultiClusterRoutingUseAny(v interface{}, d Terrafor
 		return nil, nil
 	}
 
-	return bigtableadmin.MultiClusterRoutingUseAny{}, nil
+	obj := bigtableadmin.MultiClusterRoutingUseAny{}
+
+	clusterIds := d.Get("multi_cluster_routing_cluster_ids").([]interface{})
+
+	for _, id := range clusterIds {
+		obj.ClusterIds = append(obj.ClusterIds, id.(string))
+	}
+
+	return obj, nil
 }
 
 func expandBigtableAppProfileSingleClusterRouting(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

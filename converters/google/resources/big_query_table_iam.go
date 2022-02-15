@@ -90,7 +90,7 @@ func newBigQueryTableIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//bigquery.googleapis.com/{{table}}")
+	name, err := assetName(d, config, "//bigquery.googleapis.com/projects/{{project}}/datasets/{{dataset_id}}/tables/{{table_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newBigQueryTableIamAsset(
 
 func FetchBigQueryTableIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{table}}"); !ok {
+	if _, ok := d.GetOk("dataset_id"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("table_id"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchBigQueryTableIamPolicy(d TerraformResourceData, config *Config) (Asset
 		BigQueryTableIamUpdaterProducer,
 		d,
 		config,
-		"//bigquery.googleapis.com/{{table}}",
+		"//bigquery.googleapis.com/projects/{{project}}/datasets/{{dataset_id}}/tables/{{table_id}}",
 		BigQueryTableIAMAssetType,
 	)
 }

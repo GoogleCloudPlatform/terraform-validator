@@ -138,6 +138,18 @@ func GetRedisInstanceApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
+	maintenancePolicyProp, err := expandRedisInstanceMaintenancePolicy(d.Get("maintenance_policy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("maintenance_policy"); !isEmptyValue(reflect.ValueOf(maintenancePolicyProp)) && (ok || !reflect.DeepEqual(v, maintenancePolicyProp)) {
+		obj["maintenancePolicy"] = maintenancePolicyProp
+	}
+	maintenanceScheduleProp, err := expandRedisInstanceMaintenanceSchedule(d.Get("maintenance_schedule"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("maintenance_schedule"); !isEmptyValue(reflect.ValueOf(maintenanceScheduleProp)) && (ok || !reflect.DeepEqual(v, maintenanceScheduleProp)) {
+		obj["maintenanceSchedule"] = maintenanceScheduleProp
+	}
 	memorySizeGbProp, err := expandRedisInstanceMemorySizeGb(d.Get("memory_size_gb"), d, config)
 	if err != nil {
 		return nil, err
@@ -236,6 +248,208 @@ func expandRedisInstanceLocationId(v interface{}, d TerraformResourceData, confi
 
 func expandRedisInstanceName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return replaceVars(d, config, "projects/{{project}}/locations/{{region}}/instances/{{name}}")
+}
+
+func expandRedisInstanceMaintenancePolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedCreateTime, err := expandRedisInstanceMaintenancePolicyCreateTime(original["create_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCreateTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["createTime"] = transformedCreateTime
+	}
+
+	transformedUpdateTime, err := expandRedisInstanceMaintenancePolicyUpdateTime(original["update_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUpdateTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["updateTime"] = transformedUpdateTime
+	}
+
+	transformedDescription, err := expandRedisInstanceMaintenancePolicyDescription(original["description"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDescription); val.IsValid() && !isEmptyValue(val) {
+		transformed["description"] = transformedDescription
+	}
+
+	transformedWeeklyMaintenanceWindow, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindow(original["weekly_maintenance_window"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedWeeklyMaintenanceWindow); val.IsValid() && !isEmptyValue(val) {
+		transformed["weeklyMaintenanceWindow"] = transformedWeeklyMaintenanceWindow
+	}
+
+	return transformed, nil
+}
+
+func expandRedisInstanceMaintenancePolicyCreateTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyUpdateTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindow(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedDay, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowDay(original["day"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedDay); val.IsValid() && !isEmptyValue(val) {
+			transformed["day"] = transformedDay
+		}
+
+		transformedDuration, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowDuration(original["duration"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedDuration); val.IsValid() && !isEmptyValue(val) {
+			transformed["duration"] = transformedDuration
+		}
+
+		transformedStartTime, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTime(original["start_time"], d, config)
+		if err != nil {
+			return nil, err
+		} else {
+			transformed["startTime"] = transformedStartTime
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowDay(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowDuration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil, nil
+	}
+
+	if l[0] == nil {
+		transformed := make(map[string]interface{})
+		return transformed, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedHours, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeHours(original["hours"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedHours); val.IsValid() && !isEmptyValue(val) {
+		transformed["hours"] = transformedHours
+	}
+
+	transformedMinutes, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeMinutes(original["minutes"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMinutes); val.IsValid() && !isEmptyValue(val) {
+		transformed["minutes"] = transformedMinutes
+	}
+
+	transformedSeconds, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeSeconds(original["seconds"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedSeconds); val.IsValid() && !isEmptyValue(val) {
+		transformed["seconds"] = transformedSeconds
+	}
+
+	transformedNanos, err := expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeNanos(original["nanos"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedNanos); val.IsValid() && !isEmptyValue(val) {
+		transformed["nanos"] = transformedNanos
+	}
+
+	return transformed, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeHours(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeMinutes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeSeconds(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeNanos(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenanceSchedule(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedStartTime, err := expandRedisInstanceMaintenanceScheduleStartTime(original["start_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedStartTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["startTime"] = transformedStartTime
+	}
+
+	transformedEndTime, err := expandRedisInstanceMaintenanceScheduleEndTime(original["end_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedEndTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["endTime"] = transformedEndTime
+	}
+
+	transformedScheduleDeadlineTime, err := expandRedisInstanceMaintenanceScheduleScheduleDeadlineTime(original["schedule_deadline_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedScheduleDeadlineTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["scheduleDeadlineTime"] = transformedScheduleDeadlineTime
+	}
+
+	return transformed, nil
+}
+
+func expandRedisInstanceMaintenanceScheduleStartTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenanceScheduleEndTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceMaintenanceScheduleScheduleDeadlineTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandRedisInstanceMemorySizeGb(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

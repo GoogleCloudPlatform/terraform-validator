@@ -90,7 +90,7 @@ func newComputeDiskIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/{{disk}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/disks/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -106,7 +106,10 @@ func newComputeDiskIamAsset(
 
 func FetchComputeDiskIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("{{disk}}"); !ok {
+	if _, ok := d.GetOk("zone"); !ok {
+		return Asset{}, ErrEmptyIdentityField
+	}
+	if _, ok := d.GetOk("name"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
 
@@ -114,7 +117,7 @@ func FetchComputeDiskIamPolicy(d TerraformResourceData, config *Config) (Asset, 
 		ComputeDiskIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/{{disk}}",
+		"//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/disks/{{name}}",
 		ComputeDiskIAMAssetType,
 	)
 }

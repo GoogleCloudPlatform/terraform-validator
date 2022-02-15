@@ -19,12 +19,6 @@ type AncestryManager interface {
 	GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error)
 }
 
-// ClientRetriever is the interface that returns an instance of various clients.
-type ClientRetriever interface {
-	// NewResourceManagerClient returns an initialized *cloudresourcemanager.Service
-	NewResourceManagerClient(userAgent string) *cloudresourcemanager.Service
-}
-
 // resourceAncestryManager provides common methods for retrieving ancestry from resources
 type resourceAncestryManager struct {
 	errorLogger *zap.Logger
@@ -103,12 +97,11 @@ func (m *resourceAncestryManager) getAncestryFromResource(tfData resources.Terra
 
 type manager struct {
 	resourceAncestryManager
-	// Talk to GCP resource manager. This field would be nil in offline mode.
+	// GCP resource manager service. If this field is nil, online lookups will be disabled.
 	resourceManager *cloudresourcemanager.Service
 	// Cache to prevent multiple network calls for looking up the same project's ancestry
 	// map[project]ancestryPath
 	ancestryCache map[string]string
-	offline       bool
 }
 
 // GetAncestry uses the resource manager API to get ancestry paths for
@@ -119,8 +112,8 @@ func (m *manager) GetAncestry(project string) (string, error) {
 		return path, nil
 	}
 
-	if m.offline {
-		return "", fmt.Errorf("cannot fetch ancestry in offline mode")
+	if m.resourceManager == nil {
+		return "", fmt.Errorf("resourceManager required to fetch project ancestry from the API")
 	}
 	ancestry, err := m.resourceManager.Projects.GetAncestry(project, &cloudresourcemanager.GetAncestryRequest{}).Do()
 	if err != nil {
@@ -157,18 +150,15 @@ func (m *manager) GetAncestryWithResource(project string, tfData resources.Terra
 }
 
 // New returns AncestryManager that can be used to fetch ancestry information for a project.
-// entries takes project as key and ancestry as value
-func New(retriever ClientRetriever, entries map[string]string, userAgent string, offline bool, errorLogger *zap.Logger) (AncestryManager, error) {
+// entries takes project as key and ancestry as value to pre-warm the offline cache. If no
+// resourceManager is provided, API requests for ancestry will be disabled.
+func New(resourceManager *cloudresourcemanager.Service, entries map[string]string, errorLogger *zap.Logger) (AncestryManager, error) {
 	am := &manager{
 		ancestryCache: map[string]string{},
 		resourceAncestryManager: resourceAncestryManager{
 			errorLogger: errorLogger,
 		},
-		offline: offline,
-	}
-	if !offline {
-		rm := retriever.NewResourceManagerClient(userAgent)
-		am.resourceManager = rm
+		resourceManager: resourceManager,
 	}
 	for project, ancestry := range entries {
 		if ancestry != "" {

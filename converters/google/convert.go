@@ -23,7 +23,7 @@ import (
 
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	provider "github.com/hashicorp/terraform-provider-google/v4/google"
+	provider "github.com/hashicorp/terraform-provider-google/google"
 	"github.com/pkg/errors"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
