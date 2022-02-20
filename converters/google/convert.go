@@ -360,24 +360,6 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
-	project, err := getProject(tfData, cfg, cai, c.errorLogger)
-	if err != nil {
-		return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
-	}
-	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
-	if err != nil {
-		return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
-	}
-	var resource *AssetResource
-	if cai.Resource != nil {
-		resource = &AssetResource{
-			Version:              cai.Resource.Version,
-			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
-			DiscoveryName:        cai.Resource.DiscoveryName,
-			Parent:               fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/%v", project),
-			Data:                 cai.Resource.Data,
-		}
-	}
 
 	var policy *IAMPolicy
 	if cai.IAMPolicy != nil {
@@ -425,6 +407,36 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 					Nanos:   int64(fixedTime.UnixNano()),
 				},
 			})
+		}
+	}
+
+	parent := ""
+	ancestry := ""
+
+	switch cai.Type {
+	case "cloudresourcemanager.googleapis.com/Organization":
+	case "cloudresourcemanager.googleapis.com/Folder":
+	default:
+		project, err := getProject(tfData, cfg, cai, c.errorLogger)
+		if err != nil {
+			return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
+		}
+		ancestry, err = c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
+		if err != nil {
+			return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
+		}
+
+		parent = fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/%v", project)
+	}
+
+	var resource *AssetResource
+	if cai.Resource != nil {
+		resource = &AssetResource{
+			Version:              cai.Resource.Version,
+			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
+			DiscoveryName:        cai.Resource.DiscoveryName,
+			Parent:               parent,
+			Data:                 cai.Resource.Data,
 		}
 	}
 
