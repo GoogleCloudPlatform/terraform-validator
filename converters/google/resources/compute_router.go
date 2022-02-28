@@ -165,6 +165,13 @@ func expandComputeRouterBgp(v interface{}, d TerraformResourceData, config *Conf
 		transformed["advertisedIpRanges"] = transformedAdvertisedIpRanges
 	}
 
+	transformedKeepaliveInterval, err := expandComputeRouterBgpKeepaliveInterval(original["keepalive_interval"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedKeepaliveInterval); val.IsValid() && !isEmptyValue(val) {
+		transformed["keepaliveInterval"] = transformedKeepaliveInterval
+	}
+
 	return transformed, nil
 }
 
@@ -214,6 +221,10 @@ func expandComputeRouterBgpAdvertisedIpRangesRange(v interface{}, d TerraformRes
 }
 
 func expandComputeRouterBgpAdvertisedIpRangesDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRouterBgpKeepaliveInterval(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
