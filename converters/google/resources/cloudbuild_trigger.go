@@ -134,6 +134,24 @@ func GetCloudBuildTriggerApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("filename"); !isEmptyValue(reflect.ValueOf(filenameProp)) && (ok || !reflect.DeepEqual(v, filenameProp)) {
 		obj["filename"] = filenameProp
 	}
+	filterProp, err := expandCloudBuildTriggerFilter(d.Get("filter"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("filter"); !isEmptyValue(reflect.ValueOf(filterProp)) && (ok || !reflect.DeepEqual(v, filterProp)) {
+		obj["filter"] = filterProp
+	}
+	gitFileSourceProp, err := expandCloudBuildTriggerGitFileSource(d.Get("git_file_source"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("git_file_source"); !isEmptyValue(reflect.ValueOf(gitFileSourceProp)) && (ok || !reflect.DeepEqual(v, gitFileSourceProp)) {
+		obj["gitFileSource"] = gitFileSourceProp
+	}
+	sourceToBuildProp, err := expandCloudBuildTriggerSourceToBuild(d.Get("source_to_build"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("source_to_build"); !isEmptyValue(reflect.ValueOf(sourceToBuildProp)) && (ok || !reflect.DeepEqual(v, sourceToBuildProp)) {
+		obj["sourceToBuild"] = sourceToBuildProp
+	}
 	ignoredFilesProp, err := expandCloudBuildTriggerIgnoredFiles(d.Get("ignored_files"), d, config)
 	if err != nil {
 		return nil, err
@@ -212,6 +230,111 @@ func expandCloudBuildTriggerServiceAccount(v interface{}, d TerraformResourceDat
 }
 
 func expandCloudBuildTriggerFilename(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerFilter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerGitFileSource(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPath, err := expandCloudBuildTriggerGitFileSourcePath(original["path"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPath); val.IsValid() && !isEmptyValue(val) {
+		transformed["path"] = transformedPath
+	}
+
+	transformedUri, err := expandCloudBuildTriggerGitFileSourceUri(original["uri"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUri); val.IsValid() && !isEmptyValue(val) {
+		transformed["uri"] = transformedUri
+	}
+
+	transformedRepoType, err := expandCloudBuildTriggerGitFileSourceRepoType(original["repo_type"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRepoType); val.IsValid() && !isEmptyValue(val) {
+		transformed["repoType"] = transformedRepoType
+	}
+
+	transformedRevision, err := expandCloudBuildTriggerGitFileSourceRevision(original["revision"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRevision); val.IsValid() && !isEmptyValue(val) {
+		transformed["revision"] = transformedRevision
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerGitFileSourcePath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerGitFileSourceUri(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerGitFileSourceRepoType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerGitFileSourceRevision(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerSourceToBuild(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedUri, err := expandCloudBuildTriggerSourceToBuildUri(original["uri"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUri); val.IsValid() && !isEmptyValue(val) {
+		transformed["uri"] = transformedUri
+	}
+
+	transformedRef, err := expandCloudBuildTriggerSourceToBuildRef(original["ref"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRef); val.IsValid() && !isEmptyValue(val) {
+		transformed["ref"] = transformedRef
+	}
+
+	transformedRepoType, err := expandCloudBuildTriggerSourceToBuildRepoType(original["repo_type"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRepoType); val.IsValid() && !isEmptyValue(val) {
+		transformed["repoType"] = transformedRepoType
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerSourceToBuildUri(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerSourceToBuildRef(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerSourceToBuildRepoType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
