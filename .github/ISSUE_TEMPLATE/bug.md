@@ -37,8 +37,6 @@ terraform-validator: vX.X.X
 #
 # Ideally this would be a minimal plan that reproduces your issue.
 # For large plan files, please use a service like Dropbox and share a link to the ZIP file.
-# For security, you can also encrypt the files using our GPG public key:
-#    https://www.hashicorp.com/security
 ```
 
 ### Debug Output
