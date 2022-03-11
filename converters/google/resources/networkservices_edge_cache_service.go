@@ -66,6 +66,12 @@ func GetNetworkServicesEdgeCacheServiceApiObject(d TerraformResourceData, config
 	} else if v, ok := d.GetOkExists("disable_quic"); !isEmptyValue(reflect.ValueOf(disableQuicProp)) && (ok || !reflect.DeepEqual(v, disableQuicProp)) {
 		obj["disableQuic"] = disableQuicProp
 	}
+	disableHttp2Prop, err := expandNetworkServicesEdgeCacheServiceDisableHttp2(d.Get("disable_http2"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("disable_http2"); !isEmptyValue(reflect.ValueOf(disableHttp2Prop)) && (ok || !reflect.DeepEqual(v, disableHttp2Prop)) {
+		obj["disableHttp2"] = disableHttp2Prop
+	}
 	requireTlsProp, err := expandNetworkServicesEdgeCacheServiceRequireTls(d.Get("require_tls"), d, config)
 	if err != nil {
 		return nil, err
@@ -122,6 +128,10 @@ func expandNetworkServicesEdgeCacheServiceLabels(v interface{}, d TerraformResou
 }
 
 func expandNetworkServicesEdgeCacheServiceDisableQuic(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheServiceDisableHttp2(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
