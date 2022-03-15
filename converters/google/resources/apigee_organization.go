@@ -78,6 +78,12 @@ func GetApigeeOrganizationApiObject(d TerraformResourceData, config *Config) (ma
 	} else if v, ok := d.GetOkExists("runtime_type"); !isEmptyValue(reflect.ValueOf(runtimeTypeProp)) && (ok || !reflect.DeepEqual(v, runtimeTypeProp)) {
 		obj["runtimeType"] = runtimeTypeProp
 	}
+	billingTypeProp, err := expandApigeeOrganizationBillingType(d.Get("billing_type"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("billing_type"); !isEmptyValue(reflect.ValueOf(billingTypeProp)) && (ok || !reflect.DeepEqual(v, billingTypeProp)) {
+		obj["billingType"] = billingTypeProp
+	}
 	runtimeDatabaseEncryptionKeyNameProp, err := expandApigeeOrganizationRuntimeDatabaseEncryptionKeyName(d.Get("runtime_database_encryption_key_name"), d, config)
 	if err != nil {
 		return nil, err
@@ -110,6 +116,10 @@ func expandApigeeOrganizationAuthorizedNetwork(v interface{}, d TerraformResourc
 }
 
 func expandApigeeOrganizationRuntimeType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandApigeeOrganizationBillingType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
