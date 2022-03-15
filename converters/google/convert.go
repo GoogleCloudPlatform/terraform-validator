@@ -21,10 +21,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	provider "github.com/hashicorp/terraform-provider-google/google"
 	"github.com/pkg/errors"
+	"google.golang.org/api/googleapi"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
@@ -366,8 +368,19 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	}
 	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
 	if err != nil {
-		return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
+		gerr, ok := errwrap.GetType(err, &googleapi.Error{}).(*googleapi.Error)
+		if ok && gerr != nil && gerr.Code == 403 && cfg.Project != "" && cfg.Project != project {
+			// Get ancestry throws error for a non exist project. In that case,
+			// use the config project to try again.
+			ancestry, err = c.ancestryManager.GetAncestryWithResource(cfg.Project, tfData, cai)
+			if err != nil {
+				return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", cfg.Project, err)
+			}
+		} else {
+			return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
+		}
 	}
+
 	var resource *AssetResource
 	if cai.Resource != nil {
 		resource = &AssetResource{
