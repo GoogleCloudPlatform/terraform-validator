@@ -175,6 +175,13 @@ func expandNetworkServicesEdgeCacheOriginTimeout(v interface{}, d TerraformResou
 		transformed["responseTimeout"] = transformedResponseTimeout
 	}
 
+	transformedReadTimeout, err := expandNetworkServicesEdgeCacheOriginTimeoutReadTimeout(original["read_timeout"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedReadTimeout); val.IsValid() && !isEmptyValue(val) {
+		transformed["readTimeout"] = transformedReadTimeout
+	}
+
 	return transformed, nil
 }
 
@@ -187,5 +194,9 @@ func expandNetworkServicesEdgeCacheOriginTimeoutMaxAttemptsTimeout(v interface{}
 }
 
 func expandNetworkServicesEdgeCacheOriginTimeoutResponseTimeout(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginTimeoutReadTimeout(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
