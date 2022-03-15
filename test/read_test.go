@@ -58,6 +58,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_filestore_instance"},
 		{name: "example_folder_organization_policy"},
 		{name: "example_google_cloudfunctions_function"},
+		{name: "example_google_sql_database"},
 		{name: "example_kms_crypto_key"},
 		{name: "example_kms_crypto_key_iam_binding"},
 		{name: "example_kms_crypto_key_iam_member"},
