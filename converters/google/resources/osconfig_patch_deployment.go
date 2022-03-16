@@ -1044,7 +1044,7 @@ func expandOSConfigPatchDeploymentRecurringSchedule(v interface{}, d TerraformRe
 	transformedTimeOfDay, err := expandOSConfigPatchDeploymentRecurringScheduleTimeOfDay(original["time_of_day"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedTimeOfDay); val.IsValid() && !isEmptyValue(val) {
+	} else {
 		transformed["timeOfDay"] = transformedTimeOfDay
 	}
 
