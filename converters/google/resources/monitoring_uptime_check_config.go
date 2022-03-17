@@ -14,7 +14,15 @@
 
 package google
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func resourceMonitoringUptimeCheckConfigHttpCheckPathDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	return old == "/"+new
+}
 
 const MonitoringUptimeCheckConfigAssetType string = "monitoring.googleapis.com/UptimeCheckConfig"
 
