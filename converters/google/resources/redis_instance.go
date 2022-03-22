@@ -180,6 +180,18 @@ func GetRedisInstanceApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("transit_encryption_mode"); !isEmptyValue(reflect.ValueOf(transitEncryptionModeProp)) && (ok || !reflect.DeepEqual(v, transitEncryptionModeProp)) {
 		obj["transitEncryptionMode"] = transitEncryptionModeProp
 	}
+	replicaCountProp, err := expandRedisInstanceReplicaCount(d.Get("replica_count"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("replica_count"); !isEmptyValue(reflect.ValueOf(replicaCountProp)) && (ok || !reflect.DeepEqual(v, replicaCountProp)) {
+		obj["replicaCount"] = replicaCountProp
+	}
+	readReplicasModeProp, err := expandRedisInstanceReadReplicasMode(d.Get("read_replicas_mode"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("read_replicas_mode"); !isEmptyValue(reflect.ValueOf(readReplicasModeProp)) && (ok || !reflect.DeepEqual(v, readReplicasModeProp)) {
+		obj["readReplicasMode"] = readReplicasModeProp
+	}
 
 	return resourceRedisInstanceEncoder(d, config, obj)
 }
@@ -469,5 +481,13 @@ func expandRedisInstanceTier(v interface{}, d TerraformResourceData, config *Con
 }
 
 func expandRedisInstanceTransitEncryptionMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceReplicaCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceReadReplicasMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
