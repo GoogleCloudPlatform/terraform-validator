@@ -112,7 +112,10 @@ func (o *validateOptions) run(plan string) error {
 	var assets []google.Asset
 	if err := json.Unmarshal(content, &assets); err != nil {
 		var err error
-		assets, err = o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.rootOptions.errorLogger)
+		ancestryCache := map[string]string{
+			o.project: o.ancestry,
+		}
+		assets, err = o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 				return errors.New("unable to parse provider project, please use --project flag")

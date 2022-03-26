@@ -30,7 +30,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ReadPlannedAssetsFunc func(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error)
+type ReadPlannedAssetsFunc func(ctx context.Context, path, project string, ancestryCache map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error)
 
 // ReadPlannedAssets extracts CAI assets from a terraform plan file.
 // If ancestry path is provided, it assumes the project is in that path rather
@@ -39,8 +39,8 @@ type ReadPlannedAssetsFunc func(ctx context.Context, path, project, ancestry str
 // are also reported in the output, otherwise only resources that are going to
 // be changed are reported.
 // It ignores non-supported resources.
-func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
-	converter, err := newConverter(ctx, path, project, ancestry, offline, convertUnchanged, errorLogger)
+func ReadPlannedAssets(ctx context.Context, path, project string, ancestryCache map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
+	converter, err := newConverter(ctx, path, project, ancestryCache, offline, convertUnchanged, errorLogger)
 	if err != nil {
 		return nil, err
 	}
@@ -63,19 +63,16 @@ func ReadPlannedAssets(ctx context.Context, path, project, ancestry string, offl
 	return converter.Assets(), nil
 }
 
-func newConverter(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) (*google.Converter, error) {
+func newConverter(ctx context.Context, path, project string, ancestryCache map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) (*google.Converter, error) {
 	cfg, err := resources.GetConfig(ctx, project, offline)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
-	}
-	entries := map[string]string{
-		project: ancestry,
 	}
 	var resourceManager *cloudresourcemanager.Service
 	if !offline {
 		resourceManager = cfg.NewResourceManagerClient(cfg.UserAgent())
 	}
-	ancestryManager, err := ancestrymanager.New(resourceManager, entries, errorLogger)
+	ancestryManager, err := ancestrymanager.New(resourceManager, ancestryCache, errorLogger)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google ancestry manager")
 	}
