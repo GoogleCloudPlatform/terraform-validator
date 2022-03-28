@@ -104,6 +104,12 @@ func GetSpannerDatabaseApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("encryption_config"); !isEmptyValue(reflect.ValueOf(encryptionConfigProp)) && (ok || !reflect.DeepEqual(v, encryptionConfigProp)) {
 		obj["encryptionConfig"] = encryptionConfigProp
 	}
+	databaseDialectProp, err := expandSpannerDatabaseDatabaseDialect(d.Get("database_dialect"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("database_dialect"); !isEmptyValue(reflect.ValueOf(databaseDialectProp)) && (ok || !reflect.DeepEqual(v, databaseDialectProp)) {
+		obj["databaseDialect"] = databaseDialectProp
+	}
 	instanceProp, err := expandSpannerDatabaseInstance(d.Get("instance"), d, config)
 	if err != nil {
 		return nil, err
@@ -116,6 +122,9 @@ func GetSpannerDatabaseApiObject(d TerraformResourceData, config *Config) (map[s
 
 func resourceSpannerDatabaseEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
 	obj["createStatement"] = fmt.Sprintf("CREATE DATABASE `%s`", obj["name"])
+	if dialect, ok := obj["databaseDialect"]; ok && dialect == "POSTGRESQL" {
+		obj["createStatement"] = fmt.Sprintf("CREATE DATABASE %s", obj["name"])
+	}
 	delete(obj, "name")
 	delete(obj, "instance")
 	return obj, nil
@@ -149,6 +158,10 @@ func expandSpannerDatabaseEncryptionConfig(v interface{}, d TerraformResourceDat
 }
 
 func expandSpannerDatabaseEncryptionConfigKmsKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSpannerDatabaseDatabaseDialect(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
