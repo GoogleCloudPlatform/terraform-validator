@@ -188,6 +188,12 @@ func GetCloudBuildTriggerApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("webhook_config"); !isEmptyValue(reflect.ValueOf(webhookConfigProp)) && (ok || !reflect.DeepEqual(v, webhookConfigProp)) {
 		obj["webhookConfig"] = webhookConfigProp
 	}
+	approvalConfigProp, err := expandCloudBuildTriggerApprovalConfig(d.Get("approval_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("approval_config"); !isEmptyValue(reflect.ValueOf(approvalConfigProp)) && (ok || !reflect.DeepEqual(v, approvalConfigProp)) {
+		obj["approvalConfig"] = approvalConfigProp
+	}
 	buildProp, err := expandCloudBuildTriggerBuild(d.Get("build"), d, config)
 	if err != nil {
 		return nil, err
@@ -660,6 +666,29 @@ func expandCloudBuildTriggerWebhookConfigSecret(v interface{}, d TerraformResour
 }
 
 func expandCloudBuildTriggerWebhookConfigState(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerApprovalConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedApprovalRequired, err := expandCloudBuildTriggerApprovalConfigApprovalRequired(original["approval_required"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedApprovalRequired); val.IsValid() && !isEmptyValue(val) {
+		transformed["approvalRequired"] = transformedApprovalRequired
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerApprovalConfigApprovalRequired(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
