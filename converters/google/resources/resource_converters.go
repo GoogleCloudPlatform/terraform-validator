@@ -150,6 +150,9 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_endpoints_service_iam_policy":               {resourceConverterServiceManagementServiceIamPolicy()},
 		"google_endpoints_service_iam_binding":              {resourceConverterServiceManagementServiceIamBinding()},
 		"google_endpoints_service_iam_member":               {resourceConverterServiceManagementServiceIamMember()},
+		"google_endpoints_service_consumers_iam_policy":     {resourceConverterServiceManagementServiceConsumersIamPolicy()},
+		"google_endpoints_service_consumers_iam_binding":    {resourceConverterServiceManagementServiceConsumersIamBinding()},
+		"google_endpoints_service_consumers_iam_member":     {resourceConverterServiceManagementServiceConsumersIamMember()},
 		"google_project": {
 			resourceConverterProject(),
 			resourceConverterProjectBillingInfo(),
