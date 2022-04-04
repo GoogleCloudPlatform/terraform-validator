@@ -36,7 +36,7 @@ func testAssets() []google.Asset {
 	}
 }
 
-func MockReadPlannedAssets(ctx context.Context, path, project string, ancestryCache map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
+func MockReadPlannedAssets(ctx context.Context, path, project, ancestry string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
 	return testAssets(), nil
 }
 

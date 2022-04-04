@@ -93,10 +93,7 @@ func (o *convertOptions) validateArgs(args []string) error {
 
 func (o *convertOptions) run(plan string) error {
 	ctx := context.Background()
-	ancestryCache := map[string]string{
-		o.project: o.ancestry,
-	}
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, o.ancestry, o.offline, false, o.rootOptions.errorLogger)
 	if err != nil {
 		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 			return errors.New("unable to parse provider project, please use --project flag")
