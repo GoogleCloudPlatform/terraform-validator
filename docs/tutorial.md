@@ -1,3 +1,5 @@
+_A gcloud integration for Terraform Validator is in [Private Preview](https://cloud.google.com/products#product-launch-stages). If you are working with a dedicated Technical Account Manager / Customer Engineer and are interested in participating in this Private Preview, please [get in touch via this form](https://docs.google.com/forms/d/e/1FAIpQLSfkN3AZtAtajy_-0100Kmwz-sA822DkAI__hPtYjvr2z-T8tw/viewform?usp=sf_link)._
+
 # Tutorial
 
 In this tutorial, you will apply a constraint that enforces IAM policy member
@@ -74,9 +76,10 @@ Since your email address is in the IAM policy binding, the plan should result in
 a violation. Let's try this out:
 
 ```
-gsutil cp gs://terraform-validator/releases/v0.4.0/terraform-validator-linux-amd64 .
-chmod 755 terraform-validator-linux-amd64
-./terraform-validator-linux-amd64 validate tfplan.json --policy-path=policy-library
+gsutil cp gs://terraform-validator/releases/v0.12.5/terraform-validator_linux_amd64-0.12.5.tar.gz .
+tar -xzvf terraform-validator_linux_amd64-0.12.5.tar.gz
+chmod 755 terraform-validator
+./terraform-validator validate tfplan.json --policy-path=policy-library
 ```
 
 The Terraform validator should return a violation. As a test, you can relax the
@@ -104,7 +107,7 @@ Then run Terraform plan and validate the output again:
 ```
 terraform plan -out=test.tfplan
 terraform show -json ./test.tfplan > ./tfplan.json
-./terraform-validator-linux-amd64 validate tfplan.json --policy-path=policy-library
+./terraform-validator validate tfplan.json --policy-path=policy-library
 ```
 
 The command above should result in no violations found.
