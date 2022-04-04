@@ -91,6 +91,12 @@ func GetAccessApprovalFolderSettingsApiObject(d TerraformResourceData, config *C
 	} else if v, ok := d.GetOkExists("enrolled_services"); !isEmptyValue(reflect.ValueOf(enrolledServicesProp)) && (ok || !reflect.DeepEqual(v, enrolledServicesProp)) {
 		obj["enrolledServices"] = enrolledServicesProp
 	}
+	activeKeyVersionProp, err := expandAccessApprovalFolderSettingsActiveKeyVersion(d.Get("active_key_version"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("active_key_version"); !isEmptyValue(reflect.ValueOf(activeKeyVersionProp)) && (ok || !reflect.DeepEqual(v, activeKeyVersionProp)) {
+		obj["activeKeyVersion"] = activeKeyVersionProp
+	}
 
 	return obj, nil
 }
@@ -135,5 +141,9 @@ func expandAccessApprovalFolderSettingsEnrolledServicesCloudProduct(v interface{
 }
 
 func expandAccessApprovalFolderSettingsEnrolledServicesEnrollmentLevel(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAccessApprovalFolderSettingsActiveKeyVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }

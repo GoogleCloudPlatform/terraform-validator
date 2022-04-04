@@ -64,6 +64,12 @@ func GetAccessApprovalProjectSettingsApiObject(d TerraformResourceData, config *
 	} else if v, ok := d.GetOkExists("enrolled_services"); !isEmptyValue(reflect.ValueOf(enrolledServicesProp)) && (ok || !reflect.DeepEqual(v, enrolledServicesProp)) {
 		obj["enrolledServices"] = enrolledServicesProp
 	}
+	activeKeyVersionProp, err := expandAccessApprovalProjectSettingsActiveKeyVersion(d.Get("active_key_version"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("active_key_version"); !isEmptyValue(reflect.ValueOf(activeKeyVersionProp)) && (ok || !reflect.DeepEqual(v, activeKeyVersionProp)) {
+		obj["activeKeyVersion"] = activeKeyVersionProp
+	}
 	projectProp, err := expandAccessApprovalProjectSettingsProject(d.Get("project"), d, config)
 	if err != nil {
 		return nil, err
@@ -114,6 +120,10 @@ func expandAccessApprovalProjectSettingsEnrolledServicesCloudProduct(v interface
 }
 
 func expandAccessApprovalProjectSettingsEnrolledServicesEnrollmentLevel(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAccessApprovalProjectSettingsActiveKeyVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
