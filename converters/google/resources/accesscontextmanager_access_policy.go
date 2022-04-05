@@ -60,6 +60,12 @@ func GetAccessContextManagerAccessPolicyApiObject(d TerraformResourceData, confi
 	} else if v, ok := d.GetOkExists("title"); !isEmptyValue(reflect.ValueOf(titleProp)) && (ok || !reflect.DeepEqual(v, titleProp)) {
 		obj["title"] = titleProp
 	}
+	scopesProp, err := expandAccessContextManagerAccessPolicyScopes(d.Get("scopes"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("scopes"); !isEmptyValue(reflect.ValueOf(scopesProp)) && (ok || !reflect.DeepEqual(v, scopesProp)) {
+		obj["scopes"] = scopesProp
+	}
 
 	return obj, nil
 }
@@ -69,5 +75,9 @@ func expandAccessContextManagerAccessPolicyParent(v interface{}, d TerraformReso
 }
 
 func expandAccessContextManagerAccessPolicyTitle(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAccessContextManagerAccessPolicyScopes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
