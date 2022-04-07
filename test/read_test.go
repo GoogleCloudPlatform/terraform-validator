@@ -21,7 +21,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		name string
 	}{
 		// read-only, the following tests are not in cli_test or
-		// have unique paramters that seperate them
+		// have unique paramters that separate them
 		{name: "example_project_create"},
 		{name: "example_project_update"},
 		{name: "example_project_iam_binding"},
