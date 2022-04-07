@@ -234,6 +234,13 @@ func expandOSConfigPatchDeploymentPatchConfig(v interface{}, d TerraformResource
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
+	transformedMigInstancesAllowed, err := expandOSConfigPatchDeploymentPatchConfigMigInstancesAllowed(original["mig_instances_allowed"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMigInstancesAllowed); val.IsValid() && !isEmptyValue(val) {
+		transformed["migInstancesAllowed"] = transformedMigInstancesAllowed
+	}
+
 	transformedRebootConfig, err := expandOSConfigPatchDeploymentPatchConfigRebootConfig(original["reboot_config"], d, config)
 	if err != nil {
 		return nil, err
@@ -291,6 +298,10 @@ func expandOSConfigPatchDeploymentPatchConfig(v interface{}, d TerraformResource
 	}
 
 	return transformed, nil
+}
+
+func expandOSConfigPatchDeploymentPatchConfigMigInstancesAllowed(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandOSConfigPatchDeploymentPatchConfigRebootConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
