@@ -16,7 +16,7 @@ package google
 
 import "reflect"
 
-const DialogflowCXAgentAssetType string = "dialogflow.googleapis.com/Agent"
+const DialogflowCXAgentAssetType string = "{{location}}-dialogflow.googleapis.com/Agent"
 
 func resourceConverterDialogflowCXAgent() ResourceConverter {
 	return ResourceConverter{
@@ -26,7 +26,7 @@ func resourceConverterDialogflowCXAgent() ResourceConverter {
 }
 
 func GetDialogflowCXAgentCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//dialogflow.googleapis.com/projects/{{project}}/locations/{{location}}/agents/{{name}}")
+	name, err := assetName(d, config, "//{{location}}-dialogflow.googleapis.com/projects/{{project}}/locations/{{location}}/agents/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -36,7 +36,7 @@ func GetDialogflowCXAgentCaiObject(d TerraformResourceData, config *Config) ([]A
 			Type: DialogflowCXAgentAssetType,
 			Resource: &AssetResource{
 				Version:              "v3",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/dialogflow/v3/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{location}}-dialogflow/v3/rest",
 				DiscoveryName:        "Agent",
 				Data:                 obj,
 			},
