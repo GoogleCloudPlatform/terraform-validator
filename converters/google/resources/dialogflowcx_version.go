@@ -16,7 +16,7 @@ package google
 
 import "reflect"
 
-const DialogflowCXVersionAssetType string = "dialogflow.googleapis.com/Version"
+const DialogflowCXVersionAssetType string = "{{location}}-dialogflow.googleapis.com/Version"
 
 func resourceConverterDialogflowCXVersion() ResourceConverter {
 	return ResourceConverter{
@@ -26,7 +26,7 @@ func resourceConverterDialogflowCXVersion() ResourceConverter {
 }
 
 func GetDialogflowCXVersionCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//dialogflow.googleapis.com/{{parent}}/versions/{{name}}")
+	name, err := assetName(d, config, "//{{location}}-dialogflow.googleapis.com/{{parent}}/versions/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -36,7 +36,7 @@ func GetDialogflowCXVersionCaiObject(d TerraformResourceData, config *Config) ([
 			Type: DialogflowCXVersionAssetType,
 			Resource: &AssetResource{
 				Version:              "v3",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/dialogflow/v3/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{location}}-dialogflow/v3/rest",
 				DiscoveryName:        "Version",
 				Data:                 obj,
 			},

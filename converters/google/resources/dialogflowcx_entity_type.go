@@ -16,7 +16,7 @@ package google
 
 import "reflect"
 
-const DialogflowCXEntityTypeAssetType string = "dialogflow.googleapis.com/EntityType"
+const DialogflowCXEntityTypeAssetType string = "{{location}}-dialogflow.googleapis.com/EntityType"
 
 func resourceConverterDialogflowCXEntityType() ResourceConverter {
 	return ResourceConverter{
@@ -26,7 +26,7 @@ func resourceConverterDialogflowCXEntityType() ResourceConverter {
 }
 
 func GetDialogflowCXEntityTypeCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//dialogflow.googleapis.com/{{parent}}/entityTypes/{{name}}")
+	name, err := assetName(d, config, "//{{location}}-dialogflow.googleapis.com/{{parent}}/entityTypes/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -36,7 +36,7 @@ func GetDialogflowCXEntityTypeCaiObject(d TerraformResourceData, config *Config)
 			Type: DialogflowCXEntityTypeAssetType,
 			Resource: &AssetResource{
 				Version:              "v3",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/dialogflow/v3/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{location}}-dialogflow/v3/rest",
 				DiscoveryName:        "EntityType",
 				Data:                 obj,
 			},
