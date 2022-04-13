@@ -78,6 +78,12 @@ func GetFilestoreInstanceApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("networks"); !isEmptyValue(reflect.ValueOf(networksProp)) && (ok || !reflect.DeepEqual(v, networksProp)) {
 		obj["networks"] = networksProp
 	}
+	kmsKeyNameProp, err := expandFilestoreInstanceKmsKeyName(d.Get("kms_key_name"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("kms_key_name"); !isEmptyValue(reflect.ValueOf(kmsKeyNameProp)) && (ok || !reflect.DeepEqual(v, kmsKeyNameProp)) {
+		obj["kmsKeyName"] = kmsKeyNameProp
+	}
 
 	return obj, nil
 }
@@ -125,6 +131,13 @@ func expandFilestoreInstanceFileShares(v interface{}, d TerraformResourceData, c
 			transformed["capacityGb"] = transformedCapacityGb
 		}
 
+		transformedNfsExportOptions, err := expandFilestoreInstanceFileSharesNfsExportOptions(original["nfs_export_options"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedNfsExportOptions); val.IsValid() && !isEmptyValue(val) {
+			transformed["nfsExportOptions"] = transformedNfsExportOptions
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -135,6 +148,76 @@ func expandFilestoreInstanceFileSharesName(v interface{}, d TerraformResourceDat
 }
 
 func expandFilestoreInstanceFileSharesCapacityGb(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceFileSharesNfsExportOptions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedIpRanges, err := expandFilestoreInstanceFileSharesNfsExportOptionsIpRanges(original["ip_ranges"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedIpRanges); val.IsValid() && !isEmptyValue(val) {
+			transformed["ipRanges"] = transformedIpRanges
+		}
+
+		transformedAccessMode, err := expandFilestoreInstanceFileSharesNfsExportOptionsAccessMode(original["access_mode"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedAccessMode); val.IsValid() && !isEmptyValue(val) {
+			transformed["accessMode"] = transformedAccessMode
+		}
+
+		transformedSquashMode, err := expandFilestoreInstanceFileSharesNfsExportOptionsSquashMode(original["squash_mode"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedSquashMode); val.IsValid() && !isEmptyValue(val) {
+			transformed["squashMode"] = transformedSquashMode
+		}
+
+		transformedAnonUid, err := expandFilestoreInstanceFileSharesNfsExportOptionsAnonUid(original["anon_uid"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedAnonUid); val.IsValid() && !isEmptyValue(val) {
+			transformed["anonUid"] = transformedAnonUid
+		}
+
+		transformedAnonGid, err := expandFilestoreInstanceFileSharesNfsExportOptionsAnonGid(original["anon_gid"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedAnonGid); val.IsValid() && !isEmptyValue(val) {
+			transformed["anonGid"] = transformedAnonGid
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandFilestoreInstanceFileSharesNfsExportOptionsIpRanges(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceFileSharesNfsExportOptionsAccessMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceFileSharesNfsExportOptionsSquashMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceFileSharesNfsExportOptionsAnonUid(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceFileSharesNfsExportOptionsAnonGid(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -176,6 +259,13 @@ func expandFilestoreInstanceNetworks(v interface{}, d TerraformResourceData, con
 			transformed["ipAddresses"] = transformedIpAddresses
 		}
 
+		transformedConnectMode, err := expandFilestoreInstanceNetworksConnectMode(original["connect_mode"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedConnectMode); val.IsValid() && !isEmptyValue(val) {
+			transformed["connectMode"] = transformedConnectMode
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -194,5 +284,13 @@ func expandFilestoreInstanceNetworksReservedIpRange(v interface{}, d TerraformRe
 }
 
 func expandFilestoreInstanceNetworksIpAddresses(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceNetworksConnectMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandFilestoreInstanceKmsKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
