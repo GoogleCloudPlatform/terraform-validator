@@ -175,11 +175,6 @@ func (c *Converter) Schemas() map[string]*schema.Resource {
 	return supported
 }
 
-// Compatibility shim: maintain support for ComposeTF12Resources -> AddResource pipeline
-func (c *Converter) AddResource(rc *tfjson.ResourceChange) error {
-	return c.AddResourceChanges([]*tfjson.ResourceChange{rc})
-}
-
 // AddResourceChange processes the resource changes in two stages:
 // 1. Process deletions (fetching canonical resources from GCP as necessary)
 // 2. Process creates, updates, and no-ops (fetching canonical resources from GCP as necessary)
