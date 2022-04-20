@@ -164,17 +164,6 @@ type Converter struct {
 	errorLogger *zap.Logger
 }
 
-// Schemas exposes the schemas of resources this converter knows about.
-func (c *Converter) Schemas() map[string]*schema.Resource {
-	supported := make(map[string]*schema.Resource)
-	for k := range c.schema.ResourcesMap {
-		if _, ok := c.converters[k]; ok {
-			supported[k] = c.schema.ResourcesMap[k]
-		}
-	}
-	return supported
-}
-
 // AddResourceChange processes the resource changes in two stages:
 // 1. Process deletions (fetching canonical resources from GCP as necessary)
 // 2. Process creates, updates, and no-ops (fetching canonical resources from GCP as necessary)
