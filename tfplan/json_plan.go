@@ -15,7 +15,6 @@ package tfplan
 
 import (
 	tfjson "github.com/hashicorp/terraform-json"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 )
 
@@ -37,28 +36,6 @@ func IsDelete(rc *tfjson.ResourceChange) bool {
 
 func IsNoOp(rc *tfjson.ResourceChange) bool {
 	return rc.Change.Actions.NoOp()
-}
-
-// compatibility shim until ResourceChange is expected by all callers.
-func Kind(rc *tfjson.ResourceChange) string {
-	return rc.Type
-}
-
-// ComposeTF12Resources is a thin wrapper around ReadResourceChanges as a compatibility shim.
-// It needs to return a slice of non-pointers to the same type that Converter.AddResource
-// takes a pointer to.
-func ComposeTF12Resources(data []byte, _ map[string]*schema.Resource) ([]tfjson.ResourceChange, error) {
-	rcps, err := ReadResourceChanges(data)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var rcs []tfjson.ResourceChange
-	for _, rcp := range rcps {
-		rcs = append(rcs, *rcp)
-	}
-	return rcs, nil
 }
 
 // ReadResourceChanges returns the list of resource changes from a json plan
