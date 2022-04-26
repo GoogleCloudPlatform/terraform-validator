@@ -123,7 +123,7 @@ func GetSpannerDatabaseApiObject(d TerraformResourceData, config *Config) (map[s
 func resourceSpannerDatabaseEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
 	obj["createStatement"] = fmt.Sprintf("CREATE DATABASE `%s`", obj["name"])
 	if dialect, ok := obj["databaseDialect"]; ok && dialect == "POSTGRESQL" {
-		obj["createStatement"] = fmt.Sprintf("CREATE DATABASE %s", obj["name"])
+		obj["createStatement"] = fmt.Sprintf("CREATE DATABASE \"%s\"", obj["name"])
 	}
 	delete(obj, "name")
 	delete(obj, "instance")
