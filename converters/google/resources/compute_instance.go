@@ -120,6 +120,7 @@ func expandComputeInstance(project string, d TerraformResourceData, config *Conf
 			AutomaticRestart:  googleapi.Bool(d.Get(prefix + ".automatic_restart").(bool)),
 			Preemptible:       d.Get(prefix + ".preemptible").(bool),
 			OnHostMaintenance: d.Get(prefix + ".on_host_maintenance").(string),
+			ProvisioningModel: d.Get(prefix + ".provisioning_model").(string),
 			ForceSendFields:   []string{"AutomaticRestart", "Preemptible"},
 		}
 	}
