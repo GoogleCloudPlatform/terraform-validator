@@ -20,6 +20,9 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Is the new redis version less than the old one?
@@ -50,6 +53,14 @@ func isRedisVersionDecreasingFunc(old, new interface{}) bool {
 	}
 
 	return newVersion < oldVersion
+}
+
+// returns true if old=new or old='auto'
+func secondaryIpDiffSuppress(_, old, new string, _ *schema.ResourceData) bool {
+	if (strings.ToLower(new) == "auto" && old != "") || old == new {
+		return true
+	}
+	return false
 }
 
 const RedisInstanceAssetType string = "redis.googleapis.com/Instance"
@@ -191,6 +202,12 @@ func GetRedisInstanceApiObject(d TerraformResourceData, config *Config) (map[str
 		return nil, err
 	} else if v, ok := d.GetOkExists("read_replicas_mode"); !isEmptyValue(reflect.ValueOf(readReplicasModeProp)) && (ok || !reflect.DeepEqual(v, readReplicasModeProp)) {
 		obj["readReplicasMode"] = readReplicasModeProp
+	}
+	secondaryIpRangeProp, err := expandRedisInstanceSecondaryIpRange(d.Get("secondary_ip_range"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("secondary_ip_range"); !isEmptyValue(reflect.ValueOf(secondaryIpRangeProp)) && (ok || !reflect.DeepEqual(v, secondaryIpRangeProp)) {
+		obj["secondaryIpRange"] = secondaryIpRangeProp
 	}
 
 	return resourceRedisInstanceEncoder(d, config, obj)
@@ -489,5 +506,9 @@ func expandRedisInstanceReplicaCount(v interface{}, d TerraformResourceData, con
 }
 
 func expandRedisInstanceReadReplicasMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceSecondaryIpRange(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
