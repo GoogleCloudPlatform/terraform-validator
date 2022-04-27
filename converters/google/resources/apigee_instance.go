@@ -90,6 +90,12 @@ func GetApigeeInstanceApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("disk_encryption_key_name"); !isEmptyValue(reflect.ValueOf(diskEncryptionKeyNameProp)) && (ok || !reflect.DeepEqual(v, diskEncryptionKeyNameProp)) {
 		obj["diskEncryptionKeyName"] = diskEncryptionKeyNameProp
 	}
+	consumerAcceptListProp, err := expandApigeeInstanceConsumerAcceptList(d.Get("consumer_accept_list"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("consumer_accept_list"); !isEmptyValue(reflect.ValueOf(consumerAcceptListProp)) && (ok || !reflect.DeepEqual(v, consumerAcceptListProp)) {
+		obj["consumerAcceptList"] = consumerAcceptListProp
+	}
 
 	return obj, nil
 }
@@ -119,5 +125,9 @@ func expandApigeeInstanceDisplayName(v interface{}, d TerraformResourceData, con
 }
 
 func expandApigeeInstanceDiskEncryptionKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandApigeeInstanceConsumerAcceptList(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
