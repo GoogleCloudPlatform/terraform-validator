@@ -31,7 +31,7 @@ updateTime: '2022-02-22T22:00:20.265968Z'
 ```
 The output can help validate `Name`, `Type`, `Ancestry` attribute of a converted CAI asset.
 
-Note that you may need to create an actual resource in GCP if the asset you would like to list does not exist. Moreover, you will need to have relevant permission to proceed, especially to listing assets in folder and organization,
+Note that you may need to create an actual resource in GCP if the asset you would like to list does not exist. Moreover, you will need to have relevant permission to proceed, especially to listing assets in folders and organizations.
 
 ## How to add support for a new resource
 
