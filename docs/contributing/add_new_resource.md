@@ -19,7 +19,7 @@ The first step in determining if a GCP resource is supported is to figure out th
 You can run [`gcloud asset list`](https://cloud.google.com/sdk/gcloud/reference/asset/list) to list existing assets and their details. For each asset, the output shows its ancestors, asset type, name, and the last updated time. For example,
 
 ```
-$ gcloud asset list --project='my-project' --asset-types='compute.googleapis.com/Project'
+$ gcloud asset list --project='my-project'
 ---
 ancestors:
 - projects/999999
@@ -28,6 +28,7 @@ ancestors:
 assetType: compute.googleapis.com/Project
 name: //compute.googleapis.com/projects/my-project
 updateTime: '2022-02-22T22:00:20.265968Z'
+...
 ```
 The output can help validate `Name`, `Type`, `Ancestry` attribute of a converted CAI asset.
 
