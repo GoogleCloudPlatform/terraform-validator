@@ -144,6 +144,12 @@ func GetComputeForwardingRuleApiObject(d TerraformResourceData, config *Config) 
 	} else if v, ok := d.GetOkExists("network_tier"); !isEmptyValue(reflect.ValueOf(networkTierProp)) && (ok || !reflect.DeepEqual(v, networkTierProp)) {
 		obj["networkTier"] = networkTierProp
 	}
+	serviceDirectoryRegistrationsProp, err := expandComputeForwardingRuleServiceDirectoryRegistrations(d.Get("service_directory_registrations"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("service_directory_registrations"); !isEmptyValue(reflect.ValueOf(serviceDirectoryRegistrationsProp)) && (ok || !reflect.DeepEqual(v, serviceDirectoryRegistrationsProp)) {
+		obj["serviceDirectoryRegistrations"] = serviceDirectoryRegistrationsProp
+	}
 	serviceLabelProp, err := expandComputeForwardingRuleServiceLabel(d.Get("service_label"), d, config)
 	if err != nil {
 		return nil, err
@@ -283,6 +289,43 @@ func expandComputeForwardingRuleAllPorts(v interface{}, d TerraformResourceData,
 }
 
 func expandComputeForwardingRuleNetworkTier(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeForwardingRuleServiceDirectoryRegistrations(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedNamespace, err := expandComputeForwardingRuleServiceDirectoryRegistrationsNamespace(original["namespace"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedNamespace); val.IsValid() && !isEmptyValue(val) {
+			transformed["namespace"] = transformedNamespace
+		}
+
+		transformedService, err := expandComputeForwardingRuleServiceDirectoryRegistrationsService(original["service"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedService); val.IsValid() && !isEmptyValue(val) {
+			transformed["service"] = transformedService
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandComputeForwardingRuleServiceDirectoryRegistrationsNamespace(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeForwardingRuleServiceDirectoryRegistrationsService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
