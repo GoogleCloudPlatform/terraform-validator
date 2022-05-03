@@ -14,6 +14,26 @@ If an existing [bundle](https://github.com/GoogleCloudPlatform/policy-library/bl
 
 The first step in determining if a GCP resource is supported is to figure out the name of the corresponding Terraform resource. You can often do this by searching for the GCP resource name in the [Terraform google provider documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs).
 
+### Getting canonical representation of a CAI asset
+
+You can run [`gcloud asset list`](https://cloud.google.com/sdk/gcloud/reference/asset/list) to list existing assets and their details. For each asset, the output shows its ancestors, asset type, name, and the last updated time. For example,
+
+```
+$ gcloud asset list --project='my-project'
+---
+ancestors:
+- projects/999999
+- folders/888888
+- organizations/777777
+assetType: compute.googleapis.com/Project
+name: //compute.googleapis.com/projects/my-project
+updateTime: '2022-02-22T22:00:20.265968Z'
+...
+```
+The output can help validate `Name`, `Type`, `Ancestry` attribute of a converted CAI asset.
+
+Note that you may need to create an actual resource in GCP if the asset you would like to list does not exist. Moreover, you will need to have relevant permission to proceed, especially to listing assets in folders and organizations.
+
 ## How to add support for a new resource
 
 A resource is "supported" by terraform-validator if it has an entry in [`converters/google/resources/resource_converters.go`](https://github.com/GoogleCloudPlatform/terraform-validator/blob/main/converters/google/resources/resource_converters.go). For example, you could search resource_converters.go for [`google_compute_disk`](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_disk) to see if that resource is supported.
