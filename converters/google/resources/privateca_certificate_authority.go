@@ -14,7 +14,38 @@
 
 package google
 
-import "reflect"
+import (
+	"context"
+	"fmt"
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func resourcePrivateCaCACustomDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if diff.HasChange("desired_state") {
+		_, new := diff.GetChange("desired_state")
+
+		if isNewResource(diff) {
+			if diff.Get("type").(string) == "SUBORDINATE" {
+				return fmt.Errorf("`desired_state` can not be specified when creating a SUBORDINATE CA")
+			}
+			if new.(string) != "STAGED" && new.(string) != "ENABLED" {
+				return fmt.Errorf("`desired_state` can only be set to `STAGED` or `ENABLED` when creating a new CA")
+			}
+		} else {
+			if new == "STAGED" && diff.Get("state") != new {
+				return fmt.Errorf("Field `desired_state` can only be set to `STAGED` when creating a new CA")
+			}
+		}
+	}
+	return nil
+}
+
+func isNewResource(diff *schema.ResourceDiff) bool {
+	name := diff.Get("name")
+	return name.(string) == ""
+}
 
 const PrivatecaCertificateAuthorityAssetType string = "privateca.googleapis.com/CertificateAuthority"
 
