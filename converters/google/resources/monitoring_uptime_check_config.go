@@ -86,6 +86,12 @@ func GetMonitoringUptimeCheckConfigApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("selected_regions"); !isEmptyValue(reflect.ValueOf(selectedRegionsProp)) && (ok || !reflect.DeepEqual(v, selectedRegionsProp)) {
 		obj["selectedRegions"] = selectedRegionsProp
 	}
+	checkerTypeProp, err := expandMonitoringUptimeCheckConfigCheckerType(d.Get("checker_type"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("checker_type"); !isEmptyValue(reflect.ValueOf(checkerTypeProp)) && (ok || !reflect.DeepEqual(v, checkerTypeProp)) {
+		obj["checkerType"] = checkerTypeProp
+	}
 	httpCheckProp, err := expandMonitoringUptimeCheckConfigHttpCheck(d.Get("http_check"), d, config)
 	if err != nil {
 		return nil, err
@@ -164,6 +170,10 @@ func expandMonitoringUptimeCheckConfigContentMatchersMatcher(v interface{}, d Te
 }
 
 func expandMonitoringUptimeCheckConfigSelectedRegions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringUptimeCheckConfigCheckerType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
