@@ -69,6 +69,12 @@ func GetComputeRegionNetworkEndpointGroupApiObject(d TerraformResourceData, conf
 	} else if v, ok := d.GetOkExists("network_endpoint_type"); !isEmptyValue(reflect.ValueOf(networkEndpointTypeProp)) && (ok || !reflect.DeepEqual(v, networkEndpointTypeProp)) {
 		obj["networkEndpointType"] = networkEndpointTypeProp
 	}
+	pscTargetServiceProp, err := expandComputeRegionNetworkEndpointGroupPscTargetService(d.Get("psc_target_service"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("psc_target_service"); !isEmptyValue(reflect.ValueOf(pscTargetServiceProp)) && (ok || !reflect.DeepEqual(v, pscTargetServiceProp)) {
+		obj["pscTargetService"] = pscTargetServiceProp
+	}
 	cloudRunProp, err := expandComputeRegionNetworkEndpointGroupCloudRun(d.Get("cloud_run"), d, config)
 	if err != nil {
 		return nil, err
@@ -106,6 +112,10 @@ func expandComputeRegionNetworkEndpointGroupDescription(v interface{}, d Terrafo
 }
 
 func expandComputeRegionNetworkEndpointGroupNetworkEndpointType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeRegionNetworkEndpointGroupPscTargetService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
