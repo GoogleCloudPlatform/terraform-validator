@@ -178,3 +178,12 @@ func ancestryPath(as []*cloudresourcemanager.Ancestor) string {
 	}
 	return strings.Join(path, "/")
 }
+
+type NoOpAncestryManager struct{}
+
+func (m *NoOpAncestryManager) GetAncestry(project string) (string, error) {
+	return "", nil
+}
+func (m *NoOpAncestryManager) GetAncestryWithResource(project string, tfData resources.TerraformResourceData, cai resources.Asset) (string, error) {
+	return "", nil
+}
