@@ -29,6 +29,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_storage_bucket_iam_binding"},
 		{name: "example_storage_bucket_iam_member"},
 		// auto inserted tests that are not in list above or manually inserted in cli_test.go
+		{name: "example_access_context_manager_access_policy"},
 		{name: "example_access_context_manager_service_perimeter"},
 		{name: "example_bigquery_dataset"},
 		{name: "example_bigquery_dataset_iam_binding"},
