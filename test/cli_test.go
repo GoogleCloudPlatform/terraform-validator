@@ -65,6 +65,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_storage_bucket_iam_binding", compareConvertOutput: compareMergedIamBindingOutput},
 		{name: "example_storage_bucket_iam_member", compareConvertOutput: compareMergedIamMemberOutput},
 		// auto inserted tests that are not in list above or manually inserted in read_test.go
+		{name: "example_access_context_manager_access_policy"},
 		{name: "example_access_context_manager_service_perimeter"},
 		{name: "example_bigquery_dataset"},
 		{name: "example_bigquery_dataset_iam_binding"},
