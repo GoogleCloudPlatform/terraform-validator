@@ -236,7 +236,7 @@ Terraform Validator tests require setting up a few files in [`testdata/templates
 - example_product_resource.json
   - The results of running [`terraform-validator convert example_product_resource.tfplan.json`](./index.md#convert-command)
 
-It's easiest to set up a [test project](../tutorial.md) to create the initial versions of these files. The idea is to use the terraform-validator binary to invoke a convert operation, and replace the strings specific to your test project in the generated files. The followings are typical steps that you can take:
+It's easiest to set up a [test project](https://cloud.google.com/docs/terraform/policy-validation/validate-policies) to create the initial versions of these files. The idea is to use the terraform-validator binary to invoke a convert operation, and replace the strings specific to your test project in the generated files. The followings are typical steps that you can take:
 
 1. Run `make build` to compile the terraform-validator binary.
 2. Create `example_product_resource.tf`, where the content is the resource that you would like to test, and place it in a new folder.
