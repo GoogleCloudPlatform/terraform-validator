@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google
+package utils
 
 import (
 	"fmt"
@@ -21,12 +21,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// NOTE: These functions were pulled from github.com/terraform-providers/terraform-provider-google. They can go away when the functionality they are providing is implemented in the future github.com/GoogleCloudPlatform/terraform-converters package.
-
-// getProject reads the "project" field from the given resource data and falls
+// GetProjectFromResource reads the "project" field from the given resource data and falls
 // back to the provider's value if not given. If the provider's value is not
 // given, an error is returned.
-func getProject(d resources.TerraformResourceData, config *resources.Config, cai resources.Asset, errorLogger *zap.Logger) (string, error) {
+func GetProjectFromResource(d resources.TerraformResourceData, config *resources.Config, cai resources.Asset, errorLogger *zap.Logger) (string, error) {
 
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Project",
@@ -64,4 +62,26 @@ func getProjectFromSchema(projectSchemaField string, d resources.TerraformResour
 		return config.Project, nil
 	}
 	return "", fmt.Errorf("required field '%s' is not set, you may use --project=my-project to provide a default project to resolve the issue", projectSchemaField)
+}
+
+// GetOrganizationFromResource reads org_id field from terraform data.
+func GetOrganizationFromResource(tfData resources.TerraformResourceData) (string, bool) {
+	orgID, ok := tfData.GetOk("org_id")
+	if ok {
+		return orgID.(string), ok
+	}
+	return "", false
+}
+
+// GetFolderFromResource reads folder_id or folder field from terraform data.
+func GetFolderFromResource(tfData resources.TerraformResourceData) (string, bool) {
+	folderID, ok := tfData.GetOk("folder_id")
+	if ok {
+		return folderID.(string), ok
+	}
+	folderID, ok = tfData.GetOk("folder")
+	if ok {
+		return folderID.(string), ok
+	}
+	return "", false
 }

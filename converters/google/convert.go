@@ -354,21 +354,24 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
-	project, err := getProject(tfData, cfg, cai, c.errorLogger)
+
+	ancestors, err := c.ancestryManager.GetAncestors(cfg, tfData, &cai)
 	if err != nil {
-		return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
+		return Asset{}, fmt.Errorf("getting resource ancestry failed: %w", err)
 	}
-	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
+	parent, err := ancestrymanager.AssetParent(&cai, ancestors)
 	if err != nil {
-		return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
+		return Asset{}, fmt.Errorf("getting parent failed: %w", err)
 	}
+
+	// parent can be derived from ancestors[0]
 	var resource *AssetResource
 	if cai.Resource != nil {
 		resource = &AssetResource{
 			Version:              cai.Resource.Version,
 			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
 			DiscoveryName:        cai.Resource.DiscoveryName,
-			Parent:               fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/%v", project),
+			Parent:               parent,
 			Data:                 cai.Resource.Data,
 		}
 	}
@@ -425,7 +428,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	return Asset{
 		Name:           cai.Name,
 		Type:           cai.Type,
-		Ancestry:       ancestry,
+		Ancestry:       ancestrymanager.ConvertToAncestryPath(ancestors),
 		Resource:       resource,
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,

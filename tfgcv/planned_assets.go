@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"google.golang.org/api/cloudresourcemanager/v1"
+	"google.golang.org/api/cloudresourcemanager/v3"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
@@ -71,7 +71,7 @@ func newConverter(ctx context.Context, path, project string, ancestry map[string
 
 	var resourceManager *cloudresourcemanager.Service
 	if !offline {
-		resourceManager = cfg.NewResourceManagerClient(cfg.UserAgent())
+		resourceManager = cfg.NewResourceManagerV3Client(cfg.UserAgent())
 	}
 	ancestryManager, err := ancestrymanager.New(resourceManager, ancestry, errorLogger)
 	if err != nil {
