@@ -361,7 +361,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	}
 	parent, err := ancestrymanager.AssetParent(&cai, ancestors)
 	if err != nil {
-		return Asset{}, fmt.Errorf("getting parent failed: %w", err)
+		c.errorLogger.Warn(fmt.Sprintf("getting parent failed: %v", err))
 	}
 
 	// parent can be derived from ancestors[0]

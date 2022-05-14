@@ -7,6 +7,7 @@ import (
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 )
 
+// AssetParent derives a resource's parent from its ancestors.
 func AssetParent(cai *resources.Asset, ancestors []string) (string, error) {
 	if err := validateAncestors(ancestors); err != nil {
 		return "", err

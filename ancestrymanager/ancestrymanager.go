@@ -24,7 +24,7 @@ type AncestryManager interface {
 type manager struct {
 	// The logger.
 	errorLogger *zap.Logger
-	// GCP resource manager service. If this field is nil, online lookups will .
+	// GCP resource manager service. If this field is nil, online lookups will
 	// be disabled.
 	resourceManager *cloudresourcemanager.Service
 	// Cache to prevent multiple network calls for looking up the same
@@ -33,10 +33,11 @@ type manager struct {
 	ancestorCache map[string][]string
 }
 
-// New returns AncestryManager that can be used to fetch ancestry information
-// for a project. entries takes project as key and ancestry as value to
-// pre-warm the offline cache. If no resourceManager is provided, API requests
-// for ancestry will be disabled.
+// New returns AncestryManager that can be used to fetch ancestry information.
+// Entries takes `projects/<number>` or `folders/<id>` as key and ancestry path
+// as value to the offline cache. If the key is not prefix with `projects/` or
+// `folders/`, it will be considered as a project. If no resourceManager is
+// provided, API requests for ancestry will be disabled.
 func New(resourceManager *cloudresourcemanager.Service, entries map[string]string, errorLogger *zap.Logger) (AncestryManager, error) {
 	return newManager(resourceManager, entries, errorLogger)
 }
@@ -82,14 +83,14 @@ func (m *manager) GetAncestors(config *resources.Config, tfData resources.Terraf
 	orgID, orgOK := utils.GetOrganizationFromResource(tfData)
 	if orgOK {
 		orgKey = orgID
-		if !strings.HasPrefix(orgKey, "organizations") {
+		if !strings.HasPrefix(orgKey, "organizations/") {
 			orgKey = fmt.Sprintf("organizations/%s", orgKey)
 		}
 	}
 	folderID, folderOK := utils.GetFolderFromResource(tfData)
 	if folderOK {
 		folderKey = folderID
-		if !strings.HasPrefix(folderKey, "folders") {
+		if !strings.HasPrefix(folderKey, "folders/") {
 			folderKey = fmt.Sprintf("folders/%s", folderKey)
 		}
 	}
@@ -168,7 +169,7 @@ func (m *manager) getAncestorsWithCache(key string) ([]string, error) {
 			ancestors = append(ancestors, cachedAncestors...)
 			break
 		}
-		if strings.HasPrefix(cur, "organizations") {
+		if strings.HasPrefix(cur, "organizations/") {
 			ancestors = append(ancestors, cur)
 			break
 		}
