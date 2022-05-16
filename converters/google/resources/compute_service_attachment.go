@@ -93,6 +93,12 @@ func GetComputeServiceAttachmentApiObject(d TerraformResourceData, config *Confi
 	} else if v, ok := d.GetOkExists("enable_proxy_protocol"); !isEmptyValue(reflect.ValueOf(enableProxyProtocolProp)) && (ok || !reflect.DeepEqual(v, enableProxyProtocolProp)) {
 		obj["enableProxyProtocol"] = enableProxyProtocolProp
 	}
+	domainNamesProp, err := expandComputeServiceAttachmentDomainNames(d.Get("domain_names"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("domain_names"); !isEmptyValue(reflect.ValueOf(domainNamesProp)) && (ok || !reflect.DeepEqual(v, domainNamesProp)) {
+		obj["domainNames"] = domainNamesProp
+	}
 	consumerRejectListsProp, err := expandComputeServiceAttachmentConsumerRejectLists(d.Get("consumer_reject_lists"), d, config)
 	if err != nil {
 		return nil, err
@@ -156,6 +162,10 @@ func expandComputeServiceAttachmentNatSubnets(v interface{}, d TerraformResource
 }
 
 func expandComputeServiceAttachmentEnableProxyProtocol(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeServiceAttachmentDomainNames(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
