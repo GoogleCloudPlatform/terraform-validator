@@ -625,6 +625,11 @@ func TestParseAncestryPath_Fail(t *testing.T) {
 			path:    "organizations/123/folders",
 			wantErr: "unexpected format",
 		},
+		{
+			name:    "invalid keyword",
+			path:    "org/123/folders/123",
+			wantErr: "invalid ancestry path",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -652,39 +657,39 @@ func TestInitAncestryCache(t *testing.T) {
 		{
 			name: "empty key",
 			entries: map[string]string{
-				"": "org/123/folders/345",
+				"": "organizations/123/folders/345",
 			},
 			want: map[string][]string{},
 		},
 		{
 			name: "default key to project",
 			entries: map[string]string{
-				"test-proj": "org/123/folders/345",
+				"test-proj": "organizations/123/folders/345",
 			},
 			want: map[string][]string{
-				"projects/test-proj": {"projects/test-proj", "folders/345", "org/123"},
-				"folders/345":        {"folders/345", "org/123"},
-				"org/123":            {"org/123"},
+				"projects/test-proj": {"projects/test-proj", "folders/345", "organizations/123"},
+				"folders/345":        {"folders/345", "organizations/123"},
+				"organizations/123":  {"organizations/123"},
 			},
 		},
 		{
 			name: "key has prefix folders/",
 			entries: map[string]string{
-				"folders/345": "org/123",
+				"folders/345": "organizations/123",
 			},
 			want: map[string][]string{
-				"folders/345": {"folders/345", "org/123"},
-				"org/123":     {"org/123"},
+				"folders/345":       {"folders/345", "organizations/123"},
+				"organizations/123": {"organizations/123"},
 			},
 		},
 		{
 			name: "key has prefix projects/",
 			entries: map[string]string{
-				"projects/test-proj": "org/123",
+				"projects/test-proj": "organizations/123",
 			},
 			want: map[string][]string{
-				"projects/test-proj": {"projects/test-proj", "org/123"},
-				"org/123":            {"org/123"},
+				"projects/test-proj": {"projects/test-proj", "organizations/123"},
+				"organizations/123":  {"organizations/123"},
 			},
 		},
 	}
@@ -693,9 +698,116 @@ func TestInitAncestryCache(t *testing.T) {
 			m := &manager{
 				ancestorCache: make(map[string][]string),
 			}
-			m.initAncestryCache(test.entries)
+			err := m.initAncestryCache(test.entries)
+			if err != nil {
+				t.Fatalf("initAncestryCache(%v) = %s, want = nil", test.entries, err)
+			}
 			if diff := cmp.Diff(test.want, m.ancestorCache); diff != "" {
 				t.Errorf("initAncestryCache(%v) returned unexpected diff (-want +got):\n%s", test.entries, diff)
+			}
+		})
+	}
+}
+
+func TestInitAncestryCache_Fail(t *testing.T) {
+	tests := []struct {
+		name    string
+		entries map[string]string
+	}{
+		{
+			name: "typo",
+			entries: map[string]string{
+				"foldres/def": "organizations/123",
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			m := &manager{
+				ancestorCache: make(map[string][]string),
+			}
+			err := m.initAncestryCache(test.entries)
+			if err == nil {
+				t.Fatalf("initAncestryCache(%v) = nil, want = err", test.entries)
+			}
+		})
+	}
+}
+
+func TestParseAncestryKey(t *testing.T) {
+	tests := []struct {
+		name string
+		key  string
+		want string
+	}{
+		{
+			name: "not contain /",
+			key:  "proj",
+			want: "projects/proj",
+		},
+		{
+			name: "contain projects/",
+			key:  "projects/1",
+			want: "projects/1",
+		},
+		{
+			name: "contain folders/",
+			key:  "folders/1",
+			want: "folders/1",
+		},
+		{
+			name: "contain organizations/",
+			key:  "organizations/1",
+			want: "organizations/1",
+		},
+		{
+			name: "contain project/",
+			key:  "project/1",
+			want: "projects/1",
+		},
+		{
+			name: "contain folder/",
+			key:  "folder/1",
+			want: "folders/1",
+		},
+		{
+			name: "contain organization/",
+			key:  "organization/1",
+			want: "organizations/1",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := parseAncestryKey(test.key)
+			if err != nil {
+				t.Fatalf("parseAncestryKey(%v) = %v, want = nil", test.key, err)
+			}
+			if got != test.want {
+				t.Errorf("parseAncestryKey(%v) = %v, want = %v", test.key, got, test.want)
+			}
+		})
+	}
+}
+
+func TestParseAncestryKey_Fail(t *testing.T) {
+	tests := []struct {
+		name string
+		key  string
+	}{
+		{
+			name: "invalid spell",
+			key:  "org/1",
+		},
+		{
+			name: "multiple /",
+			key:  "folders/123/folders/456",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := parseAncestryKey(test.key)
+			if err == nil {
+				t.Fatalf("parseAncestryKey(%v) = %v, want error", test.key, got)
 			}
 		})
 	}

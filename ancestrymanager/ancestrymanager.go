@@ -48,27 +48,46 @@ func newManager(resourceManager *cloudresourcemanager.Service, entries map[strin
 		errorLogger:     errorLogger,
 		resourceManager: resourceManager,
 	}
-	am.initAncestryCache(entries)
+	err := am.initAncestryCache(entries)
+	if err != nil {
+		return nil, err
+	}
 	return am, nil
 }
 
-func (m *manager) initAncestryCache(entries map[string]string) {
+func (m *manager) initAncestryCache(entries map[string]string) error {
 	for item, ancestry := range entries {
 		if item != "" && ancestry != "" {
 			ancestors, err := parseAncestryPath(ancestry)
 			if err != nil {
 				continue
 			}
-			if !strings.HasPrefix(item, "projects/") && !strings.HasPrefix(item, "folders/") {
-				// default to project
-				item = fmt.Sprintf("projects/%s", item)
+			key, err := parseAncestryKey(item)
+			if err != nil {
+				return err
 			}
 			// ancestry path should include the item itself
-			if ancestors[0] != item {
-				ancestors = append([]string{item}, ancestors...)
+			if ancestors[0] != key {
+				ancestors = append([]string{key}, ancestors...)
 			}
-			m.store(item, ancestors)
+			m.store(key, ancestors)
 		}
+	}
+	return nil
+}
+
+func parseAncestryKey(val string) (string, error) {
+	key := normalizeAncestry(val)
+	ix := strings.LastIndex(key, "/")
+	if ix == -1 {
+		// If not containing /, then treat it as a project.
+		return fmt.Sprintf("projects/%s", key), nil
+	} else {
+		k := key[:ix]
+		if k == "projects" || k == "folders" || k == "organizations" {
+			return key, nil
+		}
+		return "", fmt.Errorf("key with can only start with projects/, folders/, or organizations/")
 	}
 }
 
@@ -210,6 +229,9 @@ func parseAncestryPath(path string) ([]string, error) {
 	}
 	var ancestors []string
 	for i := len(splits) - 1; i >= 0; i = i - 2 {
+		if splits[i-1] != "projects" && splits[i-1] != "folders" && splits[i-1] != "organizations" {
+			return nil, fmt.Errorf("invalid ancestry path %s with %s", path, splits[i-1])
+		}
 		ancestors = append(ancestors, fmt.Sprintf("%s/%s", splits[i-1], splits[i]))
 	}
 	return ancestors, nil
