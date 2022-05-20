@@ -49,7 +49,7 @@ func TestAssetParent(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := AssetParent(test.cai, test.ancestors)
+			got, err := assetParent(test.cai, test.ancestors)
 			if err != nil {
 				t.Fatalf("AssetParent(%v, %v) = %v, want = nil", test.cai, test.ancestors, err)
 			}
@@ -105,7 +105,7 @@ func TestAssetParent_Fail(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := AssetParent(test.cai, test.ancestors)
+			_, err := assetParent(test.cai, test.ancestors)
 			if err == nil {
 				t.Fatalf("AssetParent(%v, %v) = nil, want = error", test.cai, test.ancestors)
 			}

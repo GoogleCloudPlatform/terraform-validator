@@ -7,14 +7,14 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
-
-	"github.com/google/go-cmp/cmp"
-	"go.uber.org/zap"
-	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v3"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfdata"
 
+	"github.com/google/go-cmp/cmp"
+	provider "github.com/hashicorp/terraform-provider-google/google"
+	"go.uber.org/zap"
+	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/option"
 )
 
@@ -27,26 +27,6 @@ func newTestResourceManagerClient(opts []option.ClientOption) *cloudresourcemana
 	}
 	return rm
 }
-
-type testTFData struct {
-	data map[string]interface{}
-}
-
-func (*testTFData) HasChange(string) bool { return false }
-func (t *testTFData) GetOkExists(key string) (interface{}, bool) {
-	ret, ok := t.data[key]
-	return ret, ok
-}
-func (t *testTFData) GetOk(key string) (interface{}, bool) {
-	ret, ok := t.data[key]
-	return ret, ok
-}
-func (*testTFData) Get(string) interface{}            { return "" }
-func (*testTFData) Set(string, interface{}) error     { return nil }
-func (*testTFData) SetId(string)                      {}
-func (*testTFData) Id() string                        { return "" }
-func (*testTFData) GetProviderMeta(interface{}) error { return nil }
-func (*testTFData) Timeout(key string) time.Duration  { return 0 }
 
 func TestGetAncestors(t *testing.T) {
 	ownerProject := "foo"
@@ -72,326 +52,300 @@ func TestGetAncestors(t *testing.T) {
 	entries := map[string]string{
 		ownerProject: ownerAncestryPath,
 	}
-	amOnline, err := newManager(rm, entries, zap.NewExample())
-	if err != nil {
-		t.Fatalf("failed to create online ancestry manager: %s", err)
-	}
-	amOffline, err := newManager(nil, entries, zap.NewExample())
-	if err != nil {
-		t.Fatalf("failed to create offline ancestry manager: %s", err)
-	}
 
+	p := provider.Provider()
+
+	// offline return errors when the cache cannot cover the request.
+	// online return errors when neither cache and mock server cannot cover the request.
 	cases := []struct {
-		name      string
-		target    *manager
-		tfdata    resources.TerraformResourceData
-		asset     *resources.Asset
-		wantError bool
-		want      []string
+		name             string
+		data             resources.TerraformResourceData
+		asset            *resources.Asset
+		want             []string
+		parent           string
+		wantOnlineError  bool
+		wantOfflineError bool
 	}{
 		{
-			name:   "owner project online - project id",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project_id": ownerProject},
-			},
+			name: "owner project - project id",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": ownerProject,
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
-			name:   "owner project online - project",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project": ownerProject},
-			},
+			name: "owner project - project",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project": ownerProject,
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
-			name:   "owner project online - project number",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"number": "12345"},
-			},
+			name: "owner project - project number",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"number": "12345",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/12345", "folders/bar", "organizations/qux"},
+			want:             []string{"projects/12345", "folders/bar", "organizations/qux"},
+			wantOfflineError: true,
+			parent:           "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
-			name:   "owner project online - project from config",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{},
-			},
+			name: "owner project - project from config",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
-			name:   "owner project offline",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project_id": ownerProject},
-			},
+			name: "another project",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": anotherProject,
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:             []string{"projects/foo2", "folders/bar2", "organizations/qux2"},
+			wantOfflineError: true,
+			parent:           "//cloudresourcemanager.googleapis.com/folders/bar2",
 		},
 		{
-			name:   "another project online",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project_id": anotherProject},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Project",
-			},
-			want: []string{"projects/foo2", "folders/bar2", "organizations/qux2"},
-		},
-		{
-			name:   "another project offline",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project_id": anotherProject},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Project",
-			},
-			wantError: true,
-		},
-		{
-			name:   "owner folder online",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "bar"},
-			},
+			name: "owner folder",
+			data: tfdata.NewFakeResourceData(
+				"google_folder_iam_policy",
+				p.ResourcesMap["google_folder_iam_policy"].Schema,
+				map[string]interface{}{
+					"folder": "bar",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Folder",
 			},
-			want: []string{"folders/bar", "organizations/qux"},
+			want:   []string{"folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
-			name:   "owner folder online with prefix",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "bar"},
-			},
+			name: "owner folder with prefix",
+			data: tfdata.NewFakeResourceData(
+				"google_folder_iam_policy",
+				p.ResourcesMap["google_folder_iam_policy"].Schema,
+				map[string]interface{}{
+					"folder": "folders/bar",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Folder",
 			},
-			want: []string{"folders/bar", "organizations/qux"},
+			want:   []string{"folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
-			name:   "owner folder offline",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "bar"},
-			},
+			name: "another folder online",
+			data: tfdata.NewFakeResourceData(
+				"google_folder_iam_policy",
+				p.ResourcesMap["google_folder_iam_policy"].Schema,
+				map[string]interface{}{
+					"folder": "bar2",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Folder",
 			},
-			want: []string{"folders/bar", "organizations/qux"},
+			want:             []string{"folders/bar2", "organizations/qux2"},
+			wantOfflineError: true,
+			parent:           "//cloudresourcemanager.googleapis.com/organizations/qux2",
 		},
 		{
-			name:   "owner folder offline with prefix",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "folders/bar"},
-			},
+			// Not supporting folder create resource yet.
+			name: "not exist folder online",
+			data: tfdata.NewFakeResourceData(
+				"google_folder_iam_policy",
+				p.ResourcesMap["google_folder_iam_policy"].Schema,
+				map[string]interface{}{
+					"folder": "notexist",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Folder",
 			},
-			want: []string{"folders/bar", "organizations/qux"},
+			wantOfflineError: true,
+			wantOnlineError:  true,
 		},
 		{
-			name:   "another folder online",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "bar2"},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Folder",
-			},
-			want: []string{"folders/bar2", "organizations/qux2"},
-		},
-		{
-			name:   "another folder offline",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "bar2"},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Folder",
-			},
-			wantError: true,
-		},
-		{
-			name:   "not exist folder online",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"folder": "notexist"},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Folder",
-			},
-			wantError: true,
-		},
-		{
-			name:   "owner org online",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"org_id": "qux"},
-			},
+			name: "owner org",
+			data: tfdata.NewFakeResourceData(
+				"google_organization_iam_policy",
+				p.ResourcesMap["google_organization_iam_policy"].Schema,
+				map[string]interface{}{
+					"org_id": "qux",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Organization",
 			},
-			want: []string{"organizations/qux"},
+			want:   []string{"organizations/qux"},
+			parent: "",
 		},
 		{
-			name:   "owner org offline",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"org_id": "qux"},
-			},
+			// organization do not have ancestors except itself
+			// hence offline also pass.
+			name: "another org",
+			data: tfdata.NewFakeResourceData(
+				"google_organization_iam_policy",
+				p.ResourcesMap["google_organization_iam_policy"].Schema,
+				map[string]interface{}{
+					"org_id": "qux2",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Organization",
 			},
-			want: []string{"organizations/qux"},
-		},
-
-		{
-			name:   "another org online",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"org_id": "qux2"},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Organization",
-			},
-			want: []string{"organizations/qux2"},
+			want:   []string{"organizations/qux2"},
+			parent: "",
 		},
 		{
-			name:   "another org offline",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"org_id": "qux2"},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Organization",
-			},
-			want: []string{"organizations/qux2"},
-		},
-		{
-			name:   "other resource online with owner project",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project": ownerProject},
-			},
+			name: "other resource with owner project",
+			data: tfdata.NewFakeResourceData(
+				"google_compute_disk",
+				p.ResourcesMap["google_compute_disk"].Schema,
+				map[string]interface{}{
+					"project": ownerProject,
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Disk",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/projects/foo",
 		},
 		{
-			name:   "other resource offline with owner project",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project": ownerProject},
-			},
+			name: "other resource online with another project",
+			data: tfdata.NewFakeResourceData(
+				"google_compute_disk",
+				p.ResourcesMap["google_compute_disk"].Schema,
+				map[string]interface{}{
+					"project": anotherProject,
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Disk",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:             []string{"projects/foo2", "folders/bar2", "organizations/qux2"},
+			wantOfflineError: true,
+			parent:           "//cloudresourcemanager.googleapis.com/projects/foo2",
 		},
 		{
-			name:   "other resource online with another project",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project": anotherProject},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Disk",
-			},
-			want: []string{"projects/foo2", "folders/bar2", "organizations/qux2"},
-		},
-		{
-			name:   "other resource offline with another project",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project": anotherProject},
-			},
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Disk",
-			},
-			wantError: true,
-		},
-		{
-			name:   "custom role with org",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"org_id": "qux"},
-			},
+			name: "custom role with org",
+			data: tfdata.NewFakeResourceData(
+				"google_organization_iam_custom_role",
+				p.ResourcesMap["google_organization_iam_custom_role"].Schema,
+				map[string]interface{}{
+					"org_id": "qux",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "iam.googleapis.com/Role",
 			},
-			want: []string{"organizations/qux"},
+			want:   []string{"organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
-			name:   "custom role with project",
-			target: amOffline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{"project": "foo"},
-			},
+			name: "custom role with project",
+			data: tfdata.NewFakeResourceData(
+				"google_project_iam_custom_role",
+				p.ResourcesMap["google_project_iam_custom_role"].Schema,
+				map[string]interface{}{
+					"project": "foo",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "iam.googleapis.com/Role",
 			},
-			want: []string{"projects/foo", "folders/bar", "organizations/qux"},
+			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/projects/foo",
 		},
 		{
-			name:   "new project in folder",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{
+			name: "new project in folder",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
 					"folder_id":  "bar",
 					"project_id": "new-project",
 				},
-			},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/new-project", "folders/bar", "organizations/qux"},
+			want:   []string{"projects/new-project", "folders/bar", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
-			name:   "new project in organization",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{
+			name: "new project in organization",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
 					"org_id":     "qux",
-					"project_id": "new-project"},
-			},
+					"project_id": "new-project",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/new-project", "organizations/qux"},
+			want:   []string{"projects/new-project", "organizations/qux"},
+			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
-			name:   "new project without org_id or folder_id",
-			target: amOnline,
-			tfdata: &testTFData{
-				data: map[string]interface{}{
-					"project_id": "new-project"},
-			},
+			// for new projects, if it cannot find ancestors in online mode,
+			// it just returns the project itself as ancestors.
+			// offline will fail because no cloud resource manager.
+			name: "new project without org_id or folder_id",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "new-project",
+				},
+			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want: []string{"projects/new-project"},
+			want:             []string{"projects/new-project"},
+			wantOfflineError: true,
+			parent:           "//cloudresourcemanager.googleapis.com/projects/new-project",
 		},
 	}
 	for _, c := range cases {
@@ -399,15 +353,46 @@ func TestGetAncestors(t *testing.T) {
 			cfg := &resources.Config{
 				Project: ownerProject,
 			}
-			got, err := c.target.GetAncestors(cfg, c.tfdata, c.asset)
-			if !c.wantError && err != nil {
-				t.Fatalf("GetAncestors(%v, %v, %v) returns error: %s", cfg, c.tfdata, c.asset, err)
+			amOnline, err := newManager(rm, entries, zap.NewExample())
+			if err != nil {
+				t.Fatalf("failed to create online ancestry manager: %s", err)
 			}
-			if c.wantError && err == nil {
-				t.Fatalf("GetAncestors(%v, %v, %v) returns no error, want error", cfg, c.tfdata, c.asset)
+			got, parent, err := amOnline.Ancestors(cfg, c.data, c.asset)
+			if c.wantOnlineError {
+				if err == nil {
+					t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+				}
+				if parent != c.parent {
+					t.Errorf("onlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+				}
+				if diff := cmp.Diff(c.want, got); diff != "" {
+					t.Errorf("onlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+				}
 			}
-			if diff := cmp.Diff(c.want, got); diff != "" {
-				t.Errorf("GetAncestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.tfdata, c.asset, diff)
+
+			amOffline, err := newManager(nil, entries, zap.NewExample())
+			if err != nil {
+				t.Fatalf("failed to create offline ancestry manager: %s", err)
+			}
+			got, parent, err = amOffline.Ancestors(cfg, c.data, c.asset)
+			if c.wantOfflineError {
+				if err == nil {
+					t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+				}
+				if parent != c.parent {
+					t.Errorf("offlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+				}
+				if diff := cmp.Diff(c.want, got); diff != "" {
+					t.Errorf("offlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+				}
 			}
 		})
 	}

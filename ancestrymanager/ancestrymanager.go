@@ -9,16 +9,15 @@ import (
 	"google.golang.org/api/googleapi"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
-	"github.com/GoogleCloudPlatform/terraform-validator/utils"
 
 	"github.com/hashicorp/errwrap"
 	"go.uber.org/zap"
 )
 
-// AncestryManager is the interface that wraps the GetAncestors method.
+// AncestryManager is the interface that fetch ancestors for a resource.
 type AncestryManager interface {
-	// GetAncestors returns a list of ancestors.
-	GetAncestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, error)
+	// Ancestors returns a list of ancestors.
+	Ancestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, string, error)
 }
 
 type manager struct {
@@ -91,22 +90,40 @@ func parseAncestryKey(val string) (string, error) {
 	}
 }
 
-// GetAncestors uses the resource manager API to get ancestors for resource.
+// Ancestors uses the resource manager API to get ancestors for resource.
 // It implements a cache because many resources share the same ancestors.
-func (m *manager) GetAncestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, error) {
+func (m *manager) Ancestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, string, error) {
+	results, err := m.fetchAncestors(config, tfData, cai)
+	if err != nil {
+		return nil, "", err
+	}
+
+	parent, err := assetParent(cai, results)
+	if err != nil {
+		return nil, "", err
+	}
+	return results, parent, nil
+}
+
+// fetchAncestors uses the resource manager API to get ancestors for resource.
+// It implements a cache because many resources share the same ancestors.
+func (m *manager) fetchAncestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, error) {
+	if cai == nil {
+		return nil, fmt.Errorf("CAI asset is nil")
+	}
 	m.errorLogger.Info(fmt.Sprintf("Retrieving ancestry from resource (type=%s)", cai.Type))
 	key := ""
 	orgKey := ""
 	folderKey := ""
 
-	orgID, orgOK := utils.GetOrganizationFromResource(tfData)
+	orgID, orgOK := getOrganizationFromResource(tfData)
 	if orgOK {
 		orgKey = orgID
 		if !strings.HasPrefix(orgKey, "organizations/") {
 			orgKey = fmt.Sprintf("organizations/%s", orgKey)
 		}
 	}
-	folderID, folderOK := utils.GetFolderFromResource(tfData)
+	folderID, folderOK := getFolderFromResource(tfData)
 	if folderOK {
 		folderKey = folderID
 		if !strings.HasPrefix(folderKey, "folders/") {
@@ -129,14 +146,14 @@ func (m *manager) GetAncestors(config *resources.Config, tfData resources.Terraf
 		if orgOK {
 			key = orgKey
 		} else {
-			project, err := utils.GetProjectFromResource(tfData, config, *cai, m.errorLogger)
+			project, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
 			if err != nil {
 				return nil, err
 			}
 			key = fmt.Sprintf("projects/%s", project)
 		}
 	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
-		projectID, err := utils.GetProjectFromResource(tfData, config, *cai, m.errorLogger)
+		projectID, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +188,7 @@ func (m *manager) GetAncestors(config *resources.Config, tfData resources.Terraf
 		}
 		return ancestors, nil
 	default:
-		project, err := utils.GetProjectFromResource(tfData, config, *cai, m.errorLogger)
+		project, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
 		if err != nil {
 			return nil, err
 		}
@@ -228,11 +245,23 @@ func parseAncestryPath(path string) ([]string, error) {
 		return nil, fmt.Errorf("unexpected format of ancestry path %s", path)
 	}
 	var ancestors []string
-	for i := len(splits) - 1; i >= 0; i = i - 2 {
-		if splits[i-1] != "projects" && splits[i-1] != "folders" && splits[i-1] != "organizations" {
-			return nil, fmt.Errorf("invalid ancestry path %s with %s", path, splits[i-1])
+	allowedPrefixes := map[string]bool{
+		"projects":      true,
+		"folders":       true,
+		"organizations": true,
+	}
+	for i := 0; i < len(splits); i = i + 2 {
+		if _, ok := allowedPrefixes[splits[i]]; !ok {
+			return nil, fmt.Errorf("invalid ancestry path %s with %s", path, splits[i])
 		}
-		ancestors = append(ancestors, fmt.Sprintf("%s/%s", splits[i-1], splits[i]))
+		ancestors = append(ancestors, fmt.Sprintf("%s/%s", splits[i], splits[i+1]))
+	}
+	// reverse the sequence
+	i, j := 0, len(ancestors)-1
+	for i < j {
+		ancestors[i], ancestors[j] = ancestors[j], ancestors[i]
+		i++
+		j--
 	}
 	return ancestors, nil
 }
@@ -258,6 +287,6 @@ func isGoogleApiErrorWithCode(err error, errCode int) bool {
 
 type NoOpAncestryManager struct{}
 
-func (*NoOpAncestryManager) GetAncestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, error) {
-	return nil, nil
+func (*NoOpAncestryManager) Ancestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, string, error) {
+	return nil, "", nil
 }
