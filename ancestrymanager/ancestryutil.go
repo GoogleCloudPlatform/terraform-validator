@@ -40,7 +40,7 @@ func assetParent(cai *resources.Asset, ancestors []string) (string, error) {
 		}
 		return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[0]), nil
 	}
-	return "", fmt.Errorf("unexpected value for ancestors:: %v", ancestors)
+	return "", fmt.Errorf("unexpected value for ancestors: %v", ancestors)
 }
 
 // ConvertToAncestryPath composes a path containing organization/folder/project
