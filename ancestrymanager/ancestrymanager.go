@@ -6,11 +6,9 @@ import (
 	"strings"
 
 	"google.golang.org/api/cloudresourcemanager/v3"
-	"google.golang.org/api/googleapi"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 
-	"github.com/hashicorp/errwrap"
 	"go.uber.org/zap"
 )
 
@@ -180,10 +178,6 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 		key = fmt.Sprintf("projects/%s", projectID)
 		ancestors, err := m.getAncestorsWithCache(key)
 		if err != nil {
-			if isGoogleApiErrorWithCode(err, 403) {
-				// new project
-				return []string{key}, nil
-			}
 			return nil, err
 		}
 		return ancestors, nil
@@ -278,11 +272,6 @@ func normalizeAncestry(val string) string {
 		val = strings.ReplaceAll(val, r.old, r.new)
 	}
 	return val
-}
-
-func isGoogleApiErrorWithCode(err error, errCode int) bool {
-	gerr, ok := errwrap.GetType(err, &googleapi.Error{}).(*googleapi.Error)
-	return ok && gerr != nil && gerr.Code == errCode
 }
 
 type NoOpAncestryManager struct{}

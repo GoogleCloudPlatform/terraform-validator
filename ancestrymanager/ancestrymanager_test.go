@@ -330,7 +330,7 @@ func TestGetAncestors(t *testing.T) {
 		},
 		{
 			// for new projects, if it cannot find ancestors in online mode,
-			// it just returns the project itself as ancestors.
+			// it just returns 403 error.
 			// offline will fail because no cloud resource manager.
 			name: "new project without org_id or folder_id",
 			data: tfdata.NewFakeResourceData(
@@ -343,9 +343,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:             []string{"projects/new-project"},
+			wantOnlineError:  true,
 			wantOfflineError: true,
-			parent:           "//cloudresourcemanager.googleapis.com/projects/new-project",
 		},
 	}
 	for _, c := range cases {
