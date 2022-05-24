@@ -100,6 +100,12 @@ func GetMemcacheInstanceApiObject(d TerraformResourceData, config *Config) (map[
 	} else if v, ok := d.GetOkExists("memcache_parameters"); !isEmptyValue(reflect.ValueOf(parametersProp)) && (ok || !reflect.DeepEqual(v, parametersProp)) {
 		obj["parameters"] = parametersProp
 	}
+	maintenancePolicyProp, err := expandMemcacheInstanceMaintenancePolicy(d.Get("maintenance_policy"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("maintenance_policy"); !isEmptyValue(reflect.ValueOf(maintenancePolicyProp)) && (ok || !reflect.DeepEqual(v, maintenancePolicyProp)) {
+		obj["maintenancePolicy"] = maintenancePolicyProp
+	}
 
 	return obj, nil
 }
@@ -209,4 +215,161 @@ func expandMemcacheInstanceMemcacheParametersParams(v interface{}, d TerraformRe
 		m[k] = val.(string)
 	}
 	return m, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedCreateTime, err := expandMemcacheInstanceMaintenancePolicyCreateTime(original["create_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCreateTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["createTime"] = transformedCreateTime
+	}
+
+	transformedUpdateTime, err := expandMemcacheInstanceMaintenancePolicyUpdateTime(original["update_time"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUpdateTime); val.IsValid() && !isEmptyValue(val) {
+		transformed["updateTime"] = transformedUpdateTime
+	}
+
+	transformedDescription, err := expandMemcacheInstanceMaintenancePolicyDescription(original["description"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDescription); val.IsValid() && !isEmptyValue(val) {
+		transformed["description"] = transformedDescription
+	}
+
+	transformedWeeklyMaintenanceWindow, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindow(original["weekly_maintenance_window"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedWeeklyMaintenanceWindow); val.IsValid() && !isEmptyValue(val) {
+		transformed["weeklyMaintenanceWindow"] = transformedWeeklyMaintenanceWindow
+	}
+
+	return transformed, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyCreateTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyUpdateTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindow(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedDay, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowDay(original["day"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedDay); val.IsValid() && !isEmptyValue(val) {
+			transformed["day"] = transformedDay
+		}
+
+		transformedDuration, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowDuration(original["duration"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedDuration); val.IsValid() && !isEmptyValue(val) {
+			transformed["duration"] = transformedDuration
+		}
+
+		transformedStartTime, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTime(original["start_time"], d, config)
+		if err != nil {
+			return nil, err
+		} else {
+			transformed["startTime"] = transformedStartTime
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowDay(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowDuration(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil, nil
+	}
+
+	if l[0] == nil {
+		transformed := make(map[string]interface{})
+		return transformed, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedHours, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeHours(original["hours"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedHours); val.IsValid() && !isEmptyValue(val) {
+		transformed["hours"] = transformedHours
+	}
+
+	transformedMinutes, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeMinutes(original["minutes"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMinutes); val.IsValid() && !isEmptyValue(val) {
+		transformed["minutes"] = transformedMinutes
+	}
+
+	transformedSeconds, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeSeconds(original["seconds"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedSeconds); val.IsValid() && !isEmptyValue(val) {
+		transformed["seconds"] = transformedSeconds
+	}
+
+	transformedNanos, err := expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeNanos(original["nanos"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedNanos); val.IsValid() && !isEmptyValue(val) {
+		transformed["nanos"] = transformedNanos
+	}
+
+	return transformed, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeHours(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeMinutes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeSeconds(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMemcacheInstanceMaintenancePolicyWeeklyMaintenanceWindowStartTimeNanos(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
