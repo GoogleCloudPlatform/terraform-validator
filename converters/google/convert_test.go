@@ -34,7 +34,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, error) {
 	ctx := context.Background()
 	project := testProject
 	offline := true
-	cfg, err := resources.GetConfig(ctx, project, offline)
+	cfg, err := resources.GetConfig(ctx, project, offline, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "constructing configuration")
 	}
