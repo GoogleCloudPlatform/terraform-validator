@@ -24,7 +24,6 @@ import (
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
-	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -116,8 +115,7 @@ func (o *validateOptions) run(plan string) error {
 		ancestryCache := map[string]string{
 			o.project: o.ancestry,
 		}
-		userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
-		assets, err = o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
+		assets, err = o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger)
 		if err != nil {
 			if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
 				return errors.New("unable to parse provider project, please use --project flag")

@@ -80,7 +80,7 @@ func TestReadPlannedAssets(t *testing.T) {
 			ancestryCache := map[string]string{
 				tt.args.project: tt.args.ancestry,
 			}
-			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, ancestryCache, offline, tt.args.convertUnchanged, zap.NewExample(), "")
+			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, ancestryCache, offline, tt.args.convertUnchanged, zap.NewExample())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadPlannedAssets() error = %v, wantErr %v", err, tt.wantErr)
 				return
