@@ -15,6 +15,7 @@
 package google
 
 import (
+	"bytes"
 	"context"
 	"sort"
 	"testing"
@@ -26,22 +27,49 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 const testProject = "test-project"
 
-func newTestConverter(convertUnchanged bool) (*Converter, error) {
+type bufferWriteSyncer struct {
+	*bytes.Buffer
+}
+
+func (bws bufferWriteSyncer) Sync() error {
+	return nil
+}
+
+// This returns a logger to allow deterministic testing of the output
+// by omitting the timestamp and calling function.
+func newTestErrorLogger() (*zap.Logger, *bytes.Buffer) {
+	buf := new(bytes.Buffer)
+	syncer := bufferWriteSyncer{Buffer: buf}
+
+	encoderCfg := zapcore.EncoderConfig{
+		MessageKey:     "msg",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
+		EncodeDuration: zapcore.StringDurationEncoder,
+	}
+	core := zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg), syncer, zap.DebugLevel)
+	return zap.New(core), syncer.Buffer
+}
+
+func newTestConverter(convertUnchanged bool) (*Converter, *bytes.Buffer, error) {
 	ctx := context.Background()
 	project := testProject
 	offline := true
 	cfg, err := resources.GetConfig(ctx, project, offline)
 	if err != nil {
-		return nil, errors.Wrap(err, "constructing configuration")
+		return nil, nil, errors.Wrap(err, "constructing configuration")
 	}
-	errorLogger := zap.NewExample()
+	errorLogger, buf := newTestErrorLogger()
 	c := NewConverter(cfg, &ancestrymanager.NoOpAncestryManager{}, offline, convertUnchanged, errorLogger)
 
-	return c, nil
+	return c, buf, nil
 }
 
 func TestSortByName(t *testing.T) {
@@ -71,6 +99,27 @@ func TestSortByName(t *testing.T) {
 	}
 }
 
+func TestAddResourceChanges_nonGoogleResourceIgnored(t *testing.T) {
+	rc := tfjson.ResourceChange{
+		Address:      "whatever.aws_api_gateway_account.foo",
+		Mode:         "managed",
+		Type:         "aws_api_gateway_account",
+		Name:         "foo",
+		ProviderName: "aws",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"change"},
+			Before:  nil,
+			After:   nil,
+		},
+	}
+	c, buf, err := newTestConverter(false)
+	assert.Nil(t, err)
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
+	assert.Nil(t, err)
+	assert.EqualValues(t, map[string]Asset{}, c.assets)
+	assert.Equal(t, "", buf.String())
+}
+
 func TestAddResourceChanges_unknownResourceIgnored(t *testing.T) {
 	rc := tfjson.ResourceChange{
 		Address:      "whatever.google_unknown.foo",
@@ -84,11 +133,13 @@ func TestAddResourceChanges_unknownResourceIgnored(t *testing.T) {
 			After:   nil,
 		},
 	}
-	c, err := newTestConverter(false)
+	c, buf, err := newTestConverter(false)
 	assert.Nil(t, err)
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
+	assert.Contains(t, buf.String(), "resource type not found")
+	assert.Contains(t, buf.String(), rc.Address)
 }
 
 func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
@@ -104,7 +155,7 @@ func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
 			After:   nil,
 		},
 	}
-	c, err := newTestConverter(false)
+	c, buf, err := newTestConverter(false)
 	assert.Nil(t, err)
 
 	// fake that this resource is known to the provider; it will never be "supported" by the
@@ -114,6 +165,8 @@ func TestAddResourceChanges_unsupportedResourceIgnored(t *testing.T) {
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
+	assert.Contains(t, buf.String(), "resource type cannot be converted")
+	assert.Contains(t, buf.String(), rc.Address)
 }
 
 func TestAddResourceChanges_noopIgnoredWhenConvertUnchangedFalse(t *testing.T) {
@@ -130,12 +183,13 @@ func TestAddResourceChanges_noopIgnoredWhenConvertUnchangedFalse(t *testing.T) {
 		},
 	}
 	convertUnchanged := false
-	c, err := newTestConverter(convertUnchanged)
+	c, buf, err := newTestConverter(convertUnchanged)
 	assert.Nil(t, err)
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 	assert.Nil(t, err)
 	assert.EqualValues(t, map[string]Asset{}, c.assets)
+	assert.Equal(t, "", buf.String())
 }
 
 func TestAddResourceChanges_deleteProcessed(t *testing.T) {
@@ -176,14 +230,51 @@ func TestAddResourceChanges_deleteProcessed(t *testing.T) {
 					After: nil,
 				},
 			}
-			c, err := newTestConverter(tc.convertUnchanged)
+			c, buf, err := newTestConverter(tc.convertUnchanged)
 			assert.Nil(t, err)
 
 			err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
 			assert.Nil(t, err)
 			assert.EqualValues(t, map[string]Asset{}, c.assets)
+			assert.Equal(t, "", buf.String())
 		})
 	}
+}
+
+func TestAddResourceChanges_betaResourcesLogged(t *testing.T) {
+	rc := tfjson.ResourceChange{
+		Address:      "whatever.google_compute_disk.foo",
+		Mode:         "managed",
+		Type:         "google_compute_disk",
+		Name:         "foo",
+		ProviderName: "registry.terraform.io/hashicorp/google-beta",
+		Change: &tfjson.Change{
+			Actions: tfjson.Actions{"create"},
+			Before:  nil, // Ignore Before because it's unused
+			After: map[string]interface{}{
+				"project": testProject,
+				"name":    "test-disk",
+				"type":    "pd-ssd",
+				"zone":    "us-central1-a",
+				"image":   "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+				"labels": map[string]interface{}{
+					"environment": "dev",
+				},
+				"physical_block_size_bytes": 4096,
+			},
+		},
+	}
+	c, buf, err := newTestConverter(false)
+	assert.Nil(t, err)
+
+	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
+	assert.Nil(t, err)
+
+	caiKey := "compute.googleapis.com/Disk//compute.googleapis.com/projects/test-project/zones/us-central1-a/disks/test-disk"
+	assert.Contains(t, c.assets, caiKey)
+
+	assert.Contains(t, buf.String(), "resource uses the google-beta provider")
+	assert.Contains(t, buf.String(), rc.Address)
 }
 
 func TestAddResourceChanges_createOrUpdateOrDeleteCreateOrNoopProcessed(t *testing.T) {
@@ -252,7 +343,7 @@ func TestAddResourceChanges_createOrUpdateOrDeleteCreateOrNoopProcessed(t *testi
 					},
 				},
 			}
-			c, err := newTestConverter(c.convertUnchanged)
+			c, buf, err := newTestConverter(c.convertUnchanged)
 			assert.Nil(t, err)
 
 			err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
@@ -260,6 +351,8 @@ func TestAddResourceChanges_createOrUpdateOrDeleteCreateOrNoopProcessed(t *testi
 
 			caiKey := "compute.googleapis.com/Disk//compute.googleapis.com/projects/test-project/zones/us-central1-a/disks/test-disk"
 			assert.Contains(t, c.assets, caiKey)
+			assert.Equal(t, "", buf.String())
+			assert.NotContains(t, buf.String(), "resource uses the google-beta provider")
 		})
 	}
 }
@@ -383,7 +476,7 @@ func TestAddDuplicatedResources(t *testing.T) {
 			},
 		},
 	}
-	c, err := newTestConverter(false)
+	c, buf, err := newTestConverter(false)
 	assert.Nil(t, err)
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rcb1, &rcb2, &rcp1, &rcp2})
@@ -394,6 +487,8 @@ func TestAddDuplicatedResources(t *testing.T) {
 
 	caiKeyProject := "cloudresourcemanager.googleapis.com/Project//cloudresourcemanager.googleapis.com/projects/test-project"
 	assert.Contains(t, c.assets, caiKeyProject)
+
+	assert.Contains(t, buf.String(), "duplicate asset")
 }
 
 func TestAddStorageModuleAfterUnknown(t *testing.T) {
@@ -433,7 +528,7 @@ func TestAddStorageModuleAfterUnknown(t *testing.T) {
 			},
 		},
 	}
-	c, err := newTestConverter(false)
+	c, buf, err := newTestConverter(false)
 	assert.Nil(t, err)
 
 	err = c.AddResourceChanges([]*tfjson.ResourceChange{&rc})
@@ -443,6 +538,7 @@ func TestAddStorageModuleAfterUnknown(t *testing.T) {
 		assert.EqualValues(t, c.assets[key].Type, "storage.googleapis.com/Bucket")
 	}
 
+	assert.Equal(t, "", buf.String())
 }
 
 func TestTimestampMarshalJSON(t *testing.T) {

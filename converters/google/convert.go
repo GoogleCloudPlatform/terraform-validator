@@ -173,15 +173,25 @@ type Converter struct {
 func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 	var createOrUpdateOrNoops []*tfjson.ResourceChange
 	for _, rc := range changes {
-		// skip unknown resources
+		// Silently skip non-google resources
+		if !strings.HasPrefix(rc.Type, "google_") {
+			continue
+		}
+
+		// Warn about google-beta resources
+		if rc.ProviderName == "registry.terraform.io/hashicorp/google-beta" {
+			c.errorLogger.Debug(fmt.Sprintf("%s: resource uses the google-beta provider and may not be convertable", rc.Address))
+		}
+
+		// Skip resources not found in the google GA provider's schema
 		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
-			c.errorLogger.Info(fmt.Sprintf("unknown resource: %s", rc.Type))
+			c.errorLogger.Debug(fmt.Sprintf("%s: resource type not found in google GA provider: %s.", rc.Address, rc.Type))
 			continue
 		}
 
 		// Skip unsupported resources
 		if _, ok := c.converters[rc.Type]; !ok {
-			c.errorLogger.Info(fmt.Sprintf("unsupported resource: %s", rc.Type))
+			c.errorLogger.Debug(fmt.Sprintf("%s: resource type cannot be converted for CAI-based policies: %s. For details, see https://cloud.google.com/docs/terraform/policy-validation/create-cai-constraints#supported_resources", rc.Address, rc.Type))
 			continue
 		}
 
@@ -189,7 +199,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 			createOrUpdateOrNoops = append(createOrUpdateOrNoops, rc)
 		} else if tfplan.IsDelete(rc) {
 			if err := c.addDelete(rc); err != nil {
-				return fmt.Errorf("adding resource deletion %w", err)
+				return fmt.Errorf("%s: converting deleted TF resource to CAI: %w", rc.Address, err)
 			}
 		}
 	}
@@ -197,9 +207,9 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 	for _, rc := range createOrUpdateOrNoops {
 		if err := c.addCreateOrUpdateOrNoop(rc); err != nil {
 			if errorssyslib.Is(err, ErrDuplicateAsset) {
-				c.errorLogger.Warn(fmt.Sprintf("adding resource change: %v", err))
+				c.errorLogger.Warn(fmt.Sprintf("%s: converting TF resource to CAI: %v", rc.Address, err))
 			} else {
-				return fmt.Errorf("adding resource create/update/no-op %w", err)
+				return fmt.Errorf("%s: converting TF resource to CAI: %w", rc.Address, err)
 			}
 		}
 	}
@@ -228,7 +238,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
 			}
-			return errors.Wrap(err, "converting asset")
+			return err
 		}
 
 		for _, converted := range convertedItems {
@@ -240,13 +250,13 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			} else if !c.offline {
 				asset, err := converter.FetchFullResource(&rd, c.cfg)
 				if errors.Cause(err) == resources.ErrEmptyIdentityField {
-					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
+					c.errorLogger.Debug(fmt.Sprintf("%s: Unable to fetch and merge remote %s asset due to unset or (known after apply) identity fields on the TF resource.", rc.Address, converted.Type))
 					existingConverterAsset = nil
 				} else if errors.Cause(err) == resources.ErrResourceInaccessible {
-					c.errorLogger.Warn(fmt.Sprintf("%s was not able to be fetched due to not existing or insufficient permission. Skipping asset fetch.", key))
+					c.errorLogger.Warn(fmt.Sprintf("%s: Fetching %s for merge failed due to not existing or insufficient permission.", rc.Address, key))
 					existingConverterAsset = nil
 				} else if err != nil {
-					return errors.Wrap(err, "fetching asset")
+					return fmt.Errorf("fetching remote asset %s: %w", key, err)
 				} else {
 					existingConverterAsset = &asset
 				}
@@ -254,7 +264,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 					converted = converter.MergeDelete(*existingConverterAsset, converted)
 					augmented, err := c.augmentAsset(&rd, c.cfg, converted)
 					if err != nil {
-						return errors.Wrap(err, "augmenting asset")
+						return err
 					}
 					c.assets[key] = augmented
 				}
@@ -282,7 +292,7 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
 			}
-			return errors.Wrap(err, "converting asset")
+			return err
 		}
 
 		for _, converted := range convertedAssets {
@@ -294,13 +304,13 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 			} else if converter.FetchFullResource != nil && !c.offline {
 				asset, err := converter.FetchFullResource(&rd, c.cfg)
 				if errors.Cause(err) == resources.ErrEmptyIdentityField {
-					c.errorLogger.Warn(fmt.Sprintf("%s did not return a value for ID field. Skipping asset fetch.", key))
+					c.errorLogger.Debug(fmt.Sprintf("%s: Unable to fetch and merge remote %s asset due to unset or (known after apply) identity fields on the TF resource.", rc.Address, converted.Type))
 					existingConverterAsset = nil
 				} else if errors.Cause(err) == resources.ErrResourceInaccessible {
-					c.errorLogger.Warn(fmt.Sprintf("%s was not able to be fetched due to not existing or insufficient permission. Skipping asset fetch.", key))
+					c.errorLogger.Warn(fmt.Sprintf("%s: Fetching %s for merge failed due to not existing or insufficient permission.", rc.Address, key))
 					existingConverterAsset = nil
 				} else if err != nil {
-					return errors.Wrap(err, "fetching asset")
+					return fmt.Errorf("fetching remote asset %s: %w", key, err)
 				} else {
 					existingConverterAsset = &asset
 				}
@@ -310,14 +320,14 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 				if converter.MergeCreateUpdate == nil {
 					// If a merge function does not exist ignore the asset and return
 					// a checkable error.
-					return fmt.Errorf("asset type %s: asset name %s %w", converted.Type, converted.Name, ErrDuplicateAsset)
+					return fmt.Errorf("%w: type %s: name %s", ErrDuplicateAsset, converted.Type, converted.Name)
 				}
 				converted = converter.MergeCreateUpdate(*existingConverterAsset, converted)
 			}
 
 			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
 			if err != nil {
-				return errors.Wrap(err, "augmenting asset")
+				return err
 			}
 			c.assets[key] = augmented
 		}
