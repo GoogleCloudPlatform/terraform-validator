@@ -52,12 +52,12 @@ func ReadPlannedAssets(ctx context.Context, path, project string, ancestry map[s
 
 	changes, err := tfplan.ReadResourceChanges(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "reading resource changes")
+		return nil, err
 	}
 
 	err = converter.AddResourceChanges(changes)
 	if err != nil {
-		return nil, errors.Wrap(err, "adding resource changes to converter")
+		return nil, err
 	}
 
 	return converter.Assets(), nil
@@ -92,5 +92,3 @@ func readTF12Data(path string) ([]byte, error) {
 	}
 	return data, nil
 }
-
-var ErrParsingProviderProject = errors.New("unable to parse provider project")

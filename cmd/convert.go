@@ -98,10 +98,7 @@ func (o *convertOptions) run(plan string) error {
 	}
 	assets, err := o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger)
 	if err != nil {
-		if errors.Cause(err) == tfgcv.ErrParsingProviderProject {
-			return errors.New("unable to parse provider project, please use --project flag")
-		}
-		return errors.Wrap(err, "converting tfplan to CAI assets")
+		return err
 	}
 
 	if len(o.outputPath) > 0 {
