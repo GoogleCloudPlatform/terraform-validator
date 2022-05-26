@@ -17,9 +17,11 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -96,7 +98,8 @@ func (o *convertOptions) run(plan string) error {
 	ancestryCache := map[string]string{
 		o.project: o.ancestry,
 	}
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger)
+	userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
 	if err != nil {
 		return err
 	}
