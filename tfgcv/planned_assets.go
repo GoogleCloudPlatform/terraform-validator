@@ -30,7 +30,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ReadPlannedAssetsFunc func(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error)
+type ReadPlannedAssetsFunc func(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) ([]google.Asset, error)
 
 // ReadPlannedAssets extracts CAI assets from a terraform plan file.
 // If ancestry path is provided, it assumes the project is in that path rather
@@ -39,8 +39,8 @@ type ReadPlannedAssetsFunc func(ctx context.Context, path, project string, ances
 // are also reported in the output, otherwise only resources that are going to
 // be changed are reported.
 // It ignores non-supported resources.
-func ReadPlannedAssets(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) ([]google.Asset, error) {
-	converter, err := newConverter(ctx, path, project, ancestry, offline, convertUnchanged, errorLogger)
+func ReadPlannedAssets(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) ([]google.Asset, error) {
+	converter, err := newConverter(ctx, path, project, ancestry, offline, convertUnchanged, errorLogger, userAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,8 @@ func ReadPlannedAssets(ctx context.Context, path, project string, ancestry map[s
 	return converter.Assets(), nil
 }
 
-func newConverter(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger) (*google.Converter, error) {
-	cfg, err := resources.GetConfig(ctx, project, offline)
+func newConverter(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) (*google.Converter, error) {
+	cfg, err := resources.GetConfig(ctx, project, offline, userAgent)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}
