@@ -25,7 +25,10 @@ steps:
   entrypoint: /usr/bin/make
   args: ['test']
   env:
-    - 'TEST_PROJECT=$_TEST_PROJECT'
+    - TEST_PROJECT=$_TEST_PROJECT
+    - TEST_FOLDER=$_TEST_FOLDER
+    - TEST_ANCESTRY=$_TEST_ANCESTRY
+    - TEST_ORG=$_TEST_ORG
     - 'GOPATH=/gopath'
   waitFor: ['build']
 tags:
