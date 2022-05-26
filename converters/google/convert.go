@@ -180,7 +180,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 
 		// Warn about google-beta resources
 		if rc.ProviderName == "registry.terraform.io/hashicorp/google-beta" {
-			c.errorLogger.Debug(fmt.Sprintf("%s: resource uses the google-beta provider and may not be convertable", rc.Address))
+			c.errorLogger.Debug(fmt.Sprintf("%s: resource uses the google-beta provider and may not be convertible", rc.Address))
 		}
 
 		// Skip resources not found in the google GA provider's schema
