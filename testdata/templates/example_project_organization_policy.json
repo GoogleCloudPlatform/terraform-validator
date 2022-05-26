@@ -23,6 +23,6 @@
         "update_time": "{{.Time.RFC3339Nano}}"
     }
     ],
-    "ancestry_path": "organization/{{.OrgID}}/folder/{{.FolderID}}/project/{{.Provider.project}}"
+    "ancestry_path": "{{.Ancestry}}/project/{{.Provider.project}}"
   }
 ]
