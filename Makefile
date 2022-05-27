@@ -1,3 +1,4 @@
+
 build_dir=./bin
 name=terraform-validator
 
