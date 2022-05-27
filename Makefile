@@ -1,7 +1,6 @@
 build_dir=./bin
 name=terraform-validator
-PROJECT_ID=ciris-project
-GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
+
 test:
 	# Skip integration tests in ./test/ using -short flag
 	GO111MODULE=on go test -short ./...
