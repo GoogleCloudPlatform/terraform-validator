@@ -15,7 +15,7 @@
 // In order to interact with resource converters, we need to be able to create
 // "terraform resource data" that supports a very limited subset of the API actually
 // used during the conversion process.
-package google
+package tfdata
 
 import (
 	"fmt"
@@ -30,16 +30,14 @@ import (
 // Must be set to the same value as the internal typeObject const
 const typeObject schema.ValueType = 8
 
-
 // This is more or less equivalent to the internal getResult struct
 // used by schema.ResourceData
 type getResult struct {
-	Value interface{}
+	Value    interface{}
 	Computed bool
-	Exists bool
-	Schema *schema.Schema
+	Exists   bool
+	Schema   *schema.Schema
 }
-
 
 // Compare to https://github.com/hashicorp/terraform-plugin-sdk/blob/97b4465/helper/schema/resource_data.go#L15
 type FakeResourceData struct {
@@ -81,10 +79,10 @@ func (d *FakeResourceData) get(addr []string) getResult {
 	}
 
 	return getResult{
-		Value: r.Value,
+		Value:    r.Value,
 		Computed: r.Computed,
-		Exists: r.Exists,
-		Schema: s,
+		Exists:   r.Exists,
+		Schema:   s,
 	}
 }
 
@@ -129,7 +127,7 @@ func (d *FakeResourceData) SetId(string)                      {}
 func (d *FakeResourceData) GetProviderMeta(interface{}) error { return nil }
 func (d *FakeResourceData) Timeout(key string) time.Duration  { return time.Duration(1) }
 
-func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, values map[string]interface{}) FakeResourceData {
+func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, values map[string]interface{}) *FakeResourceData {
 	state := map[string]string{}
 	var address []string
 	attributes(values, address, state, resourceSchema)
@@ -137,7 +135,7 @@ func NewFakeResourceData(kind string, resourceSchema map[string]*schema.Schema, 
 		Map:    schema.BasicMapReader(state),
 		Schema: resourceSchema,
 	}
-	return FakeResourceData{
+	return &FakeResourceData{
 		kind:   kind,
 		schema: resourceSchema,
 		reader: reader,

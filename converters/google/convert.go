@@ -21,14 +21,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
+	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfdata"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
+
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	provider "github.com/hashicorp/terraform-provider-google/google"
 	"github.com/pkg/errors"
-
-	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
-	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
-	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
 	"go.uber.org/zap"
 )
 
@@ -223,7 +224,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 // can just happen without needing to be merged.
 func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
-	rd := NewFakeResourceData(
+	rd := tfdata.NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
 		rc.Change.Before.(map[string]interface{}),
@@ -232,7 +233,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 		if converter.FetchFullResource == nil || converter.MergeDelete == nil {
 			continue
 		}
-		convertedItems, err := converter.Convert(&rd, c.cfg)
+		convertedItems, err := converter.Convert(rd, c.cfg)
 
 		if err != nil {
 			if errors.Cause(err) == resources.ErrNoConversion {
@@ -248,7 +249,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			if existing, exists := c.assets[key]; exists {
 				existingConverterAsset = &existing.converterAsset
 			} else if !c.offline {
-				asset, err := converter.FetchFullResource(&rd, c.cfg)
+				asset, err := converter.FetchFullResource(rd, c.cfg)
 				if errors.Cause(err) == resources.ErrEmptyIdentityField {
 					c.errorLogger.Debug(fmt.Sprintf("%s: Unable to fetch and merge remote %s asset due to unset or (known after apply) identity fields on the TF resource.", rc.Address, converted.Type))
 					existingConverterAsset = nil
@@ -262,7 +263,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 				}
 				if existingConverterAsset != nil {
 					converted = converter.MergeDelete(*existingConverterAsset, converted)
-					augmented, err := c.augmentAsset(&rd, c.cfg, converted)
+					augmented, err := c.augmentAsset(rd, c.cfg, converted)
 					if err != nil {
 						return err
 					}
@@ -280,14 +281,14 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 // to be present.
 func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 	resource, _ := c.schema.ResourcesMap[rc.Type]
-	rd := NewFakeResourceData(
+	rd := tfdata.NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
 		rc.Change.After.(map[string]interface{}),
 	)
 
 	for _, converter := range c.converters[rd.Kind()] {
-		convertedAssets, err := converter.Convert(&rd, c.cfg)
+		convertedAssets, err := converter.Convert(rd, c.cfg)
 		if err != nil {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
@@ -302,7 +303,7 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 			if existing, exists := c.assets[key]; exists {
 				existingConverterAsset = &existing.converterAsset
 			} else if converter.FetchFullResource != nil && !c.offline {
-				asset, err := converter.FetchFullResource(&rd, c.cfg)
+				asset, err := converter.FetchFullResource(rd, c.cfg)
 				if errors.Cause(err) == resources.ErrEmptyIdentityField {
 					c.errorLogger.Debug(fmt.Sprintf("%s: Unable to fetch and merge remote %s asset due to unset or (known after apply) identity fields on the TF resource.", rc.Address, converted.Type))
 					existingConverterAsset = nil
@@ -325,7 +326,7 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 				converted = converter.MergeCreateUpdate(*existingConverterAsset, converted)
 			}
 
-			augmented, err := c.augmentAsset(&rd, c.cfg, converted)
+			augmented, err := c.augmentAsset(rd, c.cfg, converted)
 			if err != nil {
 				return err
 			}
@@ -354,21 +355,19 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
-	project, err := getProject(tfData, cfg, cai, c.errorLogger)
+	ancestors, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
 	if err != nil {
-		return Asset{}, fmt.Errorf("getting project for %v: %w", cai.Name, err)
+		return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
 	}
-	ancestry, err := c.ancestryManager.GetAncestryWithResource(project, tfData, cai)
-	if err != nil {
-		return Asset{}, fmt.Errorf("getting resource ancestry for project %v: %w", project, err)
-	}
+
+	// parent can be derived from ancestors[0]
 	var resource *AssetResource
 	if cai.Resource != nil {
 		resource = &AssetResource{
 			Version:              cai.Resource.Version,
 			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
 			DiscoveryName:        cai.Resource.DiscoveryName,
-			Parent:               fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/%v", project),
+			Parent:               parent,
 			Data:                 cai.Resource.Data,
 		}
 	}
@@ -425,7 +424,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	return Asset{
 		Name:           cai.Name,
 		Type:           cai.Type,
-		Ancestry:       ancestry,
+		Ancestry:       ancestrymanager.ConvertToAncestryPath(ancestors),
 		Resource:       resource,
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,

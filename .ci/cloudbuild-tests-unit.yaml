@@ -26,9 +26,9 @@ steps:
   args: ['test']
   env:
     - TEST_PROJECT=$_TEST_PROJECT
-    - TEST_FOLDER=$_TEST_FOLDER
+    - TEST_FOLDER_ID=$_TEST_FOLDER
     - TEST_ANCESTRY=$_TEST_ANCESTRY
-    - TEST_ORG=$_TEST_ORG
+    - TEST_ORG_ID=$_TEST_ORG
     - 'GOPATH=/gopath'
   waitFor: ['build']
 tags:
