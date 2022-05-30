@@ -48,6 +48,7 @@ type Asset struct {
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
 	converterAsset resources.Asset
+	Ancestors      []string `json:"ancestors"`
 }
 
 // IAMPolicy is the representation of a Cloud IAM policy set on a cloud resource.
@@ -429,5 +430,6 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,
 		converterAsset: cai,
+		Ancestors:      ancestors,
 	}, nil
 }
