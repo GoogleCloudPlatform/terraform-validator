@@ -40,7 +40,6 @@ var ErrDuplicateAsset = errors.New("duplicate asset")
 type Asset struct {
 	Name      string         `json:"name"`
 	Type      string         `json:"asset_type"`
-	Ancestry  string         `json:"ancestry_path"`
 	Resource  *AssetResource `json:"resource,omitempty"`
 	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
 	OrgPolicy []*OrgPolicy   `json:"org_policy,omitempty"`
@@ -48,6 +47,7 @@ type Asset struct {
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
 	converterAsset resources.Asset
+	Ancestors      []string `json:"ancestors"`
 }
 
 // IAMPolicy is the representation of a Cloud IAM policy set on a cloud resource.
@@ -424,10 +424,10 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	return Asset{
 		Name:           cai.Name,
 		Type:           cai.Type,
-		Ancestry:       ancestrymanager.ConvertToAncestryPath(ancestors),
 		Resource:       resource,
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,
 		converterAsset: cai,
+		Ancestors:      ancestors,
 	}, nil
 }
