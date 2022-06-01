@@ -21,7 +21,9 @@ import (
 	"path/filepath"
 
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
+	cvasset "github.com/GoogleCloudPlatform/config-validator/pkg/asset"
 	"github.com/GoogleCloudPlatform/config-validator/pkg/gcv"
+
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/pkg/errors"
 )
@@ -67,6 +69,11 @@ func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, polic
 	// can be properly serialized to JSON.
 	violations := []*validator.Violation{}
 	for _, asset := range pbSplitAssets {
+		err := cvasset.SanitizeAncestryPath(asset)
+		if err != nil {
+			return nil, errors.Wrapf(err, "SanitizeAncestryPath %s", asset)
+		}
+
 		newViolations, err := valid.ReviewAsset(context.Background(), asset)
 
 		if err != nil {

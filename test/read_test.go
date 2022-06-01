@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfgcv"
 	"go.uber.org/zap/zaptest"
 )
@@ -129,20 +127,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 
 			// Unmarshal payload from testfile into `want` variable.
 			f := filepath.Join(dir, c.name+".json")
-			payload, err := ioutil.ReadFile(f)
+			want, err := readExpectedTestFile(f)
 			if err != nil {
-				t.Fatalf("cannot open %s, got: %s", f, err)
-			}
-			var want []google.Asset
-			if err := json.Unmarshal(payload, &want); err != nil {
-				t.Fatalf("cannot unmarshal JSON into assets: %s", err)
-			}
-			for ix := range want {
-				ancestors, err := ancestryPathToAncestors(want[ix].Ancestry)
-				if err != nil {
-					t.Fatalf("failed to convert to ancestors: %s", err)
-				}
-				want[ix].Ancestors = ancestors
+				t.Fatal(err)
 			}
 
 			planfile := filepath.Join(dir, c.name+".tfplan.json")

@@ -40,7 +40,6 @@ var ErrDuplicateAsset = errors.New("duplicate asset")
 type Asset struct {
 	Name      string         `json:"name"`
 	Type      string         `json:"asset_type"`
-	Ancestry  string         `json:"ancestry_path"`
 	Resource  *AssetResource `json:"resource,omitempty"`
 	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
 	OrgPolicy []*OrgPolicy   `json:"org_policy,omitempty"`
@@ -425,7 +424,6 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	return Asset{
 		Name:           cai.Name,
 		Type:           cai.Type,
-		Ancestry:       ancestrymanager.ConvertToAncestryPath(ancestors),
 		Resource:       resource,
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,
