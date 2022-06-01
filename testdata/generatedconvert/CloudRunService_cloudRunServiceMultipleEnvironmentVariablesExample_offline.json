@@ -2,7 +2,6 @@
   {
     "name": "//run.googleapis.com/projects/foobar/locations/us-central1/services/tf-test-cloudrun-srvmeepmerp",
     "asset_type": "run.googleapis.com/Service",
-    "ancestry_path": "organization/12345/folder/67890/project/foobar",
     "resource": {
       "version": "v1",
       "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/run/v1/rest",
@@ -45,6 +44,11 @@
           ]
         }
       }
-    }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
   }
 ]
