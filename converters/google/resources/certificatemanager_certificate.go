@@ -14,7 +14,18 @@
 
 package google
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func certManagerDefaultScopeDiffSuppress(_, old, new string, diff *schema.ResourceData) bool {
+	if old == "" && new == "DEFAULT" || old == "DEFAULT" && new == "" {
+		return true
+	}
+	return false
+}
 
 const CertificateManagerCertificateAssetType string = "certificatemanager.googleapis.com/Certificate"
 
