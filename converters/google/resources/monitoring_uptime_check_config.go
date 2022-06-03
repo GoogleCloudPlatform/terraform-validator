@@ -156,6 +156,13 @@ func expandMonitoringUptimeCheckConfigContentMatchers(v interface{}, d Terraform
 			transformed["matcher"] = transformedMatcher
 		}
 
+		transformedJsonPathMatcher, err := expandMonitoringUptimeCheckConfigContentMatchersJsonPathMatcher(original["json_path_matcher"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedJsonPathMatcher); val.IsValid() && !isEmptyValue(val) {
+			transformed["jsonPathMatcher"] = transformedJsonPathMatcher
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -166,6 +173,40 @@ func expandMonitoringUptimeCheckConfigContentMatchersContent(v interface{}, d Te
 }
 
 func expandMonitoringUptimeCheckConfigContentMatchersMatcher(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringUptimeCheckConfigContentMatchersJsonPathMatcher(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedJsonPath, err := expandMonitoringUptimeCheckConfigContentMatchersJsonPathMatcherJsonPath(original["json_path"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedJsonPath); val.IsValid() && !isEmptyValue(val) {
+		transformed["jsonPath"] = transformedJsonPath
+	}
+
+	transformedJsonMatcher, err := expandMonitoringUptimeCheckConfigContentMatchersJsonPathMatcherJsonMatcher(original["json_matcher"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedJsonMatcher); val.IsValid() && !isEmptyValue(val) {
+		transformed["jsonMatcher"] = transformedJsonMatcher
+	}
+
+	return transformed, nil
+}
+
+func expandMonitoringUptimeCheckConfigContentMatchersJsonPathMatcherJsonPath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringUptimeCheckConfigContentMatchersJsonPathMatcherJsonMatcher(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
