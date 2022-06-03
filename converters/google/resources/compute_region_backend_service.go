@@ -798,6 +798,13 @@ func expandComputeRegionBackendServiceCdnPolicyCacheKeyPolicy(v interface{}, d T
 		transformed["queryStringWhitelist"] = transformedQueryStringWhitelist
 	}
 
+	transformedIncludeNamedCookies, err := expandComputeRegionBackendServiceCdnPolicyCacheKeyPolicyIncludeNamedCookies(original["include_named_cookies"], d, config)
+	if err != nil {
+		return nil, err
+	} else {
+		transformed["includeNamedCookies"] = transformedIncludeNamedCookies
+	}
+
 	return transformed, nil
 }
 
@@ -820,6 +827,10 @@ func expandComputeRegionBackendServiceCdnPolicyCacheKeyPolicyQueryStringBlacklis
 
 func expandComputeRegionBackendServiceCdnPolicyCacheKeyPolicyQueryStringWhitelist(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	v = v.(*schema.Set).List()
+	return v, nil
+}
+
+func expandComputeRegionBackendServiceCdnPolicyCacheKeyPolicyIncludeNamedCookies(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
