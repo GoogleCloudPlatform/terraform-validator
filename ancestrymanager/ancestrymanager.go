@@ -8,6 +8,7 @@ import (
 	"google.golang.org/api/cloudresourcemanager/v3"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
+	"github.com/pkg/errors"
 
 	"go.uber.org/zap"
 )
@@ -208,7 +209,7 @@ func (m *manager) getAncestorsWithCache(key string) ([]string, error) {
 		}
 		project, err := m.resourceManager.Projects.Get(cur).Do()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "for more info- https://cloud.google.com/docs/terraform/policy-validation/troubleshooting#ProjectCallerForbidden")
 		}
 		ancestors = append(ancestors, project.Name)
 		cur = project.Parent
