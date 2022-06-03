@@ -2,7 +2,7 @@ module github.com/GoogleCloudPlatform/terraform-validator
 
 require (
 	cloud.google.com/go/bigtable v1.13.0
-	github.com/GoogleCloudPlatform/config-validator v0.0.0-20220601172935-268f307cad62
+	github.com/GoogleCloudPlatform/config-validator v0.0.0-20220601215952-9c7f9463df8c
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/protobuf v1.5.2
