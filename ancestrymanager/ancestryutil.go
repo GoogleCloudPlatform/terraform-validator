@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
+	"github.com/hashicorp/errwrap"
+	"google.golang.org/api/googleapi"
 
 	"go.uber.org/zap"
 )
@@ -133,4 +135,10 @@ func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool
 		return folderID.(string), ok
 	}
 	return "", false
+}
+
+// isGoogleApiErrorWithCode cheks if the error code is of given type or not.
+func isGoogleApiErrorWithCode(err error, errCode int) bool {
+	gerr, ok := errwrap.GetType(err, &googleapi.Error{}).(*googleapi.Error)
+	return ok && gerr != nil && gerr.Code == errCode
 }
