@@ -93,6 +93,12 @@ func GetMonitoringSloApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("calendar_period"); !isEmptyValue(reflect.ValueOf(calendarPeriodProp)) && (ok || !reflect.DeepEqual(v, calendarPeriodProp)) {
 		obj["calendarPeriod"] = calendarPeriodProp
 	}
+	userLabelsProp, err := expandMonitoringSloUserLabels(d.Get("user_labels"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("user_labels"); ok || !reflect.DeepEqual(v, userLabelsProp) {
+		obj["userLabels"] = userLabelsProp
+	}
 	serviceLevelIndicatorProp, err := expandMonitoringSloServiceLevelIndicator(nil, d, config)
 	if err != nil {
 		return nil, err
@@ -163,6 +169,17 @@ func flattenMonitoringSloRollingPeriodDays(v interface{}, d *schema.ResourceData
 
 func expandMonitoringSloCalendarPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
+}
+
+func expandMonitoringSloUserLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+	if v == nil {
+		return map[string]string{}, nil
+	}
+	m := make(map[string]string)
+	for k, val := range v.(map[string]interface{}) {
+		m[k] = val.(string)
+	}
+	return m, nil
 }
 
 func expandMonitoringSloServiceLevelIndicator(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
