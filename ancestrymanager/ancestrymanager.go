@@ -208,6 +208,10 @@ func (m *manager) getAncestorsWithCache(key string) ([]string, error) {
 		}
 		project, err := m.resourceManager.Projects.Get(cur).Do()
 		if err != nil {
+			if isGoogleApiErrorWithCode(err, 403) {
+				helperURL := "https://cloud.google.com/docs/terraform/policy-validation/troubleshooting#ProjectCallerForbidden"
+				return nil, fmt.Errorf("User does not have the correct permissions for project %s. For more info: %s", cur, helperURL)
+			}
 			return nil, err
 		}
 		ancestors = append(ancestors, project.Name)
