@@ -54,6 +54,12 @@ func GetMonitoringServiceApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("display_name"); !isEmptyValue(reflect.ValueOf(displayNameProp)) && (ok || !reflect.DeepEqual(v, displayNameProp)) {
 		obj["displayName"] = displayNameProp
 	}
+	userLabelsProp, err := expandMonitoringServiceUserLabels(d.Get("user_labels"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("user_labels"); ok || !reflect.DeepEqual(v, userLabelsProp) {
+		obj["userLabels"] = userLabelsProp
+	}
 	telemetryProp, err := expandMonitoringServiceTelemetry(d.Get("telemetry"), d, config)
 	if err != nil {
 		return nil, err
@@ -85,6 +91,17 @@ func resourceMonitoringServiceEncoder(d TerraformResourceData, meta interface{},
 
 func expandMonitoringServiceDisplayName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
+}
+
+func expandMonitoringServiceUserLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+	if v == nil {
+		return map[string]string{}, nil
+	}
+	m := make(map[string]string)
+	for k, val := range v.(map[string]interface{}) {
+		m[k] = val.(string)
+	}
+	return m, nil
 }
 
 func expandMonitoringServiceTelemetry(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
