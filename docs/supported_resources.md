@@ -7,6 +7,7 @@ If you want terraform validator to add support for a resource, please [open an e
 ```
 Terraform resource                                      | CAI Asset Type
 ------------------------------------------------------- | ------------------------------------------------
+google_access_context_manager_access_policy             | accesscontextmanager.googleapis.com/AccessPolicy
 google_access_context_manager_access_policy_iam_binding | accesscontextmanager.googleapis.com/AccessPolicy
 google_access_context_manager_access_policy_iam_member  | accesscontextmanager.googleapis.com/AccessPolicy
 google_access_context_manager_access_policy_iam_policy  | accesscontextmanager.googleapis.com/AccessPolicy
