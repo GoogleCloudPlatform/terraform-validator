@@ -78,6 +78,18 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("mtu"); !isEmptyValue(reflect.ValueOf(mtuProp)) && (ok || !reflect.DeepEqual(v, mtuProp)) {
 		obj["mtu"] = mtuProp
 	}
+	enableUlaInternalIpv6Prop, err := expandComputeNetworkEnableUlaInternalIpv6(d.Get("enable_ula_internal_ipv6"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("enable_ula_internal_ipv6"); !isEmptyValue(reflect.ValueOf(enableUlaInternalIpv6Prop)) && (ok || !reflect.DeepEqual(v, enableUlaInternalIpv6Prop)) {
+		obj["enableUlaInternalIpv6"] = enableUlaInternalIpv6Prop
+	}
+	internalIpv6RangeProp, err := expandComputeNetworkInternalIpv6Range(d.Get("internal_ipv6_range"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("internal_ipv6_range"); !isEmptyValue(reflect.ValueOf(internalIpv6RangeProp)) && (ok || !reflect.DeepEqual(v, internalIpv6RangeProp)) {
+		obj["internalIpv6Range"] = internalIpv6RangeProp
+	}
 
 	return obj, nil
 }
@@ -111,5 +123,13 @@ func expandComputeNetworkRoutingConfigRoutingMode(v interface{}, d TerraformReso
 }
 
 func expandComputeNetworkMtu(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNetworkEnableUlaInternalIpv6(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNetworkInternalIpv6Range(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
