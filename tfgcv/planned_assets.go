@@ -64,7 +64,7 @@ func ReadPlannedAssets(ctx context.Context, path, project string, ancestry map[s
 }
 
 func newConverter(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) (*google.Converter, error) {
-	cfg, err := resources.GetConfig(ctx, project, offline, userAgent)
+	cfg, err := resources.NewConfig(ctx, project, offline, userAgent, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "building google configuration")
 	}
