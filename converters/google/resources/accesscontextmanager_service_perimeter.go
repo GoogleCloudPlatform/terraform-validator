@@ -509,6 +509,13 @@ func expandAccessContextManagerServicePerimeterStatusEgressPoliciesEgressTo(v in
 		transformed["resources"] = transformedResources
 	}
 
+	transformedExternalResources, err := expandAccessContextManagerServicePerimeterStatusEgressPoliciesEgressToExternalResources(original["external_resources"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedExternalResources); val.IsValid() && !isEmptyValue(val) {
+		transformed["externalResources"] = transformedExternalResources
+	}
+
 	transformedOperations, err := expandAccessContextManagerServicePerimeterStatusEgressPoliciesEgressToOperations(original["operations"], d, config)
 	if err != nil {
 		return nil, err
@@ -520,6 +527,10 @@ func expandAccessContextManagerServicePerimeterStatusEgressPoliciesEgressTo(v in
 }
 
 func expandAccessContextManagerServicePerimeterStatusEgressPoliciesEgressToResources(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAccessContextManagerServicePerimeterStatusEgressPoliciesEgressToExternalResources(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -979,6 +990,13 @@ func expandAccessContextManagerServicePerimeterSpecEgressPoliciesEgressTo(v inte
 		transformed["resources"] = transformedResources
 	}
 
+	transformedExternalResources, err := expandAccessContextManagerServicePerimeterSpecEgressPoliciesEgressToExternalResources(original["external_resources"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedExternalResources); val.IsValid() && !isEmptyValue(val) {
+		transformed["externalResources"] = transformedExternalResources
+	}
+
 	transformedOperations, err := expandAccessContextManagerServicePerimeterSpecEgressPoliciesEgressToOperations(original["operations"], d, config)
 	if err != nil {
 		return nil, err
@@ -990,6 +1008,10 @@ func expandAccessContextManagerServicePerimeterSpecEgressPoliciesEgressTo(v inte
 }
 
 func expandAccessContextManagerServicePerimeterSpecEgressPoliciesEgressToResources(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAccessContextManagerServicePerimeterSpecEgressPoliciesEgressToExternalResources(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
