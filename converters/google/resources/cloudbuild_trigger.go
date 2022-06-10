@@ -128,6 +128,12 @@ func GetCloudBuildTriggerApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("service_account"); !isEmptyValue(reflect.ValueOf(serviceAccountProp)) && (ok || !reflect.DeepEqual(v, serviceAccountProp)) {
 		obj["serviceAccount"] = serviceAccountProp
 	}
+	includeBuildLogsProp, err := expandCloudBuildTriggerIncludeBuildLogs(d.Get("include_build_logs"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("include_build_logs"); !isEmptyValue(reflect.ValueOf(includeBuildLogsProp)) && (ok || !reflect.DeepEqual(v, includeBuildLogsProp)) {
+		obj["includeBuildLogs"] = includeBuildLogsProp
+	}
 	filenameProp, err := expandCloudBuildTriggerFilename(d.Get("filename"), d, config)
 	if err != nil {
 		return nil, err
@@ -232,6 +238,10 @@ func expandCloudBuildTriggerSubstitutions(v interface{}, d TerraformResourceData
 }
 
 func expandCloudBuildTriggerServiceAccount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerIncludeBuildLogs(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
