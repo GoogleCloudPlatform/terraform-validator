@@ -22,7 +22,9 @@ type AncestryManager interface {
 type manager struct {
 	// The logger.
 	errorLogger *zap.Logger
-	// GCP resource manager service. If this field is nil, online lookups will
+	// cloud resource manager V3 client. If this field is nil, online lookups will
+	// be disabled.
+	// cloud resource manager V1 client. If this field is nil, online lookups will
 	// be disabled.
 	resourceManagerV3 *crmv3.Service
 	resourceManagerV1 *crmv1.Service
@@ -35,8 +37,8 @@ type manager struct {
 // New returns AncestryManager that can be used to fetch ancestry information.
 // Entries takes `projects/<number>` or `folders/<id>` as key and ancestry path
 // as value to the offline cache. If the key is not prefix with `projects/` or
-// `folders/`, it will be considered as a project. If no resourceManager is
-// provided, API requests for ancestry will be disabled.
+// `folders/`, it will be considered as a project. If offline is true, resource
+// manager API requests for ancestry will be disabled.
 func New(cfg *resources.Config, offline bool, entries map[string]string, errorLogger *zap.Logger) (AncestryManager, error) {
 	am := &manager{
 		ancestorCache: map[string][]string{},

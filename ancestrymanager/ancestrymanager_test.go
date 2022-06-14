@@ -428,11 +428,7 @@ func TestGetAncestorsWithCache(t *testing.T) {
 			name:        "empty cache",
 			input:       "projects/abc",
 			cache:       make(map[string][]string),
-			v3Responses: map[string]*crmv3.Project{
-				// "projects/abc": {Name: "projects/123", ProjectId: "abc", Parent: "folders/456"},
-				// "folders/456": {Name: "folders/456", Parent: "folders/789"},
-				// "folders/789": {Name: "folders/789", Parent: "organizations/321"},
-			},
+			v3Responses: map[string]*crmv3.Project{},
 			v1Responses: map[string][]*crmv1.Ancestor{
 				"abc": []*crmv1.Ancestor{
 					{ResourceId: &crmv1.ResourceId{Id: "abc", Type: "project"}},
@@ -456,10 +452,7 @@ func TestGetAncestorsWithCache(t *testing.T) {
 				"folders/789":       {"folders/789", "organizations/321"},
 				"organizations/321": {"organizations/321"},
 			},
-			v3Responses: map[string]*crmv3.Project{
-				// "projects/abc": {Name: "projects/123", ProjectId: "abc", Parent: "folders/456"},
-				// "folders/456": {Name: "folders/456", Parent: "folders/789"},
-			},
+			v3Responses: map[string]*crmv3.Project{},
 			v1Responses: map[string][]*crmv1.Ancestor{
 				"abc": []*crmv1.Ancestor{
 					{ResourceId: &crmv1.ResourceId{Id: "abc", Type: "project"}},
