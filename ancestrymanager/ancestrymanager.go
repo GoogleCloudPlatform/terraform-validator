@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/api/cloudresourcemanager/v3"
+	crmv1 "google.golang.org/api/cloudresourcemanager/v1"
+	crmv3 "google.golang.org/api/cloudresourcemanager/v3"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 
@@ -23,7 +24,8 @@ type manager struct {
 	errorLogger *zap.Logger
 	// GCP resource manager service. If this field is nil, online lookups will
 	// be disabled.
-	resourceManager *cloudresourcemanager.Service
+	resourceManagerV3 *crmv3.Service
+	resourceManagerV1 *crmv1.Service
 	// Cache to prevent multiple network calls for looking up the same
 	// resource's ancestry. The map key is the resource itself, in the format of
 	// "<type>/<id>", ancestors are sorted from closest to furthest.
@@ -35,15 +37,14 @@ type manager struct {
 // as value to the offline cache. If the key is not prefix with `projects/` or
 // `folders/`, it will be considered as a project. If no resourceManager is
 // provided, API requests for ancestry will be disabled.
-func New(resourceManager *cloudresourcemanager.Service, entries map[string]string, errorLogger *zap.Logger) (AncestryManager, error) {
-	return newManager(resourceManager, entries, errorLogger)
-}
-
-func newManager(resourceManager *cloudresourcemanager.Service, entries map[string]string, errorLogger *zap.Logger) (*manager, error) {
+func New(cfg *resources.Config, offline bool, entries map[string]string, errorLogger *zap.Logger) (AncestryManager, error) {
 	am := &manager{
-		ancestorCache:   map[string][]string{},
-		errorLogger:     errorLogger,
-		resourceManager: resourceManager,
+		ancestorCache: map[string][]string{},
+		errorLogger:   errorLogger,
+	}
+	if !offline {
+		am.resourceManagerV1 = cfg.NewResourceManagerClient(cfg.UserAgent())
+		am.resourceManagerV3 = cfg.NewResourceManagerV3Client(cfg.UserAgent())
 	}
 	err := am.initAncestryCache(entries)
 	if err != nil {
@@ -203,22 +204,41 @@ func (m *manager) getAncestorsWithCache(key string) ([]string, error) {
 			ancestors = append(ancestors, cur)
 			break
 		}
-		if m.resourceManager == nil {
+		if m.resourceManagerV3 == nil || m.resourceManagerV1 == nil {
 			return nil, fmt.Errorf("resourceManager required to fetch ancestry for %s from the API", cur)
 		}
-		project, err := m.resourceManager.Projects.Get(cur).Do()
-		if err != nil {
-			if isGoogleApiErrorWithCode(err, 403) {
-				helperURL := "https://cloud.google.com/docs/terraform/policy-validation/troubleshooting#ProjectCallerForbidden"
-				return nil, fmt.Errorf("User does not have the correct permissions for project %s. For more info: %s", cur, helperURL)
+		if strings.HasPrefix(cur, "projects") {
+			// fall back to use v1 API GetAncestry to avoid requiring extra folder permission
+			projectID := strings.TrimPrefix(cur, "projects/")
+			resp, err := m.resourceManagerV1.Projects.GetAncestry(projectID, &crmv1.GetAncestryRequest{}).Do()
+			if err != nil {
+				return nil, handleCRMError(cur, err)
 			}
-			return nil, err
+			for _, anc := range resp.Ancestor {
+				ancestor := normalizeAncestry(fmt.Sprintf("%s/%s", anc.ResourceId.Type, anc.ResourceId.Id))
+				ancestors = append(ancestors, ancestor)
+			}
+			// break out of the loop
+			cur = ""
+		} else {
+			project, err := m.resourceManagerV3.Projects.Get(cur).Do()
+			if err != nil {
+				return nil, handleCRMError(cur, err)
+			}
+			ancestors = append(ancestors, project.Name)
+			cur = project.Parent
 		}
-		ancestors = append(ancestors, project.Name)
-		cur = project.Parent
 	}
 	m.store(key, ancestors)
 	return ancestors, nil
+}
+
+func handleCRMError(resource string, err error) error {
+	if isGoogleApiErrorWithCode(err, 403) {
+		helperURL := "https://cloud.google.com/docs/terraform/policy-validation/troubleshooting#ProjectCallerForbidden"
+		return fmt.Errorf("user does not have the correct permissions for %s. For more info: %s", resource, helperURL)
+	}
+	return err
 }
 
 func (m *manager) store(key string, ancestors []string) {
