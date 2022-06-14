@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -14,19 +15,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	provider "github.com/hashicorp/terraform-provider-google/google"
 	"go.uber.org/zap"
-	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v3"
+	crmv1 "google.golang.org/api/cloudresourcemanager/v1"
+	crmv3 "google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/option"
 )
-
-func newTestResourceManagerClient(opts []option.ClientOption) *cloudresourcemanager.Service {
-	ctx := context.Background()
-
-	rm, err := cloudresourcemanager.NewService(ctx, opts...)
-	if err != nil {
-		panic(err)
-	}
-	return rm
-}
 
 func TestGetAncestors(t *testing.T) {
 	ownerProject := "foo"
@@ -34,20 +26,40 @@ func TestGetAncestors(t *testing.T) {
 	anotherProject := "foo2"
 
 	// Setup a simple test server to mock the response of resource manager.
-	responses := map[string]*cloudresourcemanager.Project{
-		"projects/12345":     {Name: "projects/12345", Parent: "folders/bar"},
-		"projects/foo":       {Name: "projects/foo", Parent: "folders/bar"},
+	v3Responses := map[string]*crmv3.Project{
 		"folders/bar":        {Name: "folders/bar", Parent: "organizations/qux"},
 		"organizations/qux":  {Name: "organizations/qux", Parent: ""},
-		"projects/foo2":      {Name: "projects/foo2", Parent: "folders/bar2"},
 		"folders/bar2":       {Name: "folders/bar2", Parent: "organizations/qux2"},
 		"organizations/qux2": {Name: "organizations/qux2", Parent: ""},
 	}
-	ts := newAncestryManagerMockServer(t, responses)
-	defer ts.Close()
+	v1Responses := map[string][]*crmv1.Ancestor{
+		ownerProject: []*crmv1.Ancestor{
+			{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+			{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+			{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+		},
+		"12345": []*crmv1.Ancestor{
+			{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+			{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+			{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+		},
+		anotherProject: []*crmv1.Ancestor{
+			{ResourceId: &crmv1.ResourceId{Id: "foo2", Type: "project"}},
+			{ResourceId: &crmv1.ResourceId{Id: "bar2", Type: "folder"}},
+			{ResourceId: &crmv1.ResourceId{Id: "qux2", Type: "organization"}},
+		},
+	}
 
-	// option.WithEndpoint(ts.URL), option.WithoutAuthentication()
-	rm := newTestResourceManagerClient([]option.ClientOption{option.WithEndpoint(ts.URL), option.WithoutAuthentication()})
+	ts := newAncestryManagerMockServer(t, v3Responses, v1Responses)
+	defer ts.Close()
+	mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockV3Client, err := crmv3.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	entries := map[string]string{
 		ownerProject: ownerAncestryPath,
@@ -108,7 +120,7 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:             []string{"projects/12345", "folders/bar", "organizations/qux"},
+			want:             []string{"projects/foo", "folders/bar", "organizations/qux"},
 			wantOfflineError: true,
 			parent:           "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
@@ -348,77 +360,86 @@ func TestGetAncestors(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			cfg := &resources.Config{
-				Project: ownerProject,
-			}
-			amOnline, err := newManager(rm, entries, zap.NewExample())
-			if err != nil {
-				t.Fatalf("failed to create online ancestry manager: %s", err)
-			}
-			got, parent, err := amOnline.Ancestors(cfg, c.data, c.asset)
-			if c.wantOnlineError {
-				if err == nil {
-					t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+		for _, offline := range []bool{true, false} {
+			t.Run(fmt.Sprintf("%s offline = %t", c.name, offline), func(t *testing.T) {
+				cfg := &resources.Config{
+					Project: ownerProject,
 				}
-			} else {
-				if err != nil {
-					t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+				ancestryManager := &manager{
+					errorLogger:   zap.NewExample(),
+					ancestorCache: make(map[string][]string),
 				}
-				if parent != c.parent {
-					t.Errorf("onlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+				if !offline {
+					ancestryManager.resourceManagerV3 = mockV3Client
+					ancestryManager.resourceManagerV1 = mockV1Client
 				}
-				if diff := cmp.Diff(c.want, got); diff != "" {
-					t.Errorf("onlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
-				}
-			}
+				ancestryManager.initAncestryCache(entries)
 
-			amOffline, err := newManager(nil, entries, zap.NewExample())
-			if err != nil {
-				t.Fatalf("failed to create offline ancestry manager: %s", err)
-			}
-			got, parent, err = amOffline.Ancestors(cfg, c.data, c.asset)
-			if c.wantOfflineError {
-				if err == nil {
-					t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+				got, parent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
+				if !offline {
+					if c.wantOnlineError {
+						if err == nil {
+							t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+						}
+					} else {
+						if err != nil {
+							t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+						}
+						if parent != c.parent {
+							t.Errorf("onlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+						}
+						if diff := cmp.Diff(c.want, got); diff != "" {
+							t.Errorf("onlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+						}
+					}
+				} else {
+					if c.wantOfflineError {
+						if err == nil {
+							t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+						}
+					} else {
+						if err != nil {
+							t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+						}
+						if parent != c.parent {
+							t.Errorf("offlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+						}
+						if diff := cmp.Diff(c.want, got); diff != "" {
+							t.Errorf("offlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+						}
+					}
 				}
-			} else {
-				if err != nil {
-					t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
-				}
-				if parent != c.parent {
-					t.Errorf("offlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
-				}
-				if diff := cmp.Diff(c.want, got); diff != "" {
-					t.Errorf("offlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
-				}
-			}
-		})
+			})
+		}
 	}
 }
 
 func TestGetAncestorsWithCache(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     string
-		cache     map[string][]string
-		responses map[string]*cloudresourcemanager.Project
-		want      []string
-		wantCache map[string][]string
+		name        string
+		input       string
+		cache       map[string][]string
+		v3Responses map[string]*crmv3.Project
+		v1Responses map[string][]*crmv1.Ancestor
+		want        []string
+		wantCache   map[string][]string
 	}{
 		{
-			name:  "empty cache",
-			input: "projects/abc",
-			cache: make(map[string][]string),
-			responses: map[string]*cloudresourcemanager.Project{
-				"projects/abc": {Name: "projects/123", ProjectId: "abc", Parent: "folders/456"},
-				"folders/456":  {Name: "folders/456", Parent: "folders/789"},
-				"folders/789":  {Name: "folders/789", Parent: "organizations/321"},
+			name:        "empty cache",
+			input:       "projects/abc",
+			cache:       make(map[string][]string),
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"abc": []*crmv1.Ancestor{
+					{ResourceId: &crmv1.ResourceId{Id: "abc", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "456", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "789", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "321", Type: "organization"}},
+				},
 			},
-			want: []string{"projects/123", "folders/456", "folders/789", "organizations/321"},
+			want: []string{"projects/abc", "folders/456", "folders/789", "organizations/321"},
 			wantCache: map[string][]string{
-				"projects/abc":      {"projects/123", "folders/456", "folders/789", "organizations/321"},
-				"projects/123":      {"projects/123", "folders/456", "folders/789", "organizations/321"},
+				"projects/abc":      {"projects/abc", "folders/456", "folders/789", "organizations/321"},
 				"folders/456":       {"folders/456", "folders/789", "organizations/321"},
 				"folders/789":       {"folders/789", "organizations/321"},
 				"organizations/321": {"organizations/321"},
@@ -431,14 +452,18 @@ func TestGetAncestorsWithCache(t *testing.T) {
 				"folders/789":       {"folders/789", "organizations/321"},
 				"organizations/321": {"organizations/321"},
 			},
-			responses: map[string]*cloudresourcemanager.Project{
-				"projects/abc": {Name: "projects/123", ProjectId: "abc", Parent: "folders/456"},
-				"folders/456":  {Name: "folders/456", Parent: "folders/789"},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"abc": []*crmv1.Ancestor{
+					{ResourceId: &crmv1.ResourceId{Id: "abc", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "456", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "789", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "321", Type: "organization"}},
+				},
 			},
-			want: []string{"projects/123", "folders/456", "folders/789", "organizations/321"},
+			want: []string{"projects/abc", "folders/456", "folders/789", "organizations/321"},
 			wantCache: map[string][]string{
-				"projects/abc":      {"projects/123", "folders/456", "folders/789", "organizations/321"},
-				"projects/123":      {"projects/123", "folders/456", "folders/789", "organizations/321"},
+				"projects/abc":      {"projects/abc", "folders/456", "folders/789", "organizations/321"},
 				"folders/456":       {"folders/456", "folders/789", "organizations/321"},
 				"folders/789":       {"folders/789", "organizations/321"},
 				"organizations/321": {"organizations/321"},
@@ -450,8 +475,9 @@ func TestGetAncestorsWithCache(t *testing.T) {
 			cache: map[string][]string{
 				"projects/abc": {"projects/123", "folders/456", "folders/789", "organizations/321"},
 			},
-			responses: map[string]*cloudresourcemanager.Project{},
-			want:      []string{"projects/123", "folders/456", "folders/789", "organizations/321"},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{},
+			want:        []string{"projects/123", "folders/456", "folders/789", "organizations/321"},
 			wantCache: map[string][]string{
 				"projects/abc":      {"projects/123", "folders/456", "folders/789", "organizations/321"},
 				"projects/123":      {"projects/123", "folders/456", "folders/789", "organizations/321"},
@@ -461,26 +487,37 @@ func TestGetAncestorsWithCache(t *testing.T) {
 			},
 		},
 		{
-			name:      "organization",
-			input:     "organizations/321",
-			cache:     map[string][]string{},
-			responses: map[string]*cloudresourcemanager.Project{},
-			want:      []string{"organizations/321"},
+			name:        "organization",
+			input:       "organizations/321",
+			cache:       map[string][]string{},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{},
+			want:        []string{"organizations/321"},
 			wantCache: map[string][]string{
 				"organizations/321": {"organizations/321"},
 			},
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ts := newAncestryManagerMockServer(t, test.responses)
+			ts := newAncestryManagerMockServer(t, test.v3Responses, test.v1Responses)
 			defer ts.Close()
-
-			m := &manager{
-				errorLogger:     zap.NewExample(),
-				resourceManager: newTestResourceManagerClient([]option.ClientOption{option.WithEndpoint(ts.URL), option.WithoutAuthentication()}),
-				ancestorCache:   test.cache,
+			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
 			}
+			mockV3Client, err := crmv3.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+			m := &manager{
+				errorLogger:       zap.NewExample(),
+				ancestorCache:     test.cache,
+				resourceManagerV3: mockV3Client,
+				resourceManagerV1: mockV1Client,
+			}
+
 			got, err := m.getAncestorsWithCache(test.input)
 			if err != nil {
 				t.Fatalf("getAncestorsWithCache(%s) = %s, want = nil", test.input, err)
@@ -497,17 +534,18 @@ func TestGetAncestorsWithCache(t *testing.T) {
 
 func TestGetAncestorsWithCache_Fail(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     string
-		cache     map[string][]string
-		responses map[string]*cloudresourcemanager.Project
-		wantErr   string
+		name        string
+		input       string
+		cache       map[string][]string
+		v3Responses map[string]*crmv3.Project
+		v1Responses map[string][]*crmv1.Ancestor
+		wantErr     string
 	}{
 		{
 			name:  "no parent response",
 			input: "projects/abc",
 			cache: make(map[string][]string),
-			responses: map[string]*cloudresourcemanager.Project{
+			v3Responses: map[string]*crmv3.Project{
 				"projects/abc": {Name: "projects/123", ProjectId: "projects/abc", Parent: "folders/not-exist"},
 			},
 			wantErr: "no response",
@@ -515,21 +553,24 @@ func TestGetAncestorsWithCache_Fail(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ts := newAncestryManagerMockServer(t, test.responses)
+			ts := newAncestryManagerMockServer(t, test.v3Responses, test.v1Responses)
 			defer ts.Close()
-
-			crm := newTestResourceManagerClient(
-				[]option.ClientOption{
-					option.WithEndpoint(ts.URL),
-					option.WithoutAuthentication(),
-				},
-			)
-			m := &manager{
-				errorLogger:     zap.NewExample(),
-				resourceManager: crm,
-				ancestorCache:   test.cache,
+			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
 			}
-			_, err := m.getAncestorsWithCache(test.input)
+			mockV3Client, err := crmv3.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+			m := &manager{
+				errorLogger:       zap.NewExample(),
+				ancestorCache:     test.cache,
+				resourceManagerV3: mockV3Client,
+				resourceManagerV1: mockV1Client,
+			}
+
+			_, err = m.getAncestorsWithCache(test.input)
 			if err == nil {
 				t.Fatalf("getAncestorsWithCache(%s) = nil, want = %s", test.input, test.wantErr)
 			}
@@ -537,23 +578,44 @@ func TestGetAncestorsWithCache_Fail(t *testing.T) {
 	}
 }
 
-func newAncestryManagerMockServer(t *testing.T, responses map[string]*cloudresourcemanager.Project) *httptest.Server {
+func newAncestryManagerMockServer(t *testing.T, v3Responses map[string]*crmv3.Project, v1Responses map[string][]*crmv1.Ancestor) *httptest.Server {
 	t.Helper()
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		name := strings.TrimPrefix(r.URL.Path, "/v3/")
-		resp, ok := responses[name]
-		if !ok {
+		if strings.HasPrefix(r.URL.Path, "/v3/") {
+			name := strings.TrimPrefix(r.URL.Path, "/v3/")
+			resp, ok := v3Responses[name]
+			if !ok {
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte(fmt.Sprintf("no response for request path %s", "/v3/"+name)))
+				return
+			}
+			payload, err := resp.MarshalJSON()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("failed to MarshalJSON: %s", err)))
+				return
+			}
+			w.Write(payload)
+		} else if strings.HasPrefix(r.URL.Path, "/v1/") {
+			re := regexp.MustCompile(`([^/]*):getAncestry`)
+			path := re.FindStringSubmatch(r.URL.Path)
+			if path == nil || v1Responses[path[1]] == nil {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			payload, err := (&crmv1.GetAncestryResponse{Ancestor: v1Responses[path[1]]}).MarshalJSON()
+			if err != nil {
+				t.Errorf("failed to MarshalJSON: %s", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			w.Write(payload)
+		} else {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(fmt.Sprintf("no response for request path %s", "/v3/"+name)))
+			w.Write([]byte(fmt.Sprintf("no response for url path %s", r.URL.Path)))
 			return
 		}
-		payload, err := resp.MarshalJSON()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("failed to MarshalJSON: %s", err)))
-			return
-		}
-		w.Write(payload)
 	}))
 	return ts
 }
