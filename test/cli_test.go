@@ -94,6 +94,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_dns_managed_zone"},
 		{name: "example_dns_policy"},
 		{name: "example_filestore_instance"},
+		{name: "example_folder_iam_member"},
 		{name: "example_folder_organization_policy"},
 		{name: "example_google_cloudfunctions_function"},
 		{name: "example_google_sql_database"},
