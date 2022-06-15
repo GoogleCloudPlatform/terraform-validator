@@ -468,30 +468,17 @@ func newTestServer(t *testing.T, v1Responses map[string][]*crmv1.Ancestor, v3Res
 }
 
 func TestGetAncestors_Folder(t *testing.T) {
-	ownerProject := "foo"
-	ownerAncestryPath := "organization/qux/folder/bar/project/foo"
-
-	v3Responses := map[string]*crmv3.Project{
-		"folders/bar":        {Name: "folders/bar", Parent: "organizations/qux"},
-		"organizations/qux":  {Name: "organizations/qux", Parent: ""},
-		"folders/bar2":       {Name: "folders/bar2", Parent: "organizations/qux2"},
-		"organizations/qux2": {Name: "organizations/qux2", Parent: ""},
-	}
-	v1Responses := map[string][]*crmv1.Ancestor{}
-
-	entries := map[string]string{
-		ownerProject: ownerAncestryPath,
-	}
-
 	p := provider.Provider()
-
 	cases := []struct {
-		name    string
-		data    resources.TerraformResourceData
-		asset   *resources.Asset
-		want    []string
-		parent  string
-		v3Count int
+		name        string
+		data        resources.TerraformResourceData
+		asset       *resources.Asset
+		v1Responses map[string][]*crmv1.Ancestor
+		v3Responses map[string]*crmv3.Project
+		want        []string
+		parent      string
+		v3Count     int
+		v1Count     int
 	}{
 		{
 			name: "folder not changed",
@@ -499,38 +486,110 @@ func TestGetAncestors_Folder(t *testing.T) {
 				"google_project",
 				p.ResourcesMap["google_project"].Schema,
 				map[string]interface{}{
-					"project_id": ownerProject,
+					"project_id": "foo",
 					"folder_id":  "folders/bar",
 				},
 			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar",
+			v1Count: 1,
 		},
 		{
-			name: "folder changed",
+			name: "folder changed from folders/bar1 to folders/bar2",
 			data: tfdata.NewFakeResourceData(
 				"google_project",
 				p.ResourcesMap["google_project"].Schema,
 				map[string]interface{}{
-					"project_id": ownerProject,
+					"project_id": "foo",
 					"folder_id":  "folders/bar2",
 				},
 			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
+			v3Responses: map[string]*crmv3.Project{
+				"folders/bar2":       {Name: "folders/bar2", Parent: "organizations/qux2"},
+				"organizations/qux2": {Name: "organizations/qux2", Parent: ""},
+			},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
 			want:    []string{"projects/foo", "folders/bar2", "organizations/qux2"},
 			parent:  "//cloudresourcemanager.googleapis.com/folders/bar2",
 			v3Count: 1,
+			v1Count: 1,
+		},
+		{
+			name: "folder changed from folders/bar1/folders/bar2 to folders/bar2",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "foo",
+					"folder_id":  "folders/bar2",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar2", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar2", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar2",
+			v1Count: 1,
+		},
+		{
+			name: "folder changed from folders/bar2 to folders/bar1/folders/bar2",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "foo",
+					"folder_id":  "folders/bar2",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar2", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar2", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar2",
+			v1Count: 1,
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 
-			ts := newTestServer(t, v1Responses, v3Responses)
+			ts := newTestServer(t, c.v1Responses, c.v3Responses)
 			defer ts.Close()
 
 			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
@@ -543,7 +602,7 @@ func TestGetAncestors_Folder(t *testing.T) {
 			}
 
 			cfg := &resources.Config{
-				Project: ownerProject,
+				Project: "foo",
 			}
 			ancestryManager := &manager{
 				errorLogger:       zap.NewExample(),
@@ -551,7 +610,8 @@ func TestGetAncestors_Folder(t *testing.T) {
 				resourceManagerV3: mockV3Client,
 				resourceManagerV1: mockV1Client,
 			}
-			ancestryManager.initAncestryCache(entries)
+			// empty cache
+			ancestryManager.initAncestryCache(map[string]string{})
 
 			got, parent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
 			if err != nil {
@@ -565,6 +625,9 @@ func TestGetAncestors_Folder(t *testing.T) {
 			}
 			if ts.v3Count != c.v3Count {
 				t.Errorf("Ancestors(%v, %v, %v) v3 API called = %d, want = %d", cfg, c.data, c.asset, ts.v3Count, c.v3Count)
+			}
+			if ts.v1Count != c.v1Count {
+				t.Errorf("Ancestors(%v, %v, %v) v1 API called = %d, want = %d", cfg, c.data, c.asset, ts.v1Count, c.v1Count)
 			}
 		})
 	}

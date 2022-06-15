@@ -173,17 +173,11 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 			// Get ancestry from project level first, if folder changed, then proceed
 			// with folder. This is to avoid requiring folder level permission if
 			// there is no folder change.
-			folderIsAncestor := false
-			projectAncestors, _ := m.getAncestorsWithCache(fmt.Sprintf("projects/%s", projectID))
-			for _, ancestor := range projectAncestors {
-				if ancestor == folderKey {
-					folderIsAncestor = true
-				}
-			}
-			if folderIsAncestor {
-				return projectAncestors, nil
-			}
 
+			// trigger v1 API to get current ancestors and update the cache
+			m.getAncestorsWithCache(fmt.Sprintf("projects/%s", projectID))
+
+			// if folder changed, then it goes with v3 API, else it will use cache.
 			key = folderKey
 			ret, err := m.getAncestorsWithCache(key)
 			if err != nil {
