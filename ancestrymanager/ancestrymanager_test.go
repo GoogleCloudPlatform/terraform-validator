@@ -468,6 +468,8 @@ func newTestServer(t *testing.T, v1Responses map[string][]*crmv1.Ancestor, v3Res
 }
 
 func TestGetAncestors_Folder(t *testing.T) {
+	// v1 API is used to fetch ancestry first, and compared with the resource data
+	// to find out whether there is a folder ID change.
 	p := provider.Provider()
 	cases := []struct {
 		name        string
@@ -506,7 +508,8 @@ func TestGetAncestors_Folder(t *testing.T) {
 			v1Count: 1,
 		},
 		{
-			name: "folder changed from folders/bar1 to folders/bar2",
+			// project moving from organizations/qux/folders/bar to organizations/qux2/folders/bar2
+			name: "project moved from a top-level folder in one org to a top-level folder in a different org",
 			data: tfdata.NewFakeResourceData(
 				"google_project",
 				p.ResourcesMap["google_project"].Schema,
@@ -535,7 +538,8 @@ func TestGetAncestors_Folder(t *testing.T) {
 			v1Count: 1,
 		},
 		{
-			name: "folder changed from folders/bar1/folders/bar2 to folders/bar2",
+			// project moving from folders/bar2/folders/bar to folders/bar2
+			name: "project moved from child folder to parent folder",
 			data: tfdata.NewFakeResourceData(
 				"google_project",
 				p.ResourcesMap["google_project"].Schema,
@@ -561,19 +565,22 @@ func TestGetAncestors_Folder(t *testing.T) {
 			v1Count: 1,
 		},
 		{
-			name: "folder changed from folders/bar2 to folders/bar1/folders/bar2",
+			// project moving from folders/bar2 to folders/bar2/folders/bar
+			name: "project moved from parent folder to child folder",
 			data: tfdata.NewFakeResourceData(
 				"google_project",
 				p.ResourcesMap["google_project"].Schema,
 				map[string]interface{}{
 					"project_id": "foo",
-					"folder_id":  "folders/bar2",
+					"folder_id":  "folders/bar",
 				},
 			),
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			v3Responses: map[string]*crmv3.Project{},
+			v3Responses: map[string]*crmv3.Project{
+				"folders/bar": {Name: "folders/bar", Parent: "folders/bar2"},
+			},
 			v1Responses: map[string][]*crmv1.Ancestor{
 				"foo": {
 					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
@@ -581,9 +588,10 @@ func TestGetAncestors_Folder(t *testing.T) {
 					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
 				},
 			},
-			want:    []string{"projects/foo", "folders/bar2", "organizations/qux"},
-			parent:  "//cloudresourcemanager.googleapis.com/folders/bar2",
+			want:    []string{"projects/foo", "folders/bar", "folders/bar2", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar",
 			v1Count: 1,
+			v3Count: 1,
 		},
 	}
 	for _, c := range cases {
