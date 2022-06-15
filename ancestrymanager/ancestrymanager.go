@@ -170,6 +170,20 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 			return ancestors, nil
 		}
 		if folderOK {
+			// Get ancestry from project level first, if folder changed, then proceed
+			// with folder. This is to avoid requiring folder level permission if
+			// there is no folder change.
+			folderIsAncestor := false
+			projectAncestors, _ := m.getAncestorsWithCache(fmt.Sprintf("projects/%s", projectID))
+			for _, ancestor := range projectAncestors {
+				if ancestor == folderKey {
+					folderIsAncestor = true
+				}
+			}
+			if folderIsAncestor {
+				return projectAncestors, nil
+			}
+
 			key = folderKey
 			ret, err := m.getAncestorsWithCache(key)
 			if err != nil {
