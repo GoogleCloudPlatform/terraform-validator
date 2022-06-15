@@ -1,6 +1,6 @@
 [
     {
-        "name": "//cloudresourcemanager.googleapis.com/folders/{{.FolderID}}",
+        "name": "//cloudresourcemanager.googleapis.com/placeholder-BpLnfgDs",
         "asset_type": "cloudresourcemanager.googleapis.com/Folder",
         "ancestry_path": "{{.Ancestry}}",
         "iam_policy": {
