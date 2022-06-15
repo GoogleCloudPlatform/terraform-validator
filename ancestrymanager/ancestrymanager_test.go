@@ -50,7 +50,7 @@ func TestGetAncestors(t *testing.T) {
 		},
 	}
 
-	ts := newAncestryManagerMockServer(t, v3Responses, v1Responses)
+	ts := newTestServer(t, v1Responses, v3Responses)
 	defer ts.Close()
 	mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
 	if err != nil {
@@ -414,6 +414,233 @@ func TestGetAncestors(t *testing.T) {
 	}
 }
 
+type testServer struct {
+	*httptest.Server
+	v1Count int
+	v3Count int
+}
+
+func newTestServer(t *testing.T, v1Responses map[string][]*crmv1.Ancestor, v3Responses map[string]*crmv3.Project) *testServer {
+	t.Helper()
+	ts := &testServer{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/v3/") {
+			name := strings.TrimPrefix(r.URL.Path, "/v3/")
+			resp, ok := v3Responses[name]
+			if !ok {
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte(fmt.Sprintf("no response for request path %s", "/v3/"+name)))
+				return
+			}
+
+			ts.v3Count++
+			payload, err := resp.MarshalJSON()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("failed to MarshalJSON: %s", err)))
+				return
+			}
+			w.Write(payload)
+		} else if strings.HasPrefix(r.URL.Path, "/v1/") {
+			re := regexp.MustCompile(`([^/]*):getAncestry`)
+			path := re.FindStringSubmatch(r.URL.Path)
+			if path == nil || v1Responses[path[1]] == nil {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			ts.v1Count++
+			payload, err := (&crmv1.GetAncestryResponse{Ancestor: v1Responses[path[1]]}).MarshalJSON()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("failed to MarshalJSON: %s", err)))
+				return
+			}
+			w.Write(payload)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte(fmt.Sprintf("no response for url path %s", r.URL.Path)))
+			return
+		}
+	}))
+	ts.Server = server
+	return ts
+}
+
+func TestGetAncestors_Folder(t *testing.T) {
+	// v1 API is used to fetch ancestry first, and compared with the resource data
+	// to find out whether there is a folder ID change.
+	p := provider.Provider()
+	cases := []struct {
+		name        string
+		data        resources.TerraformResourceData
+		asset       *resources.Asset
+		v1Responses map[string][]*crmv1.Ancestor
+		v3Responses map[string]*crmv3.Project
+		want        []string
+		parent      string
+		v3Count     int
+		v1Count     int
+	}{
+		{
+			name: "folder not changed",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "foo",
+					"folder_id":  "folders/bar",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar",
+			v1Count: 1,
+		},
+		{
+			// project moving from organizations/qux/folders/bar to organizations/qux2/folders/bar2
+			name: "project moved from a top-level folder in one org to a top-level folder in a different org",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "foo",
+					"folder_id":  "folders/bar2",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{
+				"folders/bar2":       {Name: "folders/bar2", Parent: "organizations/qux2"},
+				"organizations/qux2": {Name: "organizations/qux2", Parent: ""},
+			},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar2", "organizations/qux2"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar2",
+			v3Count: 1,
+			v1Count: 1,
+		},
+		{
+			// project moving from folders/bar2/folders/bar to folders/bar2
+			name: "project moved from child folder to parent folder",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "foo",
+					"folder_id":  "folders/bar2",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar2", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar2", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar2",
+			v1Count: 1,
+		},
+		{
+			// project moving from folders/bar2 to folders/bar2/folders/bar
+			name: "project moved from parent folder to child folder",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "foo",
+					"folder_id":  "folders/bar",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{
+				"folders/bar": {Name: "folders/bar", Parent: "folders/bar2"},
+			},
+			v1Responses: map[string][]*crmv1.Ancestor{
+				"foo": {
+					{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
+					{ResourceId: &crmv1.ResourceId{Id: "bar2", Type: "folder"}},
+					{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
+				},
+			},
+			want:    []string{"projects/foo", "folders/bar", "folders/bar2", "organizations/qux"},
+			parent:  "//cloudresourcemanager.googleapis.com/folders/bar",
+			v1Count: 1,
+			v3Count: 1,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+
+			ts := newTestServer(t, c.v1Responses, c.v3Responses)
+			defer ts.Close()
+
+			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+			mockV3Client, err := crmv3.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			cfg := &resources.Config{
+				Project: "foo",
+			}
+			ancestryManager := &manager{
+				errorLogger:       zap.NewExample(),
+				ancestorCache:     make(map[string][]string),
+				resourceManagerV3: mockV3Client,
+				resourceManagerV1: mockV1Client,
+			}
+			// empty cache
+			ancestryManager.initAncestryCache(map[string]string{})
+
+			got, parent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
+			if err != nil {
+				t.Fatalf("Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+			}
+			if parent != c.parent {
+				t.Errorf("Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+			}
+			if diff := cmp.Diff(c.want, got); diff != "" {
+				t.Errorf("Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+			}
+			if ts.v3Count != c.v3Count {
+				t.Errorf("Ancestors(%v, %v, %v) v3 API called = %d, want = %d", cfg, c.data, c.asset, ts.v3Count, c.v3Count)
+			}
+			if ts.v1Count != c.v1Count {
+				t.Errorf("Ancestors(%v, %v, %v) v1 API called = %d, want = %d", cfg, c.data, c.asset, ts.v1Count, c.v1Count)
+			}
+		})
+	}
+}
+
 func TestGetAncestorsWithCache(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -501,7 +728,7 @@ func TestGetAncestorsWithCache(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ts := newAncestryManagerMockServer(t, test.v3Responses, test.v1Responses)
+			ts := newTestServer(t, test.v1Responses, test.v3Responses)
 			defer ts.Close()
 			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
 			if err != nil {
@@ -553,7 +780,7 @@ func TestGetAncestorsWithCache_Fail(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ts := newAncestryManagerMockServer(t, test.v3Responses, test.v1Responses)
+			ts := newTestServer(t, test.v1Responses, test.v3Responses)
 			defer ts.Close()
 			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
 			if err != nil {
@@ -576,48 +803,6 @@ func TestGetAncestorsWithCache_Fail(t *testing.T) {
 			}
 		})
 	}
-}
-
-func newAncestryManagerMockServer(t *testing.T, v3Responses map[string]*crmv3.Project, v1Responses map[string][]*crmv1.Ancestor) *httptest.Server {
-	t.Helper()
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/v3/") {
-			name := strings.TrimPrefix(r.URL.Path, "/v3/")
-			resp, ok := v3Responses[name]
-			if !ok {
-				w.WriteHeader(http.StatusForbidden)
-				w.Write([]byte(fmt.Sprintf("no response for request path %s", "/v3/"+name)))
-				return
-			}
-			payload, err := resp.MarshalJSON()
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(fmt.Sprintf("failed to MarshalJSON: %s", err)))
-				return
-			}
-			w.Write(payload)
-		} else if strings.HasPrefix(r.URL.Path, "/v1/") {
-			re := regexp.MustCompile(`([^/]*):getAncestry`)
-			path := re.FindStringSubmatch(r.URL.Path)
-			if path == nil || v1Responses[path[1]] == nil {
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
-
-			payload, err := (&crmv1.GetAncestryResponse{Ancestor: v1Responses[path[1]]}).MarshalJSON()
-			if err != nil {
-				t.Errorf("failed to MarshalJSON: %s", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(payload)
-		} else {
-			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(fmt.Sprintf("no response for url path %s", r.URL.Path)))
-			return
-		}
-	}))
-	return ts
 }
 
 func TestParseAncestryPath(t *testing.T) {
