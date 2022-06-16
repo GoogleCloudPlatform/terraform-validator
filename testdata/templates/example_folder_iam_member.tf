@@ -27,13 +27,8 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_folder" "department2" {
-  display_name = "Department 2"
-  parent       = "organizations/{{.OrgID}}"
-}
-
 resource "google_folder_iam_member" "editor" {
-  folder = google_folder.department2.name
-  role   = "roles/editor"
-  member = "user:jane@example.com"
+  folder  = "folders/{{.FolderID}}"
+  role    = "roles/editor"
+  member  = "user:jane@example.com"
 }

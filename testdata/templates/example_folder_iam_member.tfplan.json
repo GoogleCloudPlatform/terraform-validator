@@ -5,20 +5,6 @@
         "root_module": {
             "resources": [
                 {
-                    "address": "google_folder.department2",
-                    "mode": "managed",
-                    "type": "google_folder",
-                    "name": "department2",
-                    "provider_name": "registry.terraform.io/hashicorp/google",
-                    "schema_version": 0,
-                    "values": {
-                        "display_name": "Department 2",
-                        "parent": "organizations/{{.OrgID}}",
-                        "timeouts": null
-                    },
-                    "sensitive_values": {}
-                },
-                {
                     "address": "google_folder_iam_member.editor",
                     "mode": "managed",
                     "type": "google_folder_iam_member",
@@ -27,6 +13,7 @@
                     "schema_version": 0,
                     "values": {
                         "condition": [],
+                        "folder": "folders/{{.FolderID}}",
                         "member": "user:jane@example.com",
                         "role": "roles/editor"
                     },
@@ -38,33 +25,6 @@
         }
     },
     "resource_changes": [
-        {
-            "address": "google_folder.department2",
-            "mode": "managed",
-            "type": "google_folder",
-            "name": "department2",
-            "provider_name": "registry.terraform.io/hashicorp/google",
-            "change": {
-                "actions": [
-                    "create"
-                ],
-                "before": null,
-                "after": {
-                    "display_name": "Department 2",
-                    "parent": "organizations/{{.OrgID}}",
-                    "timeouts": null
-                },
-                "after_unknown": {
-                    "create_time": true,
-                    "folder_id": true,
-                    "id": true,
-                    "lifecycle_state": true,
-                    "name": true
-                },
-                "before_sensitive": false,
-                "after_sensitive": {}
-            }
-        },
         {
             "address": "google_folder_iam_member.editor",
             "mode": "managed",
@@ -78,13 +38,13 @@
                 "before": null,
                 "after": {
                     "condition": [],
+                    "folder": "folders/{{.FolderID}}",
                     "member": "user:jane@example.com",
                     "role": "roles/editor"
                 },
                 "after_unknown": {
                     "condition": [],
                     "etag": true,
-                    "folder": true,
                     "id": true
                 },
                 "before_sensitive": false,
@@ -97,27 +57,16 @@
     "configuration": {
         "provider_config": {
             "google": {
-                "name": "google"
+                "name": "google",
+                "expressions": {
+                    "project": {
+                        "constant_value": "{{.Provider.project}}"
+                    }
+                }
             }
         },
         "root_module": {
             "resources": [
-                {
-                    "address": "google_folder.department2",
-                    "mode": "managed",
-                    "type": "google_folder",
-                    "name": "department2",
-                    "provider_config_key": "google",
-                    "expressions": {
-                        "display_name": {
-                            "constant_value": "Department 2"
-                        },
-                        "parent": {
-                            "constant_value": "organizations/{{.OrgID}}"
-                        }
-                    },
-                    "schema_version": 0
-                },
                 {
                     "address": "google_folder_iam_member.editor",
                     "mode": "managed",
@@ -126,10 +75,7 @@
                     "provider_config_key": "google",
                     "expressions": {
                         "folder": {
-                            "references": [
-                                "google_folder.department2.name",
-                                "google_folder.department2"
-                            ]
+                            "constant_value": "folders/{{.FolderID}}"
                         },
                         "member": {
                             "constant_value": "user:jane@example.com"
