@@ -1,0 +1,63 @@
+[
+  {
+    "name": "//run.googleapis.com/projects/foobar/locations/us-central1/DomainMappings/tf-test-domainmeepmerp.gcp.tfacc.hashicorptest.com",
+    "asset_type": "run.googleapis.com/DomainMapping",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/run/v1/rest",
+      "discovery_name": "DomainMapping",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "apiVersion": "domains.cloudrun.com/v1",
+        "kind": "DomainMapping",
+        "metadata": {
+          "name": "tf-test-domainmeepmerp.gcp.tfacc.hashicorptest.com",
+          "namespace": "foobar"
+        },
+        "spec": {
+          "certificateMode": "AUTOMATIC",
+          "routeName": "tf-test-cloudrun-srvmeepmerp"
+        }
+      }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  },
+  {
+    "name": "//run.googleapis.com/projects/foobar/locations/us-central1/services/tf-test-cloudrun-srvmeepmerp",
+    "asset_type": "run.googleapis.com/Service",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/run/v1/rest",
+      "discovery_name": "Service",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "name": "tf-test-cloudrun-srvmeepmerp",
+          "namespace": "foobar"
+        },
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "image": "us-docker.pkg.dev/cloudrun/container/hello"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  }
+]
