@@ -155,10 +155,9 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 		}
 	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
 		projectID, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
-		if err != nil {
-			return nil, err
+		if err != nil || projectID == "" {
+			return m.handleUnknownProject(config, tfData, cai)
 		}
-
 		// Changing project_id forces a new project to be created.
 		// Changing folder_id or org_id forces project to be migrated.
 		// Hence ancestors should not be fetched from API in those scenarios.
@@ -194,8 +193,8 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 		return ancestors, nil
 	default:
 		project, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
-		if err != nil {
-			return nil, err
+		if err != nil || project == "" {
+			return m.handleUnknownProject(config, tfData, cai)
 		}
 		key = fmt.Sprintf("projects/%s", project)
 	}
@@ -312,4 +311,26 @@ type NoOpAncestryManager struct{}
 
 func (*NoOpAncestryManager) Ancestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, string, error) {
 	return nil, "", nil
+}
+
+func (m *manager) handleUnknownProject(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, error) {
+	folderID, folderOK := getFolderFromResource(tfData)
+	if folderOK {
+		folderKey := folderID
+		if !strings.HasPrefix(folderKey, "folders/") {
+			folderKey = fmt.Sprintf("folders/%s", folderKey)
+		}
+		return m.getAncestorsWithCache(folderKey)
+	}
+
+	orgID, orgOK := getOrganizationFromResource(tfData)
+	if orgOK {
+		orgKey := orgID
+		if !strings.HasPrefix(orgKey, "organizations/") {
+			orgKey = fmt.Sprintf("organizations/%s", orgKey)
+		}
+		return []string{orgKey}, nil
+	}
+
+	return []string{"organizations/unknown"}, nil
 }

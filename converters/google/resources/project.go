@@ -34,7 +34,7 @@ func GetProjectCaiObject(d TerraformResourceData, config *Config) ([]Asset, erro
 	}
 	name, err := assetName(d, config, linkTmpl)
 	if err != nil {
-		return []Asset{}, err
+		name = fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/placeholder-%s", randString(8))
 	}
 	if obj, err := GetProjectApiObject(d, config); err == nil {
 		return []Asset{{
@@ -107,7 +107,7 @@ func GetProjectBillingInfoCaiObject(d TerraformResourceData, config *Config) ([]
 	}
 	name, err := assetName(d, config, linkTmpl)
 	if err != nil {
-		return []Asset{}, err
+		name = fmt.Sprintf("//cloudbilling.googleapis.com/projects/placeholder-%s/billingInfo", randString(8))
 	}
 	if obj, err := GetProjectBillingInfoApiObject(d, config); err == nil {
 		return []Asset{{

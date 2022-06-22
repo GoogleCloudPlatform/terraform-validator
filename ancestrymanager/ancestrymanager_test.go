@@ -1043,3 +1043,114 @@ func TestParseAncestryKey_Fail(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleUnknownProject(t *testing.T) {
+	p := provider.Provider()
+	cases := []struct {
+		name        string
+		data        resources.TerraformResourceData
+		asset       *resources.Asset
+		v1Responses map[string][]*crmv1.Ancestor
+		v3Responses map[string]*crmv3.Project
+		want        []string
+		parent      string
+		v3Count     int
+		v1Count     int
+	}{
+		{
+			name: "project ID is empty string",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "",
+					"folder_id":  "folders/bar",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{
+				"folders/bar": {Name: "folders/bar", Parent: "organizations/qux"},
+			},
+			v1Responses: map[string][]*crmv1.Ancestor{},
+			want:        []string{"folders/bar", "organizations/qux"},
+			parent:      "//cloudresourcemanager.googleapis.com/folders/bar",
+			v3Count:     1,
+		},
+		{
+			name: "project ID is empty string and no ancestor",
+			data: tfdata.NewFakeResourceData(
+				"google_project",
+				p.ResourcesMap["google_project"].Schema,
+				map[string]interface{}{
+					"project_id": "",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{},
+			want:        []string{"organizations/unknown"},
+			parent:      "//cloudresourcemanager.googleapis.com/organizations/unknown",
+		},
+		{
+			name: "project ID not exist for bucket",
+			data: tfdata.NewFakeResourceData(
+				"google_storage_bucket",
+				p.ResourcesMap["google_storage_bucket"].Schema,
+				map[string]interface{}{},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Bucket",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{},
+			want:        []string{"organizations/unknown"},
+			parent:      "//cloudresourcemanager.googleapis.com/organizations/unknown",
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ts := newTestServer(t, c.v1Responses, c.v3Responses)
+			defer ts.Close()
+
+			mockV1Client, err := crmv1.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+			mockV3Client, err := crmv3.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			cfg := &resources.Config{}
+			ancestryManager := &manager{
+				errorLogger:       zap.NewExample(),
+				ancestorCache:     make(map[string][]string),
+				resourceManagerV3: mockV3Client,
+				resourceManagerV1: mockV1Client,
+			}
+			// empty cache
+			ancestryManager.initAncestryCache(map[string]string{})
+
+			got, parent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
+			if err != nil {
+				t.Fatalf("Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+			}
+			if parent != c.parent {
+				t.Errorf("Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+			}
+			if diff := cmp.Diff(c.want, got); diff != "" {
+				t.Errorf("Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+			}
+			if ts.v3Count != c.v3Count {
+				t.Errorf("Ancestors(%v, %v, %v) v3 API called = %d, want = %d", cfg, c.data, c.asset, ts.v3Count, c.v3Count)
+			}
+			if ts.v1Count != c.v1Count {
+				t.Errorf("Ancestors(%v, %v, %v) v1 API called = %d, want = %d", cfg, c.data, c.asset, ts.v1Count, c.v1Count)
+			}
+		})
+	}
+}

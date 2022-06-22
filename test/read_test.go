@@ -21,6 +21,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		// read-only, the following tests are not in cli_test or
 		// have unique parameters that separate them
 		{name: "example_folder_iam_binding"},
+		{name: "example_project_create_empty_project_id"},
 		{name: "example_folder_iam_member"},
 		{name: "example_project_create"},
 		{name: "example_project_update"},
@@ -141,6 +142,54 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 				data.Provider["project"]: data.Ancestry,
 			}
 			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], ancestryCache, true, false, zaptest.NewLogger(t), "")
+			if err != nil {
+				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
+			}
+
+			expectedAssets := normalizeAssets(t, want, true)
+			actualAssets := normalizeAssets(t, got, true)
+			require.ElementsMatch(t, actualAssets, expectedAssets)
+		})
+	}
+}
+
+func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
+	cases := []struct {
+		name string
+	}{
+		// read-only, the following tests are not in cli_test or
+		// have unique parameters that separate them
+		{name: "example_project_create_empty_project_id"},
+		{name: "example_storage_bucket"},
+	}
+	for i := range cases {
+		// Allocate a variable to make sure test can run in parallel.
+		c := cases[i]
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			// Create a temporary directory for running terraform.
+			dir, err := ioutil.TempDir(tmpDir, "terraform")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer os.RemoveAll(dir)
+
+			generateTestFiles(t, "../testdata/templates", dir, c.name+"_without_default_project.json")
+			generateTestFiles(t, "../testdata/templates", dir, c.name+".tfplan.json")
+
+			// Unmarshal payload from testfile into `want` variable.
+			f := filepath.Join(dir, c.name+"_without_default_project.json")
+			want, err := readExpectedTestFile(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			planfile := filepath.Join(dir, c.name+".tfplan.json")
+			ctx := context.Background()
+			ancestryCache := map[string]string{
+				// data.Provider["project"]: data.Ancestry,
+			}
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, "", ancestryCache, true, false, zaptest.NewLogger(t), "")
 			if err != nil {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
 			}
