@@ -1,6 +1,6 @@
 [
   {
-    "name": "//cloudbilling.googleapis.com/projects/placeholder-c2WD8F2q/billingInfo",
+    "name": "//cloudbilling.googleapis.com/projects/placeholder-project/billingInfo",
     "asset_type": "cloudbilling.googleapis.com/ProjectBillingInfo",
     "resource": {
       "version": "v1",
@@ -15,7 +15,7 @@
     "ancestry_path": "organization/unknown"
   },
   {
-    "name": "//cloudresourcemanager.googleapis.com/projects/placeholder-BpLnfgDs",
+    "name": "//cloudresourcemanager.googleapis.com/projects/placeholder-project",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
     "resource": {
       "version": "v1",

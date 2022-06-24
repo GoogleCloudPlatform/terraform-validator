@@ -33,17 +33,17 @@ func TestGetAncestors(t *testing.T) {
 		"organizations/qux2": {Name: "organizations/qux2", Parent: ""},
 	}
 	v1Responses := map[string][]*crmv1.Ancestor{
-		ownerProject: []*crmv1.Ancestor{
+		ownerProject: {
 			{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
 			{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
 			{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
 		},
-		"12345": []*crmv1.Ancestor{
+		"12345": {
 			{ResourceId: &crmv1.ResourceId{Id: "foo", Type: "project"}},
 			{ResourceId: &crmv1.ResourceId{Id: "bar", Type: "folder"}},
 			{ResourceId: &crmv1.ResourceId{Id: "qux", Type: "organization"}},
 		},
-		anotherProject: []*crmv1.Ancestor{
+		anotherProject: {
 			{ResourceId: &crmv1.ResourceId{Id: "foo2", Type: "project"}},
 			{ResourceId: &crmv1.ResourceId{Id: "bar2", Type: "folder"}},
 			{ResourceId: &crmv1.ResourceId{Id: "qux2", Type: "organization"}},
@@ -73,8 +73,9 @@ func TestGetAncestors(t *testing.T) {
 		name             string
 		data             resources.TerraformResourceData
 		asset            *resources.Asset
+		cfg              *resources.Config
 		want             []string
-		parent           string
+		wantParent       string
 		wantOnlineError  bool
 		wantOfflineError bool
 	}{
@@ -90,10 +91,11 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
+			want:       []string{"projects/foo", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
+			// google_project does not expect `project` attribute
 			name: "owner project - project",
 			data: tfdata.NewFakeResourceData(
 				"google_project",
@@ -105,8 +107,24 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
+			want:       []string{"organizations/unknown"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/unknown",
+		},
+		{
+			// google_project_iam expect `project` attribute
+			name: "owner project - project",
+			data: tfdata.NewFakeResourceData(
+				"google_project_iam_member",
+				p.ResourcesMap["google_project_iam_member"].Schema,
+				map[string]interface{}{
+					"project": ownerProject,
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			want:       []string{"projects/foo", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
 			name: "owner project - project number",
@@ -122,7 +140,7 @@ func TestGetAncestors(t *testing.T) {
 			},
 			want:             []string{"projects/foo", "folders/bar", "organizations/qux"},
 			wantOfflineError: true,
-			parent:           "//cloudresourcemanager.googleapis.com/folders/bar",
+			wantParent:       "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
 			name: "owner project - project from config",
@@ -134,8 +152,11 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
+			cfg: &resources.Config{
+				Project: ownerProject,
+			},
+			want:       []string{"projects/foo", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
 			name: "another project",
@@ -151,7 +172,7 @@ func TestGetAncestors(t *testing.T) {
 			},
 			want:             []string{"projects/foo2", "folders/bar2", "organizations/qux2"},
 			wantOfflineError: true,
-			parent:           "//cloudresourcemanager.googleapis.com/folders/bar2",
+			wantParent:       "//cloudresourcemanager.googleapis.com/folders/bar2",
 		},
 		{
 			name: "owner folder",
@@ -165,8 +186,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Folder",
 			},
-			want:   []string{"folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+			want:       []string{"folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
 			name: "owner folder with prefix",
@@ -180,8 +201,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Folder",
 			},
-			want:   []string{"folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+			want:       []string{"folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
 			name: "another folder online",
@@ -197,7 +218,7 @@ func TestGetAncestors(t *testing.T) {
 			},
 			want:             []string{"folders/bar2", "organizations/qux2"},
 			wantOfflineError: true,
-			parent:           "//cloudresourcemanager.googleapis.com/organizations/qux2",
+			wantParent:       "//cloudresourcemanager.googleapis.com/organizations/qux2",
 		},
 		{
 			// Not supporting folder create resource yet.
@@ -227,8 +248,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Organization",
 			},
-			want:   []string{"organizations/qux"},
-			parent: "",
+			want:       []string{"organizations/qux"},
+			wantParent: "",
 		},
 		{
 			// organization do not have ancestors except itself
@@ -244,8 +265,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Organization",
 			},
-			want:   []string{"organizations/qux2"},
-			parent: "",
+			want:       []string{"organizations/qux2"},
+			wantParent: "",
 		},
 		{
 			name: "other resource with owner project",
@@ -259,8 +280,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Disk",
 			},
-			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/projects/foo",
+			want:       []string{"projects/foo", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/projects/foo",
 		},
 		{
 			name: "other resource online with another project",
@@ -276,7 +297,7 @@ func TestGetAncestors(t *testing.T) {
 			},
 			want:             []string{"projects/foo2", "folders/bar2", "organizations/qux2"},
 			wantOfflineError: true,
-			parent:           "//cloudresourcemanager.googleapis.com/projects/foo2",
+			wantParent:       "//cloudresourcemanager.googleapis.com/projects/foo2",
 		},
 		{
 			name: "custom role with org",
@@ -290,8 +311,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "iam.googleapis.com/Role",
 			},
-			want:   []string{"organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+			want:       []string{"organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
 			name: "custom role with project",
@@ -305,8 +326,23 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "iam.googleapis.com/Role",
 			},
-			want:   []string{"projects/foo", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/projects/foo",
+			want:       []string{"projects/foo", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/projects/foo",
+		},
+		{
+			name: "custom role with empty project ID",
+			data: tfdata.NewFakeResourceData(
+				"google_project_iam_custom_role",
+				p.ResourcesMap["google_project_iam_custom_role"].Schema,
+				map[string]interface{}{
+					"project": "",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "iam.googleapis.com/Role",
+			},
+			want:       []string{"organizations/unknown"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/unknown",
 		},
 		{
 			name: "new project in folder",
@@ -321,8 +357,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:   []string{"projects/new-project", "folders/bar", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/folders/bar",
+			want:       []string{"projects/new-project", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/folders/bar",
 		},
 		{
 			name: "new project in organization",
@@ -337,8 +373,8 @@ func TestGetAncestors(t *testing.T) {
 			asset: &resources.Asset{
 				Type: "cloudresourcemanager.googleapis.com/Project",
 			},
-			want:   []string{"projects/new-project", "organizations/qux"},
-			parent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+			want:       []string{"projects/new-project", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
 			// for new projects, if it cannot find ancestors in online mode,
@@ -362,8 +398,8 @@ func TestGetAncestors(t *testing.T) {
 	for _, c := range cases {
 		for _, offline := range []bool{true, false} {
 			t.Run(fmt.Sprintf("%s offline = %t", c.name, offline), func(t *testing.T) {
-				cfg := &resources.Config{
-					Project: ownerProject,
+				if c.cfg == nil {
+					c.cfg = &resources.Config{}
 				}
 				ancestryManager := &manager{
 					errorLogger:   zap.NewExample(),
@@ -375,37 +411,37 @@ func TestGetAncestors(t *testing.T) {
 				}
 				ancestryManager.initAncestryCache(entries)
 
-				got, parent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
+				got, gotParent, err := ancestryManager.Ancestors(c.cfg, c.data, c.asset)
 				if !offline {
 					if c.wantOnlineError {
 						if err == nil {
-							t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+							t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = nil, want = err", c.cfg, c.data, c.asset)
 						}
 					} else {
 						if err != nil {
-							t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+							t.Fatalf("onlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", c.cfg, c.data, c.asset, err)
 						}
-						if parent != c.parent {
-							t.Errorf("onlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+						if gotParent != c.wantParent {
+							t.Errorf("onlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", c.cfg, c.data, c.asset, gotParent, c.wantParent)
 						}
 						if diff := cmp.Diff(c.want, got); diff != "" {
-							t.Errorf("onlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+							t.Errorf("onlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", c.cfg, c.data, c.asset, diff)
 						}
 					}
 				} else {
 					if c.wantOfflineError {
 						if err == nil {
-							t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = nil, want = err", cfg, c.data, c.asset)
+							t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = nil, want = err", c.cfg, c.data, c.asset)
 						}
 					} else {
 						if err != nil {
-							t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
+							t.Fatalf("offlineMgr.Ancestors(%v, %v, %v) = %s, want = nil", c.cfg, c.data, c.asset, err)
 						}
-						if parent != c.parent {
-							t.Errorf("offlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+						if gotParent != c.wantParent {
+							t.Errorf("offlineMgr.Ancestors(%v, %v, %v) parent = %s, want = %s", c.cfg, c.data, c.asset, gotParent, c.wantParent)
 						}
 						if diff := cmp.Diff(c.want, got); diff != "" {
-							t.Errorf("offlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)
+							t.Errorf("offlineMgr.Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", c.cfg, c.data, c.asset, diff)
 						}
 					}
 				}
@@ -657,7 +693,7 @@ func TestGetAncestorsWithCache(t *testing.T) {
 			cache:       make(map[string][]string),
 			v3Responses: map[string]*crmv3.Project{},
 			v1Responses: map[string][]*crmv1.Ancestor{
-				"abc": []*crmv1.Ancestor{
+				"abc": {
 					{ResourceId: &crmv1.ResourceId{Id: "abc", Type: "project"}},
 					{ResourceId: &crmv1.ResourceId{Id: "456", Type: "folder"}},
 					{ResourceId: &crmv1.ResourceId{Id: "789", Type: "folder"}},
@@ -681,7 +717,7 @@ func TestGetAncestorsWithCache(t *testing.T) {
 			},
 			v3Responses: map[string]*crmv3.Project{},
 			v1Responses: map[string][]*crmv1.Ancestor{
-				"abc": []*crmv1.Ancestor{
+				"abc": {
 					{ResourceId: &crmv1.ResourceId{Id: "abc", Type: "project"}},
 					{ResourceId: &crmv1.ResourceId{Id: "456", Type: "folder"}},
 					{ResourceId: &crmv1.ResourceId{Id: "789", Type: "folder"}},
@@ -1044,7 +1080,7 @@ func TestParseAncestryKey_Fail(t *testing.T) {
 	}
 }
 
-func TestHandleUnknownProject(t *testing.T) {
+func TestUnknownProject(t *testing.T) {
 	p := provider.Provider()
 	cases := []struct {
 		name        string
@@ -1053,7 +1089,7 @@ func TestHandleUnknownProject(t *testing.T) {
 		v1Responses map[string][]*crmv1.Ancestor
 		v3Responses map[string]*crmv3.Project
 		want        []string
-		parent      string
+		wantParent  string
 		v3Count     int
 		v1Count     int
 	}{
@@ -1075,7 +1111,7 @@ func TestHandleUnknownProject(t *testing.T) {
 			},
 			v1Responses: map[string][]*crmv1.Ancestor{},
 			want:        []string{"folders/bar", "organizations/qux"},
-			parent:      "//cloudresourcemanager.googleapis.com/folders/bar",
+			wantParent:  "//cloudresourcemanager.googleapis.com/folders/bar",
 			v3Count:     1,
 		},
 		{
@@ -1093,7 +1129,7 @@ func TestHandleUnknownProject(t *testing.T) {
 			v3Responses: map[string]*crmv3.Project{},
 			v1Responses: map[string][]*crmv1.Ancestor{},
 			want:        []string{"organizations/unknown"},
-			parent:      "//cloudresourcemanager.googleapis.com/organizations/unknown",
+			wantParent:  "//cloudresourcemanager.googleapis.com/organizations/unknown",
 		},
 		{
 			name: "project ID not exist for bucket",
@@ -1108,7 +1144,7 @@ func TestHandleUnknownProject(t *testing.T) {
 			v3Responses: map[string]*crmv3.Project{},
 			v1Responses: map[string][]*crmv1.Ancestor{},
 			want:        []string{"organizations/unknown"},
-			parent:      "//cloudresourcemanager.googleapis.com/organizations/unknown",
+			wantParent:  "//cloudresourcemanager.googleapis.com/organizations/unknown",
 		},
 	}
 	for _, c := range cases {
@@ -1135,12 +1171,12 @@ func TestHandleUnknownProject(t *testing.T) {
 			// empty cache
 			ancestryManager.initAncestryCache(map[string]string{})
 
-			got, parent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
+			got, gotParent, err := ancestryManager.Ancestors(cfg, c.data, c.asset)
 			if err != nil {
 				t.Fatalf("Ancestors(%v, %v, %v) = %s, want = nil", cfg, c.data, c.asset, err)
 			}
-			if parent != c.parent {
-				t.Errorf("Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, parent, c.parent)
+			if gotParent != c.wantParent {
+				t.Errorf("Ancestors(%v, %v, %v) parent = %s, want = %s", cfg, c.data, c.asset, gotParent, c.wantParent)
 			}
 			if diff := cmp.Diff(c.want, got); diff != "" {
 				t.Errorf("Ancestors(%v, %v, %v) returned unexpected diff (-want +got):\n%s", cfg, c.data, c.asset, diff)

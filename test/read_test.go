@@ -161,6 +161,7 @@ func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
 		// have unique parameters that separate them
 		{name: "example_project_create_empty_project_id"},
 		{name: "example_storage_bucket"},
+		{name: "example_project_iam_member_empty_project"},
 	}
 	for i := range cases {
 		// Allocate a variable to make sure test can run in parallel.

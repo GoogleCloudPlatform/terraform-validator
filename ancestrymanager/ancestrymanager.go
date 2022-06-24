@@ -116,6 +116,7 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 	key := ""
 	orgKey := ""
 	folderKey := ""
+	projectKey := ""
 
 	orgID, orgOK := getOrganizationFromResource(tfData)
 	if orgOK {
@@ -131,6 +132,14 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 			folderKey = fmt.Sprintf("folders/%s", folderKey)
 		}
 	}
+	project, _ := getProjectFromResource(tfData, config, *cai, m.errorLogger)
+	if project != "" {
+		projectKey = project
+		if !strings.HasPrefix(projectKey, "projects/") {
+			projectKey = fmt.Sprintf("projects/%s", project)
+		}
+	}
+
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Folder":
 		if !folderOK {
@@ -146,57 +155,49 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 		// google_organization_iam_custom_role or google_project_iam_custom_role
 		if orgOK {
 			key = orgKey
+		} else if projectKey != "" {
+			key = projectKey
 		} else {
-			project, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
-			if err != nil {
-				return nil, err
-			}
-			key = fmt.Sprintf("projects/%s", project)
+			return []string{"organizations/unknown"}, nil
 		}
 	case "cloudresourcemanager.googleapis.com/Project", "cloudbilling.googleapis.com/ProjectBillingInfo":
-		projectID, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
-		if err != nil || projectID == "" {
-			return m.handleUnknownProject(config, tfData, cai)
+		// for google_project and google_project_iam resources
+		var ancestors []string
+		if projectKey != "" {
+			ancestors = []string{projectKey}
+			// Get ancestry from project level with v1 API first.
+			// This is to avoid requiring folder level permission if
+			// there is no folder change.
+			m.getAncestorsWithCache(projectKey)
 		}
-		// Changing project_id forces a new project to be created.
-		// Changing folder_id or org_id forces project to be migrated.
-		// Hence ancestors should not be fetched from API in those scenarios.
+		// only folder_id or org_id is allowed for google_project
 		if orgOK {
-			ancestors := []string{
-				fmt.Sprintf("projects/%s", projectID),
-				fmt.Sprintf("organizations/%s", orgID),
-			}
+			// no need to use API to fetch ancestors
+			ancestors = append(ancestors, fmt.Sprintf("organizations/%s", orgID))
 			return ancestors, nil
 		}
 		if folderOK {
-			// Get ancestry from project level first, if folder changed, then proceed
-			// with folder. This is to avoid requiring folder level permission if
-			// there is no folder change.
-
-			// trigger v1 API to get current ancestors and update the cache
-			m.getAncestorsWithCache(fmt.Sprintf("projects/%s", projectID))
-
-			// if folder changed, then it goes with v3 API, else it will use cache.
+			// If folder is changed, then it goes with v3 API, else it will use cache.
 			key = folderKey
 			ret, err := m.getAncestorsWithCache(key)
 			if err != nil {
 				return nil, err
 			}
-			ancestors := append([]string{fmt.Sprintf("projects/%s", projectID)}, ret...)
+			ancestors = append(ancestors, ret...)
 			return ancestors, nil
 		}
-		key = fmt.Sprintf("projects/%s", projectID)
-		ancestors, err := m.getAncestorsWithCache(key)
-		if err != nil {
-			return nil, err
+
+		// neither folder_id nor org_id is specified
+		if projectKey == "" {
+			return []string{"organizations/unknown"}, nil
 		}
-		return ancestors, nil
+		key = projectKey
+
 	default:
-		project, err := getProjectFromResource(tfData, config, *cai, m.errorLogger)
-		if err != nil || project == "" {
-			return m.handleUnknownProject(config, tfData, cai)
+		if projectKey == "" {
+			return []string{"organizations/unknown"}, nil
 		}
-		key = fmt.Sprintf("projects/%s", project)
+		key = projectKey
 	}
 	return m.getAncestorsWithCache(key)
 }
@@ -311,26 +312,4 @@ type NoOpAncestryManager struct{}
 
 func (*NoOpAncestryManager) Ancestors(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, string, error) {
 	return nil, "", nil
-}
-
-func (m *manager) handleUnknownProject(config *resources.Config, tfData resources.TerraformResourceData, cai *resources.Asset) ([]string, error) {
-	folderID, folderOK := getFolderFromResource(tfData)
-	if folderOK {
-		folderKey := folderID
-		if !strings.HasPrefix(folderKey, "folders/") {
-			folderKey = fmt.Sprintf("folders/%s", folderKey)
-		}
-		return m.getAncestorsWithCache(folderKey)
-	}
-
-	orgID, orgOK := getOrganizationFromResource(tfData)
-	if orgOK {
-		orgKey := orgID
-		if !strings.HasPrefix(orgKey, "organizations/") {
-			orgKey = fmt.Sprintf("organizations/%s", orgKey)
-		}
-		return []string{orgKey}, nil
-	}
-
-	return []string{"organizations/unknown"}, nil
 }
