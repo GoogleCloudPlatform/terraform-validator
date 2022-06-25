@@ -178,13 +178,10 @@ func buildReplacementFunc(re *regexp.Regexp, d TerraformResourceData, config *Co
 	var project, projectID, region, zone string
 	var err error
 
-	// Project id if referencing other variables, might not have a value
-	// in terraform data structure.
-	// In that case, use a placeholder.
 	if strings.Contains(linkTmpl, "{{project}}") {
 		project, err = getProject(d, config)
 		if err != nil {
-			project = "placeholder-project"
+			return nil, err
 		}
 	}
 
@@ -195,9 +192,9 @@ func buildReplacementFunc(re *regexp.Regexp, d TerraformResourceData, config *Co
 		}
 		if projectID == "" {
 			project, err = getProject(d, config)
-			if err != nil {
-				project = "placeholder-project"
-			}
+		}
+		if err != nil {
+			return nil, err
 		}
 	}
 

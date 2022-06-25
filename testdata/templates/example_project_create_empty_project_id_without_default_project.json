@@ -9,7 +9,8 @@
       "parent": "//cloudresourcemanager.googleapis.com/organizations/unknown",
       "data": {
         "billingAccountName": "billingAccounts/{{.Project.BillingAccountName}}",
-        "name": "projects//billingInfo"
+        "name": "projects/placeholder-project/billingInfo",
+        "projectId": "placeholder-project"
       }
     },
     "ancestry_path": "organization/unknown"

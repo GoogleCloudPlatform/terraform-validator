@@ -10,7 +10,8 @@
       "parent": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
       "data": {
         "billingAccountName": "billingAccounts/{{.Project.BillingAccountName}}",
-        "name": "projects//billingInfo"
+        "name": "projects/{{.Provider.project}}/billingInfo",
+        "projectId": "{{.Provider.project}}"
       }
     }
   },

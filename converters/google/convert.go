@@ -360,7 +360,6 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
 	}
 
-	// parent can be derived from ancestors[0]
 	var resource *AssetResource
 	if cai.Resource != nil {
 		resource = &AssetResource{

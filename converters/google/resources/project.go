@@ -34,7 +34,7 @@ func GetProjectCaiObject(d TerraformResourceData, config *Config) ([]Asset, erro
 	}
 	name, err := assetName(d, config, linkTmpl)
 	if err != nil {
-		name = fmt.Sprintf("//cloudresourcemanager.googleapis.com/projects/placeholder-%s", randString(8))
+		return []Asset{}, err
 	}
 	if obj, err := GetProjectApiObject(d, config); err == nil {
 		return []Asset{{
@@ -107,9 +107,10 @@ func GetProjectBillingInfoCaiObject(d TerraformResourceData, config *Config) ([]
 	}
 	name, err := assetName(d, config, linkTmpl)
 	if err != nil {
-		name = fmt.Sprintf("//cloudbilling.googleapis.com/projects/placeholder-%s/billingInfo", randString(8))
+		return []Asset{}, err
 	}
-	if obj, err := GetProjectBillingInfoApiObject(d, config); err == nil {
+	project := strings.Split(name, "/")[4]
+	if obj, err := GetProjectBillingInfoApiObject(d, project); err == nil {
 		return []Asset{{
 			Name: name,
 			Type: "cloudbilling.googleapis.com/ProjectBillingInfo",
@@ -125,24 +126,17 @@ func GetProjectBillingInfoCaiObject(d TerraformResourceData, config *Config) ([]
 	}
 }
 
-func GetProjectBillingInfoApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
+func GetProjectBillingInfoApiObject(d TerraformResourceData, project string) (map[string]interface{}, error) {
 	if _, ok := d.GetOk("billing_account"); !ok {
 		// TODO: If the project already exists, we could ask the API about it's
 		// billing info here.
 		return nil, ErrNoConversion
 	}
 
-	var name string
-	if number, ok := d.GetOk("number"); ok {
-		name = fmt.Sprintf("projects/%s/billingInfo", number)
-	} else {
-		name = fmt.Sprintf("projects/%s/billingInfo", d.Get("project_id"))
-	}
-
 	ba := &cloudbilling.ProjectBillingInfo{
 		BillingAccountName: fmt.Sprintf("billingAccounts/%s", d.Get("billing_account")),
-		Name:               name,
-		ProjectId:          d.Get("project_id").(string),
+		Name:               fmt.Sprintf("projects/%s/billingInfo", project),
+		ProjectId:          project,
 	}
 
 	return jsonMap(ba)
