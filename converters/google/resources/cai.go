@@ -102,7 +102,7 @@ func assetName(d TerraformResourceData, config *Config, linkTmpl string) (string
 	// workaround for empty project
 	placeholderSet := false
 	if config.Project == "" {
-		config.Project = "placeholder-project"
+		config.Project = fmt.Sprintf("placeholder-%s", randString(8))
 		placeholderSet = true
 	}
 
