@@ -118,8 +118,17 @@ func (o *validateOptions) run(plan string) error {
 			ancestryCache[o.project] = o.ancestry
 		}
 		userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
-		zone := ""
-		region := ""
+		zone := multiEnvSearch([]string{
+			"GOOGLE_ZONE",
+			"GCLOUD_ZONE",
+			"CLOUDSDK_COMPUTE_ZONE",
+		})
+
+		region := multiEnvSearch([]string{
+			"GOOGLE_REGION",
+			"GCLOUD_REGION",
+			"CLOUDSDK_COMPUTE_REGION",
+		})
 		assets, err = o.readPlannedAssets(ctx, plan, o.project, zone, region, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
 		if err != nil {
 			return err
