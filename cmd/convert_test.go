@@ -3,16 +3,19 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
+
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
-func testAssets() []google.Asset {
+func testAssets(path, project, zone, region string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) []google.Asset {
 	return []google.Asset{
 		google.Asset{
 			Name: "//compute.googleapis.com/projects/my-project/zones/us-central1-a/disks/test-disk",
@@ -30,14 +33,25 @@ func testAssets() []google.Asset {
 					"sourceImage":            "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
 					"type":                   "projects/my-project/zones/us-central1-a/diskTypes/pd-ssd",
 					"zone":                   "projects/my-project/global/zones/us-central1-a",
+					"arguments": map[string]interface{}{
+						"path":             path,
+						"project":          project,
+						"zone":             zone,
+						"region":           region,
+						"ancestry":         ancestry,
+						"offline":          offline,
+						"convertUnchanged": false,
+						"errorLoggger":     errorLogger,
+						"userAgent":        userAgent,
+					},
 				},
 			},
 		},
 	}
 }
 
-func MockReadPlannedAssets(ctx context.Context, path, project string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) ([]google.Asset, error) {
-	return testAssets(), nil
+func MockReadPlannedAssets(ctx context.Context, path, project, zone, region string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) ([]google.Asset, error) {
+	return testAssets(path, project, zone, region, ancestry, offline, convertUnchanged, errorLogger, userAgent), nil
 }
 
 func TestConvertRun(t *testing.T) {
@@ -60,7 +74,8 @@ func TestConvertRun(t *testing.T) {
 		readPlannedAssets: MockReadPlannedAssets,
 	}
 
-	err := o.run("/path/to/plan")
+	path := "/path/to/plan"
+	err := o.run(path)
 	a.Nil(err)
 
 	errorJSON := errorBuf.String()
@@ -76,7 +91,7 @@ func TestConvertRun(t *testing.T) {
 	a.Len(output["resource_body"], 1)
 
 	var expectedAssets []interface{}
-	expectedAssetJSON, _ := json.Marshal(testAssets())
+	expectedAssetJSON, _ := json.Marshal(testAssets(path, "", "", "", map[string]string{}, false, false, errorLogger, fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())))
 	json.Unmarshal(expectedAssetJSON, &expectedAssets)
 	a.Equal(expectedAssets, output["resource_body"])
 }
@@ -134,7 +149,8 @@ func TestConvertRunOutputFile(t *testing.T) {
 		outputPath:        outputPath,
 	}
 
-	err := o.run("/path/to/plan")
+	path := "/path/to/plan"
+	err := o.run(path)
 	a.Nil(err)
 
 	errorJSON := errorBuf.String()
@@ -154,7 +170,7 @@ func TestConvertRunOutputFile(t *testing.T) {
 	}
 
 	var expectedAssets []interface{}
-	expectedAssetJSON, _ := json.Marshal(testAssets())
+	expectedAssetJSON, _ := json.Marshal(testAssets(path, "", "", "", map[string]string{}, false, false, errorLogger, fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())))
 	json.Unmarshal(expectedAssetJSON, &expectedAssets)
 	a.Equal(expectedAssets, gotAssets)
 }

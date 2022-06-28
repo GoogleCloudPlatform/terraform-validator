@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/config-validator/pkg/api/validator"
 	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
+	"github.com/GoogleCloudPlatform/terraform-validator/version"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -218,11 +220,15 @@ func TestValidateRunWithConvertedAssets(t *testing.T) {
 		validateAssets: MockValidateAssetsNoViolations,
 	}
 
-	data, err := json.Marshal(testAssets())
+	inputPath := path.Join(t.TempDir(), "testfile.json")
+	data, err := json.Marshal(testAssets(inputPath, "", "", "", map[string]string{}, false, false, errorLogger, fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())))
 	if err != nil {
 		t.Fatalf("Failed to marshal assets: %s", err)
 	}
-	inputPath := createEmptyFile(t, data)
+
+	if err := ioutil.WriteFile(inputPath, data, os.ModePerm); err != nil {
+		t.Fatalf("Failed to write file %s: %s", inputPath, err)
+	}
 	err = o.run(inputPath)
 	a.Nil(err)
 
