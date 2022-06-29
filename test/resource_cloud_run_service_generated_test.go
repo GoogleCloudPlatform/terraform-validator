@@ -68,7 +68,7 @@ func testAccCloudRunService_cloudRunServiceBasicExample_shared(t *testing.T, tes
 	// need to have comparison.. perhaps test vs checked in code
 	// testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
 
-	testValidateCommandGeneric(t, dir, testSlug, offline)
+	testValidateCommandGeneric(t, dir, testSlug, offline, true)
 }
 
 func testAccCloudRunService_cloudRunServiceBasicExample(context map[string]interface{}) string {
@@ -139,7 +139,7 @@ func testAccCloudRunService_cloudRunServiceSqlExample_shared(t *testing.T, testS
 	// need to have comparison.. perhaps test vs checked in code
 	// testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
 
-	testValidateCommandGeneric(t, dir, testSlug, offline)
+	testValidateCommandGeneric(t, dir, testSlug, offline, true)
 }
 
 func testAccCloudRunService_cloudRunServiceSqlExample(context map[string]interface{}) string {
@@ -225,7 +225,7 @@ func testAccCloudRunService_cloudRunServiceMultipleEnvironmentVariablesExample_s
 	// need to have comparison.. perhaps test vs checked in code
 	// testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
 
-	testValidateCommandGeneric(t, dir, testSlug, offline)
+	testValidateCommandGeneric(t, dir, testSlug, offline, true)
 }
 
 func testAccCloudRunService_cloudRunServiceMultipleEnvironmentVariablesExample(context map[string]interface{}) string {
