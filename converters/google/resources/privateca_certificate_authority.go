@@ -103,6 +103,12 @@ func GetPrivatecaCertificateAuthorityApiObject(d TerraformResourceData, config *
 	} else if v, ok := d.GetOkExists("key_spec"); !isEmptyValue(reflect.ValueOf(keySpecProp)) && (ok || !reflect.DeepEqual(v, keySpecProp)) {
 		obj["keySpec"] = keySpecProp
 	}
+	subordinateConfigProp, err := expandPrivatecaCertificateAuthoritySubordinateConfig(d.Get("subordinate_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("subordinate_config"); !isEmptyValue(reflect.ValueOf(subordinateConfigProp)) && (ok || !reflect.DeepEqual(v, subordinateConfigProp)) {
+		obj["subordinateConfig"] = subordinateConfigProp
+	}
 	gcsBucketProp, err := expandPrivatecaCertificateAuthorityGcsBucket(d.Get("gcs_bucket"), d, config)
 	if err != nil {
 		return nil, err
@@ -414,6 +420,59 @@ func expandPrivatecaCertificateAuthorityKeySpecCloudKmsKeyVersion(v interface{},
 }
 
 func expandPrivatecaCertificateAuthorityKeySpecAlgorithm(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPrivatecaCertificateAuthoritySubordinateConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedCertificateAuthority, err := expandPrivatecaCertificateAuthoritySubordinateConfigCertificateAuthority(original["certificate_authority"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCertificateAuthority); val.IsValid() && !isEmptyValue(val) {
+		transformed["certificateAuthority"] = transformedCertificateAuthority
+	}
+
+	transformedPemIssuerChain, err := expandPrivatecaCertificateAuthoritySubordinateConfigPemIssuerChain(original["pem_issuer_chain"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPemIssuerChain); val.IsValid() && !isEmptyValue(val) {
+		transformed["pemIssuerChain"] = transformedPemIssuerChain
+	}
+
+	return transformed, nil
+}
+
+func expandPrivatecaCertificateAuthoritySubordinateConfigCertificateAuthority(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPrivatecaCertificateAuthoritySubordinateConfigPemIssuerChain(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPemCertificates, err := expandPrivatecaCertificateAuthoritySubordinateConfigPemIssuerChainPemCertificates(original["pem_certificates"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPemCertificates); val.IsValid() && !isEmptyValue(val) {
+		transformed["pemCertificates"] = transformedPemCertificates
+	}
+
+	return transformed, nil
+}
+
+func expandPrivatecaCertificateAuthoritySubordinateConfigPemIssuerChainPemCertificates(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
