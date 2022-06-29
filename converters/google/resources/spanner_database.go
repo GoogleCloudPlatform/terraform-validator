@@ -17,7 +17,10 @@ package google
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
+	"regexp"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -52,6 +55,44 @@ func resourceSpannerDBDdlCustomDiffFunc(diff TerraformResourceDiff) error {
 func resourceSpannerDBDdlCustomDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	// separate func to allow unit testing
 	return resourceSpannerDBDdlCustomDiffFunc(diff)
+}
+
+func validateDatabaseRetentionPeriod(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+	valueError := fmt.Errorf("version_retention_period should be in range [1h, 7d], in a format resembling 1d, 24h, 1440m, or 86400s")
+
+	r := regexp.MustCompile("^(\\d{1}d|\\d{1,3}h|\\d{2,5}m|\\d{4,6}s)$")
+	if !r.MatchString(value) {
+		errors = append(errors, valueError)
+		return
+	}
+
+	unit := value[len(value)-1:]
+	multiple := value[:len(value)-1]
+	num, err := strconv.Atoi(multiple)
+	if err != nil {
+		errors = append(errors, valueError)
+		return
+	}
+
+	if unit == "d" && (num < 1 || num > 7) {
+		errors = append(errors, valueError)
+		return
+	}
+	if unit == "h" && (num < 1 || num > 7*24) {
+		errors = append(errors, valueError)
+		return
+	}
+	if unit == "m" && (num < 1*60 || num > 7*24*60) {
+		errors = append(errors, valueError)
+		return
+	}
+	if unit == "s" && (num < 1*60*60 || num > 7*24*60*60) {
+		errors = append(errors, valueError)
+		return
+	}
+
+	return
 }
 
 const SpannerDatabaseAssetType string = "spanner.googleapis.com/Database"
@@ -92,6 +133,12 @@ func GetSpannerDatabaseApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
+	versionRetentionPeriodProp, err := expandSpannerDatabaseVersionRetentionPeriod(d.Get("version_retention_period"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("version_retention_period"); !isEmptyValue(reflect.ValueOf(versionRetentionPeriodProp)) && (ok || !reflect.DeepEqual(v, versionRetentionPeriodProp)) {
+		obj["versionRetentionPeriod"] = versionRetentionPeriodProp
+	}
 	extraStatementsProp, err := expandSpannerDatabaseDdl(d.Get("ddl"), d, config)
 	if err != nil {
 		return nil, err
@@ -125,12 +172,24 @@ func resourceSpannerDatabaseEncoder(d TerraformResourceData, meta interface{}, o
 	if dialect, ok := obj["databaseDialect"]; ok && dialect == "POSTGRESQL" {
 		obj["createStatement"] = fmt.Sprintf("CREATE DATABASE \"%s\"", obj["name"])
 	}
+
+	// Extra DDL statements are removed from the create request and instead applied to the database in
+	// a post-create action, to accommodate retrictions when creating PostgreSQL-enabled databases.
+	// https://cloud.google.com/spanner/docs/create-manage-databases#create_a_database
+	log.Printf("[DEBUG] Preparing to create new Database. Any extra DDL statements will be applied to the Database in a separate API call")
+
 	delete(obj, "name")
+	delete(obj, "versionRetentionPeriod")
 	delete(obj, "instance")
+	delete(obj, "extraStatements")
 	return obj, nil
 }
 
 func expandSpannerDatabaseName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSpannerDatabaseVersionRetentionPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
