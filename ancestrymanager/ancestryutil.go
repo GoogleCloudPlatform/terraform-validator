@@ -31,10 +31,11 @@ func assetParent(cai *resources.Asset, ancestors []string) (string, error) {
 		if len(ancestors) < 1 {
 			return "", fmt.Errorf("unexpected value for ancestors: %s", ancestors)
 		}
-		if len(ancestors) > 1 {
-			return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[1]), nil
+		if strings.HasPrefix(ancestors[0], "projects/") {
+			if len(ancestors) > 1 {
+				return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[1]), nil
+			}
 		}
-		// project creation/update
 		return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[0]), nil
 	default:
 		if len(ancestors) < 1 {

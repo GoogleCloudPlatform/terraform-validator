@@ -29,6 +29,12 @@ func TestAssetParent(t *testing.T) {
 			want:      "//cloudresourcemanager.googleapis.com/projects/123",
 		},
 		{
+			name:      "new project with only unknown org",
+			ancestors: []string{"organizations/unknown"},
+			cai:       &resources.Asset{Type: "cloudresourcemanager.googleapis.com/Project"},
+			want:      "//cloudresourcemanager.googleapis.com/organizations/unknown",
+		},
+		{
 			name:      "folder",
 			ancestors: []string{"folders/456", "organizations/789"},
 			cai:       &resources.Asset{Type: "cloudresourcemanager.googleapis.com/Folder"},

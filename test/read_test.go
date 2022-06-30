@@ -26,8 +26,11 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_project_update"},
 		{name: "example_project_iam_binding"},
 		{name: "example_project_iam_member"},
+		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_binding"},
 		{name: "example_storage_bucket_iam_member"},
+		{name: "example_project_create_empty_project_id"},
+		{name: "example_project_iam_member_empty_project"},
 		// auto inserted tests that are not in list above or manually inserted in cli_test.go
 		{name: "example_access_context_manager_access_policy"},
 		{name: "example_access_context_manager_service_perimeter"},
@@ -78,7 +81,6 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_organization_policy"},
 		{name: "example_project_iam"},
 		{name: "example_project_iam_custom_role"},
-		{name: "example_project_iam_member_empty_project"},
 		{name: "example_project_iam_policy"},
 		{name: "example_project_in_folder"},
 		{name: "example_project_in_org"},
@@ -101,7 +103,6 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_spanner_instance_iam_member"},
 		{name: "example_spanner_instance_iam_policy"},
 		{name: "example_sql_database_instance"},
-		{name: "example_storage_bucket"},
 		{name: "example_storage_bucket_iam_member_random_suffix"},
 		{name: "example_storage_bucket_iam_policy"},
 		{name: "example_vpc_access_connector"},
@@ -141,6 +142,53 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 				data.Provider["project"]: data.Ancestry,
 			}
 			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], ancestryCache, true, false, zaptest.NewLogger(t), "")
+			if err != nil {
+				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
+			}
+
+			expectedAssets := normalizeAssets(t, want, true)
+			actualAssets := normalizeAssets(t, got, true)
+			require.ElementsMatch(t, actualAssets, expectedAssets)
+		})
+	}
+}
+
+func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
+	cases := []struct {
+		name string
+	}{
+		{name: "example_project_create_empty_project_id"},
+		{name: "example_storage_bucket"},
+		{name: "example_project_iam_member_empty_project"},
+	}
+	for i := range cases {
+		// Allocate a variable to make sure test can run in parallel.
+		c := cases[i]
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			// Create a temporary directory for running terraform.
+			dir, err := ioutil.TempDir(tmpDir, "terraform")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer os.RemoveAll(dir)
+
+			generateTestFiles(t, "../testdata/templates", dir, c.name+"_without_default_project.json")
+			generateTestFiles(t, "../testdata/templates", dir, c.name+".tfplan.json")
+
+			// Unmarshal payload from testfile into `want` variable.
+			f := filepath.Join(dir, c.name+"_without_default_project.json")
+			want, err := readExpectedTestFile(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			planfile := filepath.Join(dir, c.name+".tfplan.json")
+			ctx := context.Background()
+			ancestryCache := map[string]string{
+				// data.Provider["project"]: data.Ancestry,
+			}
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, "", ancestryCache, true, false, zaptest.NewLogger(t), "")
 			if err != nil {
 				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
 			}

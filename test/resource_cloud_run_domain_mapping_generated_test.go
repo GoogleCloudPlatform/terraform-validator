@@ -68,7 +68,7 @@ func testAccCloudRunDomainMapping_cloudRunDomainMappingBasicExample_shared(t *te
 	// need to have comparison.. perhaps test vs checked in code
 	// testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
 
-	testValidateCommandGeneric(t, dir, testSlug, offline)
+	testValidateCommandGeneric(t, dir, testSlug, offline, true)
 }
 
 func testAccCloudRunDomainMapping_cloudRunDomainMappingBasicExample(context map[string]interface{}) string {
