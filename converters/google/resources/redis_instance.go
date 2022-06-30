@@ -209,6 +209,12 @@ func GetRedisInstanceApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("secondary_ip_range"); !isEmptyValue(reflect.ValueOf(secondaryIpRangeProp)) && (ok || !reflect.DeepEqual(v, secondaryIpRangeProp)) {
 		obj["secondaryIpRange"] = secondaryIpRangeProp
 	}
+	customerManagedKeyProp, err := expandRedisInstanceCustomerManagedKey(d.Get("customer_managed_key"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("customer_managed_key"); !isEmptyValue(reflect.ValueOf(customerManagedKeyProp)) && (ok || !reflect.DeepEqual(v, customerManagedKeyProp)) {
+		obj["customerManagedKey"] = customerManagedKeyProp
+	}
 
 	return resourceRedisInstanceEncoder(d, config, obj)
 }
@@ -510,5 +516,9 @@ func expandRedisInstanceReadReplicasMode(v interface{}, d TerraformResourceData,
 }
 
 func expandRedisInstanceSecondaryIpRange(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandRedisInstanceCustomerManagedKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
