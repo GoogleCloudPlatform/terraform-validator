@@ -20,6 +20,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Check to see if a specified value in the config exists and suppress diffs if so. Otherwise run emptyOrDefaultStringSuppress.
+
+func checkValAndDefaultStringSuppress(defaultVal string, checkVal string) schema.SchemaDiffSuppressFunc {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		if _, ok := d.GetOkExists(checkVal); ok {
+			return false
+		}
+		return (old == "" && new == defaultVal) || (new == "" && old == defaultVal)
+	}
+}
+
 const BillingBudgetAssetType string = "billingbudgets.googleapis.com/Budget"
 
 func resourceConverterBillingBudget() ResourceConverter {
@@ -141,6 +152,20 @@ func expandBillingBudgetBudgetFilter(v interface{}, d TerraformResourceData, con
 		transformed["labels"] = transformedLabels
 	}
 
+	transformedCalendarPeriod, err := expandBillingBudgetBudgetFilterCalendarPeriod(original["calendar_period"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCalendarPeriod); val.IsValid() && !isEmptyValue(val) {
+		transformed["calendarPeriod"] = transformedCalendarPeriod
+	}
+
+	transformedCustomPeriod, err := expandBillingBudgetBudgetFilterCustomPeriod(original["custom_period"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCustomPeriod); val.IsValid() && !isEmptyValue(val) {
+		transformed["customPeriod"] = transformedCustomPeriod
+	}
+
 	return transformed, nil
 }
 
@@ -174,6 +199,126 @@ func expandBillingBudgetBudgetFilterLabels(v interface{}, d TerraformResourceDat
 		m[k] = []string{val.(string)}
 	}
 	return m, nil
+}
+
+func expandBillingBudgetBudgetFilterCalendarPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedStartDate, err := expandBillingBudgetBudgetFilterCustomPeriodStartDate(original["start_date"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedStartDate); val.IsValid() && !isEmptyValue(val) {
+		transformed["startDate"] = transformedStartDate
+	}
+
+	transformedEndDate, err := expandBillingBudgetBudgetFilterCustomPeriodEndDate(original["end_date"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedEndDate); val.IsValid() && !isEmptyValue(val) {
+		transformed["endDate"] = transformedEndDate
+	}
+
+	return transformed, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodStartDate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedYear, err := expandBillingBudgetBudgetFilterCustomPeriodStartDateYear(original["year"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedYear); val.IsValid() && !isEmptyValue(val) {
+		transformed["year"] = transformedYear
+	}
+
+	transformedMonth, err := expandBillingBudgetBudgetFilterCustomPeriodStartDateMonth(original["month"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMonth); val.IsValid() && !isEmptyValue(val) {
+		transformed["month"] = transformedMonth
+	}
+
+	transformedDay, err := expandBillingBudgetBudgetFilterCustomPeriodStartDateDay(original["day"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDay); val.IsValid() && !isEmptyValue(val) {
+		transformed["day"] = transformedDay
+	}
+
+	return transformed, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodStartDateYear(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodStartDateMonth(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodStartDateDay(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodEndDate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedYear, err := expandBillingBudgetBudgetFilterCustomPeriodEndDateYear(original["year"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedYear); val.IsValid() && !isEmptyValue(val) {
+		transformed["year"] = transformedYear
+	}
+
+	transformedMonth, err := expandBillingBudgetBudgetFilterCustomPeriodEndDateMonth(original["month"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMonth); val.IsValid() && !isEmptyValue(val) {
+		transformed["month"] = transformedMonth
+	}
+
+	transformedDay, err := expandBillingBudgetBudgetFilterCustomPeriodEndDateDay(original["day"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDay); val.IsValid() && !isEmptyValue(val) {
+		transformed["day"] = transformedDay
+	}
+
+	return transformed, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodEndDateYear(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodEndDateMonth(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBillingBudgetBudgetFilterCustomPeriodEndDateDay(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandBillingBudgetAmount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
