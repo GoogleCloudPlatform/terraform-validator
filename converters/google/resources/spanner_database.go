@@ -179,9 +179,8 @@ func resourceSpannerDatabaseEncoder(d TerraformResourceData, meta interface{}, o
 	log.Printf("[DEBUG] Preparing to create new Database. Any extra DDL statements will be applied to the Database in a separate API call")
 
 	delete(obj, "name")
-	delete(obj, "versionRetentionPeriod")
 	delete(obj, "instance")
-	delete(obj, "extraStatements")
+
 	return obj, nil
 }
 
