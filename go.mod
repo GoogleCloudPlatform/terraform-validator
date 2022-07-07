@@ -1,5 +1,11 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
+retract (
+	v0.16.0 // Incorrect commit
+	v0.15.4 // Incorrect commit
+	v0.15.3 // Incorrect commit
+)
+
 require (
 	cloud.google.com/go/bigtable v1.13.0
 	github.com/GoogleCloudPlatform/config-validator v0.0.0-20220601215952-9c7f9463df8c
