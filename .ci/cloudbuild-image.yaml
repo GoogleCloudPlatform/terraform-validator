@@ -5,3 +5,5 @@ steps:
   args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/terraform-validator', '.' ]
 images:
   - gcr.io/$PROJECT_ID/terraform-validator
+timeout:
+  - 1200s # 20 minutes
