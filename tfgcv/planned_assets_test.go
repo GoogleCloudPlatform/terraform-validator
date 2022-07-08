@@ -104,7 +104,7 @@ func TestReadPlannedAssets(t *testing.T) {
 			testFile := filepath.Join(testDataDir, tt.args.file)
 			offline := true
 			ctx := context.Background()
-			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, tt.ancestryCache, offline, tt.args.convertUnchanged, zap.NewExample(), "")
+			got, err := ReadPlannedAssets(ctx, testFile, tt.args.project, "", "", tt.ancestryCache, offline, tt.args.convertUnchanged, zap.NewExample(), "")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadPlannedAssets() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -42,6 +42,15 @@ Example:
     --ancestry organization/my-org/folder/my-folder
 `
 
+func multiEnvSearch(ks []string) string {
+	for _, k := range ks {
+		if v := os.Getenv(k); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
 type convertOptions struct {
 	project           string
 	ancestry          string
@@ -95,11 +104,23 @@ func (o *convertOptions) validateArgs(args []string) error {
 
 func (o *convertOptions) run(plan string) error {
 	ctx := context.Background()
-	ancestryCache := map[string]string{
-		o.project: o.ancestry,
+	ancestryCache := map[string]string{}
+	if o.project != "" {
+		ancestryCache[o.project] = o.ancestry
 	}
+	zone := multiEnvSearch([]string{
+		"GOOGLE_ZONE",
+		"GCLOUD_ZONE",
+		"CLOUDSDK_COMPUTE_ZONE",
+	})
+
+	region := multiEnvSearch([]string{
+		"GOOGLE_REGION",
+		"GCLOUD_REGION",
+		"CLOUDSDK_COMPUTE_REGION",
+	})
 	userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
-	assets, err := o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
+	assets, err := o.readPlannedAssets(ctx, plan, o.project, zone, region, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
 	if err != nil {
 		return err
 	}

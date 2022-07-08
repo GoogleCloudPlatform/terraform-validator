@@ -141,9 +141,9 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 			ancestryCache := map[string]string{
 				data.Provider["project"]: data.Ancestry,
 			}
-			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], ancestryCache, true, false, zaptest.NewLogger(t), "")
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, data.Provider["project"], "", "", ancestryCache, true, false, zaptest.NewLogger(t), "")
 			if err != nil {
-				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
+				t.Fatalf("ReadPlannedAssets(%s, %s, \"\", \"\", %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
 			}
 
 			expectedAssets := normalizeAssets(t, want, true)
@@ -188,9 +188,9 @@ func TestReadPlannedAssetsCoverage_WithoutDefaultProject(t *testing.T) {
 			ancestryCache := map[string]string{
 				// data.Provider["project"]: data.Ancestry,
 			}
-			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, "", ancestryCache, true, false, zaptest.NewLogger(t), "")
+			got, err := tfgcv.ReadPlannedAssets(ctx, planfile, "", "", "", ancestryCache, true, false, zaptest.NewLogger(t), "")
 			if err != nil {
-				t.Fatalf("ReadPlannedAssets(%s, %s, %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
+				t.Fatalf("ReadPlannedAssets(%s, %s, \"\", \"\", %s, %t): %v", planfile, data.Provider["project"], ancestryCache, true, err)
 			}
 
 			expectedAssets := normalizeAssets(t, want, true)

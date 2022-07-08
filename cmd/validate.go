@@ -113,11 +113,23 @@ func (o *validateOptions) run(plan string) error {
 	var assets []google.Asset
 	if err := json.Unmarshal(content, &assets); err != nil {
 		var err error
-		ancestryCache := map[string]string{
-			o.project: o.ancestry,
+		ancestryCache := map[string]string{}
+		if o.project != "" {
+			ancestryCache[o.project] = o.ancestry
 		}
 		userAgent := fmt.Sprintf("config-validator-tf/%s", version.BuildVersion())
-		assets, err = o.readPlannedAssets(ctx, plan, o.project, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
+		zone := multiEnvSearch([]string{
+			"GOOGLE_ZONE",
+			"GCLOUD_ZONE",
+			"CLOUDSDK_COMPUTE_ZONE",
+		})
+
+		region := multiEnvSearch([]string{
+			"GOOGLE_REGION",
+			"GCLOUD_REGION",
+			"CLOUDSDK_COMPUTE_REGION",
+		})
+		assets, err = o.readPlannedAssets(ctx, plan, o.project, zone, region, ancestryCache, o.offline, false, o.rootOptions.errorLogger, userAgent)
 		if err != nil {
 			return err
 		}
