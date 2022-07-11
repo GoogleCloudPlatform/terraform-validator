@@ -16,7 +16,7 @@ package google
 
 import "reflect"
 
-const DocumentAIProcessorAssetType string = "documentai.googleapis.com/Processor"
+const DocumentAIProcessorAssetType string = "{{location}}-documentai.googleapis.com/Processor"
 
 func resourceConverterDocumentAIProcessor() ResourceConverter {
 	return ResourceConverter{
@@ -26,7 +26,7 @@ func resourceConverterDocumentAIProcessor() ResourceConverter {
 }
 
 func GetDocumentAIProcessorCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//documentai.googleapis.com/{{name}}")
+	name, err := assetName(d, config, "//{{location}}-documentai.googleapis.com/projects/{{project}}/locations/{{location}}/processors/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -36,7 +36,7 @@ func GetDocumentAIProcessorCaiObject(d TerraformResourceData, config *Config) ([
 			Type: DocumentAIProcessorAssetType,
 			Resource: &AssetResource{
 				Version:              "v1",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/documentai/v1/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{location}}-documentai/v1/rest",
 				DiscoveryName:        "Processor",
 				Data:                 obj,
 			},

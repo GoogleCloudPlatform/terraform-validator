@@ -16,7 +16,7 @@ package google
 
 import "reflect"
 
-const DocumentAIProcessorDefaultVersionAssetType string = "documentai.googleapis.com/ProcessorDefaultVersion"
+const DocumentAIProcessorDefaultVersionAssetType string = "{{location}}-documentai.googleapis.com/ProcessorDefaultVersion"
 
 func resourceConverterDocumentAIProcessorDefaultVersion() ResourceConverter {
 	return ResourceConverter{
@@ -26,7 +26,7 @@ func resourceConverterDocumentAIProcessorDefaultVersion() ResourceConverter {
 }
 
 func GetDocumentAIProcessorDefaultVersionCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//documentai.googleapis.com/{{processor}}")
+	name, err := assetName(d, config, "//{{location}}-documentai.googleapis.com/{{processor}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -36,7 +36,7 @@ func GetDocumentAIProcessorDefaultVersionCaiObject(d TerraformResourceData, conf
 			Type: DocumentAIProcessorDefaultVersionAssetType,
 			Resource: &AssetResource{
 				Version:              "v1",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/documentai/v1/rest",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/{{location}}-documentai/v1/rest",
 				DiscoveryName:        "ProcessorDefaultVersion",
 				Data:                 obj,
 			},
