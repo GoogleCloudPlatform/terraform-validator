@@ -270,3 +270,82 @@ resource "google_cloud_run_service" "default" {
 }
 `, context)
 }
+
+func TestAccCloudRunService_cloudrunServiceAccessControlExample_generated_offline(t *testing.T) {
+	testSlug := "CloudRunService_cloudrunServiceAccessControlExample_offline"
+	offline := true
+	testAccCloudRunService_cloudrunServiceAccessControlExample_shared(t, testSlug, offline)
+}
+
+func TestAccCloudRunService_cloudrunServiceAccessControlExample_generated_online(t *testing.T) {
+	testSlug := "CloudRunService_cloudrunServiceAccessControlExample_online"
+	offline := false
+	testAccCloudRunService_cloudrunServiceAccessControlExample_shared(t, testSlug, offline)
+}
+
+func testAccCloudRunService_cloudrunServiceAccessControlExample_shared(t *testing.T, testSlug string, offline bool) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode.")
+		return
+	}
+
+	t.Parallel()
+	context := map[string]interface{}{
+		"random_suffix": "meepmerp", // true randomization isn't needed for validator
+	}
+
+	terraformConfig := getTestPrefix() + testAccCloudRunService_cloudrunServiceAccessControlExample(context)
+	dir, err := ioutil.TempDir(tmpDir, "terraform")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	dstFile := path.Join(dir, "main.tf")
+	err = os.WriteFile(dstFile, []byte(terraformConfig), 0666)
+	if err != nil {
+		t.Fatalf("error while writing to file %s, error %v", dstFile, err)
+	}
+
+	terraformWorkflow(t, dir, testSlug)
+	if offline && shouldOutputGeneratedFiles() {
+		generateTFVconvertedAsset(t, dir, testSlug)
+		return
+	}
+
+	// need to have comparison.. perhaps test vs checked in code
+	// testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
+
+	testValidateCommandGeneric(t, dir, testSlug, offline, true)
+}
+
+func testAccCloudRunService_cloudrunServiceAccessControlExample(context map[string]interface{}) string {
+	return Nprintf(`
+resource "google_cloud_run_service" "default" {
+  name     = "tf-test-cloud-run-srv%{random_suffix}"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/cloudrun/hello"
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+resource "google_cloud_run_service_iam_binding" "default" {
+  location = google_cloud_run_service.default.location
+  service  = google_cloud_run_service.default.name
+  role     = "roles/run.invoker"
+  members = [
+    "allUsers"
+  ]
+}
+`, context)
+}
