@@ -252,6 +252,13 @@ func expandNotebooksRuntimeVirtualMachineVirtualMachineConfig(v interface{}, d T
 		transformed["nicType"] = transformedNicType
 	}
 
+	transformedReservedIpRange, err := expandNotebooksRuntimeVirtualMachineVirtualMachineConfigReservedIpRange(original["reserved_ip_range"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedReservedIpRange); val.IsValid() && !isEmptyValue(val) {
+		transformed["reservedIpRange"] = transformedReservedIpRange
+	}
+
 	return transformed, nil
 }
 
@@ -666,6 +673,10 @@ func expandNotebooksRuntimeVirtualMachineVirtualMachineConfigLabels(v interface{
 }
 
 func expandNotebooksRuntimeVirtualMachineVirtualMachineConfigNicType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksRuntimeVirtualMachineVirtualMachineConfigReservedIpRange(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
