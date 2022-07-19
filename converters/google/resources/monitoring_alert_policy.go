@@ -344,6 +344,13 @@ func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguage(v int
 		transformed["trigger"] = transformedTrigger
 	}
 
+	transformedEvaluationMissingData, err := expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageEvaluationMissingData(original["evaluation_missing_data"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedEvaluationMissingData); val.IsValid() && !isEmptyValue(val) {
+		transformed["evaluationMissingData"] = transformedEvaluationMissingData
+	}
+
 	return transformed, nil
 }
 
@@ -386,6 +393,10 @@ func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTrigge
 }
 
 func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageTriggerCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionMonitoringQueryLanguageEvaluationMissingData(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -452,6 +463,13 @@ func expandMonitoringAlertPolicyConditionsConditionThreshold(v interface{}, d Te
 		return nil, err
 	} else if val := reflect.ValueOf(transformedFilter); val.IsValid() && !isEmptyValue(val) {
 		transformed["filter"] = transformedFilter
+	}
+
+	transformedEvaluationMissingData, err := expandMonitoringAlertPolicyConditionsConditionThresholdEvaluationMissingData(original["evaluation_missing_data"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedEvaluationMissingData); val.IsValid() && !isEmptyValue(val) {
+		transformed["evaluationMissingData"] = transformedEvaluationMissingData
 	}
 
 	return transformed, nil
@@ -626,6 +644,10 @@ func expandMonitoringAlertPolicyConditionsConditionThresholdAggregationsCrossSer
 }
 
 func expandMonitoringAlertPolicyConditionsConditionThresholdFilter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringAlertPolicyConditionsConditionThresholdEvaluationMissingData(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
