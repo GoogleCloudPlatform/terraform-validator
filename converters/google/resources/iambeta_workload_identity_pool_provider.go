@@ -68,8 +68,8 @@ func GetIAMBetaWorkloadIdentityPoolProviderCaiObject(d TerraformResourceData, co
 			Name: name,
 			Type: IAMBetaWorkloadIdentityPoolProviderAssetType,
 			Resource: &AssetResource{
-				Version:              "v",
-				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/iam/v/rest",
+				Version:              "v1",
+				DiscoveryDocumentURI: "https://www.googleapis.com/discovery/v1/apis/iam/v1/rest",
 				DiscoveryName:        "WorkloadIdentityPoolProvider",
 				Data:                 obj,
 			},
