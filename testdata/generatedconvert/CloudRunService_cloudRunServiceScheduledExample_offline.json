@@ -1,0 +1,131 @@
+[
+  {
+    "name": "//run.googleapis.com/projects/foobar/locations/us-central1/services/tf-test-my-scheduled-servicemeepmerp",
+    "asset_type": "run.googleapis.com/Service",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/run/v1/rest",
+      "discovery_name": "Service",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "name": "tf-test-my-scheduled-servicemeepmerp"
+        },
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "image": "us-docker.pkg.dev/cloudrun/container/hello"
+                }
+              ]
+            }
+          },
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100
+            }
+          ]
+        }
+      }
+    },
+    "iam_policy": {
+      "bindings": [
+        {
+          "role": "roles/run.invoker",
+          "members": [
+            ""
+          ]
+        }
+      ]
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  },
+  {
+    "name": "//serviceusage.googleapis.com/projects/foobar/services/cloudresourcemanager.googleapis.com",
+    "asset_type": "serviceusage.googleapis.com/Service",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/serviceusage/v1/rest",
+      "discovery_name": "Service",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "name": "cloudresourcemanager.googleapis.com",
+        "parent": "projects/foobar",
+        "state": "ENABLED"
+      }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  },
+  {
+    "name": "//serviceusage.googleapis.com/projects/foobar/services/cloudscheduler.googleapis.com",
+    "asset_type": "serviceusage.googleapis.com/Service",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/serviceusage/v1/rest",
+      "discovery_name": "Service",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "name": "cloudscheduler.googleapis.com",
+        "parent": "projects/foobar",
+        "state": "ENABLED"
+      }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  },
+  {
+    "name": "//serviceusage.googleapis.com/projects/foobar/services/iam.googleapis.com",
+    "asset_type": "serviceusage.googleapis.com/Service",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/serviceusage/v1/rest",
+      "discovery_name": "Service",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "name": "iam.googleapis.com",
+        "parent": "projects/foobar",
+        "state": "ENABLED"
+      }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  },
+  {
+    "name": "//serviceusage.googleapis.com/projects/foobar/services/run.googleapis.com",
+    "asset_type": "serviceusage.googleapis.com/Service",
+    "resource": {
+      "version": "v1",
+      "discovery_document_uri": "https://www.googleapis.com/discovery/v1/apis/serviceusage/v1/rest",
+      "discovery_name": "Service",
+      "parent": "//cloudresourcemanager.googleapis.com/projects/foobar",
+      "data": {
+        "name": "run.googleapis.com",
+        "parent": "projects/foobar",
+        "state": "ENABLED"
+      }
+    },
+    "ancestors": [
+      "projects/foobar",
+      "folders/67890",
+      "organizations/12345"
+    ]
+  }
+]
