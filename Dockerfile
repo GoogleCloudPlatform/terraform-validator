@@ -1,4 +1,4 @@
-FROM golang:1.16
+FROM golang:1.18
 
 RUN apt-get update && apt-get -y install wget unzip
 
