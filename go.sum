@@ -1,5 +1,6 @@
 4d63.com/gochecknoglobals v0.0.0-20201008074935-acfc0b28355a/go.mod h1:wfdC5ZjKSPr7CybKEcgJhUOgeAQW1+7WcyK8OvUilfo=
 bitbucket.org/creachadair/shell v0.0.6/go.mod h1:8Qqi/cYk7vPnsOePHroKXDJYmb5x7ENhtiFtfZq8K+M=
+bitbucket.org/creachadair/stringset v0.0.8 h1:gQqe4vs8XWgMyijfyKE6K8o4TcyGGrRXe0JvHgx5H+M=
 bitbucket.org/creachadair/stringset v0.0.8/go.mod h1:AgthVMyMxC/6FK1KBJ2ALdqkZObGN8hOetgpwXyMn34=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
@@ -84,6 +85,7 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24/go.mod h1:4UJr5HIiMZrwgkSPdsjy2uOQExX/WEILpIrO9UPGuXs=
 github.com/GoogleCloudPlatform/config-validator v0.0.0-20220601215952-9c7f9463df8c h1:G7DGGKmni0CTZqaD9Hdkzzb0hy95qQx2jHYH+KulUxE=
 github.com/GoogleCloudPlatform/config-validator v0.0.0-20220601215952-9c7f9463df8c/go.mod h1:1tEOIczCu1Pfe0ApnRfQB0NqTVsu3RoyFl6s8uz1LUg=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v1.15.1 h1:ex2UFZoVSbfsHK0zDsilMpXXs1vBDwi2wk1Fxd5N3D0=
 github.com/GoogleCloudPlatform/declarative-resource-client-library v1.15.1/go.mod h1:i6Pmzp7aolLmJY86RaJ9wjqm/HFleMeN7Vl5uIWLwE8=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
@@ -179,6 +181,7 @@ github.com/bytecodealliance/wasmtime-go v0.27.0/go.mod h1:q320gUxqyI8yB+ZqRuaJOE
 github.com/bytecodealliance/wasmtime-go v0.32.0 h1:/GsrnJz2bfULAIZygN4vUElLYliQrx/o/1opP9X7Gck=
 github.com/bytecodealliance/wasmtime-go v0.32.0/go.mod h1:q320gUxqyI8yB+ZqRuaJOEnGkAnHh6WtJjMaT2CW4wI=
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=
+github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cenkalti/backoff/v4 v4.1.2/go.mod h1:scbssz8iZGpm3xbr14ovlUdkxfGXNInqkPWOWmG2CLw=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -529,6 +532,7 @@ github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.7/go.mod h1:n+brtR0CgQNWTVd5ZUFpTBC8YFBDLK/h/bpaJ8/DtOE=
 github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/google/go-cmp v0.5.8/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/google/go-cpy v0.0.0-20211218193943-a9c933c06932 h1:5/4TSDzpDnHQ8rKEEQBjRlYx77mHOvXu08oGchxej7o=
 github.com/google/go-cpy v0.0.0-20211218193943-a9c933c06932/go.mod h1:cC6EdPbj/17GFCPDK39NRarlMI+kt+O60S12cNB5J9Y=
 github.com/google/gofuzz v0.0.0-20161122191042-44d81051d367/go.mod h1:HP5RmnzzSNb993RKQDq4+1A4ia9nllfqcQFTQJedwGI=
 github.com/google/gofuzz v1.0.0 h1:A8PeW59pxE9IoFRqBp37U+mSNaQoZ46F1f0f863XSXw=
@@ -686,8 +690,8 @@ github.com/hashicorp/terraform-plugin-log v0.4.1 h1:xpbmVhvuU3mgHzLetOmx9pkOL2rm
 github.com/hashicorp/terraform-plugin-log v0.4.1/go.mod h1:p4R1jWBXRTvL4odmEkFfDdhUjHf9zcs/BCoNHAc7IK4=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.18.0 h1:/cdI5di5XA+N80gXzXF4YcHq36DprBskubk6Z8i26ZQ=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.18.0/go.mod h1:L3SHkD/Q8zPVgXviQmpVwy9nKwpXXZscVIpVEnQ/T50=
-github.com/hashicorp/terraform-provider-google v1.20.1-0.20220725234223-471031ba6600 h1:qv8UD86eKfx1rplt/R58pF6zjmopGiSmVF0z0dF5lzA=
-github.com/hashicorp/terraform-provider-google v1.20.1-0.20220725234223-471031ba6600/go.mod h1:to2Ax9HEd07GAtnvWj/BeJFkkhCWhRDpX+/wzlKWWbA=
+github.com/hashicorp/terraform-provider-google v1.20.1-0.20220726162709-b52edddc8a59 h1:DFCbKq60b0k53lSa8pk9jSsnYLCmfhjqlUAHImeI+ME=
+github.com/hashicorp/terraform-provider-google v1.20.1-0.20220726162709-b52edddc8a59/go.mod h1:to2Ax9HEd07GAtnvWj/BeJFkkhCWhRDpX+/wzlKWWbA=
 github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c h1:D8aRO6+mTqHfLsK/BC3j5OAoogv1WLRWzY1AaTo3rBg=
 github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c/go.mod h1:Wn3Na71knbXc1G8Lh+yu/dQWWJeFQEpDeJMtWMtlmNI=
 github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 h1:HKLsbzeOsfXmKNpr3GiT18XAblV0BjCbzL8KQAMZGa0=
