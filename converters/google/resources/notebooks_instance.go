@@ -112,6 +112,18 @@ func GetNotebooksInstanceApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("shielded_instance_config"); !isEmptyValue(reflect.ValueOf(shieldedInstanceConfigProp)) && (ok || !reflect.DeepEqual(v, shieldedInstanceConfigProp)) {
 		obj["shieldedInstanceConfig"] = shieldedInstanceConfigProp
 	}
+	nicTypeProp, err := expandNotebooksInstanceNicType(d.Get("nic_type"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("nic_type"); !isEmptyValue(reflect.ValueOf(nicTypeProp)) && (ok || !reflect.DeepEqual(v, nicTypeProp)) {
+		obj["nicType"] = nicTypeProp
+	}
+	reservationAffinityProp, err := expandNotebooksInstanceReservationAffinity(d.Get("reservation_affinity"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("reservation_affinity"); !isEmptyValue(reflect.ValueOf(reservationAffinityProp)) && (ok || !reflect.DeepEqual(v, reservationAffinityProp)) {
+		obj["reservationAffinity"] = reservationAffinityProp
+	}
 	installGpuDriverProp, err := expandNotebooksInstanceInstallGpuDriver(d.Get("install_gpu_driver"), d, config)
 	if err != nil {
 		return nil, err
@@ -320,6 +332,55 @@ func expandNotebooksInstanceShieldedInstanceConfigEnableSecureBoot(v interface{}
 }
 
 func expandNotebooksInstanceShieldedInstanceConfigEnableVtpm(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksInstanceNicType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksInstanceReservationAffinity(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedConsumeReservationType, err := expandNotebooksInstanceReservationAffinityConsumeReservationType(original["consume_reservation_type"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedConsumeReservationType); val.IsValid() && !isEmptyValue(val) {
+		transformed["consumeReservationType"] = transformedConsumeReservationType
+	}
+
+	transformedKey, err := expandNotebooksInstanceReservationAffinityKey(original["key"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedKey); val.IsValid() && !isEmptyValue(val) {
+		transformed["key"] = transformedKey
+	}
+
+	transformedValues, err := expandNotebooksInstanceReservationAffinityValues(original["values"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedValues); val.IsValid() && !isEmptyValue(val) {
+		transformed["values"] = transformedValues
+	}
+
+	return transformed, nil
+}
+
+func expandNotebooksInstanceReservationAffinityConsumeReservationType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksInstanceReservationAffinityKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksInstanceReservationAffinityValues(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
