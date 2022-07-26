@@ -769,6 +769,13 @@ func expandNotebooksRuntimeSoftwareConfig(v interface{}, d TerraformResourceData
 		transformed["installGpuDriver"] = transformedInstallGpuDriver
 	}
 
+	transformedUpgradeable, err := expandNotebooksRuntimeSoftwareConfigUpgradeable(original["upgradeable"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUpgradeable); val.IsValid() && !isEmptyValue(val) {
+		transformed["upgradeable"] = transformedUpgradeable
+	}
+
 	transformedCustomGpuDriverPath, err := expandNotebooksRuntimeSoftwareConfigCustomGpuDriverPath(original["custom_gpu_driver_path"], d, config)
 	if err != nil {
 		return nil, err
@@ -781,6 +788,20 @@ func expandNotebooksRuntimeSoftwareConfig(v interface{}, d TerraformResourceData
 		return nil, err
 	} else if val := reflect.ValueOf(transformedPostStartupScript); val.IsValid() && !isEmptyValue(val) {
 		transformed["postStartupScript"] = transformedPostStartupScript
+	}
+
+	transformedPostStartupScriptBehavior, err := expandNotebooksRuntimeSoftwareConfigPostStartupScriptBehavior(original["post_startup_script_behavior"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPostStartupScriptBehavior); val.IsValid() && !isEmptyValue(val) {
+		transformed["postStartupScriptBehavior"] = transformedPostStartupScriptBehavior
+	}
+
+	transformedKernels, err := expandNotebooksRuntimeSoftwareConfigKernels(original["kernels"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedKernels); val.IsValid() && !isEmptyValue(val) {
+		transformed["kernels"] = transformedKernels
 	}
 
 	return transformed, nil
@@ -806,10 +827,55 @@ func expandNotebooksRuntimeSoftwareConfigInstallGpuDriver(v interface{}, d Terra
 	return v, nil
 }
 
+func expandNotebooksRuntimeSoftwareConfigUpgradeable(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
 func expandNotebooksRuntimeSoftwareConfigCustomGpuDriverPath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
 func expandNotebooksRuntimeSoftwareConfigPostStartupScript(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksRuntimeSoftwareConfigPostStartupScriptBehavior(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksRuntimeSoftwareConfigKernels(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedRepository, err := expandNotebooksRuntimeSoftwareConfigKernelsRepository(original["repository"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedRepository); val.IsValid() && !isEmptyValue(val) {
+			transformed["repository"] = transformedRepository
+		}
+
+		transformedTag, err := expandNotebooksRuntimeSoftwareConfigKernelsTag(original["tag"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedTag); val.IsValid() && !isEmptyValue(val) {
+			transformed["tag"] = transformedTag
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandNotebooksRuntimeSoftwareConfigKernelsRepository(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNotebooksRuntimeSoftwareConfigKernelsTag(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
