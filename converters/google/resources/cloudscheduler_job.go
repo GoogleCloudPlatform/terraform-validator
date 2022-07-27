@@ -148,6 +148,12 @@ func GetCloudSchedulerJobApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("time_zone"); !isEmptyValue(reflect.ValueOf(timeZoneProp)) && (ok || !reflect.DeepEqual(v, timeZoneProp)) {
 		obj["timeZone"] = timeZoneProp
 	}
+	pausedProp, err := expandCloudSchedulerJobPaused(d.Get("paused"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("paused"); !isEmptyValue(reflect.ValueOf(pausedProp)) && (ok || !reflect.DeepEqual(v, pausedProp)) {
+		obj["paused"] = pausedProp
+	}
 	attemptDeadlineProp, err := expandCloudSchedulerJobAttemptDeadline(d.Get("attempt_deadline"), d, config)
 	if err != nil {
 		return nil, err
@@ -179,6 +185,11 @@ func GetCloudSchedulerJobApiObject(d TerraformResourceData, config *Config) (map
 		obj["httpTarget"] = httpTargetProp
 	}
 
+	return resourceCloudSchedulerJobEncoder(d, config, obj)
+}
+
+func resourceCloudSchedulerJobEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+	delete(obj, "paused") // Field doesn't exist in API
 	return obj, nil
 }
 
@@ -195,6 +206,10 @@ func expandCloudSchedulerJobSchedule(v interface{}, d TerraformResourceData, con
 }
 
 func expandCloudSchedulerJobTimeZone(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudSchedulerJobPaused(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
