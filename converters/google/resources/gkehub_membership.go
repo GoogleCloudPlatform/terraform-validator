@@ -41,7 +41,7 @@ func resourceConverterGKEHubMembership() ResourceConverter {
 }
 
 func GetGKEHubMembershipCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//gkehub.googleapis.com/{{name}}")
+	name, err := assetName(d, config, "//gkehub.googleapis.com/projects/{{project}}/locations/global/memberships/{{membership_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
