@@ -85,6 +85,12 @@ func GetPubsubSubscriptionApiObject(d TerraformResourceData, config *Config) (ma
 	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
 		obj["labels"] = labelsProp
 	}
+	bigqueryConfigProp, err := expandPubsubSubscriptionBigqueryConfig(d.Get("bigquery_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("bigquery_config"); !isEmptyValue(reflect.ValueOf(bigqueryConfigProp)) && (ok || !reflect.DeepEqual(v, bigqueryConfigProp)) {
+		obj["bigqueryConfig"] = bigqueryConfigProp
+	}
 	pushConfigProp, err := expandPubsubSubscriptionPushConfig(d.Get("push_config"), d, config)
 	if err != nil {
 		return nil, err
@@ -189,6 +195,62 @@ func expandPubsubSubscriptionLabels(v interface{}, d TerraformResourceData, conf
 		m[k] = val.(string)
 	}
 	return m, nil
+}
+
+func expandPubsubSubscriptionBigqueryConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedTable, err := expandPubsubSubscriptionBigqueryConfigTable(original["table"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTable); val.IsValid() && !isEmptyValue(val) {
+		transformed["table"] = transformedTable
+	}
+
+	transformedUseTopicSchema, err := expandPubsubSubscriptionBigqueryConfigUseTopicSchema(original["use_topic_schema"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUseTopicSchema); val.IsValid() && !isEmptyValue(val) {
+		transformed["useTopicSchema"] = transformedUseTopicSchema
+	}
+
+	transformedWriteMetadata, err := expandPubsubSubscriptionBigqueryConfigWriteMetadata(original["write_metadata"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedWriteMetadata); val.IsValid() && !isEmptyValue(val) {
+		transformed["writeMetadata"] = transformedWriteMetadata
+	}
+
+	transformedDropUnknownFields, err := expandPubsubSubscriptionBigqueryConfigDropUnknownFields(original["drop_unknown_fields"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDropUnknownFields); val.IsValid() && !isEmptyValue(val) {
+		transformed["dropUnknownFields"] = transformedDropUnknownFields
+	}
+
+	return transformed, nil
+}
+
+func expandPubsubSubscriptionBigqueryConfigTable(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPubsubSubscriptionBigqueryConfigUseTopicSchema(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPubsubSubscriptionBigqueryConfigWriteMetadata(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandPubsubSubscriptionBigqueryConfigDropUnknownFields(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandPubsubSubscriptionPushConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
