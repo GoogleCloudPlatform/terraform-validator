@@ -155,13 +155,6 @@ func expandCertificateManagerCertificateManaged(v interface{}, d TerraformResour
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedState, err := expandCertificateManagerCertificateManagedState(original["state"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedState); val.IsValid() && !isEmptyValue(val) {
-		transformed["state"] = transformedState
-	}
-
 	transformedDomains, err := expandCertificateManagerCertificateManagedDomains(original["domains"], d, config)
 	if err != nil {
 		return nil, err
@@ -176,11 +169,28 @@ func expandCertificateManagerCertificateManaged(v interface{}, d TerraformResour
 		transformed["dnsAuthorizations"] = transformedDnsAuthorizations
 	}
 
-	return transformed, nil
-}
+	transformedState, err := expandCertificateManagerCertificateManagedState(original["state"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedState); val.IsValid() && !isEmptyValue(val) {
+		transformed["state"] = transformedState
+	}
 
-func expandCertificateManagerCertificateManagedState(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
+	transformedProvisioningIssue, err := expandCertificateManagerCertificateManagedProvisioningIssue(original["provisioning_issue"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedProvisioningIssue); val.IsValid() && !isEmptyValue(val) {
+		transformed["provisioningIssue"] = transformedProvisioningIssue
+	}
+
+	transformedAuthorizationAttemptInfo, err := expandCertificateManagerCertificateManagedAuthorizationAttemptInfo(original["authorization_attempt_info"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAuthorizationAttemptInfo); val.IsValid() && !isEmptyValue(val) {
+		transformed["authorizationAttemptInfo"] = transformedAuthorizationAttemptInfo
+	}
+
+	return transformed, nil
 }
 
 func expandCertificateManagerCertificateManagedDomains(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
@@ -188,5 +198,102 @@ func expandCertificateManagerCertificateManagedDomains(v interface{}, d Terrafor
 }
 
 func expandCertificateManagerCertificateManagedDnsAuthorizations(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedState(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedProvisioningIssue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedReason, err := expandCertificateManagerCertificateManagedProvisioningIssueReason(original["reason"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedReason); val.IsValid() && !isEmptyValue(val) {
+		transformed["reason"] = transformedReason
+	}
+
+	transformedDetails, err := expandCertificateManagerCertificateManagedProvisioningIssueDetails(original["details"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDetails); val.IsValid() && !isEmptyValue(val) {
+		transformed["details"] = transformedDetails
+	}
+
+	return transformed, nil
+}
+
+func expandCertificateManagerCertificateManagedProvisioningIssueReason(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedProvisioningIssueDetails(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedAuthorizationAttemptInfo(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedDomain, err := expandCertificateManagerCertificateManagedAuthorizationAttemptInfoDomain(original["domain"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedDomain); val.IsValid() && !isEmptyValue(val) {
+			transformed["domain"] = transformedDomain
+		}
+
+		transformedState, err := expandCertificateManagerCertificateManagedAuthorizationAttemptInfoState(original["state"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedState); val.IsValid() && !isEmptyValue(val) {
+			transformed["state"] = transformedState
+		}
+
+		transformedFailureReason, err := expandCertificateManagerCertificateManagedAuthorizationAttemptInfoFailureReason(original["failure_reason"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedFailureReason); val.IsValid() && !isEmptyValue(val) {
+			transformed["failureReason"] = transformedFailureReason
+		}
+
+		transformedDetails, err := expandCertificateManagerCertificateManagedAuthorizationAttemptInfoDetails(original["details"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedDetails); val.IsValid() && !isEmptyValue(val) {
+			transformed["details"] = transformedDetails
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandCertificateManagerCertificateManagedAuthorizationAttemptInfoDomain(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedAuthorizationAttemptInfoState(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedAuthorizationAttemptInfoFailureReason(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCertificateManagerCertificateManagedAuthorizationAttemptInfoDetails(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
