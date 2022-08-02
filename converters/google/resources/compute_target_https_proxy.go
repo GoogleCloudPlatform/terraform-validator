@@ -75,6 +75,12 @@ func GetComputeTargetHttpsProxyApiObject(d TerraformResourceData, config *Config
 	} else if v, ok := d.GetOkExists("ssl_certificates"); !isEmptyValue(reflect.ValueOf(sslCertificatesProp)) && (ok || !reflect.DeepEqual(v, sslCertificatesProp)) {
 		obj["sslCertificates"] = sslCertificatesProp
 	}
+	certificateMapProp, err := expandComputeTargetHttpsProxyCertificateMap(d.Get("certificate_map"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("certificate_map"); !isEmptyValue(reflect.ValueOf(certificateMapProp)) && (ok || !reflect.DeepEqual(v, certificateMapProp)) {
+		obj["certificateMap"] = certificateMapProp
+	}
 	sslPolicyProp, err := expandComputeTargetHttpsProxySslPolicy(d.Get("ssl_policy"), d, config)
 	if err != nil {
 		return nil, err
@@ -123,6 +129,10 @@ func expandComputeTargetHttpsProxySslCertificates(v interface{}, d TerraformReso
 		req = append(req, f.RelativeLink())
 	}
 	return req, nil
+}
+
+func expandComputeTargetHttpsProxyCertificateMap(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandComputeTargetHttpsProxySslPolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
