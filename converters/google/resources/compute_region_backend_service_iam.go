@@ -90,7 +90,7 @@ func newComputeRegionBackendServiceIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/backendServices/{{regionbackendservice}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/regions/{{region}}/backendServices/{{name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -117,7 +117,7 @@ func FetchComputeRegionBackendServiceIamPolicy(d TerraformResourceData, config *
 		ComputeRegionBackendServiceIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/projects/{{project}}/regions/{{region}}/backendServices/{{regionbackendservice}}",
+		"//compute.googleapis.com/projects/{{project}}/regions/{{region}}/backendServices/{{name}}",
 		ComputeRegionBackendServiceIAMAssetType,
 	)
 }
