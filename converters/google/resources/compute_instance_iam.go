@@ -90,7 +90,7 @@ func newComputeInstanceIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/instances/{{instance}}")
+	name, err := assetName(d, config, "//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/instances/{{instance_name}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -117,7 +117,7 @@ func FetchComputeInstanceIamPolicy(d TerraformResourceData, config *Config) (Ass
 		ComputeInstanceIamUpdaterProducer,
 		d,
 		config,
-		"//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/instances/{{instance}}",
+		"//compute.googleapis.com/projects/{{project}}/zones/{{zone}}/instances/{{instance_name}}",
 		ComputeInstanceIAMAssetType,
 	)
 }
