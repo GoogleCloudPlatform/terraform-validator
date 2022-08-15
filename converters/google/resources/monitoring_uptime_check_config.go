@@ -297,6 +297,13 @@ func expandMonitoringUptimeCheckConfigHttpCheck(v interface{}, d TerraformResour
 		transformed["body"] = transformedBody
 	}
 
+	transformedAcceptedResponseStatusCodes, err := expandMonitoringUptimeCheckConfigHttpCheckAcceptedResponseStatusCodes(original["accepted_response_status_codes"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAcceptedResponseStatusCodes); val.IsValid() && !isEmptyValue(val) {
+		transformed["acceptedResponseStatusCodes"] = transformedAcceptedResponseStatusCodes
+	}
+
 	return transformed, nil
 }
 
@@ -374,6 +381,43 @@ func expandMonitoringUptimeCheckConfigHttpCheckMaskHeaders(v interface{}, d Terr
 }
 
 func expandMonitoringUptimeCheckConfigHttpCheckBody(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringUptimeCheckConfigHttpCheckAcceptedResponseStatusCodes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedStatusValue, err := expandMonitoringUptimeCheckConfigHttpCheckAcceptedResponseStatusCodesStatusValue(original["status_value"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedStatusValue); val.IsValid() && !isEmptyValue(val) {
+			transformed["statusValue"] = transformedStatusValue
+		}
+
+		transformedStatusClass, err := expandMonitoringUptimeCheckConfigHttpCheckAcceptedResponseStatusCodesStatusClass(original["status_class"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedStatusClass); val.IsValid() && !isEmptyValue(val) {
+			transformed["statusClass"] = transformedStatusClass
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandMonitoringUptimeCheckConfigHttpCheckAcceptedResponseStatusCodesStatusValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandMonitoringUptimeCheckConfigHttpCheckAcceptedResponseStatusCodesStatusClass(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
