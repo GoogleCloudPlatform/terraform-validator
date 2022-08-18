@@ -70,6 +70,12 @@ func GetAppEngineStandardAppVersionApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("threadsafe"); !isEmptyValue(reflect.ValueOf(threadsafeProp)) && (ok || !reflect.DeepEqual(v, threadsafeProp)) {
 		obj["threadsafe"] = threadsafeProp
 	}
+	appEngineApisProp, err := expandAppEngineStandardAppVersionAppEngineApis(d.Get("app_engine_apis"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("app_engine_apis"); !isEmptyValue(reflect.ValueOf(appEngineApisProp)) && (ok || !reflect.DeepEqual(v, appEngineApisProp)) {
+		obj["appEngineApis"] = appEngineApisProp
+	}
 	runtimeApiVersionProp, err := expandAppEngineStandardAppVersionRuntimeApiVersion(d.Get("runtime_api_version"), d, config)
 	if err != nil {
 		return nil, err
@@ -155,6 +161,10 @@ func expandAppEngineStandardAppVersionRuntime(v interface{}, d TerraformResource
 }
 
 func expandAppEngineStandardAppVersionThreadsafe(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAppEngineStandardAppVersionAppEngineApis(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
