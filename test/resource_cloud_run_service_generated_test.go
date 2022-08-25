@@ -417,6 +417,154 @@ resource "google_cloud_run_service" "default" {
 `, context)
 }
 
+func TestAccCloudRunService_cloudRunServiceScheduledExample_generated_offline(t *testing.T) {
+	testSlug := "CloudRunService_cloudRunServiceScheduledExample_offline"
+	offline := true
+	testAccCloudRunService_cloudRunServiceScheduledExample_shared(t, testSlug, offline)
+}
+
+func TestAccCloudRunService_cloudRunServiceScheduledExample_generated_online(t *testing.T) {
+	testSlug := "CloudRunService_cloudRunServiceScheduledExample_online"
+	offline := false
+	testAccCloudRunService_cloudRunServiceScheduledExample_shared(t, testSlug, offline)
+}
+
+func testAccCloudRunService_cloudRunServiceScheduledExample_shared(t *testing.T, testSlug string, offline bool) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode.")
+		return
+	}
+
+	t.Parallel()
+	context := map[string]interface{}{
+		"project":       getTestProjectFromEnv(),
+		"random_suffix": "meepmerp", // true randomization isn't needed for validator
+	}
+
+	terraformConfig := getTestPrefix() + testAccCloudRunService_cloudRunServiceScheduledExample(context)
+	dir, err := ioutil.TempDir(tmpDir, "terraform")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	dstFile := path.Join(dir, "main.tf")
+	err = os.WriteFile(dstFile, []byte(terraformConfig), 0666)
+	if err != nil {
+		t.Fatalf("error while writing to file %s, error %v", dstFile, err)
+	}
+
+	terraformWorkflow(t, dir, testSlug)
+	if offline && shouldOutputGeneratedFiles() {
+		generateTFVconvertedAsset(t, dir, testSlug)
+		return
+	}
+
+	// need to have comparison.. perhaps test vs checked in code
+	// testConvertCommand(t, dir, c.name, offline, c.compareConvertOutput)
+
+	testValidateCommandGeneric(t, dir, testSlug, offline, true)
+}
+
+func testAccCloudRunService_cloudRunServiceScheduledExample(context map[string]interface{}) string {
+	return Nprintf(`
+resource "google_project_service" "run_api" {
+  project                    = "%{project}"
+  service                    = "run.googleapis.com"
+  disable_dependent_services = true
+  disable_on_destroy         = false
+}
+
+resource "google_project_service" "iam_api" {
+  project                    = "%{project}"
+  service                    = "iam.googleapis.com"
+  disable_on_destroy         = false
+}
+
+resource "google_project_service" "resource_manager_api" {
+  project                    = "%{project}"
+  service                    = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy         = false
+}
+
+resource "google_project_service" "scheduler_api" {
+  project                    = "%{project}"
+  service                    = "cloudscheduler.googleapis.com"
+  disable_on_destroy         = false
+}
+
+resource "google_cloud_run_service" "default" {
+  project  = "%{project}"
+  name     = "tf-test-my-scheduled-service%{random_suffix}"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "us-docker.pkg.dev/cloudrun/container/hello"
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  # Use an explicit depends_on clause to wait until API is enabled
+  depends_on = [
+    google_project_service.run_api
+  ]
+}
+
+resource "google_service_account" "default" {
+  project      = "%{project}"
+  account_id   = "tf-test-scheduler-sa%{random_suffix}"
+  description  = "Cloud Scheduler service account; used to trigger scheduled Cloud Run jobs."
+  display_name = "scheduler-sa"
+
+  # Use an explicit depends_on clause to wait until API is enabled
+  depends_on = [
+    google_project_service.iam_api
+  ]
+}
+
+resource "google_cloud_scheduler_job" "default" {
+  name             = "tf-test-scheduled-cloud-run-job%{random_suffix}"
+  description      = "Invoke a Cloud Run container on a schedule."
+  schedule         = "*/8 * * * *"
+  time_zone        = "America/New_York"
+  attempt_deadline = "320s"
+
+  retry_config {
+    retry_count = 1
+  }
+
+  http_target {
+    http_method = "POST"
+    uri         = google_cloud_run_service.default.status[0].url
+
+    oidc_token {
+      service_account_email = google_service_account.default.email
+    }
+  }
+
+  # Use an explicit depends_on clause to wait until API is enabled
+  depends_on = [
+    google_project_service.scheduler_api
+  ]
+}
+
+resource "google_cloud_run_service_iam_member" "default" {
+  project = "%{project}"
+  location = google_cloud_run_service.default.location
+  service = google_cloud_run_service.default.name
+  role = "roles/run.invoker"
+  member = "serviceAccount:${google_service_account.default.email}"
+}
+`, context)
+}
+
 func TestAccCloudRunService_cloudrunServiceAccessControlExample_generated_offline(t *testing.T) {
 	testSlug := "CloudRunService_cloudrunServiceAccessControlExample_offline"
 	offline := true
