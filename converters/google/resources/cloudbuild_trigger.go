@@ -70,7 +70,7 @@ func resourceConverterCloudBuildTrigger() ResourceConverter {
 }
 
 func GetCloudBuildTriggerCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//cloudbuild.googleapis.com/projects/{{project}}/triggers/{{trigger_id}}")
+	name, err := assetName(d, config, "//cloudbuild.googleapis.com/projects/{{project}}/locations/{{location}}/triggers/{{trigger_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
