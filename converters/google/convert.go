@@ -223,7 +223,7 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 // make sense, and supporting neither means that the deletion
 // can just happen without needing to be merged.
 func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
-	resource, _ := c.schema.ResourcesMap[rc.Type]
+	resource := c.schema.ResourcesMap[rc.Type]
 	rd := tfdata.NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
@@ -233,11 +233,13 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 		if converter.FetchFullResource == nil || converter.MergeDelete == nil {
 			continue
 		}
-		convertedItems, err := converter.Convert(rd, c.cfg)
-
+		convertedItems, err := convertWrapper(converter, rd, c.cfg)
 		if err != nil {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
+			}
+			if strings.Contains(err.Error(), "interface conversion") {
+				return fmt.Errorf("%v: this may indicate that your Terraform provider version is not compatible with this version of the tool", err)
 			}
 			return err
 		}
@@ -280,7 +282,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 // and the case of merging. If merging, we expect both fetch and mergeCreateUpdate
 // to be present.
 func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
-	resource, _ := c.schema.ResourcesMap[rc.Type]
+	resource := c.schema.ResourcesMap[rc.Type]
 	rd := tfdata.NewFakeResourceData(
 		rc.Type,
 		resource.Schema,
@@ -288,10 +290,13 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 	)
 
 	for _, converter := range c.converters[rd.Kind()] {
-		convertedAssets, err := converter.Convert(rd, c.cfg)
+		convertedAssets, err := convertWrapper(converter, rd, c.cfg)
 		if err != nil {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
+			}
+			if strings.Contains(err.Error(), "interface conversion") {
+				return fmt.Errorf("%v: this may indicate that your Terraform provider version is not compatible with this version of the tool", err)
 			}
 			return err
 		}
@@ -429,4 +434,18 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		converterAsset: cai,
 		Ancestors:      ancestors,
 	}, nil
+}
+
+func convertWrapper(conv resources.ResourceConverter, d resources.TerraformResourceData, config *resources.Config) (assets []resources.Asset, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			switch v := r.(type) {
+			case error:
+				err = v
+			default:
+				err = fmt.Errorf("unknown panic error: %v", v)
+			}
+		}
+	}()
+	return conv.Convert(d, config)
 }
