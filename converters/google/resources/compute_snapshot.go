@@ -51,6 +51,12 @@ func GetComputeSnapshotCaiObject(d TerraformResourceData, config *Config) ([]Ass
 
 func GetComputeSnapshotApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
+	chainNameProp, err := expandComputeSnapshotChainName(d.Get("chain_name"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("chain_name"); !isEmptyValue(reflect.ValueOf(chainNameProp)) && (ok || !reflect.DeepEqual(v, chainNameProp)) {
+		obj["chainName"] = chainNameProp
+	}
 	nameProp, err := expandComputeSnapshotName(d.Get("name"), d, config)
 	if err != nil {
 		return nil, err
@@ -107,6 +113,10 @@ func GetComputeSnapshotApiObject(d TerraformResourceData, config *Config) (map[s
 	}
 
 	return obj, nil
+}
+
+func expandComputeSnapshotChainName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandComputeSnapshotName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
