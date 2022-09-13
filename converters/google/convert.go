@@ -440,7 +440,7 @@ func convertWrapper(conv resources.ResourceConverter, d resources.TerraformResou
 			default:
 				err = fmt.Errorf("unknown panic error: %v", v)
 			}
-			err = fmt.Errorf("%v\n Stack trace: %s", err, debug.Stack())
+			err = fmt.Errorf("%v\n Stack trace: %s", err, string(debug.Stack()))
 		}
 	}()
 	return conv.Convert(d, config)
