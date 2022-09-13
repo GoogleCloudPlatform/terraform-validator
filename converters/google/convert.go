@@ -239,7 +239,6 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
 			}
-			_ = rd.Id()
 			return fmt.Errorf("failed to convert %s: %s", rd.Kind(), err)
 		}
 
