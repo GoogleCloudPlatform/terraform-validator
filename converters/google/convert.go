@@ -17,6 +17,7 @@ package google
 import (
 	errorssyslib "errors"
 	"fmt"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"time"
@@ -238,6 +239,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
 			}
+			_ = rd.Id()
 			return fmt.Errorf("failed to convert %s: %s", rd.Kind(), err)
 		}
 
@@ -439,6 +441,7 @@ func convertWrapper(conv resources.ResourceConverter, d resources.TerraformResou
 			default:
 				err = fmt.Errorf("unknown panic error: %v", v)
 			}
+			err = fmt.Errorf("%v\n Stack trace: %s", err, debug.Stack())
 		}
 	}()
 	return conv.Convert(d, config)
