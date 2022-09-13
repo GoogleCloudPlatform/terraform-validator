@@ -239,7 +239,7 @@ func (c *Converter) addDelete(rc *tfjson.ResourceChange) error {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
 			}
-			return fmt.Errorf("failed to convert %s: %s", rd.Kind(), err)
+			return err
 		}
 
 		for _, converted := range convertedItems {
@@ -293,7 +293,7 @@ func (c *Converter) addCreateOrUpdateOrNoop(rc *tfjson.ResourceChange) error {
 			if errors.Cause(err) == resources.ErrNoConversion {
 				continue
 			}
-			return fmt.Errorf("failed to convert %s: %s", rd.Kind(), err)
+			return err
 		}
 
 		for _, converted := range convertedAssets {
