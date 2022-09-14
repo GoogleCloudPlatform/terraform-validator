@@ -18,12 +18,15 @@ import (
 	"bytes"
 	"context"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/GoogleCloudPlatform/terraform-validator/ancestrymanager"
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
+	"github.com/GoogleCloudPlatform/terraform-validator/tfdata"
 	tfjson "github.com/hashicorp/terraform-json"
+	provider "github.com/hashicorp/terraform-provider-google/google"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -568,4 +571,67 @@ func TestTimestampUnmarshalJSON(t *testing.T) {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 	assert.EqualValues(t, ts, expected)
+}
+
+func TestConvertWrapper(t *testing.T) {
+	values := map[string]interface{}{
+		"name": "test-disk",
+	}
+	d := tfdata.NewFakeResourceData(
+		"google_compute_disk",
+		provider.Provider().ResourcesMap["google_compute_disk"].Schema,
+		values,
+	)
+
+	panicConvertFunc := resources.ConvertFunc(func(d resources.TerraformResourceData, config *resources.Config) ([]resources.Asset, error) {
+		// should panic
+		_ = d.Get("abc").(string)
+		return nil, nil
+	})
+
+	convertFunc := resources.ConvertFunc(func(d resources.TerraformResourceData, config *resources.Config) ([]resources.Asset, error) {
+		_ = d.Get("name").(string)
+		return nil, nil
+	})
+
+	tests := []struct {
+		name       string
+		converter  resources.ResourceConverter
+		rd         resources.TerraformResourceData
+		cfg        *resources.Config
+		wantErr    bool
+		wantErrMsg string
+	}{
+		{
+			name: "field missing",
+			converter: resources.ResourceConverter{
+				Convert: panicConvertFunc,
+			},
+			rd:         d,
+			wantErr:    true,
+			wantErrMsg: "interface conversion",
+		},
+		{
+			name: "field exists",
+			converter: resources.ResourceConverter{
+				Convert: convertFunc,
+			},
+			rd: d,
+		},
+	}
+	for _, test := range tests {
+		_, err := convertWrapper(test.converter, test.rd, test.cfg)
+		if !test.wantErr {
+			if err != nil {
+				t.Errorf("convertWrapper() = %q, want = nil", err)
+			}
+		} else {
+			if err == nil {
+				t.Errorf("convertWrapper() = nil, want = %v", test.wantErrMsg)
+			} else if !strings.Contains(err.Error(), test.wantErrMsg) {
+				t.Errorf("convertWrapper() = %q, want containing %q", err, test.wantErrMsg)
+			}
+		}
+	}
+
 }
