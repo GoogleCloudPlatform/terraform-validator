@@ -562,10 +562,21 @@ func expandAppEngineStandardAppVersionVPCAccessConnector(v interface{}, d Terraf
 		transformed["name"] = transformedName
 	}
 
+	transformedEgressSetting, err := expandAppEngineStandardAppVersionVPCAccessConnectorEgressSetting(original["egress_setting"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedEgressSetting); val.IsValid() && !isEmptyValue(val) {
+		transformed["egressSetting"] = transformedEgressSetting
+	}
+
 	return transformed, nil
 }
 
 func expandAppEngineStandardAppVersionVPCAccessConnectorName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandAppEngineStandardAppVersionVPCAccessConnectorEgressSetting(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
