@@ -2,9 +2,8 @@ package google
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-
-	"github.com/pkg/errors"
 )
 
 // Return the value of the private userAgent field
@@ -43,7 +42,7 @@ func NewConfig(ctx context.Context, project, zone, region string, offline bool, 
 	if !offline {
 		ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(ctx); err != nil {
-			return nil, errors.Wrap(err, "load and validate config")
+			return nil, fmt.Errorf("load and validate config: %s", err)
 		}
 		if client != nil {
 			cfg.client = client

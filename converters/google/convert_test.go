@@ -17,6 +17,7 @@ package google
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"sort"
 	"strings"
 	"testing"
@@ -27,7 +28,6 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfdata"
 	tfjson "github.com/hashicorp/terraform-json"
 	provider "github.com/hashicorp/terraform-provider-google/google"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -67,7 +67,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, *bytes.Buffer, error) 
 	offline := true
 	cfg, err := resources.NewConfig(ctx, project, "", "", offline, "", nil)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "constructing configuration")
+		return nil, nil, fmt.Errorf("constructing configuration: %s", err)
 	}
 	errorLogger, buf := newTestErrorLogger()
 	c := NewConverter(cfg, &ancestrymanager.NoOpAncestryManager{}, offline, convertUnchanged, errorLogger)

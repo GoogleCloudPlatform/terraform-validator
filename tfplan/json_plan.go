@@ -14,8 +14,9 @@
 package tfplan
 
 import (
+	"fmt"
+
 	tfjson "github.com/hashicorp/terraform-json"
-	"github.com/pkg/errors"
 )
 
 func IsCreate(rc *tfjson.ResourceChange) bool {
@@ -43,12 +44,12 @@ func ReadResourceChanges(data []byte) ([]*tfjson.ResourceChange, error) {
 	plan := tfjson.Plan{}
 	err := plan.UnmarshalJSON(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "reading JSON plan")
+		return nil, fmt.Errorf("reading JSON plan: %s", err)
 	}
 
 	err = plan.Validate()
 	if err != nil {
-		return nil, errors.Wrap(err, "validating JSON plan")
+		return nil, fmt.Errorf("validating JSON plan: %s", err)
 	}
 
 	return plan.ResourceChanges, nil

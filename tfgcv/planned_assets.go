@@ -64,12 +64,12 @@ func ReadPlannedAssets(ctx context.Context, path, project, zone, region string, 
 func newConverter(ctx context.Context, path, project, zone, region string, ancestry map[string]string, offline, convertUnchanged bool, errorLogger *zap.Logger, userAgent string) (*google.Converter, error) {
 	cfg, err := resources.NewConfig(ctx, project, zone, region, offline, userAgent, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "building google configuration")
+		return nil, fmt.Errorf("building google configuration: %s", err)
 	}
 
 	ancestryManager, err := ancestrymanager.New(cfg, offline, ancestry, errorLogger)
 	if err != nil {
-		return nil, errors.Wrap(err, "building google ancestry manager")
+		return nil, fmt.Errorf("building google ancestry manager: %s", err)
 	}
 	converter := google.NewConverter(cfg, ancestryManager, offline, convertUnchanged, errorLogger)
 	return converter, nil
@@ -82,7 +82,7 @@ func readTF12Data(path string) ([]byte, error) {
 	// JSON format means Terraform 12
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, errors.Wrap(err, "opening JSON plan file")
+		return nil, fmt.Errorf("opening JSON plan file: %s", err)
 	}
 	return data, nil
 }
