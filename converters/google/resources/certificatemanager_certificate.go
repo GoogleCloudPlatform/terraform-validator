@@ -121,28 +121,28 @@ func expandCertificateManagerCertificateSelfManaged(v interface{}, d TerraformRe
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedPemCertificate, err := expandCertificateManagerCertificateSelfManagedPemCertificate(original["pem_certificate"], d, config)
+	transformedCertificatePem, err := expandCertificateManagerCertificateSelfManagedCertificatePem(original["certificate_pem"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedPemCertificate); val.IsValid() && !isEmptyValue(val) {
-		transformed["pemCertificate"] = transformedPemCertificate
+	} else if val := reflect.ValueOf(transformedCertificatePem); val.IsValid() && !isEmptyValue(val) {
+		transformed["certificatePem"] = transformedCertificatePem
 	}
 
-	transformedPemPrivateKey, err := expandCertificateManagerCertificateSelfManagedPemPrivateKey(original["pem_private_key"], d, config)
+	transformedPrivateKeyPem, err := expandCertificateManagerCertificateSelfManagedPrivateKeyPem(original["private_key_pem"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedPemPrivateKey); val.IsValid() && !isEmptyValue(val) {
-		transformed["pemPrivateKey"] = transformedPemPrivateKey
+	} else if val := reflect.ValueOf(transformedPrivateKeyPem); val.IsValid() && !isEmptyValue(val) {
+		transformed["privateKeyPem"] = transformedPrivateKeyPem
 	}
 
 	return transformed, nil
 }
 
-func expandCertificateManagerCertificateSelfManagedPemCertificate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandCertificateManagerCertificateSelfManagedCertificatePem(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandCertificateManagerCertificateSelfManagedPemPrivateKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandCertificateManagerCertificateSelfManagedPrivateKeyPem(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
