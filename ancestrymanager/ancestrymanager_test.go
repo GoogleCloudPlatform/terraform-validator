@@ -629,6 +629,23 @@ func TestGetAncestors_Folder(t *testing.T) {
 			v1Count: 1,
 			v3Count: 1,
 		},
+		{
+			name: "folder ID is empty string and no ancestor",
+			data: tfdata.NewFakeResourceData(
+				"google_folder_iam_member",
+				p.ResourcesMap["google_folder_iam_member"].Schema,
+				map[string]interface{}{
+					"folder": "",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Folder",
+			},
+			v3Responses: map[string]*crmv3.Project{},
+			v1Responses: map[string][]*crmv1.Ancestor{},
+			want:        []string{"organizations/unknown"},
+			parent:      "//cloudresourcemanager.googleapis.com/organizations/unknown",
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
