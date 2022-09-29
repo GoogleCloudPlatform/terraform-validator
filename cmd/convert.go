@@ -133,7 +133,7 @@ func (o *convertOptions) run(plan string) error {
 		defer f.Close()
 
 		if err := json.NewEncoder(f).Encode(assets); err != nil {
-			return fmt.Errorf("encoding json: %s", err)
+			return fmt.Errorf("encoding json: %w", err)
 		}
 		return nil
 	}
@@ -148,7 +148,7 @@ func (o *convertOptions) run(plan string) error {
 
 	// Legacy behavior
 	if err := json.NewEncoder(os.Stdout).Encode(assets); err != nil {
-		return fmt.Errorf("encoding json: %s", err)
+		return fmt.Errorf("encoding json: %w", err)
 	}
 	return nil
 }

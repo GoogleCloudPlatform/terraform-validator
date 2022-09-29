@@ -67,7 +67,7 @@ func newTestConverter(convertUnchanged bool) (*Converter, *bytes.Buffer, error) 
 	offline := true
 	cfg, err := resources.NewConfig(ctx, project, "", "", offline, "", nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("constructing configuration: %s", err)
+		return nil, nil, fmt.Errorf("constructing configuration: %w", err)
 	}
 	errorLogger, buf := newTestErrorLogger()
 	c := NewConverter(cfg, &ancestrymanager.NoOpAncestryManager{}, offline, convertUnchanged, errorLogger)

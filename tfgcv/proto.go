@@ -27,11 +27,11 @@ import (
 func protoViaJSON(from interface{}, to proto.Message) error {
 	jsn, err := json.Marshal(from)
 	if err != nil {
-		return fmt.Errorf("marshaling to json: %s", err)
+		return fmt.Errorf("marshaling to json: %w", err)
 	}
 
 	if err := jsonpb.UnmarshalString(string(jsn), to); err != nil {
-		return fmt.Errorf("unmarshaling to proto: %s", err)
+		return fmt.Errorf("unmarshaling to proto: %w", err)
 	}
 
 	return nil

@@ -42,7 +42,7 @@ func NewConfig(ctx context.Context, project, zone, region string, offline bool, 
 	if !offline {
 		ConfigureBasePaths(cfg)
 		if err := cfg.LoadAndValidate(ctx); err != nil {
-			return nil, fmt.Errorf("load and validate config: %s", err)
+			return nil, fmt.Errorf("load and validate config: %w", err)
 		}
 		if client != nil {
 			cfg.client = client

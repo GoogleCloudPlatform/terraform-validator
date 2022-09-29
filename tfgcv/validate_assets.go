@@ -50,14 +50,14 @@ func ValidateAssets(ctx context.Context, assets []google.Asset, policyRootPath s
 func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, policyPaths []string, policyLibraryDir string) ([]*validator.Violation, error) {
 	valid, err := gcv.NewValidator(policyPaths, policyLibraryDir)
 	if err != nil {
-		return nil, fmt.Errorf("initializing gcv validator: %s", err)
+		return nil, fmt.Errorf("initializing gcv validator: %w", err)
 	}
 
 	pbAssets := make([]*validator.Asset, len(assets))
 	for i := range assets {
 		pbAssets[i] = &validator.Asset{}
 		if err := protoViaJSON(assets[i], pbAssets[i]); err != nil {
-			return nil, fmt.Errorf("converting asset %s to proto: %s", assets[i].Name, err)
+			return nil, fmt.Errorf("converting asset %s to proto: %w", assets[i].Name, err)
 		}
 	}
 
@@ -70,7 +70,7 @@ func ValidateAssetsWithLibrary(ctx context.Context, assets []google.Asset, polic
 		newViolations, err := valid.ReviewAsset(context.Background(), asset)
 
 		if err != nil {
-			return nil, fmt.Errorf("reviewing asset %s: %s", asset, err)
+			return nil, fmt.Errorf("reviewing asset %s: %w", asset, err)
 		}
 		violations = append(violations, newViolations...)
 	}

@@ -137,7 +137,7 @@ func (o *validateOptions) run(plan string) error {
 
 	violations, err := o.validateAssets(ctx, assets, o.policyPath)
 	if err != nil {
-		return fmt.Errorf("validating: %s", err)
+		return fmt.Errorf("validating: %w", err)
 	}
 
 	if o.rootOptions.useStructuredLogging {
@@ -162,7 +162,7 @@ func (o *validateOptions) run(plan string) error {
 			auditResult := &validator.AuditResponse{}
 			auditResult.Violations = violations
 			if err := marshaller.Marshal(os.Stdout, auditResult); err != nil {
-				return fmt.Errorf("marshalling violations to json: %s", err)
+				return fmt.Errorf("marshalling violations to json: %w", err)
 			}
 		} else {
 			fmt.Print("Found Violations:\n\n")
