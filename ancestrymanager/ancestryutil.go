@@ -18,12 +18,15 @@ func assetParent(cai *resources.Asset, ancestors []string) (string, error) {
 	}
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Folder":
-		if len(ancestors) < 2 {
-			return "", fmt.Errorf("unexpected value for ancestors: %s", ancestors)
+		if len(ancestors) > 1 {
+			parent := ancestors[1]
+			if strings.HasPrefix(parent, "folders/") || strings.HasPrefix(parent, "organizations/") {
+				return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[1]), nil
+			}
 		}
-		parent := ancestors[1]
-		if strings.HasPrefix(parent, "folders/") || strings.HasPrefix(parent, "organizations/") {
-			return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[1]), nil
+		if len(ancestors) == 1 && strings.HasPrefix(ancestors[0], "organizations/") {
+			// organizations/unknown
+			return fmt.Sprintf("//cloudresourcemanager.googleapis.com/%s", ancestors[0]), nil
 		}
 	case "cloudresourcemanager.googleapis.com/Organization":
 		return "", nil

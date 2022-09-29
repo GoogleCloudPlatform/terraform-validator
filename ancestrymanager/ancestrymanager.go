@@ -143,7 +143,7 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Folder":
 		if !folderOK {
-			return nil, fmt.Errorf("folder id not found in terraform data")
+			return []string{"organizations/unknown"}, nil
 		}
 		key = folderKey
 	case "cloudresourcemanager.googleapis.com/Organization":
