@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,9 @@
 package tfplan
 
 import (
+	"fmt"
+
 	tfjson "github.com/hashicorp/terraform-json"
-	"github.com/pkg/errors"
 )
 
 func IsCreate(rc *tfjson.ResourceChange) bool {
@@ -43,12 +44,12 @@ func ReadResourceChanges(data []byte) ([]*tfjson.ResourceChange, error) {
 	plan := tfjson.Plan{}
 	err := plan.UnmarshalJSON(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "reading JSON plan")
+		return nil, fmt.Errorf("reading JSON plan: %w", err)
 	}
 
 	err = plan.Validate()
 	if err != nil {
-		return nil, errors.Wrap(err, "validating JSON plan")
+		return nil, fmt.Errorf("validating JSON plan: %w", err)
 	}
 
 	return plan.ResourceChanges, nil
