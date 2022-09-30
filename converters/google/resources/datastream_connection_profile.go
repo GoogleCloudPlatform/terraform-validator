@@ -78,6 +78,12 @@ func GetDatastreamConnectionProfileApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("mysql_profile"); !isEmptyValue(reflect.ValueOf(mysqlProfileProp)) && (ok || !reflect.DeepEqual(v, mysqlProfileProp)) {
 		obj["mysqlProfile"] = mysqlProfileProp
 	}
+	bigqueryProfileProp, err := expandDatastreamConnectionProfileBigqueryProfile(d.Get("bigquery_profile"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("bigquery_profile"); ok || !reflect.DeepEqual(v, bigqueryProfileProp) {
+		obj["bigqueryProfile"] = bigqueryProfileProp
+	}
 	postgresqlProfileProp, err := expandDatastreamConnectionProfilePostgresqlProfile(d.Get("postgresql_profile"), d, config)
 	if err != nil {
 		return nil, err
@@ -367,6 +373,21 @@ func expandDatastreamConnectionProfileMysqlProfileSslConfigCaCertificate(v inter
 
 func expandDatastreamConnectionProfileMysqlProfileSslConfigCaCertificateSet(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
+}
+
+func expandDatastreamConnectionProfileBigqueryProfile(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil, nil
+	}
+
+	if l[0] == nil {
+		transformed := make(map[string]interface{})
+		return transformed, nil
+	}
+	transformed := make(map[string]interface{})
+
+	return transformed, nil
 }
 
 func expandDatastreamConnectionProfilePostgresqlProfile(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
