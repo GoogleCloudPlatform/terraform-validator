@@ -60,6 +60,18 @@ func GetBigqueryReservationReservationApiObject(d TerraformResourceData, config 
 	} else if v, ok := d.GetOkExists("ignore_idle_slots"); !isEmptyValue(reflect.ValueOf(ignoreIdleSlotsProp)) && (ok || !reflect.DeepEqual(v, ignoreIdleSlotsProp)) {
 		obj["ignoreIdleSlots"] = ignoreIdleSlotsProp
 	}
+	concurrencyProp, err := expandBigqueryReservationReservationConcurrency(d.Get("concurrency"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("concurrency"); !isEmptyValue(reflect.ValueOf(concurrencyProp)) && (ok || !reflect.DeepEqual(v, concurrencyProp)) {
+		obj["concurrency"] = concurrencyProp
+	}
+	multiRegionAuxiliaryProp, err := expandBigqueryReservationReservationMultiRegionAuxiliary(d.Get("multi_region_auxiliary"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("multi_region_auxiliary"); !isEmptyValue(reflect.ValueOf(multiRegionAuxiliaryProp)) && (ok || !reflect.DeepEqual(v, multiRegionAuxiliaryProp)) {
+		obj["multiRegionAuxiliary"] = multiRegionAuxiliaryProp
+	}
 
 	return obj, nil
 }
@@ -69,5 +81,13 @@ func expandBigqueryReservationReservationSlotCapacity(v interface{}, d Terraform
 }
 
 func expandBigqueryReservationReservationIgnoreIdleSlots(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryReservationReservationConcurrency(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryReservationReservationMultiRegionAuxiliary(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
