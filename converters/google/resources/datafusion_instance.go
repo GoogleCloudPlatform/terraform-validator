@@ -114,6 +114,12 @@ func GetDataFusionInstanceApiObject(d TerraformResourceData, config *Config) (ma
 	} else if v, ok := d.GetOkExists("network_config"); !isEmptyValue(reflect.ValueOf(networkConfigProp)) && (ok || !reflect.DeepEqual(v, networkConfigProp)) {
 		obj["networkConfig"] = networkConfigProp
 	}
+	cryptoKeyConfigProp, err := expandDataFusionInstanceCryptoKeyConfig(d.Get("crypto_key_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("crypto_key_config"); !isEmptyValue(reflect.ValueOf(cryptoKeyConfigProp)) && (ok || !reflect.DeepEqual(v, cryptoKeyConfigProp)) {
+		obj["cryptoKeyConfig"] = cryptoKeyConfigProp
+	}
 
 	return obj, nil
 }
@@ -203,5 +209,28 @@ func expandDataFusionInstanceNetworkConfigIpAllocation(v interface{}, d Terrafor
 }
 
 func expandDataFusionInstanceNetworkConfigNetwork(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataFusionInstanceCryptoKeyConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedKeyReference, err := expandDataFusionInstanceCryptoKeyConfigKeyReference(original["key_reference"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedKeyReference); val.IsValid() && !isEmptyValue(val) {
+		transformed["keyReference"] = transformedKeyReference
+	}
+
+	return transformed, nil
+}
+
+func expandDataFusionInstanceCryptoKeyConfigKeyReference(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
