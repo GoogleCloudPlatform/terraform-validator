@@ -24,6 +24,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// diffsupress for beta and to check change in source_disk attribute
+func sourceDiskDiffSupress(_, old, new string, _ *schema.ResourceData) bool {
+	s1 := strings.TrimPrefix(old, "https://www.googleapis.com/compute/beta")
+	s2 := strings.TrimPrefix(new, "https://www.googleapis.com/compute/v1")
+	if strings.HasSuffix(s1, s2) {
+		return true
+	}
+	return false
+}
+
 // Is the new disk size smaller than the old one?
 func isDiskShrinkage(_ context.Context, old, new, _ interface{}) bool {
 	// It's okay to remove size entirely.
@@ -311,6 +321,12 @@ func GetComputeDiskApiObject(d TerraformResourceData, config *Config) (map[strin
 	} else if v, ok := d.GetOkExists("physical_block_size_bytes"); !isEmptyValue(reflect.ValueOf(physicalBlockSizeBytesProp)) && (ok || !reflect.DeepEqual(v, physicalBlockSizeBytesProp)) {
 		obj["physicalBlockSizeBytes"] = physicalBlockSizeBytesProp
 	}
+	sourceDiskProp, err := expandComputeDiskSourceDisk(d.Get("source_disk"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("source_disk"); !isEmptyValue(reflect.ValueOf(sourceDiskProp)) && (ok || !reflect.DeepEqual(v, sourceDiskProp)) {
+		obj["sourceDisk"] = sourceDiskProp
+	}
 	typeProp, err := expandComputeDiskType(d.Get("type"), d, config)
 	if err != nil {
 		return nil, err
@@ -432,6 +448,10 @@ func expandComputeDiskSize(v interface{}, d TerraformResourceData, config *Confi
 }
 
 func expandComputeDiskPhysicalBlockSizeBytes(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeDiskSourceDisk(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
