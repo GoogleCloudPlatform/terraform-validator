@@ -1194,6 +1194,13 @@ func expandCloudBuildTriggerBuildStep(v interface{}, d TerraformResourceData, co
 			transformed["waitFor"] = transformedWaitFor
 		}
 
+		transformedScript, err := expandCloudBuildTriggerBuildStepScript(original["script"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedScript); val.IsValid() && !isEmptyValue(val) {
+			transformed["script"] = transformedScript
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -1273,6 +1280,10 @@ func expandCloudBuildTriggerBuildStepVolumesPath(v interface{}, d TerraformResou
 }
 
 func expandCloudBuildTriggerBuildStepWaitFor(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBuildStepScript(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
