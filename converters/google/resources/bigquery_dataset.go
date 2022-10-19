@@ -80,6 +80,12 @@ func GetBigQueryDatasetCaiObject(d TerraformResourceData, config *Config) ([]Ass
 
 func GetBigQueryDatasetApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
+	maxTimeTravelHoursProp, err := expandBigQueryDatasetMaxTimeTravelHours(d.Get("max_time_travel_hours"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("max_time_travel_hours"); !isEmptyValue(reflect.ValueOf(maxTimeTravelHoursProp)) && (ok || !reflect.DeepEqual(v, maxTimeTravelHoursProp)) {
+		obj["maxTimeTravelHours"] = maxTimeTravelHoursProp
+	}
 	accessProp, err := expandBigQueryDatasetAccess(d.Get("access"), d, config)
 	if err != nil {
 		return nil, err
@@ -136,6 +142,10 @@ func GetBigQueryDatasetApiObject(d TerraformResourceData, config *Config) (map[s
 	}
 
 	return obj, nil
+}
+
+func expandBigQueryDatasetMaxTimeTravelHours(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandBigQueryDatasetAccess(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
