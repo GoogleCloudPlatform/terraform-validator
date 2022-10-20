@@ -96,6 +96,12 @@ func GetDatastreamConnectionProfileApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("forward_ssh_connectivity"); !isEmptyValue(reflect.ValueOf(forwardSshConnectivityProp)) && (ok || !reflect.DeepEqual(v, forwardSshConnectivityProp)) {
 		obj["forwardSshConnectivity"] = forwardSshConnectivityProp
 	}
+	privateConnectivityProp, err := expandDatastreamConnectionProfilePrivateConnectivity(d.Get("private_connectivity"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("private_connectivity"); !isEmptyValue(reflect.ValueOf(privateConnectivityProp)) && (ok || !reflect.DeepEqual(v, privateConnectivityProp)) {
+		obj["privateConnectivity"] = privateConnectivityProp
+	}
 
 	return obj, nil
 }
@@ -521,5 +527,28 @@ func expandDatastreamConnectionProfileForwardSshConnectivityPassword(v interface
 }
 
 func expandDatastreamConnectionProfileForwardSshConnectivityPrivateKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDatastreamConnectionProfilePrivateConnectivity(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPrivateConnection, err := expandDatastreamConnectionProfilePrivateConnectivityPrivateConnection(original["private_connection"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPrivateConnection); val.IsValid() && !isEmptyValue(val) {
+		transformed["privateConnection"] = transformedPrivateConnection
+	}
+
+	return transformed, nil
+}
+
+func expandDatastreamConnectionProfilePrivateConnectivityPrivateConnection(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
