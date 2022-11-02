@@ -610,6 +610,13 @@ func expandDataLossPreventionJobTriggerInspectJobActions(v interface{}, d Terraf
 			transformed["saveFindings"] = transformedSaveFindings
 		}
 
+		transformedPubSub, err := expandDataLossPreventionJobTriggerInspectJobActionsPubSub(original["pub_sub"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedPubSub); val.IsValid() && !isEmptyValue(val) {
+			transformed["pubSub"] = transformedPubSub
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -706,5 +713,28 @@ func expandDataLossPreventionJobTriggerInspectJobActionsSaveFindingsOutputConfig
 }
 
 func expandDataLossPreventionJobTriggerInspectJobActionsSaveFindingsOutputConfigOutputSchema(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataLossPreventionJobTriggerInspectJobActionsPubSub(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedTopic, err := expandDataLossPreventionJobTriggerInspectJobActionsPubSubTopic(original["topic"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTopic); val.IsValid() && !isEmptyValue(val) {
+		transformed["topic"] = transformedTopic
+	}
+
+	return transformed, nil
+}
+
+func expandDataLossPreventionJobTriggerInspectJobActionsPubSubTopic(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
