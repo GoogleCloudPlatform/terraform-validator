@@ -14,7 +14,10 @@
 
 package google
 
-import "reflect"
+import (
+	"reflect"
+	"regexp"
+)
 
 const VertexAIFeaturestoreEntitytypeAssetType string = "{{region}}-aiplatform.googleapis.com/FeaturestoreEntitytype"
 
@@ -59,6 +62,17 @@ func GetVertexAIFeaturestoreEntitytypeApiObject(d TerraformResourceData, config 
 		return nil, err
 	} else if v, ok := d.GetOkExists("monitoring_config"); !isEmptyValue(reflect.ValueOf(monitoringConfigProp)) && (ok || !reflect.DeepEqual(v, monitoringConfigProp)) {
 		obj["monitoringConfig"] = monitoringConfigProp
+	}
+
+	return resourceVertexAIFeaturestoreEntitytypeEncoder(d, config, obj)
+}
+
+func resourceVertexAIFeaturestoreEntitytypeEncoder(d TerraformResourceData, meta interface{}, obj map[string]interface{}) (map[string]interface{}, error) {
+	if v, ok := d.GetOk("featurestore"); ok {
+		re := regexp.MustCompile("projects/(.+)/locations/(.+)/featurestores/(.+)$")
+		if parts := re.FindStringSubmatch(v.(string)); parts != nil {
+			d.Set("region", parts[2])
+		}
 	}
 
 	return obj, nil
