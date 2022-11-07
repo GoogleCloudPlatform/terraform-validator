@@ -15,7 +15,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go/bigtable v1.16.0
+	cloud.google.com/go/bigtable v1.17.0
 	github.com/GoogleCloudPlatform/config-validator v0.0.0-20220708151338-ec92f4a06e50
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/davecgh/go-spew v1.1.1
@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.14.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.18.0
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20221107214610-81a1e16fd16d
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20221107235416-cd246f835ddf
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
@@ -34,16 +34,17 @@ require (
 	github.com/stretchr/testify v1.7.2
 	go.uber.org/zap v1.19.1
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
-	google.golang.org/api v0.100.0
-	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a
+	google.golang.org/api v0.102.0
+	google.golang.org/genproto v0.0.0-20221024183307-1bc688fe9f3e
 	google.golang.org/grpc v1.50.1
 )
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.8 // indirect
 	cloud.google.com/go v0.104.0 // indirect
-	cloud.google.com/go/compute v1.10.0 // indirect
-	cloud.google.com/go/iam v0.3.0 // indirect
+	cloud.google.com/go/compute v1.12.1 // indirect
+	cloud.google.com/go/compute/metadata v0.2.1 // indirect
+	cloud.google.com/go/iam v0.5.0 // indirect
 	cloud.google.com/go/storage v1.23.0 // indirect
 	github.com/GoogleCloudPlatform/declarative-resource-client-library v1.26.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
@@ -148,7 +149,7 @@ require (
 	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b // indirect
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
