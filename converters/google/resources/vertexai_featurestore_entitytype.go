@@ -105,6 +105,27 @@ func expandVertexAIFeaturestoreEntitytypeMonitoringConfig(v interface{}, d Terra
 		transformed["snapshotAnalysis"] = transformedSnapshotAnalysis
 	}
 
+	transformedImportFeaturesAnalysis, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigImportFeaturesAnalysis(original["import_features_analysis"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedImportFeaturesAnalysis); val.IsValid() && !isEmptyValue(val) {
+		transformed["importFeaturesAnalysis"] = transformedImportFeaturesAnalysis
+	}
+
+	transformedNumericalThresholdConfig, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigNumericalThresholdConfig(original["numerical_threshold_config"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedNumericalThresholdConfig); val.IsValid() && !isEmptyValue(val) {
+		transformed["numericalThresholdConfig"] = transformedNumericalThresholdConfig
+	}
+
+	transformedCategoricalThresholdConfig, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigCategoricalThresholdConfig(original["categorical_threshold_config"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCategoricalThresholdConfig); val.IsValid() && !isEmptyValue(val) {
+		transformed["categoricalThresholdConfig"] = transformedCategoricalThresholdConfig
+	}
+
 	return transformed, nil
 }
 
@@ -124,9 +145,111 @@ func expandVertexAIFeaturestoreEntitytypeMonitoringConfigSnapshotAnalysis(v inte
 		transformed["disabled"] = transformedDisabled
 	}
 
+	transformedMonitoringIntervalDays, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigSnapshotAnalysisMonitoringIntervalDays(original["monitoring_interval_days"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMonitoringIntervalDays); val.IsValid() && !isEmptyValue(val) {
+		transformed["monitoringIntervalDays"] = transformedMonitoringIntervalDays
+	}
+
+	transformedStalenessDays, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigSnapshotAnalysisStalenessDays(original["staleness_days"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedStalenessDays); val.IsValid() && !isEmptyValue(val) {
+		transformed["stalenessDays"] = transformedStalenessDays
+	}
+
 	return transformed, nil
 }
 
 func expandVertexAIFeaturestoreEntitytypeMonitoringConfigSnapshotAnalysisDisabled(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigSnapshotAnalysisMonitoringIntervalDays(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigSnapshotAnalysisStalenessDays(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigImportFeaturesAnalysis(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedState, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigImportFeaturesAnalysisState(original["state"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedState); val.IsValid() && !isEmptyValue(val) {
+		transformed["state"] = transformedState
+	}
+
+	transformedAnomalyDetectionBaseline, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigImportFeaturesAnalysisAnomalyDetectionBaseline(original["anomaly_detection_baseline"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAnomalyDetectionBaseline); val.IsValid() && !isEmptyValue(val) {
+		transformed["anomalyDetectionBaseline"] = transformedAnomalyDetectionBaseline
+	}
+
+	return transformed, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigImportFeaturesAnalysisState(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigImportFeaturesAnalysisAnomalyDetectionBaseline(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigNumericalThresholdConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedValue, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigNumericalThresholdConfigValue(original["value"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedValue); val.IsValid() && !isEmptyValue(val) {
+		transformed["value"] = transformedValue
+	}
+
+	return transformed, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigNumericalThresholdConfigValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigCategoricalThresholdConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedValue, err := expandVertexAIFeaturestoreEntitytypeMonitoringConfigCategoricalThresholdConfigValue(original["value"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedValue); val.IsValid() && !isEmptyValue(val) {
+		transformed["value"] = transformedValue
+	}
+
+	return transformed, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeMonitoringConfigCategoricalThresholdConfigValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
