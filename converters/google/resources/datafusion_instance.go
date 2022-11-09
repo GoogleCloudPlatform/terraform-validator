@@ -78,6 +78,12 @@ func GetDataFusionInstanceApiObject(d TerraformResourceData, config *Config) (ma
 	} else if v, ok := d.GetOkExists("enable_stackdriver_monitoring"); !isEmptyValue(reflect.ValueOf(enableStackdriverMonitoringProp)) && (ok || !reflect.DeepEqual(v, enableStackdriverMonitoringProp)) {
 		obj["enableStackdriverMonitoring"] = enableStackdriverMonitoringProp
 	}
+	enableRbacProp, err := expandDataFusionInstanceEnableRbac(d.Get("enable_rbac"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("enable_rbac"); !isEmptyValue(reflect.ValueOf(enableRbacProp)) && (ok || !reflect.DeepEqual(v, enableRbacProp)) {
+		obj["enableRbac"] = enableRbacProp
+	}
 	labelsProp, err := expandDataFusionInstanceLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return nil, err
@@ -141,6 +147,10 @@ func expandDataFusionInstanceEnableStackdriverLogging(v interface{}, d Terraform
 }
 
 func expandDataFusionInstanceEnableStackdriverMonitoring(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataFusionInstanceEnableRbac(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
