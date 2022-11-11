@@ -102,6 +102,12 @@ func GetNetworkServicesEdgeCacheOriginApiObject(d TerraformResourceData, config 
 	} else if v, ok := d.GetOkExists("timeout"); !isEmptyValue(reflect.ValueOf(timeoutProp)) && (ok || !reflect.DeepEqual(v, timeoutProp)) {
 		obj["timeout"] = timeoutProp
 	}
+	awsV4AuthenticationProp, err := expandNetworkServicesEdgeCacheOriginAwsV4Authentication(d.Get("aws_v4_authentication"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("aws_v4_authentication"); !isEmptyValue(reflect.ValueOf(awsV4AuthenticationProp)) && (ok || !reflect.DeepEqual(v, awsV4AuthenticationProp)) {
+		obj["awsV4Authentication"] = awsV4AuthenticationProp
+	}
 
 	return obj, nil
 }
@@ -198,5 +204,50 @@ func expandNetworkServicesEdgeCacheOriginTimeoutResponseTimeout(v interface{}, d
 }
 
 func expandNetworkServicesEdgeCacheOriginTimeoutReadTimeout(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginAwsV4Authentication(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedAccessKeyId, err := expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationAccessKeyId(original["access_key_id"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAccessKeyId); val.IsValid() && !isEmptyValue(val) {
+		transformed["accessKeyId"] = transformedAccessKeyId
+	}
+
+	transformedSecretAccessKeyVersion, err := expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationSecretAccessKeyVersion(original["secret_access_key_version"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedSecretAccessKeyVersion); val.IsValid() && !isEmptyValue(val) {
+		transformed["secretAccessKeyVersion"] = transformedSecretAccessKeyVersion
+	}
+
+	transformedOriginRegion, err := expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationOriginRegion(original["origin_region"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedOriginRegion); val.IsValid() && !isEmptyValue(val) {
+		transformed["originRegion"] = transformedOriginRegion
+	}
+
+	return transformed, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationAccessKeyId(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationSecretAccessKeyVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationOriginRegion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
