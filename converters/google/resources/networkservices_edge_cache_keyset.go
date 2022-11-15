@@ -66,6 +66,12 @@ func GetNetworkServicesEdgeCacheKeysetApiObject(d TerraformResourceData, config 
 	} else if v, ok := d.GetOkExists("public_key"); !isEmptyValue(reflect.ValueOf(publicKeysProp)) && (ok || !reflect.DeepEqual(v, publicKeysProp)) {
 		obj["publicKeys"] = publicKeysProp
 	}
+	validationSharedKeysProp, err := expandNetworkServicesEdgeCacheKeysetValidationSharedKeys(d.Get("validation_shared_keys"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("validation_shared_keys"); !isEmptyValue(reflect.ValueOf(validationSharedKeysProp)) && (ok || !reflect.DeepEqual(v, validationSharedKeysProp)) {
+		obj["validationSharedKeys"] = validationSharedKeysProp
+	}
 
 	return obj, nil
 }
@@ -109,6 +115,13 @@ func expandNetworkServicesEdgeCacheKeysetPublicKey(v interface{}, d TerraformRes
 			transformed["value"] = transformedValue
 		}
 
+		transformedManaged, err := expandNetworkServicesEdgeCacheKeysetPublicKeyManaged(original["managed"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedManaged); val.IsValid() && !isEmptyValue(val) {
+			transformed["managed"] = transformedManaged
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -119,5 +132,35 @@ func expandNetworkServicesEdgeCacheKeysetPublicKeyId(v interface{}, d TerraformR
 }
 
 func expandNetworkServicesEdgeCacheKeysetPublicKeyValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheKeysetPublicKeyManaged(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheKeysetValidationSharedKeys(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedSecretVersion, err := expandNetworkServicesEdgeCacheKeysetValidationSharedKeysSecretVersion(original["secret_version"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedSecretVersion); val.IsValid() && !isEmptyValue(val) {
+			transformed["secretVersion"] = transformedSecretVersion
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandNetworkServicesEdgeCacheKeysetValidationSharedKeysSecretVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
