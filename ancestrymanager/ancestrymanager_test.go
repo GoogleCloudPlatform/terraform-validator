@@ -18,6 +18,7 @@ import (
 	crmv1 "google.golang.org/api/cloudresourcemanager/v1"
 	crmv3 "google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/option"
+	"google.golang.org/api/storage/v1"
 )
 
 func TestGetAncestors(t *testing.T) {
@@ -1203,6 +1204,116 @@ func TestUnknownProject(t *testing.T) {
 			}
 			if ts.v1Count != c.v1Count {
 				t.Errorf("Ancestors(%v, %v, %v) v1 API called = %d, want = %d", cfg, c.data, c.asset, ts.v1Count, c.v1Count)
+			}
+		})
+	}
+}
+
+func TestGetProjectFromResource(t *testing.T) {
+	p := provider.Provider()
+	cases := []struct {
+		name   string
+		asset  *resources.Asset
+		config *resources.Config
+		d      resources.TerraformResourceData
+		resp   *storage.Bucket
+		want   string
+	}{
+		{
+			name: "bucket - from cai resource",
+			config: &resources.Config{
+				Project: "test-project",
+			},
+			d: tfdata.NewFakeResourceData(
+				"google_storage_bucket_iam_member",
+				p.ResourcesMap["google_storage_bucket_iam_member"].Schema,
+				map[string]interface{}{
+					"bucket": "bucket-name",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "storage.googleapis.com/Bucket",
+				Resource: &resources.AssetResource{
+					Data: map[string]interface{}{
+						"project": "resource-project",
+					},
+				},
+			},
+			resp: &storage.Bucket{
+				ProjectNumber: 123,
+			},
+			want: "resource-project",
+		},
+		{
+			name:   "bucket - from storage API",
+			config: &resources.Config{Project: "test-project"},
+			d: tfdata.NewFakeResourceData(
+				"google_storage_bucket_iam_member",
+				p.ResourcesMap["google_storage_bucket_iam_member"].Schema,
+				map[string]interface{}{
+					"bucket": "bucket-name",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "storage.googleapis.com/Bucket",
+			},
+			resp: &storage.Bucket{
+				ProjectNumber: 123,
+			},
+			want: "123",
+		},
+		{
+			name:   "bucket - from provider config",
+			config: &resources.Config{Project: "test-project"},
+			d: tfdata.NewFakeResourceData(
+				"google_storage_bucket_iam_member",
+				p.ResourcesMap["google_storage_bucket_iam_member"].Schema,
+				map[string]interface{}{
+					"bucket": "bucket-name",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "storage.googleapis.com/Bucket",
+			},
+			resp: nil,
+			want: "test-project",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if c.resp == nil {
+					w.WriteHeader(http.StatusForbidden)
+					w.Write([]byte("no response"))
+					return
+				}
+
+				payload, err := c.resp.MarshalJSON()
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte(fmt.Sprintf("failed to MarshalJSON: %s", err)))
+					return
+				}
+				w.Write(payload)
+			}))
+			defer ts.Close()
+
+			mockClient, err := storage.NewService(context.Background(), option.WithEndpoint(ts.URL), option.WithoutAuthentication())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ancestryManager := &manager{
+				errorLogger:   zap.NewExample(),
+				storageClient: mockClient,
+			}
+			got, err := ancestryManager.getProjectFromResource(c.d, c.config, c.asset)
+			if err != nil {
+				t.Fatalf("getProjectFromResource() = %s, want = nil", err)
+			}
+			if got != c.want {
+				t.Fatalf("getProjectFromResource() = %s, want = %s", got, c.want)
 			}
 		})
 	}

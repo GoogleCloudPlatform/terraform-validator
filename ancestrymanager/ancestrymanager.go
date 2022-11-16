@@ -3,10 +3,12 @@ package ancestrymanager
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	crmv1 "google.golang.org/api/cloudresourcemanager/v1"
 	crmv3 "google.golang.org/api/cloudresourcemanager/v3"
+	"google.golang.org/api/storage/v1"
 
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 
@@ -28,6 +30,7 @@ type manager struct {
 	// be disabled.
 	resourceManagerV3 *crmv3.Service
 	resourceManagerV1 *crmv1.Service
+	storageClient     *storage.Service
 	// Cache to prevent multiple network calls for looking up the same
 	// resource's ancestry. The map key is the resource itself, in the format of
 	// "<type>/<id>", ancestors are sorted from closest to furthest.
@@ -47,6 +50,7 @@ func New(cfg *resources.Config, offline bool, entries map[string]string, errorLo
 	if !offline {
 		am.resourceManagerV1 = cfg.NewResourceManagerClient(cfg.UserAgent())
 		am.resourceManagerV3 = cfg.NewResourceManagerV3Client(cfg.UserAgent())
+		am.storageClient = cfg.NewStorageClient(cfg.UserAgent())
 	}
 	err := am.initAncestryCache(entries)
 	if err != nil {
@@ -132,7 +136,7 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 			folderKey = fmt.Sprintf("folders/%s", folderKey)
 		}
 	}
-	project, _ := getProjectFromResource(tfData, config, *cai, m.errorLogger)
+	project, _ := m.getProjectFromResource(tfData, config, cai)
 	if project != "" {
 		projectKey = project
 		if !strings.HasPrefix(projectKey, "projects/") {
@@ -306,6 +310,50 @@ func normalizeAncestry(val string) string {
 		val = strings.ReplaceAll(val, r.old, r.new)
 	}
 	return val
+}
+
+// getProjectFromResource reads the "project" field from the given resource data and falls
+// back to the provider's value if not given. If the provider's value is not
+// given, an error is returned.
+func (m *manager) getProjectFromResource(d resources.TerraformResourceData, config *resources.Config, cai *resources.Asset) (string, error) {
+
+	switch cai.Type {
+	case "cloudresourcemanager.googleapis.com/Project",
+		"cloudbilling.googleapis.com/ProjectBillingInfo":
+		res, ok := d.GetOk("number")
+		if ok {
+			return res.(string), nil
+		}
+		// Fall back to project_id if number is not available.
+		res, ok = d.GetOk("project_id")
+		if ok {
+			return res.(string), nil
+		} else {
+			m.errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from resource", cai.Name))
+		}
+	case "storage.googleapis.com/Bucket":
+		if cai.Resource != nil {
+			res, ok := cai.Resource.Data["project"]
+			if ok {
+				return res.(string), nil
+			}
+		}
+		m.errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from cai resource", cai.Name))
+
+		bucketField, ok := d.GetOk("bucket")
+		if ok {
+			bucket := bucketField.(string)
+			resp, err := m.storageClient.Buckets.Get(bucket).Do()
+			if err == nil {
+				projectNum := resp.ProjectNumber
+				return strconv.Itoa(int(projectNum)), nil
+			}
+			m.errorLogger.Warn(fmt.Sprintf("Failed to get bucket %s", bucket))
+		}
+		m.errorLogger.Warn("Failed to retrieve bucket field from tf data")
+	}
+
+	return getProjectFromSchema("project", d, config)
 }
 
 type NoOpAncestryManager struct{}

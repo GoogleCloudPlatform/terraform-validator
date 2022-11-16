@@ -7,8 +7,6 @@ import (
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/hashicorp/errwrap"
 	"google.golang.org/api/googleapi"
-
-	"go.uber.org/zap"
 )
 
 // assetParent derives a resource's parent from its ancestors.
@@ -74,38 +72,6 @@ func sanitizeAncestryPath(s string) string {
 		ret = strings.ReplaceAll(ret, r.old, r.new)
 	}
 	return ret
-}
-
-// getProjectFromResource reads the "project" field from the given resource data and falls
-// back to the provider's value if not given. If the provider's value is not
-// given, an error is returned.
-func getProjectFromResource(d resources.TerraformResourceData, config *resources.Config, cai resources.Asset, errorLogger *zap.Logger) (string, error) {
-
-	switch cai.Type {
-	case "cloudresourcemanager.googleapis.com/Project",
-		"cloudbilling.googleapis.com/ProjectBillingInfo":
-		res, ok := d.GetOk("number")
-		if ok {
-			return res.(string), nil
-		}
-		// Fall back to project_id if number is not available.
-		res, ok = d.GetOk("project_id")
-		if ok {
-			return res.(string), nil
-		} else {
-			errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from resource", cai.Name))
-		}
-	case "storage.googleapis.com/Bucket":
-		if cai.Resource != nil {
-			res, ok := cai.Resource.Data["project"]
-			if ok {
-				return res.(string), nil
-			}
-		}
-		errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from cai resource", cai.Name))
-	}
-
-	return getProjectFromSchema("project", d, config)
 }
 
 func getProjectFromSchema(projectSchemaField string, d resources.TerraformResourceData, config *resources.Config) (string, error) {
