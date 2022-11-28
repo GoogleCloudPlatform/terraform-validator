@@ -202,6 +202,9 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_vertex_ai_featurestore_iam_policy":                {resourceConverterVertexAIFeaturestoreIamPolicy()},
 		"google_vertex_ai_featurestore_iam_binding":               {resourceConverterVertexAIFeaturestoreIamBinding()},
 		"google_vertex_ai_featurestore_iam_member":                {resourceConverterVertexAIFeaturestoreIamMember()},
+		"google_vertex_ai_featurestore_entitytype_iam_policy":     {resourceConverterVertexAIFeaturestoreEntitytypeIamPolicy()},
+		"google_vertex_ai_featurestore_entitytype_iam_binding":    {resourceConverterVertexAIFeaturestoreEntitytypeIamBinding()},
+		"google_vertex_ai_featurestore_entitytype_iam_member":     {resourceConverterVertexAIFeaturestoreEntitytypeIamMember()},
 		"google_project": {
 			resourceConverterProject(),
 			resourceConverterProjectBillingInfo(),
