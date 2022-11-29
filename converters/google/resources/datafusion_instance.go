@@ -120,11 +120,29 @@ func GetDataFusionInstanceApiObject(d TerraformResourceData, config *Config) (ma
 	} else if v, ok := d.GetOkExists("network_config"); !isEmptyValue(reflect.ValueOf(networkConfigProp)) && (ok || !reflect.DeepEqual(v, networkConfigProp)) {
 		obj["networkConfig"] = networkConfigProp
 	}
+	zoneProp, err := expandDataFusionInstanceZone(d.Get("zone"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("zone"); !isEmptyValue(reflect.ValueOf(zoneProp)) && (ok || !reflect.DeepEqual(v, zoneProp)) {
+		obj["zone"] = zoneProp
+	}
+	displayNameProp, err := expandDataFusionInstanceDisplayName(d.Get("display_name"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("display_name"); !isEmptyValue(reflect.ValueOf(displayNameProp)) && (ok || !reflect.DeepEqual(v, displayNameProp)) {
+		obj["displayName"] = displayNameProp
+	}
 	cryptoKeyConfigProp, err := expandDataFusionInstanceCryptoKeyConfig(d.Get("crypto_key_config"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("crypto_key_config"); !isEmptyValue(reflect.ValueOf(cryptoKeyConfigProp)) && (ok || !reflect.DeepEqual(v, cryptoKeyConfigProp)) {
 		obj["cryptoKeyConfig"] = cryptoKeyConfigProp
+	}
+	eventPublishConfigProp, err := expandDataFusionInstanceEventPublishConfig(d.Get("event_publish_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("event_publish_config"); !isEmptyValue(reflect.ValueOf(eventPublishConfigProp)) && (ok || !reflect.DeepEqual(v, eventPublishConfigProp)) {
+		obj["eventPublishConfig"] = eventPublishConfigProp
 	}
 
 	return obj, nil
@@ -222,6 +240,14 @@ func expandDataFusionInstanceNetworkConfigNetwork(v interface{}, d TerraformReso
 	return v, nil
 }
 
+func expandDataFusionInstanceZone(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataFusionInstanceDisplayName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
 func expandDataFusionInstanceCryptoKeyConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
@@ -242,5 +268,39 @@ func expandDataFusionInstanceCryptoKeyConfig(v interface{}, d TerraformResourceD
 }
 
 func expandDataFusionInstanceCryptoKeyConfigKeyReference(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataFusionInstanceEventPublishConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedEnabled, err := expandDataFusionInstanceEventPublishConfigEnabled(original["enabled"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedEnabled); val.IsValid() && !isEmptyValue(val) {
+		transformed["enabled"] = transformedEnabled
+	}
+
+	transformedTopic, err := expandDataFusionInstanceEventPublishConfigTopic(original["topic"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTopic); val.IsValid() && !isEmptyValue(val) {
+		transformed["topic"] = transformedTopic
+	}
+
+	return transformed, nil
+}
+
+func expandDataFusionInstanceEventPublishConfigEnabled(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataFusionInstanceEventPublishConfigTopic(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
