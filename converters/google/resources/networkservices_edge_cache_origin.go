@@ -108,6 +108,18 @@ func GetNetworkServicesEdgeCacheOriginApiObject(d TerraformResourceData, config 
 	} else if v, ok := d.GetOkExists("aws_v4_authentication"); !isEmptyValue(reflect.ValueOf(awsV4AuthenticationProp)) && (ok || !reflect.DeepEqual(v, awsV4AuthenticationProp)) {
 		obj["awsV4Authentication"] = awsV4AuthenticationProp
 	}
+	originOverrideActionProp, err := expandNetworkServicesEdgeCacheOriginOriginOverrideAction(d.Get("origin_override_action"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("origin_override_action"); !isEmptyValue(reflect.ValueOf(originOverrideActionProp)) && (ok || !reflect.DeepEqual(v, originOverrideActionProp)) {
+		obj["originOverrideAction"] = originOverrideActionProp
+	}
+	originRedirectProp, err := expandNetworkServicesEdgeCacheOriginOriginRedirect(d.Get("origin_redirect"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("origin_redirect"); !isEmptyValue(reflect.ValueOf(originRedirectProp)) && (ok || !reflect.DeepEqual(v, originRedirectProp)) {
+		obj["originRedirect"] = originRedirectProp
+	}
 
 	return obj, nil
 }
@@ -249,5 +261,144 @@ func expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationSecretAccessKeyVersi
 }
 
 func expandNetworkServicesEdgeCacheOriginAwsV4AuthenticationOriginRegion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideAction(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedUrlRewrite, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionUrlRewrite(original["url_rewrite"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUrlRewrite); val.IsValid() && !isEmptyValue(val) {
+		transformed["urlRewrite"] = transformedUrlRewrite
+	}
+
+	transformedHeaderAction, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderAction(original["header_action"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedHeaderAction); val.IsValid() && !isEmptyValue(val) {
+		transformed["headerAction"] = transformedHeaderAction
+	}
+
+	return transformed, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionUrlRewrite(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedHostRewrite, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionUrlRewriteHostRewrite(original["host_rewrite"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedHostRewrite); val.IsValid() && !isEmptyValue(val) {
+		transformed["hostRewrite"] = transformedHostRewrite
+	}
+
+	return transformed, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionUrlRewriteHostRewrite(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderAction(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedRequestHeadersToAdd, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAdd(original["request_headers_to_add"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRequestHeadersToAdd); val.IsValid() && !isEmptyValue(val) {
+		transformed["requestHeadersToAdd"] = transformedRequestHeadersToAdd
+	}
+
+	return transformed, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAdd(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	req := make([]interface{}, 0, len(l))
+	for _, raw := range l {
+		if raw == nil {
+			continue
+		}
+		original := raw.(map[string]interface{})
+		transformed := make(map[string]interface{})
+
+		transformedHeaderName, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAddHeaderName(original["header_name"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedHeaderName); val.IsValid() && !isEmptyValue(val) {
+			transformed["headerName"] = transformedHeaderName
+		}
+
+		transformedHeaderValue, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAddHeaderValue(original["header_value"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedHeaderValue); val.IsValid() && !isEmptyValue(val) {
+			transformed["headerValue"] = transformedHeaderValue
+		}
+
+		transformedReplace, err := expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAddReplace(original["replace"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedReplace); val.IsValid() && !isEmptyValue(val) {
+			transformed["replace"] = transformedReplace
+		}
+
+		req = append(req, transformed)
+	}
+	return req, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAddHeaderName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAddHeaderValue(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginOverrideActionHeaderActionRequestHeadersToAddReplace(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginRedirect(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedRedirectConditions, err := expandNetworkServicesEdgeCacheOriginOriginRedirectRedirectConditions(original["redirect_conditions"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRedirectConditions); val.IsValid() && !isEmptyValue(val) {
+		transformed["redirectConditions"] = transformedRedirectConditions
+	}
+
+	return transformed, nil
+}
+
+func expandNetworkServicesEdgeCacheOriginOriginRedirectRedirectConditions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
