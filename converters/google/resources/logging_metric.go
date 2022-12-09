@@ -64,6 +64,12 @@ func GetLoggingMetricApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("description"); !isEmptyValue(reflect.ValueOf(descriptionProp)) && (ok || !reflect.DeepEqual(v, descriptionProp)) {
 		obj["description"] = descriptionProp
 	}
+	bucketNameProp, err := expandLoggingMetricBucketName(d.Get("bucket_name"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("bucket_name"); !isEmptyValue(reflect.ValueOf(bucketNameProp)) && (ok || !reflect.DeepEqual(v, bucketNameProp)) {
+		obj["bucketName"] = bucketNameProp
+	}
 	filterProp, err := expandLoggingMetricFilter(d.Get("filter"), d, config)
 	if err != nil {
 		return nil, err
@@ -103,6 +109,10 @@ func expandLoggingMetricName(v interface{}, d TerraformResourceData, config *Con
 }
 
 func expandLoggingMetricDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandLoggingMetricBucketName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
