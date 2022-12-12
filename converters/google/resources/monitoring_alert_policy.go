@@ -14,7 +14,16 @@
 
 package google
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+// API does not return a value for REDUCE_NONE
+func crossSeriesReducerDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	return (new == "" && old == "REDUCE_NONE") || (new == "REDUCE_NONE" && old == "")
+}
 
 const MonitoringAlertPolicyAssetType string = "monitoring.googleapis.com/AlertPolicy"
 

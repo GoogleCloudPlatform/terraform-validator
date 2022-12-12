@@ -70,7 +70,7 @@ func resourceConverterCloudBuildTrigger() ResourceConverter {
 }
 
 func GetCloudBuildTriggerCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//cloudbuild.googleapis.com/projects/{{project}}/triggers/{{trigger_id}}")
+	name, err := assetName(d, config, "//cloudbuild.googleapis.com/projects/{{project}}/locations/{{location}}/triggers/{{trigger_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -1194,6 +1194,13 @@ func expandCloudBuildTriggerBuildStep(v interface{}, d TerraformResourceData, co
 			transformed["waitFor"] = transformedWaitFor
 		}
 
+		transformedScript, err := expandCloudBuildTriggerBuildStepScript(original["script"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedScript); val.IsValid() && !isEmptyValue(val) {
+			transformed["script"] = transformedScript
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
@@ -1273,6 +1280,10 @@ func expandCloudBuildTriggerBuildStepVolumesPath(v interface{}, d TerraformResou
 }
 
 func expandCloudBuildTriggerBuildStepWaitFor(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBuildStepScript(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
