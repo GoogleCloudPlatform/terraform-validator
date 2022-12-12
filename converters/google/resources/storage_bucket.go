@@ -1,9 +1,9 @@
 // ----------------------------------------------------------------------------
 //
-//	This file is copied here by Magic Modules. The code for building up a
-//	storage bucket object is copied from the manually implemented
-//	provider file:
-//	third_party/terraform/resources/resource_storage_bucket.go
+//     This file is copied here by Magic Modules. The code for building up a
+//     storage bucket object is copied from the manually implemented
+//     provider file:
+//     third_party/terraform/resources/resource_storage_bucket.go
 //
 // ----------------------------------------------------------------------------
 package google
@@ -149,7 +149,7 @@ func expandBucketEncryption(configured interface{}) *storage.BucketEncryption {
 
 func expandBucketLogging(configured interface{}) *storage.BucketLogging {
 	loggings := configured.([]interface{})
-	if len(loggings) == 0 || loggings[0] == nil {
+	if len(loggings) == 0 {
 		return nil
 	}
 
@@ -254,8 +254,7 @@ func resourceGCSBucketLifecycleCreateOrUpdate(d TerraformResourceData, sb *stora
 					target_lifecycle_rule.Condition = &storage.BucketLifecycleRuleCondition{}
 
 					if v, ok := condition["age"]; ok {
-						age := int64(v.(int))
-						target_lifecycle_rule.Condition.Age = &age
+						target_lifecycle_rule.Condition.Age = int64(v.(int))
 					}
 
 					if v, ok := condition["created_before"]; ok {

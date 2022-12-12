@@ -602,13 +602,6 @@ func expandBigQueryJobConfigurationLoad(v interface{}, d TerraformResourceData, 
 		transformed["sourceFormat"] = transformedSourceFormat
 	}
 
-	transformedJsonExtension, err := expandBigQueryJobConfigurationLoadJsonExtension(original["json_extension"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedJsonExtension); val.IsValid() && !isEmptyValue(val) {
-		transformed["jsonExtension"] = transformedJsonExtension
-	}
-
 	transformedAllowJaggedRows, err := expandBigQueryJobConfigurationLoadAllowJaggedRows(original["allow_jagged_rows"], d, config)
 	if err != nil {
 		return nil, err
@@ -735,10 +728,6 @@ func expandBigQueryJobConfigurationLoadAllowQuotedNewlines(v interface{}, d Terr
 }
 
 func expandBigQueryJobConfigurationLoadSourceFormat(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandBigQueryJobConfigurationLoadJsonExtension(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

@@ -1,9 +1,6 @@
 package google
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 func resourceConverterKmsKeyRingIamPolicy() ResourceConverter {
 	return ResourceConverter{
@@ -76,8 +73,7 @@ func newKmsKeyRingIamAsset(
 		return []Asset{}, fmt.Errorf("expanding bindings: %v", err)
 	}
 
-	assetNameTemplate := constructKmsKeyRingIAMAssetNameTemplate(d)
-	name, err := assetName(d, config, assetNameTemplate)
+	name, err := assetName(d, config, "//cloudkms.googleapis.com/{{key_ring_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
@@ -93,32 +89,16 @@ func newKmsKeyRingIamAsset(
 
 func FetchKmsKeyRingIamPolicy(d TerraformResourceData, config *Config) (Asset, error) {
 	// Check if the identity field returns a value
-	if _, ok := d.GetOk("key_ring_id"); !ok {
+	if _, ok := d.GetOk("{{key_ring_id}}"); !ok {
 		return Asset{}, ErrEmptyIdentityField
 	}
-
-	assetNameTemplate := constructKmsKeyRingIAMAssetNameTemplate(d)
 
 	// We use key_ring_id in the asset name template to be consistent with newKmsKeyRingIamAsset.
 	return fetchIamPolicy(
 		NewKmsKeyRingIamUpdater,
 		d,
 		config,
-		assetNameTemplate,                 // asset name
-		"cloudkms.googleapis.com/KeyRing", // asset type
+		"//cloudkms.googleapis.com/{{key_ring_id}}", // asset name
+		"cloudkms.googleapis.com/KeyRing",           // asset type
 	)
-}
-
-func constructKmsKeyRingIAMAssetNameTemplate(d TerraformResourceData) string {
-	assetNameTemplate := "//cloudkms.googleapis.com/{{key_ring_id}}"
-	if val, ok := d.GetOk("key_ring_id"); ok {
-		keyRingID := val.(string)
-		splits := strings.Split(keyRingID, "/")
-		if len(splits) == 3 {
-			assetNameTemplate = fmt.Sprintf("//cloudkms.googleapis.com/projects/%s/locations/%s/keyRings/%s", splits[0], splits[1], splits[2])
-		} else if len(splits) == 2 {
-			assetNameTemplate = fmt.Sprintf("//cloudkms.googleapis.com/projects/{{project}}/locations/%s/keyRings/%s", splits[0], splits[1])
-		}
-	}
-	return assetNameTemplate
 }

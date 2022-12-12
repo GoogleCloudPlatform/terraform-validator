@@ -100,12 +100,6 @@ func GetComputeRegionDiskApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("type"); !isEmptyValue(reflect.ValueOf(typeProp)) && (ok || !reflect.DeepEqual(v, typeProp)) {
 		obj["type"] = typeProp
 	}
-	sourceDiskProp, err := expandComputeRegionDiskSourceDisk(d.Get("source_disk"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("source_disk"); !isEmptyValue(reflect.ValueOf(sourceDiskProp)) && (ok || !reflect.DeepEqual(v, sourceDiskProp)) {
-		obj["sourceDisk"] = sourceDiskProp
-	}
 	regionProp, err := expandComputeRegionDiskRegion(d.Get("region"), d, config)
 	if err != nil {
 		return nil, err
@@ -228,10 +222,6 @@ func expandComputeRegionDiskType(v interface{}, d TerraformResourceData, config 
 		return nil, fmt.Errorf("Invalid value for type: %s", err)
 	}
 	return f.RelativeLink(), nil
-}
-
-func expandComputeRegionDiskSourceDisk(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
 }
 
 func expandComputeRegionDiskRegion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

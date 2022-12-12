@@ -149,12 +149,6 @@ func GetRedisInstanceApiObject(d TerraformResourceData, config *Config) (map[str
 	} else if v, ok := d.GetOkExists("name"); !isEmptyValue(reflect.ValueOf(nameProp)) && (ok || !reflect.DeepEqual(v, nameProp)) {
 		obj["name"] = nameProp
 	}
-	persistenceConfigProp, err := expandRedisInstancePersistenceConfig(d.Get("persistence_config"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("persistence_config"); !isEmptyValue(reflect.ValueOf(persistenceConfigProp)) && (ok || !reflect.DeepEqual(v, persistenceConfigProp)) {
-		obj["persistenceConfig"] = persistenceConfigProp
-	}
 	maintenancePolicyProp, err := expandRedisInstanceMaintenancePolicy(d.Get("maintenance_policy"), d, config)
 	if err != nil {
 		return nil, err
@@ -289,62 +283,6 @@ func expandRedisInstanceLocationId(v interface{}, d TerraformResourceData, confi
 
 func expandRedisInstanceName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return replaceVars(d, config, "projects/{{project}}/locations/{{region}}/instances/{{name}}")
-}
-
-func expandRedisInstancePersistenceConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedPersistenceMode, err := expandRedisInstancePersistenceConfigPersistenceMode(original["persistence_mode"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedPersistenceMode); val.IsValid() && !isEmptyValue(val) {
-		transformed["persistenceMode"] = transformedPersistenceMode
-	}
-
-	transformedRdbSnapshotPeriod, err := expandRedisInstancePersistenceConfigRdbSnapshotPeriod(original["rdb_snapshot_period"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedRdbSnapshotPeriod); val.IsValid() && !isEmptyValue(val) {
-		transformed["rdbSnapshotPeriod"] = transformedRdbSnapshotPeriod
-	}
-
-	transformedRdbNextSnapshotTime, err := expandRedisInstancePersistenceConfigRdbNextSnapshotTime(original["rdb_next_snapshot_time"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedRdbNextSnapshotTime); val.IsValid() && !isEmptyValue(val) {
-		transformed["rdbNextSnapshotTime"] = transformedRdbNextSnapshotTime
-	}
-
-	transformedRdbSnapshotStartTime, err := expandRedisInstancePersistenceConfigRdbSnapshotStartTime(original["rdb_snapshot_start_time"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedRdbSnapshotStartTime); val.IsValid() && !isEmptyValue(val) {
-		transformed["rdbSnapshotStartTime"] = transformedRdbSnapshotStartTime
-	}
-
-	return transformed, nil
-}
-
-func expandRedisInstancePersistenceConfigPersistenceMode(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandRedisInstancePersistenceConfigRdbSnapshotPeriod(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandRedisInstancePersistenceConfigRdbNextSnapshotTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandRedisInstancePersistenceConfigRdbSnapshotStartTime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
 }
 
 func expandRedisInstanceMaintenancePolicy(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {

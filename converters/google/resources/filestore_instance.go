@@ -131,13 +131,6 @@ func expandFilestoreInstanceFileShares(v interface{}, d TerraformResourceData, c
 			transformed["capacityGb"] = transformedCapacityGb
 		}
 
-		transformedSourceBackup, err := expandFilestoreInstanceFileSharesSourceBackup(original["source_backup"], d, config)
-		if err != nil {
-			return nil, err
-		} else if val := reflect.ValueOf(transformedSourceBackup); val.IsValid() && !isEmptyValue(val) {
-			transformed["sourceBackup"] = transformedSourceBackup
-		}
-
 		transformedNfsExportOptions, err := expandFilestoreInstanceFileSharesNfsExportOptions(original["nfs_export_options"], d, config)
 		if err != nil {
 			return nil, err
@@ -155,10 +148,6 @@ func expandFilestoreInstanceFileSharesName(v interface{}, d TerraformResourceDat
 }
 
 func expandFilestoreInstanceFileSharesCapacityGb(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandFilestoreInstanceFileSharesSourceBackup(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

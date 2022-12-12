@@ -832,27 +832,6 @@ func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteAction
 		transformed["signedRequestKeyset"] = transformedSignedRequestKeyset
 	}
 
-	transformedSignedTokenOptions, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedTokenOptions(original["signed_token_options"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedSignedTokenOptions); val.IsValid() && !isEmptyValue(val) {
-		transformed["signedTokenOptions"] = transformedSignedTokenOptions
-	}
-
-	transformedAddSignatures, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignatures(original["add_signatures"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedAddSignatures); val.IsValid() && !isEmptyValue(val) {
-		transformed["addSignatures"] = transformedAddSignatures
-	}
-
-	transformedSignedRequestMaximumExpirationTtl, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedRequestMaximumExpirationTtl(original["signed_request_maximum_expiration_ttl"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedSignedRequestMaximumExpirationTtl); val.IsValid() && !isEmptyValue(val) {
-		transformed["signedRequestMaximumExpirationTtl"] = transformedSignedRequestMaximumExpirationTtl
-	}
-
 	return transformed, nil
 }
 
@@ -981,111 +960,6 @@ func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteAction
 }
 
 func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedRequestKeyset(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedTokenOptions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedTokenQueryParameter, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedTokenOptionsTokenQueryParameter(original["token_query_parameter"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedTokenQueryParameter); val.IsValid() && !isEmptyValue(val) {
-		transformed["tokenQueryParameter"] = transformedTokenQueryParameter
-	}
-
-	transformedAllowedSignatureAlgorithms, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedTokenOptionsAllowedSignatureAlgorithms(original["allowed_signature_algorithms"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedAllowedSignatureAlgorithms); val.IsValid() && !isEmptyValue(val) {
-		transformed["allowedSignatureAlgorithms"] = transformedAllowedSignatureAlgorithms
-	}
-
-	return transformed, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedTokenOptionsTokenQueryParameter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedTokenOptionsAllowedSignatureAlgorithms(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignatures(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	l := v.([]interface{})
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-	raw := l[0]
-	original := raw.(map[string]interface{})
-	transformed := make(map[string]interface{})
-
-	transformedActions, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesActions(original["actions"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedActions); val.IsValid() && !isEmptyValue(val) {
-		transformed["actions"] = transformedActions
-	}
-
-	transformedKeyset, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesKeyset(original["keyset"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedKeyset); val.IsValid() && !isEmptyValue(val) {
-		transformed["keyset"] = transformedKeyset
-	}
-
-	transformedTokenTtl, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesTokenTtl(original["token_ttl"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedTokenTtl); val.IsValid() && !isEmptyValue(val) {
-		transformed["tokenTtl"] = transformedTokenTtl
-	}
-
-	transformedTokenQueryParameter, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesTokenQueryParameter(original["token_query_parameter"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedTokenQueryParameter); val.IsValid() && !isEmptyValue(val) {
-		transformed["tokenQueryParameter"] = transformedTokenQueryParameter
-	}
-
-	transformedCopiedParameters, err := expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesCopiedParameters(original["copied_parameters"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedCopiedParameters); val.IsValid() && !isEmptyValue(val) {
-		transformed["copiedParameters"] = transformedCopiedParameters
-	}
-
-	return transformed, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesActions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesKeyset(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesTokenTtl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesTokenQueryParameter(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicyAddSignaturesCopiedParameters(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandNetworkServicesEdgeCacheServiceRoutingPathMatcherRouteRuleRouteActionCdnPolicySignedRequestMaximumExpirationTtl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

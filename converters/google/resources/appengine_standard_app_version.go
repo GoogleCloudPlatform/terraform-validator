@@ -64,12 +64,6 @@ func GetAppEngineStandardAppVersionApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("runtime"); !isEmptyValue(reflect.ValueOf(runtimeProp)) && (ok || !reflect.DeepEqual(v, runtimeProp)) {
 		obj["runtime"] = runtimeProp
 	}
-	serviceAccountProp, err := expandAppEngineStandardAppVersionServiceAccount(d.Get("service_account"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("service_account"); !isEmptyValue(reflect.ValueOf(serviceAccountProp)) && (ok || !reflect.DeepEqual(v, serviceAccountProp)) {
-		obj["serviceAccount"] = serviceAccountProp
-	}
 	threadsafeProp, err := expandAppEngineStandardAppVersionThreadsafe(d.Get("threadsafe"), d, config)
 	if err != nil {
 		return nil, err
@@ -163,10 +157,6 @@ func expandAppEngineStandardAppVersionVersionId(v interface{}, d TerraformResour
 }
 
 func expandAppEngineStandardAppVersionRuntime(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandAppEngineStandardAppVersionServiceAccount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -572,21 +562,10 @@ func expandAppEngineStandardAppVersionVPCAccessConnector(v interface{}, d Terraf
 		transformed["name"] = transformedName
 	}
 
-	transformedEgressSetting, err := expandAppEngineStandardAppVersionVPCAccessConnectorEgressSetting(original["egress_setting"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedEgressSetting); val.IsValid() && !isEmptyValue(val) {
-		transformed["egressSetting"] = transformedEgressSetting
-	}
-
 	return transformed, nil
 }
 
 func expandAppEngineStandardAppVersionVPCAccessConnectorName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandAppEngineStandardAppVersionVPCAccessConnectorEgressSetting(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
