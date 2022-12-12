@@ -15,10 +15,56 @@
 package google
 
 import (
+	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+//Use it to delete TagTemplate Field
+func deleteTagTemplateField(d *schema.ResourceData, config *Config, name, billingProject, userAgent string) error {
+
+	url_delete, err := replaceVars(d, config, "{{DataCatalogBasePath}}{{name}}/fields/"+name+"?force={{force_delete}}")
+	if err != nil {
+		return err
+	}
+	var obj map[string]interface{}
+	res, err := sendRequestWithTimeout(config, "DELETE", billingProject, url_delete, userAgent, obj, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return fmt.Errorf("Error deleting TagTemplate Field %v: %s", name, err)
+	}
+
+	log.Printf("[DEBUG] Finished deleting TagTemplate Field %q: %#v", name, res)
+	return nil
+}
+
+//Use it to create TagTemplate Field
+func createTagTemplateField(d *schema.ResourceData, config *Config, body map[string]interface{}, name, billingProject, userAgent string) error {
+
+	url_create, err := replaceVars(d, config, "{{DataCatalogBasePath}}{{name}}/fields")
+	if err != nil {
+		return err
+	}
+
+	url_create, err = addQueryParams(url_create, map[string]string{"tagTemplateFieldId": name})
+	if err != nil {
+		return err
+	}
+
+	res_create, err := sendRequestWithTimeout(config, "POST", billingProject, url_create, userAgent, body, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf("Error creating TagTemplate Field: %s", err)
+	}
+
+	if err != nil {
+		return fmt.Errorf("Error creating TagTemplate Field %v: %s", name, err)
+	} else {
+		log.Printf("[DEBUG] Finished creating TagTemplate Field %v: %#v", name, res_create)
+	}
+
+	return nil
+}
 
 const DataCatalogTagTemplateAssetType string = "datacatalog.googleapis.com/TagTemplate"
 
