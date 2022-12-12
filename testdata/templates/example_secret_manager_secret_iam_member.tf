@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 terraform {
   required_providers {
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = "~> {{.Provider.version}}"
     }
   }
@@ -27,30 +27,28 @@ provider "google" {
   {{if .Provider.credentials }}credentials = "{{.Provider.credentials}}"{{end}}
 }
 
-resource "google_compute_security_policy" "policy" {
-  name = "my-policy"
+resource "google_secret_manager_secret" "secret-basic" {
+  secret_id = "secret"
 
-  rule {
-    action   = "deny(403)"
-    priority = "1000"
-    match {
-      versioned_expr = "SRC_IPS_V1"
-      config {
-        src_ip_ranges = ["9.9.9.0/24"]
-      }
-    }
-    description = "Deny access to IPs in 9.9.9.0/24"
+  labels = {
+    label = "my-label"
   }
 
-  rule {
-    action   = "allow"
-    priority = "2147483647"
-    match {
-      versioned_expr = "SRC_IPS_V1"
-      config {
-        src_ip_ranges = ["*"]
+  replication {
+    user_managed {
+      replicas {
+        location = "us-central1"
+      }
+      replicas {
+        location = "us-east1"
       }
     }
-    description = "default rule"
   }
+}
+
+resource "google_secret_manager_secret_iam_member" "member" {
+  project = google_secret_manager_secret.secret-basic.project
+  secret_id = google_secret_manager_secret.secret-basic.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "user:jane@example.com"
 }

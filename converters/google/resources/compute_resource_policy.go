@@ -356,6 +356,13 @@ func expandComputeResourcePolicySnapshotSchedulePolicySnapshotProperties(v inter
 		transformed["guestFlush"] = transformedGuestFlush
 	}
 
+	transformedChainName, err := expandComputeResourcePolicySnapshotSchedulePolicySnapshotPropertiesChainName(original["chain_name"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedChainName); val.IsValid() && !isEmptyValue(val) {
+		transformed["chainName"] = transformedChainName
+	}
+
 	return transformed, nil
 }
 
@@ -376,6 +383,10 @@ func expandComputeResourcePolicySnapshotSchedulePolicySnapshotPropertiesStorageL
 }
 
 func expandComputeResourcePolicySnapshotSchedulePolicySnapshotPropertiesGuestFlush(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeResourcePolicySnapshotSchedulePolicySnapshotPropertiesChainName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
