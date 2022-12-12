@@ -88,10 +88,6 @@ func ParseNetworkEndpointGroupFieldValue(networkEndpointGroup string, d Terrafor
 	return parseZonalFieldValue("networkEndpointGroups", networkEndpointGroup, "project", "zone", d, config, false)
 }
 
-func ParseNetworkEndpointGroupRegionalFieldValue(networkEndpointGroup string, d TerraformResourceData, config *Config) (*RegionalFieldValue, error) {
-	return parseRegionalFieldValue("networkEndpointGroups", networkEndpointGroup, "project", "region", "zone", d, config, false)
-}
-
 // ------------------------------------------------------------
 // Base helpers used to create helpers for specific fields.
 // ------------------------------------------------------------

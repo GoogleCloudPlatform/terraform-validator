@@ -124,12 +124,6 @@ func GetAppEngineFlexibleAppVersionApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("runtime_main_executable_path"); !isEmptyValue(reflect.ValueOf(runtimeMainExecutablePathProp)) && (ok || !reflect.DeepEqual(v, runtimeMainExecutablePathProp)) {
 		obj["runtimeMainExecutablePath"] = runtimeMainExecutablePathProp
 	}
-	serviceAccountProp, err := expandAppEngineFlexibleAppVersionServiceAccount(d.Get("service_account"), d, config)
-	if err != nil {
-		return nil, err
-	} else if v, ok := d.GetOkExists("service_account"); !isEmptyValue(reflect.ValueOf(serviceAccountProp)) && (ok || !reflect.DeepEqual(v, serviceAccountProp)) {
-		obj["serviceAccount"] = serviceAccountProp
-	}
 	apiConfigProp, err := expandAppEngineFlexibleAppVersionApiConfig(d.Get("api_config"), d, config)
 	if err != nil {
 		return nil, err
@@ -622,10 +616,6 @@ func expandAppEngineFlexibleAppVersionHandlersStaticFilesApplicationReadable(v i
 }
 
 func expandAppEngineFlexibleAppVersionRuntimeMainExecutablePath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandAppEngineFlexibleAppVersionServiceAccount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

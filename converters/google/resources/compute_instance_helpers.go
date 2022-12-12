@@ -396,7 +396,6 @@ func expandAdvancedMachineFeatures(d TerraformResourceData) *compute.AdvancedMac
 	return &compute.AdvancedMachineFeatures{
 		EnableNestedVirtualization: d.Get(prefix + ".enable_nested_virtualization").(bool),
 		ThreadsPerCore:             int64(d.Get(prefix + ".threads_per_core").(int)),
-		VisibleCoreCount:           int64(d.Get(prefix + ".visible_core_count").(int)),
 	}
 }
 
@@ -407,7 +406,6 @@ func flattenAdvancedMachineFeatures(AdvancedMachineFeatures *compute.AdvancedMac
 	return []map[string]interface{}{{
 		"enable_nested_virtualization": AdvancedMachineFeatures.EnableNestedVirtualization,
 		"threads_per_core":             AdvancedMachineFeatures.ThreadsPerCore,
-		"visible_core_count":           AdvancedMachineFeatures.VisibleCoreCount,
 	}}
 }
 

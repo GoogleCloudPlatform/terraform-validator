@@ -135,20 +135,6 @@ func expandCertificateManagerCertificateSelfManaged(v interface{}, d TerraformRe
 		transformed["privateKeyPem"] = transformedPrivateKeyPem
 	}
 
-	transformedPemCertificate, err := expandCertificateManagerCertificateSelfManagedPemCertificate(original["pem_certificate"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedPemCertificate); val.IsValid() && !isEmptyValue(val) {
-		transformed["pemCertificate"] = transformedPemCertificate
-	}
-
-	transformedPemPrivateKey, err := expandCertificateManagerCertificateSelfManagedPemPrivateKey(original["pem_private_key"], d, config)
-	if err != nil {
-		return nil, err
-	} else if val := reflect.ValueOf(transformedPemPrivateKey); val.IsValid() && !isEmptyValue(val) {
-		transformed["pemPrivateKey"] = transformedPemPrivateKey
-	}
-
 	return transformed, nil
 }
 
@@ -157,14 +143,6 @@ func expandCertificateManagerCertificateSelfManagedCertificatePem(v interface{},
 }
 
 func expandCertificateManagerCertificateSelfManagedPrivateKeyPem(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandCertificateManagerCertificateSelfManagedPemCertificate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
-}
-
-func expandCertificateManagerCertificateSelfManagedPemPrivateKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
