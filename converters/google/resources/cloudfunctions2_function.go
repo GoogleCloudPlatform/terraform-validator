@@ -382,6 +382,20 @@ func expandCloudfunctions2functionServiceConfig(v interface{}, d TerraformResour
 		transformed["availableMemory"] = transformedAvailableMemory
 	}
 
+	transformedMaxInstanceRequestConcurrency, err := expandCloudfunctions2functionServiceConfigMaxInstanceRequestConcurrency(original["max_instance_request_concurrency"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMaxInstanceRequestConcurrency); val.IsValid() && !isEmptyValue(val) {
+		transformed["maxInstanceRequestConcurrency"] = transformedMaxInstanceRequestConcurrency
+	}
+
+	transformedAvailableCpu, err := expandCloudfunctions2functionServiceConfigAvailableCpu(original["available_cpu"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAvailableCpu); val.IsValid() && !isEmptyValue(val) {
+		transformed["availableCpu"] = transformedAvailableCpu
+	}
+
 	transformedEnvironmentVariables, err := expandCloudfunctions2functionServiceConfigEnvironmentVariables(original["environment_variables"], d, config)
 	if err != nil {
 		return nil, err
@@ -478,6 +492,14 @@ func expandCloudfunctions2functionServiceConfigTimeoutSeconds(v interface{}, d T
 }
 
 func expandCloudfunctions2functionServiceConfigAvailableMemory(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudfunctions2functionServiceConfigMaxInstanceRequestConcurrency(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudfunctions2functionServiceConfigAvailableCpu(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
