@@ -278,12 +278,23 @@ func expandDataLossPreventionInspectTemplateInspectConfigInfoTypes(v interface{}
 			transformed["name"] = transformedName
 		}
 
+		transformedVersion, err := expandDataLossPreventionInspectTemplateInspectConfigInfoTypesVersion(original["version"], d, config)
+		if err != nil {
+			return nil, err
+		} else if val := reflect.ValueOf(transformedVersion); val.IsValid() && !isEmptyValue(val) {
+			transformed["version"] = transformedVersion
+		}
+
 		req = append(req, transformed)
 	}
 	return req, nil
 }
 
 func expandDataLossPreventionInspectTemplateInspectConfigInfoTypesName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataLossPreventionInspectTemplateInspectConfigInfoTypesVersion(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
