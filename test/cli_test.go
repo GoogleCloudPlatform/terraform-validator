@@ -97,6 +97,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_compute_snapshot"},
 		{name: "example_compute_ssl_policy"},
 		{name: "example_compute_subnetwork"},
+		{name: "example_compute_target_ssl_proxy"},
 		{name: "example_container_cluster"},
 		{name: "example_dns_managed_zone"},
 		{name: "example_dns_policy"},
