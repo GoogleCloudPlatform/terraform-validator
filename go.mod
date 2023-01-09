@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.14.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230109175204-5b512597b568
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230109203826-0f9e1ef5a7e2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
