@@ -108,6 +108,12 @@ func GetDataprocMetastoreServiceApiObject(d TerraformResourceData, config *Confi
 	} else if v, ok := d.GetOkExists("release_channel"); !isEmptyValue(reflect.ValueOf(releaseChannelProp)) && (ok || !reflect.DeepEqual(v, releaseChannelProp)) {
 		obj["releaseChannel"] = releaseChannelProp
 	}
+	telemetryConfigProp, err := expandDataprocMetastoreServiceTelemetryConfig(d.Get("telemetry_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("telemetry_config"); !isEmptyValue(reflect.ValueOf(telemetryConfigProp)) && (ok || !reflect.DeepEqual(v, telemetryConfigProp)) {
+		obj["telemetryConfig"] = telemetryConfigProp
+	}
 
 	return obj, nil
 }
@@ -365,5 +371,28 @@ func expandDataprocMetastoreServiceDatabaseType(v interface{}, d TerraformResour
 }
 
 func expandDataprocMetastoreServiceReleaseChannel(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDataprocMetastoreServiceTelemetryConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedLogFormat, err := expandDataprocMetastoreServiceTelemetryConfigLogFormat(original["log_format"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedLogFormat); val.IsValid() && !isEmptyValue(val) {
+		transformed["logFormat"] = transformedLogFormat
+	}
+
+	return transformed, nil
+}
+
+func expandDataprocMetastoreServiceTelemetryConfigLogFormat(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
