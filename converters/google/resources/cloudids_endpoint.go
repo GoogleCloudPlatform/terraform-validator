@@ -72,6 +72,12 @@ func GetCloudIdsEndpointApiObject(d TerraformResourceData, config *Config) (map[
 	} else if v, ok := d.GetOkExists("severity"); !isEmptyValue(reflect.ValueOf(severityProp)) && (ok || !reflect.DeepEqual(v, severityProp)) {
 		obj["severity"] = severityProp
 	}
+	threatExceptionsProp, err := expandCloudIdsEndpointThreatExceptions(d.Get("threat_exceptions"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("threat_exceptions"); !isEmptyValue(reflect.ValueOf(threatExceptionsProp)) && (ok || !reflect.DeepEqual(v, threatExceptionsProp)) {
+		obj["threatExceptions"] = threatExceptionsProp
+	}
 
 	return obj, nil
 }
@@ -89,5 +95,9 @@ func expandCloudIdsEndpointDescription(v interface{}, d TerraformResourceData, c
 }
 
 func expandCloudIdsEndpointSeverity(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudIdsEndpointThreatExceptions(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
