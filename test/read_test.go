@@ -78,6 +78,7 @@ func TestReadPlannedAssetsCoverage(t *testing.T) {
 		{name: "example_kms_key_ring_iam_binding"},
 		{name: "example_kms_key_ring_iam_member"},
 		{name: "example_kms_key_ring_iam_policy"},
+		{name: "example_logging_metric"},
 		{name: "example_monitoring_notification_channel"},
 		{name: "example_organization_iam_binding"},
 		{name: "example_organization_iam_custom_role"},
