@@ -97,10 +97,51 @@ func expandVertexAIFeaturestoreOnlineServingConfig(v interface{}, d TerraformRes
 		transformed["fixedNodeCount"] = transformedFixedNodeCount
 	}
 
+	transformedScaling, err := expandVertexAIFeaturestoreOnlineServingConfigScaling(original["scaling"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedScaling); val.IsValid() && !isEmptyValue(val) {
+		transformed["scaling"] = transformedScaling
+	}
+
 	return transformed, nil
 }
 
 func expandVertexAIFeaturestoreOnlineServingConfigFixedNodeCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreOnlineServingConfigScaling(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedMinNodeCount, err := expandVertexAIFeaturestoreOnlineServingConfigScalingMinNodeCount(original["min_node_count"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMinNodeCount); val.IsValid() && !isEmptyValue(val) {
+		transformed["minNodeCount"] = transformedMinNodeCount
+	}
+
+	transformedMaxNodeCount, err := expandVertexAIFeaturestoreOnlineServingConfigScalingMaxNodeCount(original["max_node_count"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMaxNodeCount); val.IsValid() && !isEmptyValue(val) {
+		transformed["maxNodeCount"] = transformedMaxNodeCount
+	}
+
+	return transformed, nil
+}
+
+func expandVertexAIFeaturestoreOnlineServingConfigScalingMinNodeCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandVertexAIFeaturestoreOnlineServingConfigScalingMaxNodeCount(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
