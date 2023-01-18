@@ -290,6 +290,13 @@ func expandCloudBuildTriggerGitFileSource(v interface{}, d TerraformResourceData
 		transformed["revision"] = transformedRevision
 	}
 
+	transformedGithubEnterpriseConfig, err := expandCloudBuildTriggerGitFileSourceGithubEnterpriseConfig(original["github_enterprise_config"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedGithubEnterpriseConfig); val.IsValid() && !isEmptyValue(val) {
+		transformed["githubEnterpriseConfig"] = transformedGithubEnterpriseConfig
+	}
+
 	return transformed, nil
 }
 
@@ -306,6 +313,10 @@ func expandCloudBuildTriggerGitFileSourceRepoType(v interface{}, d TerraformReso
 }
 
 func expandCloudBuildTriggerGitFileSourceRevision(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerGitFileSourceGithubEnterpriseConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -339,6 +350,13 @@ func expandCloudBuildTriggerSourceToBuild(v interface{}, d TerraformResourceData
 		transformed["repoType"] = transformedRepoType
 	}
 
+	transformedGithubEnterpriseConfig, err := expandCloudBuildTriggerSourceToBuildGithubEnterpriseConfig(original["github_enterprise_config"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedGithubEnterpriseConfig); val.IsValid() && !isEmptyValue(val) {
+		transformed["githubEnterpriseConfig"] = transformedGithubEnterpriseConfig
+	}
+
 	return transformed, nil
 }
 
@@ -351,6 +369,10 @@ func expandCloudBuildTriggerSourceToBuildRef(v interface{}, d TerraformResourceD
 }
 
 func expandCloudBuildTriggerSourceToBuildRepoType(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerSourceToBuildGithubEnterpriseConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
