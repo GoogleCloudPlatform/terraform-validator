@@ -60,6 +60,12 @@ func GetCloudRunV2ServiceApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("labels"); !isEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
 		obj["labels"] = labelsProp
 	}
+	annotationsProp, err := expandCloudRunV2ServiceAnnotations(d.Get("annotations"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("annotations"); !isEmptyValue(reflect.ValueOf(annotationsProp)) && (ok || !reflect.DeepEqual(v, annotationsProp)) {
+		obj["annotations"] = annotationsProp
+	}
 	clientProp, err := expandCloudRunV2ServiceClient(d.Get("client"), d, config)
 	if err != nil {
 		return nil, err
@@ -111,6 +117,17 @@ func expandCloudRunV2ServiceDescription(v interface{}, d TerraformResourceData, 
 }
 
 func expandCloudRunV2ServiceLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+	if v == nil {
+		return map[string]string{}, nil
+	}
+	m := make(map[string]string)
+	for k, val := range v.(map[string]interface{}) {
+		m[k] = val.(string)
+	}
+	return m, nil
+}
+
+func expandCloudRunV2ServiceAnnotations(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
 	if v == nil {
 		return map[string]string{}, nil
 	}
@@ -194,6 +211,13 @@ func expandCloudRunV2ServiceTemplate(v interface{}, d TerraformResourceData, con
 		transformed["labels"] = transformedLabels
 	}
 
+	transformedAnnotations, err := expandCloudRunV2ServiceTemplateAnnotations(original["annotations"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedAnnotations); val.IsValid() && !isEmptyValue(val) {
+		transformed["annotations"] = transformedAnnotations
+	}
+
 	transformedScaling, err := expandCloudRunV2ServiceTemplateScaling(original["scaling"], d, config)
 	if err != nil {
 		return nil, err
@@ -265,6 +289,17 @@ func expandCloudRunV2ServiceTemplateRevision(v interface{}, d TerraformResourceD
 }
 
 func expandCloudRunV2ServiceTemplateLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
+	if v == nil {
+		return map[string]string{}, nil
+	}
+	m := make(map[string]string)
+	for k, val := range v.(map[string]interface{}) {
+		m[k] = val.(string)
+	}
+	return m, nil
+}
+
+func expandCloudRunV2ServiceTemplateAnnotations(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
 	if v == nil {
 		return map[string]string{}, nil
 	}
