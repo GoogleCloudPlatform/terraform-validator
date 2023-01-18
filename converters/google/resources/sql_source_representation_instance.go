@@ -115,6 +115,48 @@ func expandSQLSourceRepresentationInstanceOnPremisesConfiguration(v interface{},
 		transformed["port"] = transformedPort
 	}
 
+	transformedUsername, err := expandSQLSourceRepresentationInstanceOnPremisesConfigurationUsername(d.Get("username"), d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedUsername); val.IsValid() && !isEmptyValue(val) {
+		transformed["username"] = transformedUsername
+	}
+
+	transformedPassword, err := expandSQLSourceRepresentationInstanceOnPremisesConfigurationPassword(d.Get("password"), d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPassword); val.IsValid() && !isEmptyValue(val) {
+		transformed["password"] = transformedPassword
+	}
+
+	transformedDumpFilePath, err := expandSQLSourceRepresentationInstanceOnPremisesConfigurationDumpFilePath(d.Get("dump_file_path"), d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedDumpFilePath); val.IsValid() && !isEmptyValue(val) {
+		transformed["dumpFilePath"] = transformedDumpFilePath
+	}
+
+	transformedCaCertificate, err := expandSQLSourceRepresentationInstanceOnPremisesConfigurationCaCertificate(d.Get("ca_certificate"), d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCaCertificate); val.IsValid() && !isEmptyValue(val) {
+		transformed["caCertificate"] = transformedCaCertificate
+	}
+
+	transformedClientCertificate, err := expandSQLSourceRepresentationInstanceOnPremisesConfigurationClientCertificate(d.Get("client_certificate"), d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedClientCertificate); val.IsValid() && !isEmptyValue(val) {
+		transformed["clientCertificate"] = transformedClientCertificate
+	}
+
+	transformedClientKey, err := expandSQLSourceRepresentationInstanceOnPremisesConfigurationClientKey(d.Get("client_key"), d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedClientKey); val.IsValid() && !isEmptyValue(val) {
+		transformed["clientKey"] = transformedClientKey
+	}
+
 	return transformed, nil
 }
 
@@ -123,5 +165,29 @@ func expandSQLSourceRepresentationInstanceOnPremisesConfigurationHost(v interfac
 }
 
 func expandSQLSourceRepresentationInstanceOnPremisesConfigurationPort(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSQLSourceRepresentationInstanceOnPremisesConfigurationUsername(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSQLSourceRepresentationInstanceOnPremisesConfigurationPassword(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSQLSourceRepresentationInstanceOnPremisesConfigurationDumpFilePath(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSQLSourceRepresentationInstanceOnPremisesConfigurationCaCertificate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSQLSourceRepresentationInstanceOnPremisesConfigurationClientCertificate(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandSQLSourceRepresentationInstanceOnPremisesConfigurationClientKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
