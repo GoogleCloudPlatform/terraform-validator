@@ -121,6 +121,12 @@ func GetDatastreamStreamApiObject(d TerraformResourceData, config *Config) (map[
 	} else if v, ok := d.GetOkExists("backfill_none"); ok || !reflect.DeepEqual(v, backfillNoneProp) {
 		obj["backfillNone"] = backfillNoneProp
 	}
+	customerManagedEncryptionKeyProp, err := expandDatastreamStreamCustomerManagedEncryptionKey(d.Get("customer_managed_encryption_key"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("customer_managed_encryption_key"); !isEmptyValue(reflect.ValueOf(customerManagedEncryptionKeyProp)) && (ok || !reflect.DeepEqual(v, customerManagedEncryptionKeyProp)) {
+		obj["customerManagedEncryptionKey"] = customerManagedEncryptionKeyProp
+	}
 
 	return resourceDatastreamStreamEncoder(d, config, obj)
 }
@@ -820,6 +826,13 @@ func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSourceHiera
 		transformed["datasetIdPrefix"] = transformedDatasetIdPrefix
 	}
 
+	transformedKmsKeyName, err := expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSourceHierarchyDatasetsDatasetTemplateKmsKeyName(original["kms_key_name"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedKmsKeyName); val.IsValid() && !isEmptyValue(val) {
+		transformed["kmsKeyName"] = transformedKmsKeyName
+	}
+
 	return transformed, nil
 }
 
@@ -828,6 +841,10 @@ func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSourceHiera
 }
 
 func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSourceHierarchyDatasetsDatasetTemplateDatasetIdPrefix(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSourceHierarchyDatasetsDatasetTemplateKmsKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
@@ -1045,4 +1062,8 @@ func expandDatastreamStreamBackfillNone(v interface{}, d TerraformResourceData, 
 	transformed := make(map[string]interface{})
 
 	return transformed, nil
+}
+
+func expandDatastreamStreamCustomerManagedEncryptionKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
