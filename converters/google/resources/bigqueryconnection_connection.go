@@ -305,6 +305,13 @@ func expandBigqueryConnectionConnectionAzure(v interface{}, d TerraformResourceD
 		transformed["customerTenantId"] = transformedCustomerTenantId
 	}
 
+	transformedFederatedApplicationClientId, err := expandBigqueryConnectionConnectionAzureFederatedApplicationClientId(original["federated_application_client_id"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedFederatedApplicationClientId); val.IsValid() && !isEmptyValue(val) {
+		transformed["federatedApplicationClientId"] = transformedFederatedApplicationClientId
+	}
+
 	transformedRedirectUri, err := expandBigqueryConnectionConnectionAzureRedirectUri(original["redirect_uri"], d, config)
 	if err != nil {
 		return nil, err
@@ -335,6 +342,10 @@ func expandBigqueryConnectionConnectionAzureObjectId(v interface{}, d TerraformR
 }
 
 func expandBigqueryConnectionConnectionAzureCustomerTenantId(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryConnectionConnectionAzureFederatedApplicationClientId(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
