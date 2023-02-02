@@ -51,6 +51,12 @@ func GetVertexAIFeaturestoreEntitytypeCaiObject(d TerraformResourceData, config 
 
 func GetVertexAIFeaturestoreEntitytypeApiObject(d TerraformResourceData, config *Config) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
+	descriptionProp, err := expandVertexAIFeaturestoreEntitytypeDescription(d.Get("description"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("description"); !isEmptyValue(reflect.ValueOf(descriptionProp)) && (ok || !reflect.DeepEqual(v, descriptionProp)) {
+		obj["description"] = descriptionProp
+	}
 	labelsProp, err := expandVertexAIFeaturestoreEntitytypeLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return nil, err
@@ -76,6 +82,10 @@ func resourceVertexAIFeaturestoreEntitytypeEncoder(d TerraformResourceData, meta
 	}
 
 	return obj, nil
+}
+
+func expandVertexAIFeaturestoreEntitytypeDescription(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
 }
 
 func expandVertexAIFeaturestoreEntitytypeLabels(v interface{}, d TerraformResourceData, config *Config) (map[string]string, error) {
