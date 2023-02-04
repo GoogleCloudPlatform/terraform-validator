@@ -3,6 +3,8 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,8 +14,6 @@ import (
 	"testing"
 	"text/template"
 	"time"
-
-	"github.com/GoogleCloudPlatform/terraform-validator/converters/google"
 )
 
 var (
