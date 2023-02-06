@@ -16,18 +16,22 @@
 
 timeout: 3600s
 steps:
-- id: test-integration
-  name: 'gcr.io/graphite-docker-images/terraform-validator-tester-integration'
-  entrypoint: /bin/sh
-  args: ['-c', 'mv /terraform/$_TERRAFORM_VERSION /bin/terraform && /usr/bin/make build && /usr/bin/make test-integration']
-  env:
-    - TEST_PROJECT=$_TEST_PROJECT
-    - TEST_FOLDER_ID=$_TEST_FOLDER
-    - TEST_ANCESTRY=$_TEST_ANCESTRY
-    - TEST_ORG_ID=$_TEST_ORG
-    - TERRAFORM_VERSION=$_TERRAFORM_VERSION
+  - id: test-integration
+    name: "gcr.io/graphite-docker-images/terraform-validator-tester-integration"
+    entrypoint: /bin/sh
+    args:
+      [
+        "-c",
+        "env && mv /terraform/$_TERRAFORM_VERSION /bin/terraform && /usr/bin/make build && /usr/bin/make test-integration",
+      ]
+    env:
+      - TEST_PROJECT=$_TEST_PROJECT
+      - TEST_FOLDER_ID=$_TEST_FOLDER
+      - TEST_ANCESTRY=$_TEST_ANCESTRY
+      - TEST_ORG_ID=$_TEST_ORG
+      - TERRAFORM_VERSION=$_TERRAFORM_VERSION
 tags:
-- 'ci'
-- 'integration'
+  - "ci"
+  - "integration"
 options:
-  machineType: 'N1_HIGHCPU_8'
+  machineType: "N1_HIGHCPU_8"
