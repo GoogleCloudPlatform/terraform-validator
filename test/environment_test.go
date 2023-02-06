@@ -43,6 +43,7 @@ func getTestProjectFromEnv() string {
 
 // testAccPreCheck ensures at least one of the credentials env variables is set.
 func getTestCredsFromEnv() string {
+	log.Printf("entering getTestCredsFromEnv")
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("cannot get current directory: %v", err)
@@ -52,13 +53,14 @@ func getTestCredsFromEnv() string {
 	if credentials != "" {
 		// Make credentials path relative to repo root rather than
 		// test/ dir if it is a relative path.
+		log.Printf("credentials = %v", credentials)
 		if !filepath.IsAbs(credentials) {
 			credentials = filepath.Join(cwd, "..", credentials)
 		}
 	} else {
 		log.Printf("missing env var TEST_CREDENTIALS, will try to use Application Default Credentials")
 	}
-
+	log.Printf("returning credentials = %v", credentials)
 	return credentials
 }
 
