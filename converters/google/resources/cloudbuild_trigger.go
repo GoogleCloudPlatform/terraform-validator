@@ -182,6 +182,12 @@ func GetCloudBuildTriggerApiObject(d TerraformResourceData, config *Config) (map
 	} else if v, ok := d.GetOkExists("github"); !isEmptyValue(reflect.ValueOf(githubProp)) && (ok || !reflect.DeepEqual(v, githubProp)) {
 		obj["github"] = githubProp
 	}
+	bitbucketServerTriggerConfigProp, err := expandCloudBuildTriggerBitbucketServerTriggerConfig(d.Get("bitbucket_server_trigger_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("bitbucket_server_trigger_config"); !isEmptyValue(reflect.ValueOf(bitbucketServerTriggerConfigProp)) && (ok || !reflect.DeepEqual(v, bitbucketServerTriggerConfigProp)) {
+		obj["bitbucketServerTriggerConfig"] = bitbucketServerTriggerConfigProp
+	}
 	pubsubConfigProp, err := expandCloudBuildTriggerPubsubConfig(d.Get("pubsub_config"), d, config)
 	if err != nil {
 		return nil, err
@@ -608,6 +614,155 @@ func expandCloudBuildTriggerGithubPushBranch(v interface{}, d TerraformResourceD
 }
 
 func expandCloudBuildTriggerGithubPushTag(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedRepoSlug, err := expandCloudBuildTriggerBitbucketServerTriggerConfigRepoSlug(original["repo_slug"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedRepoSlug); val.IsValid() && !isEmptyValue(val) {
+		transformed["repoSlug"] = transformedRepoSlug
+	}
+
+	transformedProjectKey, err := expandCloudBuildTriggerBitbucketServerTriggerConfigProjectKey(original["project_key"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedProjectKey); val.IsValid() && !isEmptyValue(val) {
+		transformed["projectKey"] = transformedProjectKey
+	}
+
+	transformedBitbucketServerConfigResource, err := expandCloudBuildTriggerBitbucketServerTriggerConfigBitbucketServerConfigResource(original["bitbucket_server_config_resource"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedBitbucketServerConfigResource); val.IsValid() && !isEmptyValue(val) {
+		transformed["bitbucketServerConfigResource"] = transformedBitbucketServerConfigResource
+	}
+
+	transformedPullRequest, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequest(original["pull_request"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPullRequest); val.IsValid() && !isEmptyValue(val) {
+		transformed["pullRequest"] = transformedPullRequest
+	}
+
+	transformedPush, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPush(original["push"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPush); val.IsValid() && !isEmptyValue(val) {
+		transformed["push"] = transformedPush
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigRepoSlug(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigProjectKey(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigBitbucketServerConfigResource(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequest(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedBranch, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequestBranch(original["branch"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedBranch); val.IsValid() && !isEmptyValue(val) {
+		transformed["branch"] = transformedBranch
+	}
+
+	transformedCommentControl, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequestCommentControl(original["comment_control"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCommentControl); val.IsValid() && !isEmptyValue(val) {
+		transformed["commentControl"] = transformedCommentControl
+	}
+
+	transformedInvertRegex, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequestInvertRegex(original["invert_regex"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedInvertRegex); val.IsValid() && !isEmptyValue(val) {
+		transformed["invertRegex"] = transformedInvertRegex
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequestBranch(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequestCommentControl(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPullRequestInvertRegex(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPush(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedInvertRegex, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPushInvertRegex(original["invert_regex"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedInvertRegex); val.IsValid() && !isEmptyValue(val) {
+		transformed["invertRegex"] = transformedInvertRegex
+	}
+
+	transformedBranch, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPushBranch(original["branch"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedBranch); val.IsValid() && !isEmptyValue(val) {
+		transformed["branch"] = transformedBranch
+	}
+
+	transformedTag, err := expandCloudBuildTriggerBitbucketServerTriggerConfigPushTag(original["tag"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedTag); val.IsValid() && !isEmptyValue(val) {
+		transformed["tag"] = transformedTag
+	}
+
+	return transformed, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPushInvertRegex(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPushBranch(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudBuildTriggerBitbucketServerTriggerConfigPushTag(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
