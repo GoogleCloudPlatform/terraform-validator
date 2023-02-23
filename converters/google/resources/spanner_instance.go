@@ -59,6 +59,22 @@ func deleteSpannerBackups(d *schema.ResourceData, config *Config, res map[string
 	return nil
 }
 
+func resourceSpannerInstanceVirtualUpdate(d *schema.ResourceData, resourceSchema map[string]*schema.Schema) bool {
+	// force_destroy is the only virtual field
+	if d.HasChange("force_destroy") {
+		for field := range resourceSchema {
+			if field == "force_destroy" {
+				continue
+			}
+			if d.HasChange(field) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
 const SpannerInstanceAssetType string = "spanner.googleapis.com/Instance"
 
 func resourceConverterSpannerInstance() ResourceConverter {
