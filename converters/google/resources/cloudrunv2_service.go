@@ -761,6 +761,13 @@ func expandCloudRunV2ServiceTemplateContainersLivenessProbe(v interface{}, d Ter
 		transformed["tcpSocket"] = transformedTcpSocket
 	}
 
+	transformedGrpc, err := expandCloudRunV2ServiceTemplateContainersLivenessProbeGrpc(original["grpc"], d, config)
+	if err != nil {
+		return nil, err
+	} else {
+		transformed["grpc"] = transformedGrpc
+	}
+
 	return transformed, nil
 }
 
@@ -880,6 +887,45 @@ func expandCloudRunV2ServiceTemplateContainersLivenessProbeTcpSocketPort(v inter
 	return v, nil
 }
 
+func expandCloudRunV2ServiceTemplateContainersLivenessProbeGrpc(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil, nil
+	}
+
+	if l[0] == nil {
+		transformed := make(map[string]interface{})
+		return transformed, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPort, err := expandCloudRunV2ServiceTemplateContainersLivenessProbeGrpcPort(original["port"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPort); val.IsValid() && !isEmptyValue(val) {
+		transformed["port"] = transformedPort
+	}
+
+	transformedService, err := expandCloudRunV2ServiceTemplateContainersLivenessProbeGrpcService(original["service"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedService); val.IsValid() && !isEmptyValue(val) {
+		transformed["service"] = transformedService
+	}
+
+	return transformed, nil
+}
+
+func expandCloudRunV2ServiceTemplateContainersLivenessProbeGrpcPort(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunV2ServiceTemplateContainersLivenessProbeGrpcService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
 func expandCloudRunV2ServiceTemplateContainersStartupProbe(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
@@ -929,6 +975,13 @@ func expandCloudRunV2ServiceTemplateContainersStartupProbe(v interface{}, d Terr
 		return nil, err
 	} else {
 		transformed["tcpSocket"] = transformedTcpSocket
+	}
+
+	transformedGrpc, err := expandCloudRunV2ServiceTemplateContainersStartupProbeGrpc(original["grpc"], d, config)
+	if err != nil {
+		return nil, err
+	} else {
+		transformed["grpc"] = transformedGrpc
 	}
 
 	return transformed, nil
@@ -1047,6 +1100,45 @@ func expandCloudRunV2ServiceTemplateContainersStartupProbeTcpSocket(v interface{
 }
 
 func expandCloudRunV2ServiceTemplateContainersStartupProbeTcpSocketPort(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunV2ServiceTemplateContainersStartupProbeGrpc(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil, nil
+	}
+
+	if l[0] == nil {
+		transformed := make(map[string]interface{})
+		return transformed, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedPort, err := expandCloudRunV2ServiceTemplateContainersStartupProbeGrpcPort(original["port"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedPort); val.IsValid() && !isEmptyValue(val) {
+		transformed["port"] = transformedPort
+	}
+
+	transformedService, err := expandCloudRunV2ServiceTemplateContainersStartupProbeGrpcService(original["service"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedService); val.IsValid() && !isEmptyValue(val) {
+		transformed["service"] = transformedService
+	}
+
+	return transformed, nil
+}
+
+func expandCloudRunV2ServiceTemplateContainersStartupProbeGrpcPort(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandCloudRunV2ServiceTemplateContainersStartupProbeGrpcService(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
