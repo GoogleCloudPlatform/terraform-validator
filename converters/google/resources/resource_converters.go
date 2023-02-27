@@ -235,7 +235,6 @@ func ResourceConverters() map[string][]ResourceConverter {
 		"google_organization_iam_member":      {resourceConverterOrganizationIamMember()},
 		"google_organization_policy":          {resourceConverterOrganizationPolicy()},
 		"google_project_organization_policy":  {resourceConverterProjectOrgPolicy()},
-		"google_folder":                       {resourceConverterFolder()},
 		"google_folder_iam_policy":            {resourceConverterFolderIamPolicy()},
 		"google_folder_iam_binding":           {resourceConverterFolderIamBinding()},
 		"google_folder_iam_member":            {resourceConverterFolderIamMember()},
