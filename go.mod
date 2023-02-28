@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-json v0.14.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230227225022-de462a60cc2b
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230227234555-a7eb98948639
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
@@ -50,7 +50,7 @@ require (
 	cloud.google.com/go/longrunning v0.3.0 // indirect
 	cloud.google.com/go/osconfig v1.10.0 // indirect
 	cloud.google.com/go/storage v1.27.0 // indirect
-	github.com/GoogleCloudPlatform/declarative-resource-client-library v1.31.0 // indirect
+	github.com/GoogleCloudPlatform/declarative-resource-client-library v1.34.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
