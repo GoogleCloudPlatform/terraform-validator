@@ -72,8 +72,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/GoogleCloudPlatform/config-validator v0.0.0-20221208150626-1d72524ea1b8 h1:v1UGEAOxBKvQlhIoCeIlrw+cSb/apRiLE20qWM0Eosc=
 github.com/GoogleCloudPlatform/config-validator v0.0.0-20221208150626-1d72524ea1b8/go.mod h1:qzA38wDkwaDzczUTpxCy71SMSuUWM//5LbWmoz6qKNA=
-github.com/GoogleCloudPlatform/declarative-resource-client-library v1.31.0 h1:4Orb9zAllU52CUtZfKu9OWYyDK6neeBt2ye6NKqAfOg=
-github.com/GoogleCloudPlatform/declarative-resource-client-library v1.31.0/go.mod h1:pL2Qt5HT+x6xrTd806oMiM3awW6kNIXB/iiuClz6m6k=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v1.34.0 h1:o7t+hPFv+Ax5O2vxzIH7dEtvlWA7JJOlOd7mWFvMa6s=
+github.com/GoogleCloudPlatform/declarative-resource-client-library v1.34.0/go.mod h1:pL2Qt5HT+x6xrTd806oMiM3awW6kNIXB/iiuClz6m6k=
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/Microsoft/go-winio v0.4.16 h1:FtSW/jqD+l4ba5iPBj9CODVtgfYAD8w2wS923g/cFDk=
@@ -514,8 +514,8 @@ github.com/hashicorp/terraform-plugin-log v0.7.0 h1:SDxJUyT8TwN4l5b5/VkiTIaQgY6R
 github.com/hashicorp/terraform-plugin-log v0.7.0/go.mod h1:p4R1jWBXRTvL4odmEkFfDdhUjHf9zcs/BCoNHAc7IK4=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0 h1:FtCLTiTcykdsURXPt/ku7fYXm3y19nbzbZcUxHx9RbI=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0/go.mod h1:80wf5oad1tW+oLnbXS4UTYmDCrl7BuN1Q+IA91X1a4Y=
-github.com/hashicorp/terraform-provider-google v1.20.1-0.20230227225022-de462a60cc2b h1:PumHqPuOdvKIfXkiDFfZBSH13qKtHjEongWJ1qhMO30=
-github.com/hashicorp/terraform-provider-google v1.20.1-0.20230227225022-de462a60cc2b/go.mod h1:pyZhyCZDq3hw8CosCtfG1e0gpLacdJyvqLbooxxTbns=
+github.com/hashicorp/terraform-provider-google v1.20.1-0.20230227234555-a7eb98948639 h1:0tXmBCeK+Mzg6Dd02J3nEHkgRN7F5UXLlueJEDIy/tc=
+github.com/hashicorp/terraform-provider-google v1.20.1-0.20230227234555-a7eb98948639/go.mod h1:Me09EooskxD1HNA2k+14YdLghnF8lt2HOda03gBkNpc=
 github.com/hashicorp/terraform-registry-address v0.1.0 h1:W6JkV9wbum+m516rCl5/NjKxCyTVaaUBbzYcMzBDO3U=
 github.com/hashicorp/terraform-registry-address v0.1.0/go.mod h1:EnyO2jYO6j29DTHbJcm00E5nQTFeTtyZH3H5ycydQ5A=
 github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 h1:HKLsbzeOsfXmKNpr3GiT18XAblV0BjCbzL8KQAMZGa0=
