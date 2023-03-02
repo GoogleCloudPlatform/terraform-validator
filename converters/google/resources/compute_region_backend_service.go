@@ -920,7 +920,7 @@ func expandComputeRegionBackendServiceFailoverPolicy(v interface{}, d TerraformR
 	transformedDisableConnectionDrainOnFailover, err := expandComputeRegionBackendServiceFailoverPolicyDisableConnectionDrainOnFailover(original["disable_connection_drain_on_failover"], d, config)
 	if err != nil {
 		return nil, err
-	} else {
+	} else if val := reflect.ValueOf(transformedDisableConnectionDrainOnFailover); val.IsValid() && !isEmptyValue(val) {
 		transformed["disableConnectionDrainOnFailover"] = transformedDisableConnectionDrainOnFailover
 	}
 
