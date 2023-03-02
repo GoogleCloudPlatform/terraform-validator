@@ -400,7 +400,7 @@ func resourceComputeDiskEncoder(d TerraformResourceData, meta interface{}, obj m
 		return nil, err
 	}
 
-	userAgent, err := generateUserAgentString(d, config.userAgent)
+	userAgent, err := generateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return nil, err
 	}

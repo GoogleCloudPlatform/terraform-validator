@@ -168,7 +168,7 @@ func expandComputeRouteNextHopInstance(v interface{}, d TerraformResourceData, c
 		return nil, err
 	}
 
-	userAgent, err := generateUserAgentString(d, config.userAgent)
+	userAgent, err := generateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return nil, err
 	}
