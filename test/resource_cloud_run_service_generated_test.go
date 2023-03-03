@@ -42,7 +42,7 @@ func testAccCloudRunService_cloudRunServiceBasicExample_shared(t *testing.T, tes
 
 	t.Parallel()
 	context := map[string]interface{}{
-		"project":       getTestProjectFromEnv(),
+		"project":       GetTestProjectFromEnv(),
 		"random_suffix": "meepmerp", // true randomization isn't needed for validator
 	}
 
@@ -199,7 +199,7 @@ func testAccCloudRunService_cloudRunServiceMultipleEnvironmentVariablesExample_s
 
 	t.Parallel()
 	context := map[string]interface{}{
-		"project":       getTestProjectFromEnv(),
+		"project":       GetTestProjectFromEnv(),
 		"random_suffix": "meepmerp", // true randomization isn't needed for validator
 	}
 

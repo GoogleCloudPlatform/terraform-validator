@@ -42,7 +42,7 @@ func testAccCloudRunDomainMapping_cloudRunDomainMappingBasicExample_shared(t *te
 
 	t.Parallel()
 	context := map[string]interface{}{
-		"namespace":     getTestProjectFromEnv(),
+		"namespace":     GetTestProjectFromEnv(),
 		"random_suffix": "meepmerp", // true randomization isn't needed for validator
 	}
 
