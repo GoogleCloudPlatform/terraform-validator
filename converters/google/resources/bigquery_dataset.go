@@ -119,7 +119,7 @@ func GetBigQueryDatasetApiObject(d TerraformResourceData, config *Config) (map[s
 	friendlyNameProp, err := expandBigQueryDatasetFriendlyName(d.Get("friendly_name"), d, config)
 	if err != nil {
 		return nil, err
-	} else if v, ok := d.GetOkExists("friendly_name"); !isEmptyValue(reflect.ValueOf(friendlyNameProp)) && (ok || !reflect.DeepEqual(v, friendlyNameProp)) {
+	} else if v, ok := d.GetOkExists("friendly_name"); ok || !reflect.DeepEqual(v, friendlyNameProp) {
 		obj["friendlyName"] = friendlyNameProp
 	}
 	labelsProp, err := expandBigQueryDatasetLabels(d.Get("labels"), d, config)
