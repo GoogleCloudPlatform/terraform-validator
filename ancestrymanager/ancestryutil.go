@@ -79,6 +79,10 @@ func getProjectFromSchema(projectSchemaField string, d resources.TerraformResour
 	if ok && projectSchemaField != "" {
 		return res.(string), nil
 	}
+	res, ok = d.GetOk("parent")
+	if ok && strings.HasPrefix(res.(string), "projects/"){
+		return res.(string), nil
+	}
 	if config.Project != "" {
 		return config.Project, nil
 	}
@@ -89,6 +93,10 @@ func getProjectFromSchema(projectSchemaField string, d resources.TerraformResour
 func getOrganizationFromResource(tfData resources.TerraformResourceData) (string, bool) {
 	orgID, ok := tfData.GetOk("org_id")
 	if ok {
+		return orgID.(string), ok
+	}
+	orgID, ok = tfData.GetOk("parent")
+	if ok && strings.HasPrefix(orgID.(string), "organizations/"){
 		return orgID.(string), ok
 	}
 	return "", false
@@ -102,6 +110,10 @@ func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool
 	}
 	folderID, ok = tfData.GetOk("folder")
 	if ok {
+		return folderID.(string), ok
+	}
+	folderID, ok = tfData.GetOk("parent")
+	if ok && strings.HasPrefix(folderID.(string), "folders/"){
 		return folderID.(string), ok
 	}
 	return "", false
