@@ -31,11 +31,11 @@ type Asset struct {
 	// The name, in a peculiar format: `\\<api>.googleapis.com/<self_link>`
 	Name string `json:"name"`
 	// The type name in `google.<api>.<resourcename>` format.
-	Type      string         `json:"asset_type"`
-	Resource  *AssetResource `json:"resource,omitempty"`
-	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
-	OrgPolicy []*OrgPolicy   `json:"org_policy,omitempty"`
-	CustomOrgPolicy []*CustomOrgPolicy `json:"v2_org_policies,omitempty"`
+	Type            string             `json:"asset_type"`
+	Resource        *AssetResource     `json:"resource,omitempty"`
+	IAMPolicy       *IAMPolicy         `json:"iam_policy,omitempty"`
+	OrgPolicy       []*OrgPolicy       `json:"org_policy,omitempty"`
+	OrgPolicyPolicy []*OrgPolicyPolicy `json:"v2_org_policies,omitempty"`
 }
 
 // AssetResource is the Asset's Resource field.
@@ -71,13 +71,13 @@ type OrgPolicy struct {
 	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
 }
 
-// CustomOrgPolicy is the represtation of V2OrgPolicies
-type CustomOrgPolicy struct {
+// OrgPolicyPolicy is the represtation of V2OrgPolicies
+type OrgPolicyPolicy struct {
 	Name string `json:"name"`
 	Spec *Spec  `json:"spec,omitempty"`
 }
 
-// Spec is the representation of Spec for Custom Org Policy
+// Spec is the representation of Spec for V2OrgPolicy
 type Spec struct {
 	Etag              string        `json:"etag,omitempty"`
 	UpdateTime        *Timestamp    `json:"update_time,omitempty"`
@@ -105,7 +105,6 @@ type Expr struct {
 	Description string `json:"description,omitempty"`
 	Location    string `json:"location,omitempty"`
 }
-
 
 type Timestamp struct {
 	Seconds int64 `json:"seconds,omitempty"`
