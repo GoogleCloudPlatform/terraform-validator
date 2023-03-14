@@ -44,7 +44,7 @@ type Asset struct {
 	Resource        *AssetResource     `json:"resource,omitempty"`
 	IAMPolicy       *IAMPolicy         `json:"iam_policy,omitempty"`
 	OrgPolicy       []*OrgPolicy       `json:"org_policy,omitempty"`
-	CustomOrgPolicy []*CustomOrgPolicy `json:"v2_org_policies,omitempty"`
+	OrgPolicyPolicy []*OrgPolicyPolicy `json:"v2_org_policies,omitempty"`
 
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
@@ -82,8 +82,8 @@ type OrgPolicy struct {
 	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
 }
 
-// CustomOrgPolicy is the represtation of V2OrgPolicies
-type CustomOrgPolicy struct {
+// OrgPolicyPolicy is the represtation of V2OrgPolicies
+type OrgPolicyPolicy struct {
 	Name string `json:"name"`
 	Spec *Spec  `json:"spec,omitempty"`
 }
@@ -457,14 +457,14 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		}
 	}
 
-	var customOrgPolicy []*CustomOrgPolicy
-	if cai.CustomOrgPolicy != nil {
-		for _, c := range cai.CustomOrgPolicy {
+	var orgPolicyPolicy []*OrgPolicyPolicy
+	if cai.OrgPolicyPolicy != nil {
+		for _, o2 := range cai.OrgPolicyPolicy {
 			var spec *Spec
-			if c.Spec != nil {
+			if o2.Spec != nil {
 
 				var rules []*PolicyRule
-				if c.Spec.Rules != nil {
+				if o2.Spec.Rules != nil {
 					for _, rule := range c.Spec.Rules {
 						var values *StringValues
 						if rule.Values != nil {
@@ -495,20 +495,20 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 
 				fixedTime := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
 				spec = &Spec{
-					Etag: c.Spec.Etag,
+					Etag: o2.Spec.Etag,
 					UpdateTime: &Timestamp{
 						Seconds: int64(fixedTime.Unix()),
 						Nanos:   int64(fixedTime.UnixNano()),
 					},
 					Rules:             rules,
-					InheritFromParent: c.Spec.InheritFromParent,
-					Reset:             c.Spec.Reset,
+					InheritFromParent: o2.Spec.InheritFromParent,
+					Reset:             o2.Spec.Reset,
 				}
 
 			}
 
-			customOrgPolicy = append(customOrgPolicy, &CustomOrgPolicy{
-				Name: c.Name,
+			orgPolicyPolicy = append(orgPolicyPolicy, &OrgPolicyPolicy{
+				Name: o2.Name,
 				Spec: spec,
 			})
 		}
@@ -520,7 +520,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		Resource:        resource,
 		IAMPolicy:       policy,
 		OrgPolicy:       orgPolicy,
-		CustomOrgPolicy: customOrgPolicy,
+		OrgPolicyPolicy: orgPolicyPolicy,
 		converterAsset:  cai,
 		Ancestors:       ancestors,
 	}, nil
