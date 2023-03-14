@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-func resourceConverterCustomOrgPolicy() ResourceConverter {
+func resourceConverterOrgPolicyPolicy() ResourceConverter {
 	return ResourceConverter{
-		Convert:           GetCustomOrgPolicyCaiObject,
-		MergeCreateUpdate: MergeCustomOrgPolicy,
+		Convert:           GetOrgPolicyPolicyCaiObject,
+		MergeCreateUpdate: MergeOrgPolicyPolicy,
 	}
 }
 
-func GetCustomOrgPolicyCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
+func GetOrgPolicyPolicyCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
 
 	assetNamePattern, assetType, err := getAssetNameAndTypeFromParent(d.Get("parent").(string))
 	if err != nil {
@@ -24,11 +24,11 @@ func GetCustomOrgPolicyCaiObject(d TerraformResourceData, config *Config) ([]Ass
 		return []Asset{}, err
 	}
 
-	if obj, err := GetCustomOrgPolicyApiObject(d, config); err == nil {
+	if obj, err := GetOrgPolicyPolicyApiObject(d, config); err == nil {
 		return []Asset{{
 			Name:            name,
 			Type:            assetType,
-			CustomOrgPolicy: []*CustomOrgPolicy{&obj},
+			OrgPolicyPolicy: []*OrgPolicyPolicy{&obj},
 		}}, nil
 	} else {
 		return []Asset{}, err
@@ -36,19 +36,19 @@ func GetCustomOrgPolicyCaiObject(d TerraformResourceData, config *Config) ([]Ass
 
 }
 
-func GetCustomOrgPolicyApiObject(d TerraformResourceData, config *Config) (CustomOrgPolicy, error) {
-	spec, err := expandSpecCustomOrgPolicy(d.Get("spec").([]interface{}))
+func GetOrgPolicyPolicyApiObject(d TerraformResourceData, config *Config) (OrgPolicyPolicy, error) {
+	spec, err := expandSpecOrgPolicyPolicy(d.Get("spec").([]interface{}))
 	if err != nil {
-		return CustomOrgPolicy{}, err
+		return OrgPolicyPolicy{}, err
 	}
 
-	return CustomOrgPolicy{
+	return OrgPolicyPolicy{
 		Name: d.Get("name").(string),
 		Spec: spec,
 	}, nil
 }
 
-func MergeCustomOrgPolicy(existing, incoming Asset) Asset {
+func MergeOrgPolicyPolicy(existing, incoming Asset) Asset {
 	existing.Resource = incoming.Resource
 	return existing
 }
@@ -66,7 +66,7 @@ func getAssetNameAndTypeFromParent(parent string) (assetName string, assetType s
 	}
 }
 
-func expandSpecCustomOrgPolicy(configured []interface{}) (*Spec, error) {
+func expandSpecOrgPolicyPolicy(configured []interface{}) (*Spec, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
@@ -79,10 +79,10 @@ func expandSpecCustomOrgPolicy(configured []interface{}) (*Spec, error) {
 	}
 
 	return &Spec{
-		Etag:       specMap["etag"].(string),
-		Rules:      policyRules,
+		Etag:              specMap["etag"].(string),
+		Rules:             policyRules,
 		InheritFromParent: specMap["inherit_from_parent"].(bool),
-		Reset: specMap["reset"].(bool),
+		Reset:             specMap["reset"].(bool),
 	}, nil
 
 }
