@@ -395,6 +395,80 @@ func TestGetAncestors(t *testing.T) {
 			wantOnlineError:  true,
 			wantOfflineError: true,
 		},
+		{
+			name: "Org policy v2 on Project",
+			data: tfdata.NewFakeResourceData(
+				"google_org_policy_policy",
+				p.ResourcesMap["google_org_policy_policy"].Schema,
+				map[string]interface{}{
+					"parent": "projects/foo",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Project",
+			},
+			want:       []string{"projects/foo", "folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/folders/bar",
+		},
+		{
+			name: "Org policy v2 on Folder",
+			data: tfdata.NewFakeResourceData(
+				"google_org_policy_policy",
+				p.ResourcesMap["google_org_policy_policy"].Schema,
+				map[string]interface{}{
+					"parent": "folders/bar",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Folder",
+			},
+			want:       []string{"folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+		},
+		{
+			name: "Org policy v2 on Organization",
+			data: tfdata.NewFakeResourceData(
+				"google_org_policy_policy",
+				p.ResourcesMap["google_org_policy_policy"].Schema,
+				map[string]interface{}{
+					"parent": "organizations/qux",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Organization",
+			},
+			want: []string{"organizations/qux"},
+		},
+		{
+			name: "Google folder with organizations/ as {parent}",
+			data: tfdata.NewFakeResourceData(
+				"google_folder",
+				p.ResourcesMap["google_folder"].Schema,
+				map[string]interface{}{
+					"parent": "organizations/qux",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Folder",
+			},
+			want:       []string{"organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+		},
+		{
+			name: "Google folder with folders/ as {parent}",
+			data: tfdata.NewFakeResourceData(
+				"google_folder",
+				p.ResourcesMap["google_folder"].Schema,
+				map[string]interface{}{
+					"parent": "folders/bar",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Folder",
+			},
+			want:       []string{"folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+		},
 	}
 	for _, c := range cases {
 		for _, offline := range []bool{true, false} {
