@@ -100,7 +100,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_compute_target_https_proxy"},
 		{name: "example_compute_target_ssl_proxy"},
 		{name: "example_container_cluster"},
-		{name: "example_custom_org_policy"},
+		{name: "example_org_policy_policy"},
 		{name: "example_dns_managed_zone"},
 		{name: "example_dns_policy"},
 		{name: "example_filestore_instance"},
