@@ -73,7 +73,7 @@ type AssetResource struct {
 	Data                 map[string]interface{} `json:"data"`
 }
 
-// OrgPolicy is for managing organization policies.
+//OrgPolicy is for managing organization policies.
 type OrgPolicy struct {
 	Constraint     string          `json:"constraint,omitempty"`
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
@@ -465,7 +465,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 
 				var rules []*PolicyRule
 				if o2.Spec.Rules != nil {
-					for _, rule := range c.Spec.Rules {
+					for _, rule := range o2.Spec.Rules {
 						var values *StringValues
 						if rule.Values != nil {
 							values = &StringValues{
