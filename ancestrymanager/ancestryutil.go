@@ -80,7 +80,7 @@ func getProjectFromSchema(projectSchemaField string, d resources.TerraformResour
 		return res.(string), nil
 	}
 	res, ok = d.GetOk("parent")
-	if ok && strings.HasPrefix(res.(string), "projects/"){
+	if ok && strings.HasPrefix(res.(string), "projects/") {
 		return res.(string), nil
 	}
 	if config.Project != "" {
@@ -96,13 +96,13 @@ func getOrganizationFromResource(tfData resources.TerraformResourceData) (string
 		return orgID.(string), ok
 	}
 	orgID, ok = tfData.GetOk("parent")
-	if ok && strings.HasPrefix(orgID.(string), "organizations/"){
+	if ok && strings.HasPrefix(orgID.(string), "organizations/") {
 		return orgID.(string), ok
 	}
 	return "", false
 }
 
-// getFolderFromResource reads folder_id or folder field from terraform data.
+// getFolderFromResource reads folder_id, folder, parent or display_name field from terraform data.
 func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool) {
 	folderID, ok := tfData.GetOk("folder_id")
 	if ok {
@@ -112,8 +112,15 @@ func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool
 	if ok {
 		return folderID.(string), ok
 	}
+	// folder name is store in display_name for google_folder
+	folderID, ok = tfData.GetOk("display_name")
+	if ok {
+		return folderID.(string), ok
+	}
+
+	// google_folder and google_org_policy_policy have {parent} field for ancestors
 	folderID, ok = tfData.GetOk("parent")
-	if ok && strings.HasPrefix(folderID.(string), "folders/"){
+	if ok && strings.HasPrefix(folderID.(string), "folders/") {
 		return folderID.(string), ok
 	}
 	return "", false
