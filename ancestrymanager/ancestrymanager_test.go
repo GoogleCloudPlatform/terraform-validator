@@ -445,22 +445,8 @@ func TestGetAncestors(t *testing.T) {
 				"google_folder",
 				p.ResourcesMap["google_folder"].Schema,
 				map[string]interface{}{
-					"parent": "organizations/qux",
-				},
-			),
-			asset: &resources.Asset{
-				Type: "cloudresourcemanager.googleapis.com/Folder",
-			},
-			want:       []string{"organizations/qux"},
-			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
-		},
-		{
-			name: "Google folder with folders/ as {parent}",
-			data: tfdata.NewFakeResourceData(
-				"google_folder",
-				p.ResourcesMap["google_folder"].Schema,
-				map[string]interface{}{
-					"parent": "folders/bar",
+					"display_name": "bar",
+					"parent":       "organizations/qux",
 				},
 			),
 			asset: &resources.Asset{
