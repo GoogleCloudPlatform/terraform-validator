@@ -470,6 +470,22 @@ func TestGetAncestors(t *testing.T) {
 			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
 		},
 		{
+			name: "Google folder with both folder_id and parent fields present",
+			data: tfdata.NewFakeResourceData(
+				"google_folder",
+				p.ResourcesMap["google_folder"].Schema,
+				map[string]interface{}{
+					"folder_id": "bar",
+					"parent":    "organizations/qux",
+				},
+			),
+			asset: &resources.Asset{
+				Type: "cloudresourcemanager.googleapis.com/Folder",
+			},
+			want:       []string{"folders/bar", "organizations/qux"},
+			wantParent: "//cloudresourcemanager.googleapis.com/organizations/qux",
+		},
+		{
 			name: "Google folder with missing parent field",
 			data: tfdata.NewFakeResourceData(
 				"google_folder",
