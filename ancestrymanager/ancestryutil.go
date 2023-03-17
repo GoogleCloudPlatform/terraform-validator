@@ -102,7 +102,7 @@ func getOrganizationFromResource(tfData resources.TerraformResourceData) (string
 	return "", false
 }
 
-// getFolderFromResource reads folder_id, folder, parent or display_name field from terraform data.
+// getFolderFromResource reads folder_id, folder, parent field from terraform data.
 func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool) {
 	folderID, ok := tfData.GetOk("folder_id")
 	if ok {
@@ -112,13 +112,7 @@ func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool
 	if ok {
 		return folderID.(string), ok
 	}
-	// folder name is store in display_name for google_folder
-	folderID, ok = tfData.GetOk("display_name")
-	if ok {
-		return folderID.(string), ok
-	}
 
-	// google_folder and google_org_policy_policy have {parent} field for ancestors
 	folderID, ok = tfData.GetOk("parent")
 	if ok && strings.HasPrefix(folderID.(string), "folders/") {
 		return folderID.(string), ok
