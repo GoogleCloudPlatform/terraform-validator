@@ -108,7 +108,6 @@ func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool
 	if ok {
 		return folderID.(string), ok
 	}
-
 	folderID, ok = tfData.GetOk("folder")
 	if ok {
 		return folderID.(string), ok
