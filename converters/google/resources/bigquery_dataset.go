@@ -140,6 +140,18 @@ func GetBigQueryDatasetApiObject(d TerraformResourceData, config *Config) (map[s
 	} else if v, ok := d.GetOkExists("default_encryption_configuration"); !isEmptyValue(reflect.ValueOf(defaultEncryptionConfigurationProp)) && (ok || !reflect.DeepEqual(v, defaultEncryptionConfigurationProp)) {
 		obj["defaultEncryptionConfiguration"] = defaultEncryptionConfigurationProp
 	}
+	isCaseInsensitiveProp, err := expandBigQueryDatasetIsCaseInsensitive(d.Get("is_case_insensitive"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("is_case_insensitive"); !isEmptyValue(reflect.ValueOf(isCaseInsensitiveProp)) && (ok || !reflect.DeepEqual(v, isCaseInsensitiveProp)) {
+		obj["isCaseInsensitive"] = isCaseInsensitiveProp
+	}
+	defaultCollationProp, err := expandBigQueryDatasetDefaultCollation(d.Get("default_collation"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("default_collation"); !isEmptyValue(reflect.ValueOf(defaultCollationProp)) && (ok || !reflect.DeepEqual(v, defaultCollationProp)) {
+		obj["defaultCollation"] = defaultCollationProp
+	}
 
 	return obj, nil
 }
@@ -461,5 +473,13 @@ func expandBigQueryDatasetDefaultEncryptionConfiguration(v interface{}, d Terraf
 }
 
 func expandBigQueryDatasetDefaultEncryptionConfigurationKmsKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigQueryDatasetIsCaseInsensitive(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigQueryDatasetDefaultCollation(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
