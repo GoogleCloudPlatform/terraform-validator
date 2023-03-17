@@ -111,10 +111,7 @@ func getFolderFromResource(tfData resources.TerraformResourceData) (string, bool
 
 	folderID, ok = tfData.GetOk("folder")
 	if ok {
-		if strings.HasPrefix(folderID.(string), "folders/") {
-			return folderID.(string), ok
-		}
-		return fmt.Sprintf("folders/%s", folderID.(string)), ok
+		return folderID.(string), ok
 	}
 
 	folderID, ok = tfData.GetOk("parent")
