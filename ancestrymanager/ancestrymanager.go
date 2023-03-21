@@ -324,7 +324,6 @@ func (m *manager) getProjectFromResource(d resources.TerraformResourceData, conf
 		if ok {
 			return res.(string), nil
 		}
-		
 		// Fall back to project_id if number is not available.
 		res, ok = d.GetOk("project_id")
 		if ok {
