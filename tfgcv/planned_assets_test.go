@@ -55,7 +55,7 @@ func testCases(t *testing.T) []testcase {
 		{
 			"Test TF0_12 with no-op",
 			args{"tf0_12plan.applied.json", "foobar", testAncestryName, true},
-			6,
+			7,
 			false,
 			map[string]string{
 				"projects/345":    testAncestryName,
@@ -86,7 +86,7 @@ func testCases(t *testing.T) []testcase {
 		{
 			"Test TF1_0 with no-op",
 			args{"tf1_0plan.applied.json", "foobar", testAncestryName, true},
-			6,
+			7,
 			false,
 			map[string]string{
 				"projects/345":    testAncestryName,
