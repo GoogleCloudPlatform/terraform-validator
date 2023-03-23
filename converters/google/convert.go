@@ -29,7 +29,7 @@ import (
 
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	provider "github.com/hashicorp/terraform-provider-google/google"
+	provider "github.com/hashicorp/terraform-provider-google-beta/google-beta"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
