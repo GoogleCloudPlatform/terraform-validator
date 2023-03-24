@@ -464,7 +464,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 			if o2.PolicySpec != nil {
 
 				var rules []*PolicyRule
-				if o2.PolicySpec.Rules != nil {
+				if o2.PolicySpec.PolicyRules != nil {
 					for _, rule := range o2.PolicySpec.PolicyRules {
 						var values *StringValues
 						if rule.Values != nil {
@@ -500,7 +500,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 						Seconds: int64(fixedTime.Unix()),
 						Nanos:   int64(fixedTime.UnixNano()),
 					},
-					Rules:             rules,
+					PolicyRules:       rules,
 					InheritFromParent: o2.PolicySpec.InheritFromParent,
 					Reset:             o2.PolicySpec.Reset,
 				}
