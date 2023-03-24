@@ -73,7 +73,7 @@ type AssetResource struct {
 	Data                 map[string]interface{} `json:"data"`
 }
 
-//OrgPolicy is for managing organization policies.
+// OrgPolicy is for managing organization policies.
 type OrgPolicy struct {
 	Constraint     string          `json:"constraint,omitempty"`
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
@@ -84,15 +84,15 @@ type OrgPolicy struct {
 
 // OrgPolicyPolicy is the represtation of V2OrgPolicies
 type OrgPolicyPolicy struct {
-	Name string `json:"name"`
-	Spec *Spec  `json:"spec,omitempty"`
+	Name       string      `json:"name"`
+	PolicySpec *PolicySpec `json:"spec,omitempty"`
 }
 
 // Spec is the representation of Spec for Custom Org Policy
-type Spec struct {
+type PolicySpec struct {
 	Etag              string        `json:"etag,omitempty"`
 	UpdateTime        *Timestamp    `json:"update_time,omitempty"`
-	Rules             []*PolicyRule `json:"rules,omitempty"`
+	PolicyRules       []*PolicyRule `json:"rules,omitempty"`
 	InheritFromParent bool          `json:"inherit_from_parent,omitempty"`
 	Reset             bool          `json:"reset,omitempty"`
 }
@@ -392,10 +392,10 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
-	ancestors, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
-	if err != nil {
-		return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
-	}
+	//_, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
+	// if err != nil {
+	// 	return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
+	// }
 
 	var resource *AssetResource
 	if cai.Resource != nil {
@@ -403,7 +403,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 			Version:              cai.Resource.Version,
 			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
 			DiscoveryName:        cai.Resource.DiscoveryName,
-			Parent:               parent,
+			Parent:               "parent",
 			Data:                 cai.Resource.Data,
 		}
 	}
@@ -460,12 +460,12 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	var orgPolicyPolicy []*OrgPolicyPolicy
 	if cai.OrgPolicyPolicy != nil {
 		for _, o2 := range cai.OrgPolicyPolicy {
-			var spec *Spec
-			if o2.Spec != nil {
+			var spec *PolicySpec
+			if o2.PolicySpec != nil {
 
 				var rules []*PolicyRule
-				if o2.Spec.Rules != nil {
-					for _, rule := range o2.Spec.Rules {
+				if o2.PolicySpec.Rules != nil {
+					for _, rule := range o2.PolicySpec.PolicyRules {
 						var values *StringValues
 						if rule.Values != nil {
 							values = &StringValues{
@@ -494,22 +494,22 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 				}
 
 				fixedTime := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
-				spec = &Spec{
-					Etag: o2.Spec.Etag,
+				spec = &PolicySpec{
+					Etag: o2.PolicySpec.Etag,
 					UpdateTime: &Timestamp{
 						Seconds: int64(fixedTime.Unix()),
 						Nanos:   int64(fixedTime.UnixNano()),
 					},
 					Rules:             rules,
-					InheritFromParent: o2.Spec.InheritFromParent,
-					Reset:             o2.Spec.Reset,
+					InheritFromParent: o2.PolicySpec.InheritFromParent,
+					Reset:             o2.PolicySpec.Reset,
 				}
 
 			}
 
 			orgPolicyPolicy = append(orgPolicyPolicy, &OrgPolicyPolicy{
-				Name: o2.Name,
-				Spec: spec,
+				Name:       o2.Name,
+				PolicySpec: spec,
 			})
 		}
 	}
@@ -522,7 +522,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		OrgPolicy:       orgPolicy,
 		OrgPolicyPolicy: orgPolicyPolicy,
 		converterAsset:  cai,
-		Ancestors:       ancestors,
+		//Ancestors:       ancestors,
 	}, nil
 }
 
