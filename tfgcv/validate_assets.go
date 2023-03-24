@@ -112,7 +112,6 @@ func splitAssets(pbAssets []*validator.Asset) []*validator.Asset {
 			splitAsset.Resource = nil
 			splitAsset.IamPolicy = nil
 			splitAsset.OrgPolicy = nil
-			splitAsset.OrgPolicyPolicy = nil
 			pbSplitAssets = append(pbSplitAssets, &splitAsset)
 		}
 	}
