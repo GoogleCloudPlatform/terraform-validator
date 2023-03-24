@@ -18,7 +18,7 @@
                   "projects/789"
                 ]
               },
-              "expression": {
+              "condition": {
                 "expression": "resource.matchLabels('label1', 'label2')",
                 "title": "Title of the condition",
                 "description": "Description the policy",
