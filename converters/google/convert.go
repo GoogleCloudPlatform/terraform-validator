@@ -392,10 +392,10 @@ func (c *Converter) Assets() []Asset {
 
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
-	//_, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
-	// if err != nil {
-	// 	return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
-	// }
+	ancestors, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
+	 if err != nil {
+	 	return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
+	 }
 
 	var resource *AssetResource
 	if cai.Resource != nil {
@@ -403,7 +403,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 			Version:              cai.Resource.Version,
 			DiscoveryDocumentURI: cai.Resource.DiscoveryDocumentURI,
 			DiscoveryName:        cai.Resource.DiscoveryName,
-			Parent:               "parent",
+			Parent:               parent,
 			Data:                 cai.Resource.Data,
 		}
 	}
@@ -522,7 +522,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		OrgPolicy:       orgPolicy,
 		OrgPolicyPolicy: orgPolicyPolicy,
 		converterAsset:  cai,
-		//Ancestors:       ancestors,
+		Ancestors:       ancestors,
 	}, nil
 }
 
