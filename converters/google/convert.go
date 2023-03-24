@@ -102,7 +102,7 @@ type PolicyRule struct {
 	AllowAll  bool          `json:"allow_all,omitempty"`
 	DenyAll   bool          `json:"deny_all,omitempty"`
 	Enforce   bool          `json:"enforce,omitempty"`
-	Condition *Expr         `json:"expression,omitempty"`
+	Condition *Expr         `json:"condition,omitempty"`
 }
 
 type StringValues struct {
