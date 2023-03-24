@@ -73,15 +73,15 @@ type OrgPolicy struct {
 
 // OrgPolicyPolicy is the represtation of V2OrgPolicies
 type OrgPolicyPolicy struct {
-	Name string `json:"name"`
-	Spec *Spec  `json:"spec,omitempty"`
+	Name       string      `json:"name"`
+	PolicySpec *PolicySpec `json:"spec,omitempty"`
 }
 
 // Spec is the representation of Spec for V2OrgPolicy
-type Spec struct {
+type PolicySpec struct {
 	Etag              string        `json:"etag,omitempty"`
 	UpdateTime        *Timestamp    `json:"update_time,omitempty"`
-	Rules             []*PolicyRule `json:"rules,omitempty"`
+	PolicyRules       []*PolicyRule `json:"rules,omitempty"`
 	InheritFromParent bool          `json:"inherit_from_parent,omitempty"`
 	Reset             bool          `json:"reset,omitempty"`
 }
