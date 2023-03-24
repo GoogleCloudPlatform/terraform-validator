@@ -44,7 +44,7 @@ func GetOrgPolicyPolicyApiObject(d TerraformResourceData, config *Config) (OrgPo
 
 	return OrgPolicyPolicy{
 		Name: d.Get("name").(string),
-		Spec: spec,
+		PolicySpec: spec,
 	}, nil
 }
 
@@ -56,17 +56,17 @@ func MergeOrgPolicyPolicy(existing, incoming Asset) Asset {
 func getAssetNameAndTypeFromParent(parent string) (assetName string, assetType string, err error) {
 	const prefix = "cloudresourcemanager.googleapis.com/"
 	if strings.Contains(parent, "projects") {
-		return prefix + parent, prefix + "Project", nil
+		return prefix + "projects/{{project_id}}", prefix + "Project", nil
 	} else if strings.Contains(parent, "folders") {
-		return prefix + parent, prefix + "Folder", nil
+		return prefix + "folders/{{folder_id}}", prefix + "Folder", nil
 	} else if strings.Contains(parent, "organizations") {
-		return prefix + parent, prefix + "Organization", nil
+		return prefix + "organizations/{{organization_id}}", prefix + "Organization", nil
 	} else {
 		return "", "", fmt.Errorf("Invalid parent address(%s) for an asset", parent)
 	}
 }
 
-func expandSpecOrgPolicyPolicy(configured []interface{}) (*Spec, error) {
+func expandSpecOrgPolicyPolicy(configured []interface{}) (*PolicySpec, error) {
 	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
@@ -75,12 +75,12 @@ func expandSpecOrgPolicyPolicy(configured []interface{}) (*Spec, error) {
 
 	policyRules, err := expandPolicyRulesSpec(specMap["rules"].([]interface{}))
 	if err != nil {
-		return &Spec{}, err
+		return &PolicySpec{}, err
 	}
 
-	return &Spec{
+	return &PolicySpec{
 		Etag:              specMap["etag"].(string),
-		Rules:             policyRules,
+		PolicyRules:             policyRules,
 		InheritFromParent: specMap["inherit_from_parent"].(bool),
 		Reset:             specMap["reset"].(bool),
 	}, nil
