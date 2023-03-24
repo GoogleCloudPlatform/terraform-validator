@@ -16,7 +16,7 @@ import (
 	resources "github.com/GoogleCloudPlatform/terraform-validator/converters/google/resources"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfdata"
 	"github.com/GoogleCloudPlatform/terraform-validator/tfplan"
-	provider "github.com/hashicorp/terraform-provider-google/google"
+	provider "github.com/hashicorp/terraform-provider-google-beta/google-beta"
 )
 
 func TestIAMFetchFullResource(t *testing.T) {
