@@ -16,7 +16,7 @@ replace (
 
 require (
 	cloud.google.com/go/bigtable v1.17.0
-	github.com/GoogleCloudPlatform/config-validator v0.0.0-20221208150626-1d72524ea1b8
+	github.com/GoogleCloudPlatform/config-validator v0.0.0-20230323214806-c2515be8d24e
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/protobuf v1.5.2
@@ -49,6 +49,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.12.0 // indirect
 	cloud.google.com/go/longrunning v0.4.1 // indirect
+	cloud.google.com/go/orgpolicy v1.10.0 // indirect
 	cloud.google.com/go/osconfig v1.11.0 // indirect
 	cloud.google.com/go/storage v1.28.1 // indirect
 	github.com/GoogleCloudPlatform/declarative-resource-client-library v1.34.0 // indirect
