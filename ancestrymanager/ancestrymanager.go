@@ -48,9 +48,9 @@ func New(cfg *resources.Config, offline bool, entries map[string]string, errorLo
 		errorLogger:   errorLogger,
 	}
 	if !offline {
-		am.resourceManagerV1 = cfg.NewResourceManagerClient(cfg.UserAgent())
-		am.resourceManagerV3 = cfg.NewResourceManagerV3Client(cfg.UserAgent())
-		am.storageClient = cfg.NewStorageClient(cfg.UserAgent())
+		am.resourceManagerV1 = cfg.NewResourceManagerClient(cfg.GetUserAgent())
+		am.resourceManagerV3 = cfg.NewResourceManagerV3Client(cfg.GetUserAgent())
+		am.storageClient = cfg.NewStorageClient(cfg.GetUserAgent())
 	}
 	err := am.initAncestryCache(entries)
 	if err != nil {
@@ -146,10 +146,13 @@ func (m *manager) fetchAncestors(config *resources.Config, tfData resources.Terr
 
 	switch cai.Type {
 	case "cloudresourcemanager.googleapis.com/Folder":
-		if !folderOK {
+		if folderOK {
+			key = folderKey
+		} else if orgOK {
+			key = orgKey
+		} else {
 			return []string{"organizations/unknown"}, nil
 		}
-		key = folderKey
 	case "cloudresourcemanager.googleapis.com/Organization":
 		if !orgOK {
 			return nil, fmt.Errorf("organization id not found in terraform data")

@@ -95,6 +95,22 @@ func validateDatabaseRetentionPeriod(v interface{}, k string) (ws []string, erro
 	return
 }
 
+func resourceSpannerDBVirtualUpdate(d *schema.ResourceData, resourceSchema map[string]*schema.Schema) bool {
+	// deletion_protection is the only virtual field
+	if d.HasChange("deletion_protection") {
+		for field := range resourceSchema {
+			if field == "deletion_protection" {
+				continue
+			}
+			if d.HasChange(field) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
 const SpannerDatabaseAssetType string = "spanner.googleapis.com/Database"
 
 func resourceConverterSpannerDatabase() ResourceConverter {

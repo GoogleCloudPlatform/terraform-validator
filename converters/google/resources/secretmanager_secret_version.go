@@ -89,12 +89,12 @@ func expandSecretManagerSecretVersionEnabled(v interface{}, d TerraformResourceD
 	parts := strings.Split(name, "/")
 	project := parts[1]
 
-	userAgent, err := generateUserAgentString(d, config.userAgent)
+	userAgent, err := generateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = sendRequest(config, "POST", project, url, userAgent, nil)
+	_, err = SendRequest(config, "POST", project, url, userAgent, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -148,6 +148,7 @@ func expandComputeInstance(project string, d TerraformResourceData, config *Conf
 		MachineType:            machineTypeUrl,
 		Metadata:               metadata,
 		Name:                   d.Get("name").(string),
+		Zone:                   d.Get("zone").(string),
 		NetworkInterfaces:      networkInterfaces,
 		Tags:                   resourceInstanceTags(d),
 		Labels:                 expandLabels(d),
@@ -245,7 +246,7 @@ func expandInstanceGuestAccelerators(d TerraformResourceData, config *Config) ([
 }
 
 func expandBootDisk(d TerraformResourceData, config *Config, project string) (*compute.AttachedDisk, error) {
-	userAgent, err := generateUserAgentString(d, config.userAgent)
+	userAgent, err := generateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return nil, err
 	}

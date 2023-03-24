@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -1730,7 +1731,16 @@ func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSingleTarge
 }
 
 func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSingleTargetDatasetDatasetId(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
-	return v, nil
+	s := v.(string)
+	re := regexp.MustCompile(`projects/(.+)/datasets/([^\.\?\#]+)`)
+	paths := re.FindStringSubmatch(s)
+	if len(paths) == 3 {
+		project := paths[1]
+		datasetId := paths[2]
+		return fmt.Sprintf("%s:%s", project, datasetId), nil
+	}
+
+	return s, nil
 }
 
 func expandDatastreamStreamDestinationConfigBigqueryDestinationConfigSourceHierarchyDatasets(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
