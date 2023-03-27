@@ -123,6 +123,7 @@ func TestCLI(t *testing.T) {
 		{name: "example_organization_iam_member"},
 		{name: "example_organization_iam_policy"},
 		{name: "example_organization_policy"},
+		{name: "example_org_policy_custom_constraint"},
 		{name: "example_project_iam"},
 		{name: "example_project_iam_custom_role"},
 		{name: "example_project_iam_policy"},
