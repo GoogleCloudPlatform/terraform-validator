@@ -13,7 +13,7 @@ import (
 	"github.com/GoogleCloudPlatform/terraform-validator/tfdata"
 
 	"github.com/google/go-cmp/cmp"
-	provider "github.com/hashicorp/terraform-provider-google/google"
+	provider "github.com/hashicorp/terraform-provider-google-beta/google-beta"
 	"go.uber.org/zap"
 	crmv1 "google.golang.org/api/cloudresourcemanager/v1"
 	crmv3 "google.golang.org/api/cloudresourcemanager/v3"

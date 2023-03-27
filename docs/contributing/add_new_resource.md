@@ -46,7 +46,7 @@ Adding support for a resource has four steps:
 
 Each of these is discussed in more detail below.
 
-**Note**: terraform-validator can only support resources that are supported by the GA terraform provider, not beta resources.
+**Note**: terraform-validator can support resources that are supported by both GA and beta terraform provider.
 
 ### 1. Magic Modules
 

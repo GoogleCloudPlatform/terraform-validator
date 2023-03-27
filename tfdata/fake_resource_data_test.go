@@ -16,7 +16,7 @@ package tfdata
 import (
 	"testing"
 
-	provider "github.com/hashicorp/terraform-provider-google/google"
+	provider "github.com/hashicorp/terraform-provider-google-beta/google-beta"
 	"github.com/stretchr/testify/assert"
 )
 
