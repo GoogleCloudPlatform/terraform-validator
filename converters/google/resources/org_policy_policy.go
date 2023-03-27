@@ -56,11 +56,11 @@ func MergeOrgPolicyPolicy(existing, incoming Asset) Asset {
 func getAssetNameAndTypeFromParent(parent string) (assetName string, assetType string, err error) {
 	const prefix = "cloudresourcemanager.googleapis.com/"
 	if strings.Contains(parent, "projects") {
-		return prefix + parent, prefix + "Project", nil
+		return "//" + prefix + parent, prefix + "Project", nil
 	} else if strings.Contains(parent, "folders") {
-		return prefix + parent, prefix + "Folder", nil
+		return "//" + prefix + parent, prefix + "Folder", nil
 	} else if strings.Contains(parent, "organizations") {
-		return prefix + parent, prefix + "Organization", nil
+		return "//" + prefix + parent, prefix + "Organization", nil
 	} else {
 		return "", "", fmt.Errorf("Invalid parent address(%s) for an asset", parent)
 	}
@@ -80,7 +80,7 @@ func expandSpecOrgPolicyPolicy(configured []interface{}) (*PolicySpec, error) {
 
 	return &PolicySpec{
 		Etag:              specMap["etag"].(string),
-		PolicyRules:             policyRules,
+		PolicyRules:       policyRules,
 		InheritFromParent: specMap["inherit_from_parent"].(bool),
 		Reset:             specMap["reset"].(bool),
 	}, nil
