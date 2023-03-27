@@ -91,6 +91,7 @@ func splitAssets(pbAssets []*validator.Asset) []*validator.Asset {
 			splitAsset.IamPolicy = nil
 			splitAsset.OrgPolicy = nil
 			splitAsset.AccessContextPolicy = nil
+			splitAsset.V2OrgPolicies = nil
 			pbSplitAssets = append(pbSplitAssets, &splitAsset)
 		}
 		if asset.IamPolicy != nil {
@@ -98,6 +99,7 @@ func splitAssets(pbAssets []*validator.Asset) []*validator.Asset {
 			splitAsset.Resource = nil
 			splitAsset.OrgPolicy = nil
 			splitAsset.AccessContextPolicy = nil
+			splitAsset.V2OrgPolicies = nil
 			pbSplitAssets = append(pbSplitAssets, &splitAsset)
 		}
 		if asset.OrgPolicy != nil {
@@ -105,6 +107,7 @@ func splitAssets(pbAssets []*validator.Asset) []*validator.Asset {
 			splitAsset.Resource = nil
 			splitAsset.IamPolicy = nil
 			splitAsset.AccessContextPolicy = nil
+			splitAsset.V2OrgPolicies = nil
 			pbSplitAssets = append(pbSplitAssets, &splitAsset)
 		}
 		if asset.AccessContextPolicy != nil {
@@ -112,6 +115,15 @@ func splitAssets(pbAssets []*validator.Asset) []*validator.Asset {
 			splitAsset.Resource = nil
 			splitAsset.IamPolicy = nil
 			splitAsset.OrgPolicy = nil
+			splitAsset.V2OrgPolicies = nil
+			pbSplitAssets = append(pbSplitAssets, &splitAsset)
+		}
+		if asset.V2OrgPolicies != nil {
+			splitAsset := *asset
+			splitAsset.Resource = nil
+			splitAsset.IamPolicy = nil
+			splitAsset.OrgPolicy = nil
+			splitAsset.AccessContextPolicy = nil
 			pbSplitAssets = append(pbSplitAssets, &splitAsset)
 		}
 	}
