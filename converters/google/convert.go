@@ -185,9 +185,9 @@ func (c *Converter) AddResourceChanges(changes []*tfjson.ResourceChange) error {
 			c.errorLogger.Debug(fmt.Sprintf("%s: resource uses the google-beta provider and may not be convertible", rc.Address))
 		}
 
-		// Skip resources not found in the google GA provider's schema
+		// Skip resources not found in the google GA or beta provider's schema
 		if _, ok := c.schema.ResourcesMap[rc.Type]; !ok {
-			c.errorLogger.Debug(fmt.Sprintf("%s: resource type not found in google GA provider: %s.", rc.Address, rc.Type))
+			c.errorLogger.Debug(fmt.Sprintf("%s: resource type not found in google GA or beta provider: %s.", rc.Address, rc.Type))
 			continue
 		}
 
