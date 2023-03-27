@@ -1,6 +1,6 @@
 [
   {
-    "name": "cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
+    "name": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
     "v2_org_policies": [
       {
