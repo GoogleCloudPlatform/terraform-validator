@@ -331,6 +331,10 @@ func (m *manager) getProjectFromResource(d resources.TerraformResourceData, conf
 		res, ok = d.GetOk("project_id")
 		if ok {
 			return res.(string), nil
+		} 
+		res, ok = d.GetOk("parent")
+		if ok && strings.HasPrefix(res.(string), "projects/") {
+			return res.(string), nil
 		} else {
 			m.errorLogger.Warn(fmt.Sprintf("Failed to retrieve project_id for %s from resource", cai.Name))
 		}
