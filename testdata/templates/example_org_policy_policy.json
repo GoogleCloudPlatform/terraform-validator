@@ -16,7 +16,7 @@
         }
       }
     ],
-    "ancestry_path": "{{.Ancestry}}",
+    "ancestry_path": "{{.Ancestry}}"
   },
   {
     "name": "//cloudresourcemanager.googleapis.com/organizations/{{.OrgID}}",
@@ -30,7 +30,7 @@
         }
       }
     ],
-    "ancestry_path": "{{.Ancestry}}",
+    "ancestry_path": "{{.Ancestry}}"
   },
   {
     "name": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
