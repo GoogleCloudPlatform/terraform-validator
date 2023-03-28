@@ -73,7 +73,7 @@ type AssetResource struct {
 	Data                 map[string]interface{} `json:"data"`
 }
 
-// OrgPolicy is for managing organization policies.
+//OrgPolicy is for managing organization policies.
 type OrgPolicy struct {
 	Constraint     string          `json:"constraint,omitempty"`
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
@@ -159,7 +159,7 @@ type BooleanPolicy struct {
 	Enforced bool `json:"enforced,omitempty"`
 }
 
-// RestoreDefault determines if the default values of the `Constraints` are active for the
+//RestoreDefault determines if the default values of the `Constraints` are active for the
 // resources.
 type RestoreDefault struct {
 }
@@ -393,9 +393,9 @@ func (c *Converter) Assets() []Asset {
 // augmentAsset adds data to an asset that is not set by the conversion library.
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
 	ancestors, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
-	 if err != nil {
-	 	return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
-	 }
+	if err != nil {
+	        return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
+	}
 
 	var resource *AssetResource
 	if cai.Resource != nil {
