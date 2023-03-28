@@ -13,7 +13,6 @@ func resourceConverterOrgPolicyPolicy() ResourceConverter {
 }
 
 func GetOrgPolicyPolicyCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-
 	assetNamePattern, assetType, err := getAssetNameAndTypeFromParent(d.Get("parent").(string))
 	if err != nil {
 		return []Asset{}, err
