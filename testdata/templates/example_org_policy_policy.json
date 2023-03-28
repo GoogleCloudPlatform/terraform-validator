@@ -1,5 +1,38 @@
 [
   {
+    "name": "//cloudresourcemanager.googleapis.com/folders/{{.FolderID}}",
+    "asset_type": "cloudresourcemanager.googleapis.com/Folder",
+    "v2_org_policies": [
+      {
+        "name": "folders/{{.FolderID}}/policies/samplePolicy",
+        "spec": {
+          "update_time": "2021-04-14T15:16:17Z",
+          "rules": [
+            {
+              "deny_all": true
+            }
+          ],
+          "inherit_from_parent": true
+        }
+      }
+    ],
+    "ancestry_path": "{{.Ancestry}}",
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/organizations/{{.OrgID}}",
+    "asset_type": "cloudresourcemanager.googleapis.com/Organization",
+    "v2_org_policies": [
+      {
+        "name": "organizations/{{.OrgID}}/policies/gcp.detailedAuditLoggingMode",
+        "spec": {
+          "update_time": "2021-04-14T15:16:17Z",
+          "reset": true
+        }
+      }
+    ],
+    "ancestry_path": "{{.Ancestry}}",
+  },
+  {
     "name": "//cloudresourcemanager.googleapis.com/projects/{{.Provider.project}}",
     "asset_type": "cloudresourcemanager.googleapis.com/Project",
     "v2_org_policies": [
@@ -11,24 +44,25 @@
             {
               "values": {
                 "allowed_values": [
-                  "projects/123",
-                  "projects/456"
+                  "projects/allowed-project1",
+                  "projects/allowed-project2"
                 ],
                 "denied_values": [
-                  "projects/789"
+                  "projects/denied-project"
                 ]
               },
               "condition": {
-                "expression": "resource.matchLabels('label1', 'label2')",
-                "title": "Title of the condition",
-                "description": "Description the policy",
-                "location": "EU"
+                "expression": "resource.matchLabels('labelKeys/123', 'labelValues/345')",
+                "title": "sample-condition",
+                "description": "A sample condition for the policy",
+                "location": "sample-location.log"
               }
             },
             {
               "allow_all": true
             }
-          ]
+          ],
+          "inherit_from_parent": true
         }
       }
     ],
