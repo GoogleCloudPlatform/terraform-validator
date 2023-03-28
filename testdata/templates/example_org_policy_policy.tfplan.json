@@ -1,9 +1,76 @@
 {
   "format_version": "1.1",
-  "terraform_version": "1.3.9",
+  "terraform_version": "1.4.1",
   "planned_values": {
     "root_module": {
       "resources": [
+        {
+          "address": "google_org_policy_policy.folder_policy",
+          "mode": "managed",
+          "type": "google_org_policy_policy",
+          "name": "folder_policy",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 0,
+          "values": {
+            "name": "folders/{{.FolderID}}/policies/samplePolicy",
+            "parent": "folders/{{.FolderID}}",
+            "spec": [
+              {
+                "inherit_from_parent": true,
+                "reset": null,
+                "rules": [
+                  {
+                    "allow_all": null,
+                    "condition": [],
+                    "deny_all": "TRUE",
+                    "enforce": null,
+                    "values": []
+                  }
+                ]
+              }
+            ],
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "spec": [
+              {
+                "rules": [
+                  {
+                    "condition": [],
+                    "values": []
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "address": "google_org_policy_policy.organizationPolicy",
+          "mode": "managed",
+          "type": "google_org_policy_policy",
+          "name": "organizationPolicy",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 0,
+          "values": {
+            "name": "organizations/{{{.OrgD}}/policies/gcp.detailedAuditLoggingMode",
+            "parent": "organizations/{{{.OrgD}}",
+            "spec": [
+              {
+                "inherit_from_parent": null,
+                "reset": true,
+                "rules": []
+              }
+            ],
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "spec": [
+              {
+                "rules": []
+              }
+            ]
+          }
+        },
         {
           "address": "google_org_policy_policy.project_policy",
           "mode": "managed",
@@ -16,17 +83,17 @@
             "parent": "projects/{{.Provider.project}}",
             "spec": [
               {
-                "inherit_from_parent": null,
+                "inherit_from_parent": true,
                 "reset": null,
                 "rules": [
                   {
                     "allow_all": null,
                     "condition": [
                       {
-                        "description": "Description the policy",
-                        "expression": "resource.matchLabels('label1', 'label2')",
-                        "location": "EU",
-                        "title": "Title of the condition"
+                        "description": "A sample condition for the policy",
+                        "expression": "resource.matchLabels('labelKeys/123', 'labelValues/345')",
+                        "location": "sample-location.log",
+                        "title": "sample-condition"
                       }
                     ],
                     "deny_all": null,
@@ -34,11 +101,11 @@
                     "values": [
                       {
                         "allowed_values": [
-                          "projects/123",
-                          "projects/456"
+                          "projects/allowed-project1",
+                          "projects/allowed-project2"
                         ],
                         "denied_values": [
-                          "projects/789"
+                          "projects/denied-project"
                         ]
                       }
                     ]
@@ -89,6 +156,110 @@
   },
   "resource_changes": [
     {
+      "address": "google_org_policy_policy.folder_policy",
+      "mode": "managed",
+      "type": "google_org_policy_policy",
+      "name": "folder_policy",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "folders/{{.FolderID}}/policies/samplePolicy",
+          "parent": "folders/{{.FolderID}}",
+          "spec": [
+            {
+              "inherit_from_parent": true,
+              "reset": null,
+              "rules": [
+                {
+                  "allow_all": null,
+                  "condition": [],
+                  "deny_all": "TRUE",
+                  "enforce": null,
+                  "values": []
+                }
+              ]
+            }
+          ],
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true,
+          "spec": [
+            {
+              "etag": true,
+              "rules": [
+                {
+                  "condition": [],
+                  "values": []
+                }
+              ],
+              "update_time": true
+            }
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "spec": [
+            {
+              "rules": [
+                {
+                  "condition": [],
+                  "values": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "google_org_policy_policy.organizationPolicy",
+      "mode": "managed",
+      "type": "google_org_policy_policy",
+      "name": "organizationPolicy",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "organizations/{{{.OrgD}}/policies/gcp.detailedAuditLoggingMode",
+          "parent": "organizations/{{{.OrgD}}",
+          "spec": [
+            {
+              "inherit_from_parent": null,
+              "reset": true,
+              "rules": []
+            }
+          ],
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true,
+          "spec": [
+            {
+              "etag": true,
+              "rules": [],
+              "update_time": true
+            }
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "spec": [
+            {
+              "rules": []
+            }
+          ]
+        }
+      }
+    },
+    {
       "address": "google_org_policy_policy.project_policy",
       "mode": "managed",
       "type": "google_org_policy_policy",
@@ -104,17 +275,17 @@
           "parent": "projects/{{.Provider.project}}",
           "spec": [
             {
-              "inherit_from_parent": null,
+              "inherit_from_parent": true,
               "reset": null,
               "rules": [
                 {
                   "allow_all": null,
                   "condition": [
                     {
-                      "description": "Description the policy",
-                      "expression": "resource.matchLabels('label1', 'label2')",
-                      "location": "EU",
-                      "title": "Title of the condition"
+                      "description": "A sample condition for the policy",
+                      "expression": "resource.matchLabels('labelKeys/123', 'labelValues/345')",
+                      "location": "sample-location.log",
+                      "title": "sample-condition"
                     }
                   ],
                   "deny_all": null,
@@ -122,11 +293,11 @@
                   "values": [
                     {
                       "allowed_values": [
-                        "projects/123",
-                        "projects/456"
+                        "projects/allowed-project1",
+                        "projects/allowed-project2"
                       ],
                       "denied_values": [
-                        "projects/789"
+                        "projects/denied-project"
                       ]
                     }
                   ]
@@ -216,6 +387,59 @@
     "root_module": {
       "resources": [
         {
+          "address": "google_org_policy_policy.folder_policy",
+          "mode": "managed",
+          "type": "google_org_policy_policy",
+          "name": "folder_policy",
+          "provider_config_key": "google",
+          "expressions": {
+            "name": {
+              "constant_value": "folders/{{.FolderID}}/policies/samplePolicy"
+            },
+            "parent": {
+              "constant_value": "folders/{{.FolderID}}"
+            },
+            "spec": [
+              {
+                "inherit_from_parent": {
+                  "constant_value": true
+                },
+                "rules": [
+                  {
+                    "deny_all": {
+                      "constant_value": "TRUE"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "google_org_policy_policy.organizationPolicy",
+          "mode": "managed",
+          "type": "google_org_policy_policy",
+          "name": "organizationPolicy",
+          "provider_config_key": "google",
+          "expressions": {
+            "name": {
+              "constant_value": "organizations/{{{.OrgD}}/policies/gcp.detailedAuditLoggingMode"
+            },
+            "parent": {
+              "constant_value": "organizations/{{{.OrgD}}"
+            },
+            "spec": [
+              {
+                "reset": {
+                  "constant_value": true
+                }
+              }
+            ]
+          },
+          "schema_version": 0
+        },
+        {
           "address": "google_org_policy_policy.project_policy",
           "mode": "managed",
           "type": "google_org_policy_policy",
@@ -230,21 +454,24 @@
             },
             "spec": [
               {
+                "inherit_from_parent": {
+                  "constant_value": true
+                },
                 "rules": [
                   {
                     "condition": [
                       {
                         "description": {
-                          "constant_value": "Description the policy"
+                          "constant_value": "A sample condition for the policy"
                         },
                         "expression": {
-                          "constant_value": "resource.matchLabels('label1', 'label2')"
+                          "constant_value": "resource.matchLabels('labelKeys/123', 'labelValues/345')"
                         },
                         "location": {
-                          "constant_value": "EU"
+                          "constant_value": "sample-location.log"
                         },
                         "title": {
-                          "constant_value": "Title of the condition"
+                          "constant_value": "sample-condition"
                         }
                       }
                     ],
@@ -252,13 +479,13 @@
                       {
                         "allowed_values": {
                           "constant_value": [
-                            "projects/123",
-                            "projects/456"
+                            "projects/allowed-project1",
+                            "projects/allowed-project2"
                           ]
                         },
                         "denied_values": {
                           "constant_value": [
-                            "projects/789"
+                            "projects/denied-project"
                           ]
                         }
                       }
