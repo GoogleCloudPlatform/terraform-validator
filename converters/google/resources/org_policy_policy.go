@@ -88,7 +88,7 @@ func expandSpecOrgPolicyPolicy(configured []interface{}) (*PolicySpec, error) {
 }
 
 func expandPolicyRulesSpec(configured []interface{}) ([]*PolicyRule, error) {
-	if configured[0] == nil {
+	if len(configured) == 0 || configured[0] == nil {
 		return nil, nil
 	}
 
