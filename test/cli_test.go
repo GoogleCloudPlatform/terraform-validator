@@ -176,7 +176,6 @@ func TestCLI(t *testing.T) {
 		"TestCLI/v=0.12/tf=example_organization_iam_member/offline=false/cmd=convert":                             "skip because test runner doesn't have org permissions",
 		"TestCLI/v=0.12/tf=example_organization_iam_member/offline=false/cmd=validate/constraint=always_violate":  "skip because test runner doesn't have org permissions",
 		"TestCLI/v=0.12/tf=example_project_iam/offline=false/cmd=convert":                                         "example_project_iam is too complex to untangle merges with online data generically",
-		"TestCLI/v=0.12/tf=example_org_policy_policy/offline=true/cmd=validate/constraint=always_violate":         "skip because it is unable to retrieve project id in offline mode",
 		"TestCLI/v=0.12/tf=example_storage_bucket_iam_member_random_suffix/offline=false":                         "test produces inconsistent results based on randomized names - github.com/GoogleCloudPlatform/terraform-validator/issues/259",
 		"TestCLI/v=0.12/tf=example_storage_bucket_iam_member_random_suffix/offline=false/cmd=convert":             "test produces inconsistent results based on randomized names - github.com/GoogleCloudPlatform/terraform-validator/issues/259",
 	}
