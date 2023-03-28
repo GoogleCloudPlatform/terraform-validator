@@ -16,7 +16,7 @@ replace (
 
 require (
 	cloud.google.com/go/bigtable v1.17.0
-	github.com/GoogleCloudPlatform/config-validator v0.0.0-20230327185103-a4226f60974b
+	github.com/GoogleCloudPlatform/config-validator v0.0.0-20230328162739-ff3a6b2846d9
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/protobuf v1.5.2
