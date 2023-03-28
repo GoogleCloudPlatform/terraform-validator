@@ -27,7 +27,8 @@ require (
 	github.com/hashicorp/terraform-json v0.14.0
 	github.com/hashicorp/terraform-plugin-framework v1.1.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
-	github.com/hashicorp/terraform-provider-google-beta v1.20.1-0.20230324233649-b8e2c1c9ac72
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230328023035-2a66426b3714
+	github.com/hashicorp/terraform-provider-google-beta v1.20.1-0.20230327033815-6a987a080e13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
