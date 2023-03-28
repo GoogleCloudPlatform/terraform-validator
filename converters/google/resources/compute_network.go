@@ -90,6 +90,12 @@ func GetComputeNetworkApiObject(d TerraformResourceData, config *Config) (map[st
 	} else if v, ok := d.GetOkExists("internal_ipv6_range"); !isEmptyValue(reflect.ValueOf(internalIpv6RangeProp)) && (ok || !reflect.DeepEqual(v, internalIpv6RangeProp)) {
 		obj["internalIpv6Range"] = internalIpv6RangeProp
 	}
+	networkFirewallPolicyEnforcementOrderProp, err := expandComputeNetworkNetworkFirewallPolicyEnforcementOrder(d.Get("network_firewall_policy_enforcement_order"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("network_firewall_policy_enforcement_order"); !isEmptyValue(reflect.ValueOf(networkFirewallPolicyEnforcementOrderProp)) && (ok || !reflect.DeepEqual(v, networkFirewallPolicyEnforcementOrderProp)) {
+		obj["networkFirewallPolicyEnforcementOrder"] = networkFirewallPolicyEnforcementOrderProp
+	}
 
 	return obj, nil
 }
@@ -131,5 +137,9 @@ func expandComputeNetworkEnableUlaInternalIpv6(v interface{}, d TerraformResourc
 }
 
 func expandComputeNetworkInternalIpv6Range(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandComputeNetworkNetworkFirewallPolicyEnforcementOrder(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
