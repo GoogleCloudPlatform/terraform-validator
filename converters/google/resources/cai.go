@@ -35,7 +35,7 @@ type Asset struct {
 	Resource        *AssetResource     `json:"resource,omitempty"`
 	IAMPolicy       *IAMPolicy         `json:"iam_policy,omitempty"`
 	OrgPolicy       []*OrgPolicy       `json:"org_policy,omitempty"`
-	OrgPolicyPolicy []*OrgPolicyPolicy `json:"v2_org_policies,omitempty"`
+	V2OrgPolicies []*V2OrgPolicies `json:"v2_org_policies,omitempty"`
 }
 
 // AssetResource is the Asset's Resource field.
@@ -79,8 +79,8 @@ type OrgPolicy struct {
 	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
 }
 
-// OrgPolicyPolicy is the represtation of V2OrgPolicies
-type OrgPolicyPolicy struct {
+// V2OrgPolicies is the represtation of V2OrgPolicies
+type V2OrgPolicies struct {
 	Name       string      `json:"name"`
 	PolicySpec *PolicySpec `json:"spec,omitempty"`
 }
