@@ -39,12 +39,12 @@ var ErrDuplicateAsset = errors.New("duplicate asset")
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).
 type Asset struct {
-	Name            string             `json:"name"`
-	Type            string             `json:"asset_type"`
-	Resource        *AssetResource     `json:"resource,omitempty"`
-	IAMPolicy       *IAMPolicy         `json:"iam_policy,omitempty"`
-	OrgPolicy       []*OrgPolicy       `json:"org_policy,omitempty"`
-	OrgPolicyPolicy []*OrgPolicyPolicy `json:"v2_org_policies,omitempty"`
+	Name          string           `json:"name"`
+	Type          string           `json:"asset_type"`
+	Resource      *AssetResource   `json:"resource,omitempty"`
+	IAMPolicy     *IAMPolicy       `json:"iam_policy,omitempty"`
+	OrgPolicy     []*OrgPolicy     `json:"org_policy,omitempty"`
+	V2OrgPolicies []*V2OrgPolicies `json:"v2_org_policies,omitempty"`
 
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
@@ -73,7 +73,7 @@ type AssetResource struct {
 	Data                 map[string]interface{} `json:"data"`
 }
 
-//OrgPolicy is for managing organization policies.
+// OrgPolicy is for managing organization policies.
 type OrgPolicy struct {
 	Constraint     string          `json:"constraint,omitempty"`
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
@@ -82,8 +82,8 @@ type OrgPolicy struct {
 	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
 }
 
-// OrgPolicyPolicy is the represtation of V2OrgPolicies
-type OrgPolicyPolicy struct {
+// V2OrgPolicies is the represtation of V2OrgPolicies
+type V2OrgPolicies struct {
 	Name       string      `json:"name"`
 	PolicySpec *PolicySpec `json:"spec,omitempty"`
 }
@@ -159,7 +159,7 @@ type BooleanPolicy struct {
 	Enforced bool `json:"enforced,omitempty"`
 }
 
-//RestoreDefault determines if the default values of the `Constraints` are active for the
+// RestoreDefault determines if the default values of the `Constraints` are active for the
 // resources.
 type RestoreDefault struct {
 }
@@ -394,7 +394,7 @@ func (c *Converter) Assets() []Asset {
 func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *resources.Config, cai resources.Asset) (Asset, error) {
 	ancestors, parent, err := c.ancestryManager.Ancestors(cfg, tfData, &cai)
 	if err != nil {
-	        return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
+		return Asset{}, fmt.Errorf("getting resource ancestry or parent failed: %w", err)
 	}
 
 	var resource *AssetResource
@@ -457,9 +457,9 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		}
 	}
 
-	var orgPolicyPolicy []*OrgPolicyPolicy
-	if cai.OrgPolicyPolicy != nil {
-		for _, o2 := range cai.OrgPolicyPolicy {
+	var V2OrgPolicies []*V2OrgPolicies
+	if cai.V2OrgPolicies != nil {
+		for _, o2 := range cai.V2OrgPolicies {
 			var spec *PolicySpec
 			if o2.PolicySpec != nil {
 
@@ -507,7 +507,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 
 			}
 
-			orgPolicyPolicy = append(orgPolicyPolicy, &OrgPolicyPolicy{
+			V2OrgPolicies = append(V2OrgPolicies, &V2OrgPolicies{
 				Name:       o2.Name,
 				PolicySpec: spec,
 			})
@@ -515,14 +515,14 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 	}
 
 	return Asset{
-		Name:            cai.Name,
-		Type:            cai.Type,
-		Resource:        resource,
-		IAMPolicy:       policy,
-		OrgPolicy:       orgPolicy,
-		OrgPolicyPolicy: orgPolicyPolicy,
-		converterAsset:  cai,
-		Ancestors:       ancestors,
+		Name:           cai.Name,
+		Type:           cai.Type,
+		Resource:       resource,
+		IAMPolicy:      policy,
+		OrgPolicy:      orgPolicy,
+		V2OrgPolicies:  V2OrgPolicies,
+		converterAsset: cai,
+		Ancestors:      ancestors,
 	}, nil
 }
 
