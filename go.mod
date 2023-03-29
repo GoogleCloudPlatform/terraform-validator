@@ -1,6 +1,6 @@
 module github.com/GoogleCloudPlatform/terraform-validator
 
-go 1.18
+go 1.19
 
 // Prevent otel dependencies from getting out of sync.
 // Cannot be upgraded until k8s.io/component-base uses a more recent version of
