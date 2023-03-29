@@ -457,7 +457,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		}
 	}
 
-	var V2OrgPolicies []*V2OrgPolicies
+	var v2OrgPolicies []*V2OrgPolicies
 	if cai.V2OrgPolicies != nil {
 		for _, o2 := range cai.V2OrgPolicies {
 			var spec *PolicySpec
@@ -507,7 +507,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 
 			}
 
-			V2OrgPolicies = append(V2OrgPolicies, &V2OrgPolicies{
+			v2OrgPolicies = append(v2OrgPolicies, &V2OrgPolicies{
 				Name:       o2.Name,
 				PolicySpec: spec,
 			})
@@ -520,7 +520,7 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		Resource:       resource,
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,
-		V2OrgPolicies:  V2OrgPolicies,
+		V2OrgPolicies:  v2OrgPolicies,
 		converterAsset: cai,
 		Ancestors:      ancestors,
 	}, nil
