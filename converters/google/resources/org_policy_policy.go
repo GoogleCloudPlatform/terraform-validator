@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func resourceConverterV2OrgPolicies() ResourceConverter {
+func resourceConverterOrgPolicyPolicy() ResourceConverter {
 	return ResourceConverter{
 		Convert:           GetV2OrgPoliciesCaiObject,
 		MergeCreateUpdate: MergeV2OrgPolicies,
