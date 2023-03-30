@@ -66,6 +66,12 @@ func GetBigqueryReservationCapacityCommitmentApiObject(d TerraformResourceData, 
 	} else if v, ok := d.GetOkExists("renewal_plan"); !isEmptyValue(reflect.ValueOf(renewalPlanProp)) && (ok || !reflect.DeepEqual(v, renewalPlanProp)) {
 		obj["renewalPlan"] = renewalPlanProp
 	}
+	editionProp, err := expandBigqueryReservationCapacityCommitmentEdition(d.Get("edition"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("edition"); !isEmptyValue(reflect.ValueOf(editionProp)) && (ok || !reflect.DeepEqual(v, editionProp)) {
+		obj["edition"] = editionProp
+	}
 
 	return obj, nil
 }
@@ -79,5 +85,9 @@ func expandBigqueryReservationCapacityCommitmentPlan(v interface{}, d TerraformR
 }
 
 func expandBigqueryReservationCapacityCommitmentRenewalPlan(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryReservationCapacityCommitmentEdition(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
