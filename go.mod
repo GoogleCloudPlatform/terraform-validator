@@ -16,7 +16,7 @@ replace (
 
 require (
 	cloud.google.com/go/bigtable v1.17.0
-	github.com/GoogleCloudPlatform/config-validator v0.0.0-20221208150626-1d72524ea1b8
+	github.com/GoogleCloudPlatform/config-validator v0.0.0-20230328162739-ff3a6b2846d9
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/protobuf v1.5.2
@@ -49,6 +49,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.12.0 // indirect
 	cloud.google.com/go/longrunning v0.4.1 // indirect
+	cloud.google.com/go/orgpolicy v1.10.0 // indirect
 	cloud.google.com/go/osconfig v1.11.0 // indirect
 	cloud.google.com/go/storage v1.28.1 // indirect
 	github.com/GoogleCloudPlatform/declarative-resource-client-library v1.34.0 // indirect
@@ -157,7 +158,7 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	github.com/zclconf/go-cty v1.11.0 // indirect
-	go.mongodb.org/mongo-driver v1.5.1 // indirect
+	go.mongodb.org/mongo-driver v1.1.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib v0.20.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.32.0 // indirect

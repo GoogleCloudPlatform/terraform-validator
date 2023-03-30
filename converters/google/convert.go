@@ -39,11 +39,13 @@ var ErrDuplicateAsset = errors.New("duplicate asset")
 // Asset contains the resource data and metadata in the same format as
 // Google CAI (Cloud Asset Inventory).
 type Asset struct {
-	Name      string         `json:"name"`
-	Type      string         `json:"asset_type"`
-	Resource  *AssetResource `json:"resource,omitempty"`
-	IAMPolicy *IAMPolicy     `json:"iam_policy,omitempty"`
-	OrgPolicy []*OrgPolicy   `json:"org_policy,omitempty"`
+	Name          string           `json:"name"`
+	Type          string           `json:"asset_type"`
+	Resource      *AssetResource   `json:"resource,omitempty"`
+	IAMPolicy     *IAMPolicy       `json:"iam_policy,omitempty"`
+	OrgPolicy     []*OrgPolicy     `json:"org_policy,omitempty"`
+	V2OrgPolicies []*V2OrgPolicies `json:"v2_org_policies,omitempty"`
+
 	// Store the converter's version of the asset to allow for merges which
 	// operate on this type. When matching json tags land in the conversions
 	// library, this could be nested to avoid the duplication of fields.
@@ -71,13 +73,48 @@ type AssetResource struct {
 	Data                 map[string]interface{} `json:"data"`
 }
 
-//OrgPolicy is for managing organization policies.
+// OrgPolicy is for managing organization policies.
 type OrgPolicy struct {
 	Constraint     string          `json:"constraint,omitempty"`
 	ListPolicy     *ListPolicy     `json:"list_policy,omitempty"`
 	BooleanPolicy  *BooleanPolicy  `json:"boolean_policy,omitempty"`
 	RestoreDefault *RestoreDefault `json:"restore_default,omitempty"`
 	UpdateTime     *Timestamp      `json:"update_time,omitempty"`
+}
+
+// V2OrgPolicies is the represtation of V2OrgPolicies
+type V2OrgPolicies struct {
+	Name       string      `json:"name"`
+	PolicySpec *PolicySpec `json:"spec,omitempty"`
+}
+
+// Spec is the representation of Spec for Custom Org Policy
+type PolicySpec struct {
+	Etag              string        `json:"etag,omitempty"`
+	UpdateTime        *Timestamp    `json:"update_time,omitempty"`
+	PolicyRules       []*PolicyRule `json:"rules,omitempty"`
+	InheritFromParent bool          `json:"inherit_from_parent,omitempty"`
+	Reset             bool          `json:"reset,omitempty"`
+}
+
+type PolicyRule struct {
+	Values    *StringValues `json:"values,omitempty"`
+	AllowAll  bool          `json:"allow_all,omitempty"`
+	DenyAll   bool          `json:"deny_all,omitempty"`
+	Enforce   bool          `json:"enforce,omitempty"`
+	Condition *Expr         `json:"condition,omitempty"`
+}
+
+type StringValues struct {
+	AllowedValues []string `json:"allowed_values,omitempty"`
+	DeniedValues  []string `json:"denied_values,omitempty"`
+}
+
+type Expr struct {
+	Expression  string `json:"expression,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Location    string `json:"location,omitempty"`
 }
 
 type Timestamp struct {
@@ -122,7 +159,7 @@ type BooleanPolicy struct {
 	Enforced bool `json:"enforced,omitempty"`
 }
 
-//RestoreDefault determines if the default values of the `Constraints` are active for the
+// RestoreDefault determines if the default values of the `Constraints` are active for the
 // resources.
 type RestoreDefault struct {
 }
@@ -420,12 +457,70 @@ func (c *Converter) augmentAsset(tfData resources.TerraformResourceData, cfg *re
 		}
 	}
 
+	var v2OrgPolicies []*V2OrgPolicies
+	if cai.V2OrgPolicies != nil {
+		for _, o2 := range cai.V2OrgPolicies {
+			var spec *PolicySpec
+			if o2.PolicySpec != nil {
+
+				var rules []*PolicyRule
+				if o2.PolicySpec.PolicyRules != nil {
+					for _, rule := range o2.PolicySpec.PolicyRules {
+						var values *StringValues
+						if rule.Values != nil {
+							values = &StringValues{
+								AllowedValues: rule.Values.AllowedValues,
+								DeniedValues:  rule.Values.DeniedValues,
+							}
+						}
+
+						var condition *Expr
+						if rule.Condition != nil {
+							condition = &Expr{
+								Expression:  rule.Condition.Expression,
+								Title:       rule.Condition.Title,
+								Description: rule.Condition.Description,
+								Location:    rule.Condition.Location,
+							}
+						}
+						rules = append(rules, &PolicyRule{
+							Values:    values,
+							AllowAll:  rule.AllowAll,
+							DenyAll:   rule.DenyAll,
+							Enforce:   rule.Enforce,
+							Condition: condition,
+						})
+					}
+				}
+
+				fixedTime := time.Date(2021, time.April, 14, 15, 16, 17, 0, time.UTC)
+				spec = &PolicySpec{
+					Etag: o2.PolicySpec.Etag,
+					UpdateTime: &Timestamp{
+						Seconds: int64(fixedTime.Unix()),
+						Nanos:   int64(fixedTime.UnixNano()),
+					},
+					PolicyRules:       rules,
+					InheritFromParent: o2.PolicySpec.InheritFromParent,
+					Reset:             o2.PolicySpec.Reset,
+				}
+
+			}
+
+			v2OrgPolicies = append(v2OrgPolicies, &V2OrgPolicies{
+				Name:       o2.Name,
+				PolicySpec: spec,
+			})
+		}
+	}
+
 	return Asset{
 		Name:           cai.Name,
 		Type:           cai.Type,
 		Resource:       resource,
 		IAMPolicy:      policy,
 		OrgPolicy:      orgPolicy,
+		V2OrgPolicies:  v2OrgPolicies,
 		converterAsset: cai,
 		Ancestors:      ancestors,
 	}, nil
