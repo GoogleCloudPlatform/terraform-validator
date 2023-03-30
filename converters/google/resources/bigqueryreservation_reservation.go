@@ -72,6 +72,18 @@ func GetBigqueryReservationReservationApiObject(d TerraformResourceData, config 
 	} else if v, ok := d.GetOkExists("multi_region_auxiliary"); !isEmptyValue(reflect.ValueOf(multiRegionAuxiliaryProp)) && (ok || !reflect.DeepEqual(v, multiRegionAuxiliaryProp)) {
 		obj["multiRegionAuxiliary"] = multiRegionAuxiliaryProp
 	}
+	editionProp, err := expandBigqueryReservationReservationEdition(d.Get("edition"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("edition"); !isEmptyValue(reflect.ValueOf(editionProp)) && (ok || !reflect.DeepEqual(v, editionProp)) {
+		obj["edition"] = editionProp
+	}
+	autoscaleProp, err := expandBigqueryReservationReservationAutoscale(d.Get("autoscale"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("autoscale"); !isEmptyValue(reflect.ValueOf(autoscaleProp)) && (ok || !reflect.DeepEqual(v, autoscaleProp)) {
+		obj["autoscale"] = autoscaleProp
+	}
 
 	return obj, nil
 }
@@ -89,5 +101,43 @@ func expandBigqueryReservationReservationConcurrency(v interface{}, d TerraformR
 }
 
 func expandBigqueryReservationReservationMultiRegionAuxiliary(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryReservationReservationEdition(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryReservationReservationAutoscale(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedCurrentSlots, err := expandBigqueryReservationReservationAutoscaleCurrentSlots(original["current_slots"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedCurrentSlots); val.IsValid() && !isEmptyValue(val) {
+		transformed["currentSlots"] = transformedCurrentSlots
+	}
+
+	transformedMaxSlots, err := expandBigqueryReservationReservationAutoscaleMaxSlots(original["max_slots"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedMaxSlots); val.IsValid() && !isEmptyValue(val) {
+		transformed["maxSlots"] = transformedMaxSlots
+	}
+
+	return transformed, nil
+}
+
+func expandBigqueryReservationReservationAutoscaleCurrentSlots(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandBigqueryReservationReservationAutoscaleMaxSlots(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
