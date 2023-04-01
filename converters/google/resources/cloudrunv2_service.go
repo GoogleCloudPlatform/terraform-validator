@@ -225,11 +225,11 @@ func expandCloudRunV2ServiceTemplate(v interface{}, d TerraformResourceData, con
 		transformed["scaling"] = transformedScaling
 	}
 
-	transformedVPCAccess, err := expandCloudRunV2ServiceTemplateVPCAccess(original["vpc_access"], d, config)
+	transformedVpcAccess, err := expandCloudRunV2ServiceTemplateVpcAccess(original["vpc_access"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedVPCAccess); val.IsValid() && !isEmptyValue(val) {
-		transformed["vpcAccess"] = transformedVPCAccess
+	} else if val := reflect.ValueOf(transformedVpcAccess); val.IsValid() && !isEmptyValue(val) {
+		transformed["vpcAccess"] = transformedVpcAccess
 	}
 
 	transformedTimeout, err := expandCloudRunV2ServiceTemplateTimeout(original["timeout"], d, config)
@@ -344,7 +344,7 @@ func expandCloudRunV2ServiceTemplateScalingMaxInstanceCount(v interface{}, d Ter
 	return v, nil
 }
 
-func expandCloudRunV2ServiceTemplateVPCAccess(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandCloudRunV2ServiceTemplateVpcAccess(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -353,14 +353,14 @@ func expandCloudRunV2ServiceTemplateVPCAccess(v interface{}, d TerraformResource
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedConnector, err := expandCloudRunV2ServiceTemplateVPCAccessConnector(original["connector"], d, config)
+	transformedConnector, err := expandCloudRunV2ServiceTemplateVpcAccessConnector(original["connector"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedConnector); val.IsValid() && !isEmptyValue(val) {
 		transformed["connector"] = transformedConnector
 	}
 
-	transformedEgress, err := expandCloudRunV2ServiceTemplateVPCAccessEgress(original["egress"], d, config)
+	transformedEgress, err := expandCloudRunV2ServiceTemplateVpcAccessEgress(original["egress"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedEgress); val.IsValid() && !isEmptyValue(val) {
@@ -370,11 +370,11 @@ func expandCloudRunV2ServiceTemplateVPCAccess(v interface{}, d TerraformResource
 	return transformed, nil
 }
 
-func expandCloudRunV2ServiceTemplateVPCAccessConnector(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandCloudRunV2ServiceTemplateVpcAccessConnector(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandCloudRunV2ServiceTemplateVPCAccessEgress(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandCloudRunV2ServiceTemplateVpcAccessEgress(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

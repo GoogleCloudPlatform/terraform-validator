@@ -184,7 +184,7 @@ func GetAppEngineFlexibleAppVersionApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("entrypoint"); !isEmptyValue(reflect.ValueOf(entrypointProp)) && (ok || !reflect.DeepEqual(v, entrypointProp)) {
 		obj["entrypoint"] = entrypointProp
 	}
-	vpcAccessConnectorProp, err := expandAppEngineFlexibleAppVersionVPCAccessConnector(d.Get("vpc_access_connector"), d, config)
+	vpcAccessConnectorProp, err := expandAppEngineFlexibleAppVersionVpcAccessConnector(d.Get("vpc_access_connector"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("vpc_access_connector"); !isEmptyValue(reflect.ValueOf(vpcAccessConnectorProp)) && (ok || !reflect.DeepEqual(v, vpcAccessConnectorProp)) {
@@ -1143,7 +1143,7 @@ func expandAppEngineFlexibleAppVersionEntrypointShell(v interface{}, d Terraform
 	return v, nil
 }
 
-func expandAppEngineFlexibleAppVersionVPCAccessConnector(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandAppEngineFlexibleAppVersionVpcAccessConnector(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -1152,7 +1152,7 @@ func expandAppEngineFlexibleAppVersionVPCAccessConnector(v interface{}, d Terraf
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedName, err := expandAppEngineFlexibleAppVersionVPCAccessConnectorName(original["name"], d, config)
+	transformedName, err := expandAppEngineFlexibleAppVersionVpcAccessConnectorName(original["name"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedName); val.IsValid() && !isEmptyValue(val) {
@@ -1162,7 +1162,7 @@ func expandAppEngineFlexibleAppVersionVPCAccessConnector(v interface{}, d Terraf
 	return transformed, nil
 }
 
-func expandAppEngineFlexibleAppVersionVPCAccessConnectorName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandAppEngineFlexibleAppVersionVpcAccessConnectorName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 

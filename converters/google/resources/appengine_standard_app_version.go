@@ -118,7 +118,7 @@ func GetAppEngineStandardAppVersionApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("entrypoint"); !isEmptyValue(reflect.ValueOf(entrypointProp)) && (ok || !reflect.DeepEqual(v, entrypointProp)) {
 		obj["entrypoint"] = entrypointProp
 	}
-	vpcAccessConnectorProp, err := expandAppEngineStandardAppVersionVPCAccessConnector(d.Get("vpc_access_connector"), d, config)
+	vpcAccessConnectorProp, err := expandAppEngineStandardAppVersionVpcAccessConnector(d.Get("vpc_access_connector"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("vpc_access_connector"); !isEmptyValue(reflect.ValueOf(vpcAccessConnectorProp)) && (ok || !reflect.DeepEqual(v, vpcAccessConnectorProp)) {
@@ -556,7 +556,7 @@ func expandAppEngineStandardAppVersionEntrypointShell(v interface{}, d Terraform
 	return v, nil
 }
 
-func expandAppEngineStandardAppVersionVPCAccessConnector(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandAppEngineStandardAppVersionVpcAccessConnector(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -565,14 +565,14 @@ func expandAppEngineStandardAppVersionVPCAccessConnector(v interface{}, d Terraf
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedName, err := expandAppEngineStandardAppVersionVPCAccessConnectorName(original["name"], d, config)
+	transformedName, err := expandAppEngineStandardAppVersionVpcAccessConnectorName(original["name"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedName); val.IsValid() && !isEmptyValue(val) {
 		transformed["name"] = transformedName
 	}
 
-	transformedEgressSetting, err := expandAppEngineStandardAppVersionVPCAccessConnectorEgressSetting(original["egress_setting"], d, config)
+	transformedEgressSetting, err := expandAppEngineStandardAppVersionVpcAccessConnectorEgressSetting(original["egress_setting"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedEgressSetting); val.IsValid() && !isEmptyValue(val) {
@@ -582,11 +582,11 @@ func expandAppEngineStandardAppVersionVPCAccessConnector(v interface{}, d Terraf
 	return transformed, nil
 }
 
-func expandAppEngineStandardAppVersionVPCAccessConnectorName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandAppEngineStandardAppVersionVpcAccessConnectorName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandAppEngineStandardAppVersionVPCAccessConnectorEgressSetting(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandAppEngineStandardAppVersionVpcAccessConnectorEgressSetting(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
