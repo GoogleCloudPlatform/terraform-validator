@@ -60,7 +60,7 @@ func GetDatastreamPrivateConnectionApiObject(d TerraformResourceData, config *Co
 	} else if v, ok := d.GetOkExists("display_name"); !isEmptyValue(reflect.ValueOf(displayNameProp)) && (ok || !reflect.DeepEqual(v, displayNameProp)) {
 		obj["displayName"] = displayNameProp
 	}
-	vpcPeeringConfigProp, err := expandDatastreamPrivateConnectionVPCPeeringConfig(d.Get("vpc_peering_config"), d, config)
+	vpcPeeringConfigProp, err := expandDatastreamPrivateConnectionVpcPeeringConfig(d.Get("vpc_peering_config"), d, config)
 	if err != nil {
 		return nil, err
 	} else if v, ok := d.GetOkExists("vpc_peering_config"); !isEmptyValue(reflect.ValueOf(vpcPeeringConfigProp)) && (ok || !reflect.DeepEqual(v, vpcPeeringConfigProp)) {
@@ -85,7 +85,7 @@ func expandDatastreamPrivateConnectionDisplayName(v interface{}, d TerraformReso
 	return v, nil
 }
 
-func expandDatastreamPrivateConnectionVPCPeeringConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandDatastreamPrivateConnectionVpcPeeringConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
 		return nil, nil
@@ -94,14 +94,14 @@ func expandDatastreamPrivateConnectionVPCPeeringConfig(v interface{}, d Terrafor
 	original := raw.(map[string]interface{})
 	transformed := make(map[string]interface{})
 
-	transformedVPC, err := expandDatastreamPrivateConnectionVPCPeeringConfigVPC(original["vpc"], d, config)
+	transformedVpc, err := expandDatastreamPrivateConnectionVpcPeeringConfigVpc(original["vpc"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedVPC); val.IsValid() && !isEmptyValue(val) {
-		transformed["vpc"] = transformedVPC
+	} else if val := reflect.ValueOf(transformedVpc); val.IsValid() && !isEmptyValue(val) {
+		transformed["vpc"] = transformedVpc
 	}
 
-	transformedSubnet, err := expandDatastreamPrivateConnectionVPCPeeringConfigSubnet(original["subnet"], d, config)
+	transformedSubnet, err := expandDatastreamPrivateConnectionVpcPeeringConfigSubnet(original["subnet"], d, config)
 	if err != nil {
 		return nil, err
 	} else if val := reflect.ValueOf(transformedSubnet); val.IsValid() && !isEmptyValue(val) {
@@ -111,10 +111,10 @@ func expandDatastreamPrivateConnectionVPCPeeringConfig(v interface{}, d Terrafor
 	return transformed, nil
 }
 
-func expandDatastreamPrivateConnectionVPCPeeringConfigVPC(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandDatastreamPrivateConnectionVpcPeeringConfigVpc(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
-func expandDatastreamPrivateConnectionVPCPeeringConfigSubnet(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+func expandDatastreamPrivateConnectionVpcPeeringConfigSubnet(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
