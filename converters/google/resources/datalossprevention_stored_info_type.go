@@ -14,7 +14,35 @@
 
 package google
 
-import "reflect"
+import (
+	"context"
+	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func storedInfoTypeCustomizeDiffFunc(diff TerraformResourceDiff) error {
+	oldDict, newDict := diff.GetChange("dictionary")
+	oldRegex, newRegex := diff.GetChange("regex")
+	oldLargeCD, newLargeCD := diff.GetChange("large_custom_dictionary")
+	if !isEmptyValue(reflect.ValueOf(oldDict)) && isEmptyValue(reflect.ValueOf(newDict)) {
+		diff.ForceNew("dictionary")
+		return nil
+	}
+	if !isEmptyValue(reflect.ValueOf(oldRegex)) && isEmptyValue(reflect.ValueOf(newRegex)) {
+		diff.ForceNew("regex")
+		return nil
+	}
+	if !isEmptyValue(reflect.ValueOf(oldLargeCD)) && isEmptyValue(reflect.ValueOf(newLargeCD)) {
+		diff.ForceNew("large_custom_dictionary")
+		return nil
+	}
+	return nil
+}
+
+func storedInfoTypeCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+	return storedInfoTypeCustomizeDiffFunc(diff)
+}
 
 const DataLossPreventionStoredInfoTypeAssetType string = "dlp.googleapis.com/StoredInfoType"
 
