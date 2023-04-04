@@ -15,6 +15,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go/alloydb v0.2.0
 	cloud.google.com/go/bigtable v1.17.0
 	github.com/GoogleCloudPlatform/config-validator v0.0.0-20230328162739-ff3a6b2846d9
 	github.com/apparentlymart/go-cidr v1.1.0
@@ -27,7 +28,7 @@ require (
 	github.com/hashicorp/terraform-json v0.14.0
 	github.com/hashicorp/terraform-plugin-framework v1.1.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
-	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230404015428-8a6f9a3c72a8
+	github.com/hashicorp/terraform-provider-google v1.20.1-0.20230404153235-0b5436e523cb
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
