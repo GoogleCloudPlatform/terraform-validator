@@ -72,6 +72,12 @@ func GetArtifactRegistryRepositoryApiObject(d TerraformResourceData, config *Con
 	} else if v, ok := d.GetOkExists("kms_key_name"); !isEmptyValue(reflect.ValueOf(kmsKeyNameProp)) && (ok || !reflect.DeepEqual(v, kmsKeyNameProp)) {
 		obj["kmsKeyName"] = kmsKeyNameProp
 	}
+	dockerConfigProp, err := expandArtifactRegistryRepositoryDockerConfig(d.Get("docker_config"), d, config)
+	if err != nil {
+		return nil, err
+	} else if v, ok := d.GetOkExists("docker_config"); !isEmptyValue(reflect.ValueOf(dockerConfigProp)) && (ok || !reflect.DeepEqual(v, dockerConfigProp)) {
+		obj["dockerConfig"] = dockerConfigProp
+	}
 	mavenConfigProp, err := expandArtifactRegistryRepositoryMavenConfig(d.Get("maven_config"), d, config)
 	if err != nil {
 		return nil, err
@@ -120,6 +126,29 @@ func expandArtifactRegistryRepositoryLabels(v interface{}, d TerraformResourceDa
 }
 
 func expandArtifactRegistryRepositoryKmsKeyName(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	return v, nil
+}
+
+func expandArtifactRegistryRepositoryDockerConfig(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
+	l := v.([]interface{})
+	if len(l) == 0 || l[0] == nil {
+		return nil, nil
+	}
+	raw := l[0]
+	original := raw.(map[string]interface{})
+	transformed := make(map[string]interface{})
+
+	transformedImmutableTags, err := expandArtifactRegistryRepositoryDockerConfigImmutableTags(original["immutable_tags"], d, config)
+	if err != nil {
+		return nil, err
+	} else if val := reflect.ValueOf(transformedImmutableTags); val.IsValid() && !isEmptyValue(val) {
+		transformed["immutableTags"] = transformedImmutableTags
+	}
+
+	return transformed, nil
+}
+
+func expandArtifactRegistryRepositoryDockerConfigImmutableTags(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	return v, nil
 }
 
