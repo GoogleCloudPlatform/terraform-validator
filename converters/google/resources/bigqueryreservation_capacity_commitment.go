@@ -26,7 +26,7 @@ func resourceConverterBigqueryReservationCapacityCommitment() ResourceConverter 
 }
 
 func GetBigqueryReservationCapacityCommitmentCaiObject(d TerraformResourceData, config *Config) ([]Asset, error) {
-	name, err := assetName(d, config, "//bigqueryreservation.googleapis.com/{{name}}")
+	name, err := assetName(d, config, "//bigqueryreservation.googleapis.com/projects/{{project}}/locations/{{location}}/capacityCommitments/{{capacity_commitment_id}}")
 	if err != nil {
 		return []Asset{}, err
 	}
