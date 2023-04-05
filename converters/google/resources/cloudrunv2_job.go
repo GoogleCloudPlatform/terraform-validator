@@ -265,7 +265,7 @@ func expandCloudRunV2JobTemplateTemplate(v interface{}, d TerraformResourceData,
 	transformedMaxRetries, err := expandCloudRunV2JobTemplateTemplateMaxRetries(original["max_retries"], d, config)
 	if err != nil {
 		return nil, err
-	} else if val := reflect.ValueOf(transformedMaxRetries); val.IsValid() && !isEmptyValue(val) {
+	} else {
 		transformed["maxRetries"] = transformedMaxRetries
 	}
 
