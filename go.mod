@@ -15,7 +15,6 @@ replace (
 )
 
 require (
-	cloud.google.com/go/alloydb v0.2.0
 	cloud.google.com/go/bigtable v1.17.0
 	github.com/GoogleCloudPlatform/config-validator v0.0.0-20230328162739-ff3a6b2846d9
 	github.com/apparentlymart/go-cidr v1.1.0
@@ -45,6 +44,7 @@ require (
 	bitbucket.org/creachadair/stringset v0.0.8 // indirect
 	cloud.google.com/go v0.110.0 // indirect
 	cloud.google.com/go/accesscontextmanager v1.6.0 // indirect
+	cloud.google.com/go/alloydb v0.2.0 // indirect
 	cloud.google.com/go/asset v1.11.1 // indirect
 	cloud.google.com/go/compute v1.18.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
