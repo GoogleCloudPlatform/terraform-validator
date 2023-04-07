@@ -78,7 +78,8 @@ func resourceComputeDiskResourcePolicyAttachmentEncoder(d TerraformResourceData,
 
 	// resourcePolicies are referred to by region but affixed to zonal disks.
 	// We construct the regional name from the zone:
-	//   projects/{project}/regions/{region}/resourcePolicies/{resourceId}
+	//
+	//	projects/{project}/regions/{region}/resourcePolicies/{resourceId}
 	region := getRegionFromZone(zone)
 	if region == "" {
 		return nil, fmt.Errorf("invalid zone %q, unable to infer region from zone", zone)

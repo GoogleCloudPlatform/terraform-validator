@@ -275,19 +275,22 @@ type attachedClusterUser struct {
 }
 
 // The custom expander transforms input into something like this:
-// authorization {
-//    admin_users [
-//      { username = "user1" },
-//      { username = "user2" }
-//    ]
-// }
+//
+//	authorization {
+//	   admin_users [
+//	     { username = "user1" },
+//	     { username = "user2" }
+//	   ]
+//	}
+//
 // The custom flattener transforms input back into something like this:
-// authorization {
-//    admin_users = [
-//      "user1",
-//      "user2"
-//    ]
-// }
+//
+//	authorization {
+//	   admin_users = [
+//	     "user1",
+//	     "user2"
+//	   ]
+//	}
 func expandContainerAttachedClusterAuthorization(v interface{}, d TerraformResourceData, config *Config) (interface{}, error) {
 	l := v.([]interface{})
 	if len(l) == 0 || l[0] == nil {
