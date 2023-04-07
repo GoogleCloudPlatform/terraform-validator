@@ -1,9 +1,9 @@
 // ----------------------------------------------------------------------------
 //
-//     This file is copied here by Magic Modules. The code for building up a
-//     compute instance object is copied from the manually implemented
-//     provider file:
-//     third_party/terraform/resources/resource_compute_instance.go
+//	This file is copied here by Magic Modules. The code for building up a
+//	compute instance object is copied from the manually implemented
+//	provider file:
+//	third_party/terraform/resources/resource_compute_instance.go
 //
 // ----------------------------------------------------------------------------
 package google
